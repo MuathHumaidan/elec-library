@@ -431,3 +431,5 @@ body::before{background:var(--hero1)}
 .katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden}
 .katex,.katex-display{direction:ltr;unicode-bidi:isolate}
 .topbar a.tag{text-decoration:none}
+.topbar .brand,.topbar .brand span{color:#fff}
+.topbar .brand em{color:#fff}

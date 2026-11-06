@@ -59,11 +59,11 @@ function renderHome(){
    <div class="cover-meta"><div class="meta-num"><b>${B.UNITS.length}</b><span>وحدات</span></div><div class="meta-num"><b>${B.LESSONS.length}</b><span>درساً</span></div><div class="meta-num"><b>${pct}%</b><span>أنجزت</span></div>
    <div class="meta-bar"><i style="width:${pct}%"></i></div></div></section>
    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-   <input id="q" type="search" placeholder="ابحث عن درس: مزمن، داهلندر، S/R، مصعد…" aria-label="ابحث عن درس"></div>`;
+   <input id="q" type="search" placeholder="${C.hint||'ابحث عن درس…'}" aria-label="ابحث عن درس"></div>`;
   h+=`<div class="toc" id="units">`;
   B.UNITS.sort((a,b)=>a.n-b.n).forEach(u=>{
     const ls=B.LESSONS.filter(l=>l.unit===u.n).sort((a,b)=>a.order-b.order);const sn=ls.filter(l=>done[l.id]).length;
-    const open=lastL?lastL.unit===u.n:u.n===1;
+    const open=false;
     h+=`<details class="unit" id="unit-${u.n}" ${open?'open':''}><summary><span class="un">${String(u.n).padStart(2,'0')}</span><span class="ut"><b>${u.title}</b><small>${ls.length} دروس · ص ${u.pages}</small></span><span class="up"><span class="uprog"><i style="width:${ls.length?Math.round(sn/ls.length*100):0}%"></i></span><small>${sn}/${ls.length}</small></span><span class="chev" aria-hidden="true"></span></summary>
      ${u.blurb?`<p class="ublurb">${u.blurb}</p>`:''}<ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${done[l.id]?'done':seen[l.id]?'seen':''}"><span class="vk" title="${done[l.id]?'أنجزته':seen[l.id]?'فتحته':''}"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></details>`;
   });

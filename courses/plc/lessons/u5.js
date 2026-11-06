@@ -182,11 +182,11 @@ B.lesson({
   {h:'التحكم في درجة حرارة غرفة باستخدام حاكم ذي موضعين',ref:'ص 100',html:'<p>«والشكل التالي يبين مخطط توصيل وحدة (PLC) للتحكم في درجة حرارة الغرفة:»</p><ul><li>المداخل: <b>I0.1</b> ← الضاغط <b>S1</b> «Heat enable»، و <b>I0.0</b> ← الضاغط <b>S0</b> «Stop Heating».</li><li>المداخل التناظرية: <b>PIW290</b> ← الثرموكبل <b>K-Type</b>، و <b>PIW288</b> ← منزلق المقاومة المتغيرة <b>R</b> بين <span class="ltr">10 VDC</span> و <span class="ltr">0 VDC</span>.</li><li>المخارج: <b>Q4.0</b> ← متمم السخان <b>K1</b>، و <b>Q4.1</b> ← المصباح <b>H1</b>.</li><li>دائرة القدرة: L1 و L2 و L3 ← مصهرات ← نقاط K1 الرئيسة ← ثلاث مقاومات تسخين موصولة نجمة، ونقطة النجمة <b>E</b>.</li></ul>'},
   {fig:'(1-5)',ref:'ص 100',caption:'مخطط توصيل وحدة PLC ودائرة القدرة للسخان (القيم المكتوبة مثال: R على 5 v والغرفة 25°C)',draw:()=>`<div class="svgbox">${fig15({})}</div>`},
   {h:'جدول قائمة التشغيل',ref:'ص 101',html:'<p>«والجدول التالي يوضح قائمة التشغيل حسب الشكل (1-5)»، كما هو مطبوع:</p>'},
-  {fig:'',ref:'ص 101',caption:'قائمة التشغيل كما في الكتاب',draw:()=>IO5_BOOK},
+  {fig:'',ref:'ص 101',caption:'قائمة التشغيل',draw:()=>IO5_BOOK},
   {err:ERR_ADDR},
   {h:'تهيئة وحدة المدخل التناظري',ref:'ص 101–102',html:`<p>«توصل وحدة الدخل التناظري بحساس درجة الحرارة الثيرموكبل <span class="ltr">Thermocouple K-type</span> وتتم تهيئته كما هو موضح بالشكل (2-5). يتم إدراج موديول <span class="ltr">AI 8x12 bit</span> في مكونات النظام ثم نضغط على العنصر مرتين لفتح خصائصه وسوف تظهر لنا نافذة <span class="ltr">Properties</span> وبها ثلاث نوافذ فرعية هي <span class="ltr">General</span> و <span class="ltr">Address</span> و <span class="ltr">Inputs</span>.»</p>
    <ul><li><b>General:</b> بيانات التوصيف العامة وإمكانية كتابة تعليق.</li><li><b>Address:</b> عناوين قنوات التوصيل (Channels) بدايتها ونهايتها ويمكن تغييرها — نستخدم العنوان <b>PIW290</b>.</li><li><b>Input:</b> بيانات التهيئة المختلفة للموديول: <span class="ltr">Measuring Type = TC-IL</span> و <span class="ltr">Measuring Range = Type K</span>.</li></ul>`},
-  {fig:'(2-5)',ref:'ص 102',caption:'تهيئة الموديول AI8xTC في برنامج SIMATIC (معاد رسمها؛ الإطار الأحمر حول المجموعة 0-1 كما في الكتاب)',draw:()=>HWCFG},
+  {fig:'(2-5)',ref:'ص 102',caption:'تهيئة الموديول AI8xTC في برنامج SIMATIC (معاد رسمها؛ الإطار الأحمر حول المجموعة 0-1)',draw:()=>HWCFG},
   {err:'النص يقول الموديول «AI 8x12 bit» بينما اللقطة في الشكل (2-5) تُظهر «AI8xTC» (موديول ثرموكبل). والنص يسمي النوافذ General و Address و Inputs، واللقطة فيها General و Addresses و Inputs - Part 1 و Inputs - Part 2.'},
   {h:'قراءة الثرموكبل داخل الـ PLC',ref:'ص 102',html:'<p>«وباستخدام الثيرموكبل ستكون قراءة الحرارة داخل PLC كعدد صحيح Integer كما بالجدول» — Table 4-26 من كتالوج سيمنز:</p>'},
   {fig:'',ref:'ص 102',caption:'Table 4-26 Analog value representation for thermocouples type K',draw:()=>T426},
@@ -363,7 +363,7 @@ B.lesson({
  theory:[
   {h:'ملاحظة الكتاب قبل البرنامج',ref:'ص 105',html:'<p>«في حالة عدم توفر حساس درجة الحرارة الثرموكبل يمكن استخدام مقاومة لمحاكاة عمله بحيث يكون دخل درجة الحرارة الفعلية ممثلاً بجهد من 0 إلى 10 فولت. البرنامج التالي يبين ذلك مكتوباً بلغة قائمة الإجراءات STL».</p>'},
   {h:'دائرة STL باستخدام دالة التخزين مع دالة الإلغاء والإبقاء',ref:'ص 106',html:'<p>منقول حرفياً (الأسطر الفارغة كما في الكتاب):</p>'},
-  {fig:'',ref:'ص 106',caption:'برنامج STL كما في الكتاب',draw:()=>`<table class="stl"><tbody>${STL_BOOK.map(o=>{const p=o.l.trim().split(/\s+/);return `<tr><td>${B.esc(p[0]||'')}</td><td>${B.esc(p.slice(1).join(' '))}</td></tr>`}).join('')}</tbody></table>`},
+  {fig:'',ref:'ص 106',caption:'برنامج STL',draw:()=>`<table class="stl"><tbody>${STL_BOOK.map(o=>{const p=o.l.trim().split(/\s+/);return `<tr><td>${B.esc(p[0]||'')}</td><td>${B.esc(p.slice(1).join(' '))}</td></tr>`}).join('')}</tbody></table>`},
   {html:`<table class="tt"><thead><tr><th>التعليمة</th><th>ما تفعله (ACCU1 = المركم 1، ACCU2 = المركم 2)</th></tr></thead><tbody>
    <tr><td class="ltr">L PIW 290</td><td>تحميل قراءة المدخل التناظري في ACCU1 (وما كان في ACCU1 ينتقل إلى ACCU2)</td></tr>
    <tr><td class="ltr">ITD</td><td>تحويل ACCU1 من Integer إلى Double Integer (مثل I_DI)</td></tr>
