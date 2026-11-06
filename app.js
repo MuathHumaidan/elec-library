@@ -47,26 +47,27 @@ function renderHome(){
   const seen=store.get('plcbook-seen',{}),last=store.get('plcbook-last',null);
   const lastL=last&&B.LESSONS.find(l=>l.id===last);const first=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order)[0];
   const nSeen=B.LESSONS.filter(l=>seen[l.id]).length;
-  let h=`<section class="home-hero"><div class="hero-grid"><div>
-   <div class="eyebrow">205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية</div>
+  const pct=Math.round(nSeen/B.LESSONS.length*100);
+  let h=`<section class="cover">
+   <div class="cover-txt"><div class="eyebrow">205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية</div>
    <h1>تقنية التحكم المبرمج <span>(عملي)</span></h1>
-   <p class="lead">الكتاب كاملاً بوحداته العشر. كل درس فيه شرح مطابق للكتاب مع أرقام صفحاته وأشكاله، ومحاكاة حية: اضغط الضواغط وشاهد الدائرة والبرنامج والجهاز يعملون معاً.</p>
-   <div class="home-stats"><span><b>${B.UNITS.length}</b> وحدات</span><span><b>${B.LESSONS.length}</b> درساً</span>${nSeen?`<span><b>${nSeen}</b> درساً فتحته</span>`:''}</div>
-   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت <small>${lastL.unit}.${lastL.order} ${lastL.title}</small></a><a class="cta sec" href="#${first.id}">من البداية</a>`:`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a><a class="cta sec" href="#u2-l1">جرّب درس نجمة / دلتا</a>`}</div>
-   </div><div class="hero-rung">${RUNG}<p>Network بسيط: الضغط على S1 يغلق التلامس فتصل الإشارة إلى الملف K1. هكذا تعمل كل محاكاة في الكتاب.</p></div></div></section>
+   <p class="lead">الكتاب كاملاً بوحداته العشر: شرح مطابق للمذكرة بأرقام صفحاتها وأشكالها، ومحاكاة حية لكل درس.</p>
+   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت</a><span class="cta-note">${lastL.unit}.${lastL.order} ${lastL.title}</span>`:`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a><a class="cta sec" href="#u2-l1">جرّب درس نجمة / دلتا</a>`}</div></div>
+   <div class="cover-meta"><div class="meta-num"><b>${B.UNITS.length}</b><span>وحدات</span></div><div class="meta-num"><b>${B.LESSONS.length}</b><span>درساً</span></div><div class="meta-num"><b>${pct}%</b><span>أنجزت</span></div>
+   <div class="meta-bar"><i style="width:${pct}%"></i></div></div></section>
    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
    <input id="q" type="search" placeholder="ابحث عن درس: مزمن، داهلندر، S/R، مصعد…" aria-label="ابحث عن درس"></div>`;
-  h+=`<div class="units" id="units">`;
+  h+=`<div class="toc" id="units">`;
   B.UNITS.sort((a,b)=>a.n-b.n).forEach(u=>{
     const ls=B.LESSONS.filter(l=>l.unit===u.n).sort((a,b)=>a.order-b.order);const sn=ls.filter(l=>seen[l.id]).length;
-    h+=`<section class="unit" id="unit-${u.n}"><header><span class="unum">${u.n}</span><div><div class="eyebrow">الوحدة ${AR[u.n]} · ص ${u.pages}</div><h2>${u.title}</h2>${u.blurb?`<p>${u.blurb}</p>`:''}</div></header>
-     <div class="uprog" aria-hidden="true"><i style="width:${ls.length?Math.round(sn/ls.length*100):0}%"></i></div><div class="uprog-t">${sn} من ${ls.length} دروس</div>
-     <ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${seen[l.id]?'seen':''}"><span class="vk" aria-label="${seen[l.id]?'تم فتحه':''}"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></section>`;
+    const open=lastL?lastL.unit===u.n:u.n===1;
+    h+=`<details class="unit" id="unit-${u.n}" ${open?'open':''}><summary><span class="un">${String(u.n).padStart(2,'0')}</span><span class="ut"><b>${u.title}</b><small>${ls.length} دروس · ص ${u.pages}</small></span><span class="up"><span class="uprog"><i style="width:${ls.length?Math.round(sn/ls.length*100):0}%"></i></span><small>${sn}/${ls.length}</small></span><span class="chev" aria-hidden="true"></span></summary>
+     ${u.blurb?`<p class="ublurb">${u.blurb}</p>`:''}<ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${seen[l.id]?'seen':''}"><span class="vk"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></details>`;
   });
   h+=`</div><p class="nores" id="nores" hidden>لا يوجد درس بهذا الاسم.</p><p class="src">المصدر: مذكرة مقرر تقنية التحكم المبرمج (عملي) 205 كهر، المؤسسة العامة للتدريب التقني والمهني. أرقام الصفحات هي المطبوعة في الكتاب. أرقام التيار والسرعة في المحاكاة توضيحية.</p>`;
   root.innerHTML=h;window.scrollTo(0,0);
   $('#q').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();let any=0;
-    $$('.unit',root).forEach(u=>{let k=0;$$('li',u).forEach(li=>{const m=!q||li.dataset.s.includes(q)||u.querySelector('h2').textContent.toLowerCase().includes(q);li.hidden=!m;if(m)k++});u.hidden=!k;any+=k});
+    $$('.unit',root).forEach(u=>{let k=0;$$('li',u).forEach(li=>{const m=!q||li.dataset.s.includes(q)||u.querySelector('.ut b').textContent.toLowerCase().includes(q);li.hidden=!m;if(m)k++});u.hidden=!k;if(q&&k)u.open=true;any+=k});
     $('#nores').hidden=!!any});
 }
 
@@ -83,17 +84,30 @@ function renderLesson(L,tab){
   const hasLab=!!(L.program||L.lab||L.plant);const hasProg=!!(L.program||L.variants);
   const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك']].filter(Boolean);
   tab=tabs.find(t=>t[0]===tab)?tab:'theory';
-  root.innerHTML=`<div class="crumbs"><a href="#home">الفهرس</a> › <a href="#home" data-unit="${L.unit}">الوحدة ${AR[L.unit]}: ${u.title}</a></div>
-   <header class="lesson-head"><div><div class="eyebrow">الدرس ${L.unit}.${L.order} · ص ${L.pages}</div><h1>${L.title}</h1>${L.summary?`<p class="lead">${L.summary}</p>`:''}</div></header>
-   <nav class="ltabs" role="tablist">${tabs.map((t,k)=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><span class="n">${k+1}</span>${t[1]}</button>`).join('')}</nav>
+  const seen=store.get('plcbook-seen',{});
+  const ul=all.filter(x=>x.unit===L.unit);
+  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
+  root.innerHTML=`<div class="lesson-layout">
+   <aside class="lside" aria-label="دروس الوحدة"><a class="lside-back" href="#home">‹ فهرس المقرر</a>
+    <div class="lside-unit"><span class="unum sm">${L.unit}</span><div><small>الوحدة ${AR[L.unit]}</small><b>${u.title}</b></div></div>
+    <ol>${ul.map(x=>`<li><a href="#${x.id}" class="${x===L?'on':''} ${seen[x.id]?'seen':''}"><span class="k">${x.unit}.${x.order}</span><span>${x.title}</span></a></li>`).join('')}</ol>
+    <details class="lside-more"><summary>الوحدات الأخرى</summary><ul>${B.UNITS.filter(x=>x.n!==L.unit).map(x=>{const f=all.find(y=>y.unit===x.n);return f?`<li><a href="#${f.id}"><span class="k">${x.n}</span>${x.title}</a></li>`:''}).join('')}</ul></details>
+   </aside>
+   <div class="lmain">
+   <div class="crumbs"><a href="#home">الفهرس</a> › <a href="#home" data-unit="${L.unit}">الوحدة ${AR[L.unit]}</a></div>
+   <header class="lesson-head"><div class="eyebrow">الدرس ${L.unit}.${L.order} · ص ${L.pages}</div><h1>${L.title}</h1>${L.summary?`<p class="lead">${L.summary}</p>`:''}</header>
+   <nav class="ltabs" role="tablist">${tabs.map((t,k)=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}">${t[1]}</button>`).join('')}</nav>
    <div id="strip-host"></div>
    <div id="tab-body"></div>
-   <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>`;
+   <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>
+   </div></div>
+   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[1]}</button>`).join('')}</nav>`;
+  document.body.classList.add('in-lesson');
   $$('[data-unit]',root).forEach(a=>a.addEventListener('click',e=>{e.preventDefault();location.hash='home';setTimeout(()=>{const el=document.getElementById('unit-'+a.dataset.unit);el&&el.scrollIntoView()},60)}));
   // runtime is shared by lab & plc tabs
   stopRun();
   if(hasLab&&!L.lab||L.program) RUN=createRuntime(L);
-  const show=t=>{tab=t;$$('.ltabs button',root).forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  const show=t=>{tab=t;$$('.ltabs button,.bnav button',root).forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.body.dataset.tab=t;
     try{sessionStorage.setItem('tab-'+L.id,t)}catch(e){}
     const body=$('#tab-body');const strip=$('#strip-host');
     if(RUN){RUN.detach()}
@@ -103,7 +117,7 @@ function renderLesson(L,tab){
     else if(t==='plc'){RUN.attach('plc',body,strip)}
     else if(t==='quiz')renderQuiz(L,body);
   };
-  $$('.ltabs button',root).forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  $$('.ltabs button,.bnav button',root).forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab);const tb=$('.ltabs',root);if(tb&&tb.getBoundingClientRect().top<0)window.scrollTo(0,root.querySelector('.lesson-head').offsetTop+root.querySelector('.lesson-head').offsetHeight-10)}));
   let t0=tab;try{t0=sessionStorage.getItem('tab-'+L.id)||tab}catch(e){}
   show(tabs.find(t=>t[0]===t0)?t0:'theory');
   window.scrollTo(0,0);
@@ -193,14 +207,14 @@ function createRuntime(L){
   function build(){
     stripEl.innerHTML=stripHTML();wireStrip();
     if(mode==='lab') el.innerHTML=labHTML(); else el.innerHTML=plcHTML();
-    wireBody();lastSig='';render(true);
+    wireBody();lastSig='';renderSteps();render(true);
   }
   function variantSeg(){if(!L.variants)return '';const ks=Object.keys(L.variants).filter(k=>k!=='default'&&k!=='note'&&k!=='title');const cur=L._variant||L.variants.default||ks[0];
     return `<div class="variant"><span>${L.variants.title||'نسخة البرنامج:'}</span><div class="seg" role="group">${ks.map(k=>`<button data-var="${k}" aria-pressed="${k===cur}">${L.variants[k].label}</button>`).join('')}</div>${L.variants.note?`<p class="sub">${L.variants.note}</p>`:''}${L.variants[cur].note?`<div class="callout err">${L.variants[cur].note}</div>`:''}</div>`}
   function stripHTML(){
     const ins=(L.inputs||[]).filter(i=>i.type!=='sensor'||i.manual);
     const outs=(L.io||[]).filter(r=>r.addr&&/^Q/.test(r.addr.replace(/\s+/g,'')));
-    return `<div class="strip"><div class="wrap-in">
+    return `<div class="strip console"><div class="con-head"><span>لوحة التشغيل</span>${L.steps&&L.steps.length?'<span class="task" id="taskNow"></span>':''}</div><div class="wrap-in">
       <div class="pbs">${ins.map(i=>{
         if(i.type==='push') return `<button class="pb ${i.color||'black'}" data-in="${i.id}" aria-label="${esc(i.label||i.id)}"><span class="cap">${i.id}</span><small>${i.label||''}</small></button>`;
         if(i.type==='fault') return `<button class="btn warn tg" data-tg="${i.id}" aria-pressed="false">${i.label||('فصل '+i.id)}</button>`;
@@ -222,19 +236,20 @@ function createRuntime(L){
   }
   function labHTML(){
     const p=L.plant;let h=variantSeg()+'<div class="grid">';
-    if(L.power) h+=`<div class="panel ${p?'c7':'c12'}"><h2>الدائرة الرئيسة (القدرة) ${L.powerRef?`<small>${L.powerRef}</small>`:''}</h2><p class="sub">الخط البرتقالي = عليه جهد. المتقطع المتحرك = يمر فيه تيار.</p><div class="svgbox" id="powerSvg"></div></div>`;
+    const tb=(ref)=>`<div class="tblock"><span>${ref||''}</span><span>${(B.COURSE&&B.COURSE.code)||'205 كهر'}</span><span>الدرس ${L.unit}.${L.order}</span></div>`;
+    if(L.power) h+=`<div class="panel sheet ${p?'c7':'c12'}"><h2>الدائرة الرئيسة (القدرة)</h2><p class="sub">الخط البرتقالي = عليه جهد. المتقطع المتحرك = يمر فيه تيار.</p><div class="svgbox" id="powerSvg"></div>${tb(L.powerRef)}</div>`;
     if(p){h+=`<div class="panel ${L.power?'c5':'c12'}"><h2>${p.title||'الجهاز'} <small id="plantLabel"></small></h2>`;
       if(p.view==='motor')h+=`<div class="motor-row"><div>${W.motor('rotor',150)}${p.nameplate?`<div class="nameplate">${p.nameplate}</div>`:''}</div><div id="plantExtra"></div></div>`;
       else h+=`<div id="plantView" class="plant-view"></div>`;
       if(p.chart)h+=`<h3 class="sm">${p.chart.label||''}</h3><div class="chart"><canvas id="plantChart"></canvas></div>${p.chart.legend?`<div class="legend">${p.chart.legend}</div>`:''}`;
       h+=`</div>`}
-    if(L.ctrl) h+=`<div class="panel c7"><h2>دائرة التحكم التقليدية ${L.ctrlRef?`<small>${L.ctrlRef}</small>`:''}</h2><p class="sub">تابع أين يصل الجهد مع كل ضغطة.</p><div class="svgbox ctrlbox" id="ctrlSvg"></div></div>`;
-    if(L.steps&&L.steps.length) h+=`<div class="panel ${L.ctrl?'c5':'c12'}"><h2>التجربة خطوة بخطوة</h2><p class="sub">استخدم الضواغط في الشريط العلوي. اضغط مطوّلاً أو انقر.</p><ol class="steps" id="steps"></ol></div>`;
+    if(L.ctrl) h+=`<div class="panel sheet c7"><h2>دائرة التحكم التقليدية</h2><p class="sub">تابع أين يصل الجهد مع كل ضغطة.</p><div class="svgbox ctrlbox" id="ctrlSvg"></div>${tb(L.ctrlRef)}</div>`;
+    if(L.steps&&L.steps.length) h+=`<div class="panel ${L.ctrl?'c5':'c12'}"><h2>التجربة خطوة بخطوة</h2><p class="sub">استخدم ضواغط لوحة التشغيل. اضغط مطوّلاً أو انقر.</p><ol class="steps" id="steps"></ol></div>`;
     if(!L.ctrl&&!L.power&&!p) h+=`<div class="panel c12"><h2>البرنامج يعمل الآن</h2><div id="miniLad"></div></div>`;
     return h+'</div>';
   }
   function plcHTML(){
-    return variantSeg()+`<div class="grid"><div class="panel c8"><div class="viewseg"><h2>البرنامج يعمل الآن <small>نفس ضواغط الشريط العلوي</small></h2>
+    return variantSeg()+`<div class="grid"><div class="panel c8"><div class="viewseg"><h2>البرنامج يعمل الآن <small>بنفس ضواغط لوحة التشغيل</small></h2>
       <div class="seg" role="group"><button data-view="lad" aria-pressed="${view==='lad'}">LAD</button><button data-view="fbd" aria-pressed="${view==='fbd'}">FBD</button><button data-view="stl" aria-pressed="${view==='stl'}">STL</button></div></div>
       <p class="sub" id="viewNote">${VIEWNOTE[view]}</p><div class="scan" id="scan"></div><div id="nets"></div></div>
       <div class="panel c4"><h2>جدول المداخل والمخارج</h2><div id="ioLive"></div>
@@ -247,7 +262,8 @@ function createRuntime(L){
     $$('[data-var]',el).forEach(b=>b.addEventListener('click',()=>R.setVariant(b.dataset.var)));
     const stEl=$('#steps',el);if(stEl){stEl.addEventListener('click',e=>{if(e.target.closest('[data-next]')){stepI++;renderSteps()}if(e.target.closest('[data-restart]')){stepI=0;renderSteps()}});renderSteps()}
   }
-  function renderSteps(){const sEl=$('#steps',el);if(!sEl)return;const S=L.steps;
+  function renderSteps(){const S=L.steps;const tn=stripEl&&$('#taskNow',stripEl);if(tn&&S){tn.innerHTML=stepI<S.length?`<b>مهمتك الآن (${stepI+1}/${S.length}):</b> ${S[stepI].t}`:'<b>أحسنت:</b> أنهيت التجربة'}
+    const sEl=el&&$('#steps',el);if(!sEl)return;
     sEl.innerHTML=S.map((s,i)=>`<li class="${i<stepI?'done':i===stepI?'cur':''}"><span class="k">${i<stepI?'✓':i+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${i===stepI?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (stepI>=S.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">انتقل إلى تبويب «برنامج الـ PLC» وكرر الخطوات لترى البرنامج نفسه وهو ينفذ.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'')}
   function render(force){
@@ -301,7 +317,7 @@ function renderQuiz(L,body){
 function route(){
   const h=(location.hash||'').replace('#','');
   const L=B.LESSONS.find(l=>l.id===h);
-  if(L){renderLesson(L)}else{stopRun();renderHome()}
+  if(L){renderLesson(L)}else{stopRun();document.body.classList.remove('in-lesson');delete document.body.dataset.tab;renderHome()}
 }
 B.start=function(){window.addEventListener('hashchange',route);route()};
 })(window);
