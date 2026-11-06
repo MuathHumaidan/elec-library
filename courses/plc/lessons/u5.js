@@ -121,14 +121,20 @@ B.lesson({
  ],
  lab:(el)=>{
   const st={T:22,Ta:25,set:40,closed:true,H:0,t:0};const hist=[];let ht=0;
-  el.innerHTML=`<div class="grid"><div class="panel c12"><h2>منظومة التحكم في حرارة غرفة <small>مخطط كتلي تفاعلي — توضيحي</small></h2>
+  el.innerHTML=`<div id="l1tp"></div><div class="grid"><div class="panel c12"><h2>منظومة التحكم في حرارة غرفة <small>مخطط كتلي تفاعلي — <span id="l1tpw">توضيحي</span></small></h2>
    <div class="viewseg" style="margin-top:8px"><div class="seg" role="group"><button data-lp="1" aria-pressed="true">حلقة مغلقة (مع الحساس)</button><button data-lp="0" aria-pressed="false">حلقة مفتوحة (بدون حساس)</button></div></div>
    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px"><label class="toggle">القيمة المطلوبة <input type="range" id="sv" min="20" max="70" step="1" value="40" style="width:180px;height:auto"> <b class="ltr" id="svv"></b></label>
    <label class="toggle">حرارة الجو المحيط <input type="range" id="ta" min="0" max="40" step="1" value="25" style="width:180px;height:auto"> <b class="ltr" id="tav"></b></label></div>
    <div class="svgbox" id="bd"></div></div>
-   <div class="panel c7"><h2>الحرارة مع الزمن <small>آخر 60 ثانية</small></h2><div class="chart"><canvas id="ch"></canvas></div><div class="legend"><span><i style="background:var(--blue)"></i>الحرارة الفعلية</span><span><i style="background:var(--muted)"></i>القيمة المطلوبة</span></div></div>
+   <div class="panel c7"><h2>الحرارة مع الزمن <small>آخر 60 ثانية</small></h2><div class="chart"><canvas id="ch"></canvas></div><div class="legend"><span><i style="background:var(--blue)"></i>الحرارة الفعلية</span><span><i style="background:var(--muted)"></i>القيمة المطلوبة</span></div><p class="sub" id="l1tpn" hidden></p></div>
    <div class="panel c5"><h2>التجربة خطوة بخطوة</h2><ol class="steps" id="stp"></ol></div></div>`;
   const $=s=>el.querySelector(s);
+  // قيم المدرب: نموذج الغرفة (أرقام توضيحية ليست من الكتاب). الافتراضي = النموذج السابق تماماً
+  let ymx=80,tks=[0,20,40,60,80];
+  const tpU=()=>{const G=TP.v.G;ymx=G<=60?80:Math.ceil((40+G)/20)*20;tks=[0,1,2,3,4].map(i=>ymx*i/4);$('#l1tpw').textContent=TP.trainer?'قيم المدرب':'توضيحي'};
+  const TP=B.params($('#l1tp'),'u5-l1',[
+   {k:'G',label:'أقصى ارتفاع لحرارة الغرفة فوق حرارة الجو عندما يعمل السخان بكامل قدرته',unit:'°C',value:60,min:5,max:500,step:1},
+   {k:'tau',label:'ثابت زمن الغرفة (كلما كبر تسخن الغرفة وتبرد أبطأ)',unit:'s',value:8,min:1,max:600,step:0.5}],tpU);tpU();
   el.querySelectorAll('[data-lp]').forEach(b=>b.onclick=()=>{st.closed=b.dataset.lp==='1';el.querySelectorAll('[data-lp]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
   $('#sv').oninput=e=>st.set=+e.target.value;$('#ta').oninput=e=>st.Ta=+e.target.value;
   const flags={};
@@ -152,13 +158,14 @@ B.lesson({
    s+=ar(380,235,cl?'حلقة مغلقة: الخرج يرجع إلى المقارن عبر الحساس.':'حلقة مفتوحة: لا رجوع للخرج، الحاكم لا يعرف الحرارة الفعلية.','m','middle',12);
    $('#bd').innerHTML=s+'</svg>';$('#svv').textContent=st.set+' °C';$('#tav').textContent=st.Ta+' °C'};
   let rd=0;
-  runLoop(el,dt=>{st.t+=dt;const tau=8;
+  runLoop(el,dt=>{st.t+=dt;const tau=TP.v.tau,G=TP.v.G;
    if(st.closed){const e=st.set/5-st.T/5;if(e>0.1)st.H=1;else if(e<-0.1)st.H=0;st.duty=st.H}
-   else{st.duty=clamp((st.set-25)/60,0,1);st.H=0}
-   const P=st.closed?st.H:st.duty;st.T+=dt*(60*P-(st.T-st.Ta))/tau;
+   else{st.duty=clamp((st.set-25)/G,0,1);st.H=0}
+   const P=st.closed?st.H:st.duty;st.T+=dt*(G*P-(st.T-st.Ta))/tau;
+   const tn=$('#l1tpn'),mx=st.Ta+G,lim=TP.trainer&&mx<st.set;if(tn){tn.hidden=!lim;if(lim)tn.innerHTML=`بقيم المدرب أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي أقل من القيمة المطلوبة، فلن تصل الحرارة إليها.`}
    ht+=dt;if(ht>0.1){ht=0;hist.push({t:st.t,v:st.T,sv:st.set});while(hist.length&&st.t-hist[0].t>60.3)hist.shift()}
    rd+=dt;if(rd>0.1){rd=0;draw()}
-   const c=$('#ch');if(c)W.chart(c,hist,{now:st.t,span:60,ymax:80,ticks:[0,20,40,60,80],unit:'°',series:[{key:'v',color:'--blue'},{key:'sv',color:'--muted'}]});chk()});
+   const c=$('#ch');if(c)W.chart(c,hist,{now:st.t,span:60,ymax:ymx,ticks:tks,unit:'°',series:[{key:'v',color:'--blue'},{key:'sv',color:'--muted'}]});chk()});
   draw();
  },
  quiz:[
@@ -239,44 +246,55 @@ const N7={title:'Network 7 : End Heating',ref:'ص 105',read:'يُلغى السخ
   stl:['O    I    0.0','O(','L    MD   200','L    MD   120','>R',')','R    Q    4.0','R    Q    4.1']};
 const NM={title:'Network 5a — حفظ أمر التشغيل M0.0 (إضافة في النسخة المصححة)',ref:'ليس في الكتاب',read:'S1 يثبّت العلامة M0.0 و S0 يلغيها، فيبقى «التسخين مسموحاً» بعد رفع الإصبع عن S1.',stl:['A    I    0.1','S    M    0.0','A    I    0.0','R    M    0.0']};
 
-function roomSVG(T,Ta,H){const lvl=clamp(T,0,100)/100;let s=`<svg viewBox="0 0 320 180" role="img" aria-label="الغرفة">`;
+function roomSVG(T,Ta,H,top){top=top||100;const lvl=clamp(T,0,top)/top;let s=`<svg viewBox="0 0 320 180" role="img" aria-label="الغرفة">`;
   s+=`<rect x="10" y="10" width="220" height="150" rx="6" class="sym" fill="${H?'var(--live-soft)':'var(--surface-2)'}"/>`+ar(120,32,'الغرفة','','middle',13);
   s+=`<path d="M30 140h12l6-12 6 24 6-24 6 24 6-24 6 24 6-12h12" fill="none" stroke="${H?'var(--stop)':'var(--wire)'}" stroke-width="${H?3.2:2}"/>`+S.t(72,170,'K1 heater','m');
   s+=S.w('M230 70H200','live')+`<circle cx="198" cy="70" r="4" fill="var(--stop)"/>`+S.t(196,60,'TC','m','end');
   s+=`<rect x="262" y="20" width="18" height="130" rx="9" class="sym" fill="var(--surface)"/><rect x="266" y="${(146-122*lvl).toFixed(1)}" width="10" height="${(122*lvl).toFixed(1)}" rx="5" fill="var(--stop)"/><circle cx="271" cy="158" r="12" fill="var(--stop)"/>`;
-  s+=S.t(300,30,'100','m','start')+S.t(300,148,'0','m','start')+S.t(120,92,T.toFixed(1)+' °C','',  'middle',22)+ar(120,118,'الجو المحيط '+Ta+'°','m','middle',11);
+  s+=S.t(300,30,String(top),'m','start')+S.t(300,148,'0','m','start')+S.t(120,92,T.toFixed(1)+' °C','',  'middle',22)+ar(120,118,'الجو المحيط '+Ta+'°','m','middle',11);
   return s+'</svg>'}
-function heatPlant(){return {
+// قيم المدرب لنموذج الغرفة (أرقام توضيحية ليست من الكتاب) — الافتراضي = النموذج السابق تماماً (60 و 10 s)
+const ROOM_DEFS=()=>[
+  {k:'G',label:'أقصى ارتفاع لحرارة الغرفة فوق حرارة الجو عندما يعمل السخان باستمرار',unit:'°C',value:60,min:5,max:500,step:1},
+  {k:'tau',label:'ثابت زمن الغرفة (كلما كبر تسخن الغرفة وتبرد أبطأ)',unit:'s',value:10,min:1,max:600,step:0.5}];
+const roomTop=G=>G<=60?100:Math.ceil((40+G)/25)*25;  // أعلى المحور: 100 بالقيم التوضيحية
+const roomNote=(TP,Ta,L120)=>{const mx=Ta+TP.v.G;return TP.trainer&&mx<=L120?`بقيم المدرب أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(TP.v.G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي لا تتجاوز حد الإيقاف (120٪)، فلن يفصل السخان وحده.`:''};
+function heatPlant(){let TP=null;const tpv=()=>TP?TP.v:{G:60,tau:10};
+ const tpU=el=>{const top=roomTop(TP.v.G),ch=this_.chart;ch.ymax=top;ch.ticks=[0,1,2,3,4].map(i=>top*i/4);
+   const pn=el.closest('.panel');if(pn){const lb=pn.querySelector('#plantLabel');if(lb&&el._p)lb.textContent=this_.label(el._p);const h=pn.querySelector('h3.sm');if(h)h.textContent=ch.label.replace('نموذج توضيحي',TP.trainer?'قيم المدرب':'نموذج توضيحي')}};
+ const this_={
   title:'الغرفة والسخان',
-  init:()=>({T:25,Ta:25,V:5,man:false,Tm:25,SV:50,L80:40,L120:60,H:0,prevH:0,offs:0,reon:0,v:chain(5,25)}),
-  step(dt,st,p){const P=st.plc;patchP(P);const H=st.Q('Q4.0');const tau=10;
-    if(p.man)p.T=p.Tm;else p.T+=dt*(60*H-(p.T-p.Ta))/tau;
+  init:()=>{if(!TP)TP=B.params(document.createElement('div'),'u5-l3',ROOM_DEFS());const top=roomTop(TP.v.G);this_.chart.ymax=top;this_.chart.ticks=[0,1,2,3,4].map(i=>top*i/4);return {T:25,Ta:25,V:5,man:false,Tm:25,SV:50,L80:40,L120:60,H:0,prevH:0,offs:0,reon:0,v:chain(5,25)}},
+  step(dt,st,p){const P=st.plc;patchP(P);const H=st.Q('Q4.0');const tau=tpv().tau;
+    if(p.man)p.T=p.Tm;else p.T+=dt*(tpv().G*H-(p.T-p.Ta))/tau;
     const c=chain(p.V,p.T);p.v=c;
     Object.assign(P.words,{PIW288:c.piw288,LD0:c.ld0,MD0:r2(c.md0),PIW290:c.piw290,LD10:c.ld10,MD10:r2(c.md10b),MD100:r2(c.md100),MD200:r2(c.md200),MD80:r2(c.md80),MD120:r2(c.md120)});
     p.SV=c.md100;p.L80=c.md80;p.L120=c.md120;
     if(p.prevH&&!H){p.offs++;p.wasOff=1}if(!p.prevH&&H&&p.wasOff)p.reon++;p.prevH=H;p.H=H},
   render(el,st,p){el._p=p;if(!el.querySelector('.u5room')){
-    el.innerHTML=`<div class="u5room svgbox" style="max-width:340px;margin-inline:auto"></div>
+    el.innerHTML=`<div class="u5tp"></div><div class="u5room svgbox" style="max-width:340px;margin-inline:auto"></div>
      <label class="toggle">المقاومة R (الحرارة المطلوبة) <input type="range" data-k="V" min="0" max="10" step="0.1" style="width:150px;height:auto"> <b class="ltr" data-o="V"></b></label>
      <label class="toggle">حرارة الجو المحيط <input type="range" data-k="Ta" min="0" max="40" step="1" style="width:150px;height:auto"> <b class="ltr" data-o="Ta"></b></label>
      <label class="toggle"><input type="checkbox" data-k="man"> تحريك الحرارة يدوياً (بدل نموذج الغرفة)</label>
      <label class="toggle" data-man>الحرارة اليدوية <input type="range" data-k="Tm" min="0" max="100" step="0.5" style="width:150px;height:auto"> <b class="ltr" data-o="Tm"></b></label>
-     <div class="facts u5vals"></div>
+     <div class="facts u5vals"></div><p class="sub u5tpn" hidden></p>
      <p class="sub">القيم تحسبها الشبكات 1–5 (عمليات الأعداد الحقيقية) قبل الشبكتين 6 و 7. انظر الشرح لرسمها.</p>`;
     el.querySelectorAll('[data-k]').forEach(i=>{const k=i.dataset.k;const q=el._p;if(i.type==='checkbox')i.checked=!!q[k];else i.value=q[k];
-      i.addEventListener('input',()=>{const q=el._p;if(i.type==='checkbox'){q[k]=i.checked;if(i.checked)q.Tm=Math.round(q.T*2)/2;const m=el.querySelector('[data-k="Tm"]');m.value=q.Tm}else q[k]=+i.value})})}
+      i.addEventListener('input',()=>{const q=el._p;if(i.type==='checkbox'){q[k]=i.checked;if(i.checked)q.Tm=Math.round(q.T*2)/2;const m=el.querySelector('[data-k="Tm"]');m.value=q.Tm}else q[k]=+i.value})});
+    TP=B.params(el.querySelector('.u5tp'),'u5-l3',ROOM_DEFS(),()=>tpU(el));tpU(el)}
     this.frame(el,st,p)},
   frame(el,st,p){if(!el||!el.querySelector('.u5room'))return;el._p=p;const now=performance.now();if(el._t&&now-el._t<90)return;el._t=now;
-    el.querySelector('.u5room').innerHTML=roomSVG(p.T,p.Ta,st.Q('Q4.0'));
+    el.querySelector('.u5room').innerHTML=roomSVG(p.T,p.Ta,st.Q('Q4.0'),roomTop(tpv().G));
+    const tn=el.querySelector('.u5tpn'),nt=p.man?'':roomNote(TP,p.Ta,p.L120);if(tn){tn.hidden=!nt;if(nt)tn.innerHTML=nt}
     const set=(k,t)=>{const o=el.querySelector(`[data-o="${k}"]`);if(o)o.textContent=t};set('V',p.V.toFixed(1)+' v = '+p.SV.toFixed(0)+' °C');set('Ta',p.Ta+' °C');set('Tm',p.Tm+' °C');
     el.querySelector('[data-man]').style.opacity=p.man?1:.45;
     const c=p.v;el.querySelector('.u5vals').innerHTML=[['PIW288',c.piw288],['MD100 مطلوبة',fnum(c.md100,1)],['PIW290',c.piw290],['MD200 فعلية',fnum(c.md200,1)],['MD80 (80٪)',fnum(c.md80,1)],['MD120 (120٪)',fnum(c.md120,1)]].map(([a,b])=>`<div class="fact"><span>${a}</span><b>${b}</b></div>`).join('')},
   sig:p=>p.man+'|'+p.H,
-  label:p=>p.man?'حرارة يدوية':'نموذج الغرفة (توضيحي)',
+  label:p=>p.man?'حرارة يدوية':TP&&TP.trainer?'نموذج الغرفة (قيم المدرب)':'نموذج الغرفة (توضيحي)',
   readouts:[{l:'الحرارة الفعلية',v:p=>p.T.toFixed(1)+' °C'},{l:'المطلوبة',v:p=>p.SV.toFixed(0)+' °C'},{l:'الحدان',v:p=>p.L80.toFixed(0)+' / '+p.L120.toFixed(0)+' °C'},{l:'السخان',chip:(p,s)=>[s.Q('Q4.0')?'يعمل':'متوقف',s.Q('Q4.0')?'run':'']}],
   chart:{key:'T',ymax:100,ticks:[0,25,50,75,100],unit:'°',span:60,label:'درجة الحرارة مع الزمن (آخر 60 ثانية) — نموذج توضيحي',series:[{key:'SV',color:'--muted'},{key:'L80',color:'--on'},{key:'L120',color:'--stop'}],
    legend:'<span><i style="background:var(--blue)"></i>الحرارة الفعلية MD200</span><span><i style="background:var(--muted)"></i>المطلوبة MD100</span><span><i style="background:var(--on)"></i>80٪ (MD80): حد التشغيل</span><span><i style="background:var(--stop)"></i>120٪ (MD120): حد الإيقاف</span>'}
- }}
+ };return this_}
 
 B.lesson({
  id:'u5-l3',unit:5,order:3,pages:'103–105',
@@ -380,7 +398,7 @@ B.lesson({
   const S={src:'pot',Va:2,Vs:5,Ta:25,T:25,var:'book',step:false,pc:0,cnt:0,t:0,cyc:0,prevQ:0,wasOff:0,s1:0,s0:0,flags:{}};
   let mem={bits:{},words:{},a1:0,a2:0,t1:'',t2:'',rlo:false,fc:true},trace=[];const hist=[];let ht=0,rt=0;
   const prog=()=>S.var==='fixed'?STL_FIX:STL_BOOK;
-  el.innerHTML=`<div class="variant"><span>نسخة البرنامج:</span><div class="seg" role="group"><button data-var="book" aria-pressed="true">كما في الكتاب</button><button data-var="fixed" aria-pressed="false">المصحح</button></div><div class="callout err" id="vnote"></div></div>
+  el.innerHTML=`<div id="l4tp"></div><div class="variant"><span>نسخة البرنامج:</span><div class="seg" role="group"><button data-var="book" aria-pressed="true">كما في الكتاب</button><button data-var="fixed" aria-pressed="false">المصحح</button></div><div class="callout err" id="vnote"></div></div>
    <div class="grid"><div class="panel c7"><h2>المداخل والمخارج</h2>
     <div class="seg" role="group" style="margin-top:8px"><button data-src="pot" aria-pressed="true">الحرارة الفعلية من مقاومة (ملاحظة الكتاب)</button><button data-src="room" aria-pressed="false">غرفة + محوّل 0–10 v (توضيحي)</button></div>
     <label class="toggle" data-pot>جهد الحرارة الفعلية (PIW 290) <input type="range" id="va" min="0" max="10" step="0.1" value="2" style="width:150px;height:auto"> <b class="ltr" id="vav"></b></label>
@@ -393,6 +411,8 @@ B.lesson({
    <div class="panel c12"><div class="viewseg"><h2>تنفيذ STL <small>ص 106</small></h2><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" role="group"><button data-mode="run" aria-pressed="true">تشغيل مستمر</button><button data-mode="step" aria-pressed="false">خطوة بخطوة</button></div><button class="btn primary" id="nx">نفّذ السطر التالي</button></div></div>
     <p class="sub">في الوضع خطوة بخطوة يتوقف الزمن، وكل ضغطة تنفذ سطراً واحداً وتظهر محتوى ACCU1 و ACCU2 و RLO بعده. الأسطر المظللة أضيفت في النسخة المصححة.</p><div class="tablebox" id="stl"></div></div></div>`;
   const $=s=>el.querySelector(s);
+  // قيم المدرب: نموذج الغرفة في وضع «غرفة + محوّل» (أرقام توضيحية ليست من الكتاب)
+  const TP=B.params($('#l4tp'),'u5-l4',ROOM_DEFS().map(d=>Object.assign(d,{label:d.label+' — وضع «غرفة + محوّل»'})));
   const reset=()=>{mem={bits:{},words:{},a1:0,a2:0,t1:'',t2:'',rlo:false,fc:true};trace=[];S.pc=0;S.cyc=0;S.wasOff=0;S.prevQ=0};
   const segs=(attr,val)=>el.querySelectorAll(`[${attr}]`).forEach(b=>b.setAttribute('aria-pressed',b.getAttribute(attr)===val));
   el.querySelectorAll('[data-var]').forEach(b=>b.onclick=()=>{S.var=b.dataset.var;segs('data-var',S.var);reset();S.T=S.Ta;hdr()});
@@ -420,13 +440,13 @@ B.lesson({
    {t:'إيقاف',x:'اضغط S0: تُلغى M0.0 والسخان والمصباح.',done:()=>S.var==='fixed'&&S.flags.s0seen&&!mem.bits['M0.0']&&!mem.bits['Q4.0']}]);
   hdr();
   runLoop(el,dt=>{if(S.s0)S.flags.s0seen=1;
-   if(!S.step){S.t+=dt;const H=mem.bits['Q4.0']?1:0;if(S.src==='room')S.T+=dt*(60*H-(S.T-S.Ta))/10;scan();
+   if(!S.step){S.t+=dt;const H=mem.bits['Q4.0']?1:0;if(S.src==='room')S.T+=dt*(TP.v.G*H-(S.T-S.Ta))/TP.v.tau;scan();
      const q=mem.bits['Q4.0']?1:0;if(S.prevQ&&!q)S.wasOff=1;if(!S.prevQ&&q&&S.wasOff)S.cyc++;S.prevQ=q;
      ht+=dt;if(ht>0.1){ht=0;hist.push({t:S.t,v:mem.words.MD200||0,a:mem.words.MD80||0,b:mem.words.MD120||0});while(hist.length&&S.t-hist[0].t>60.3)hist.shift()}
      rt+=dt;if(rt>0.25){rt=0;drawStl()}}
    $('#vav').textContent=S.Va.toFixed(1)+' v';$('#vsv').textContent=S.Vs.toFixed(1)+' v';$('#tav').textContent=S.Ta+' °C';
    $('#lq0').classList.toggle('on',!!mem.bits['Q4.0']);$('#lq1').classList.toggle('on',!!mem.bits['Q4.1']);
-   const w=mem.words;$('#vals').innerHTML=[['PIW290',w.PIW290||0],['PIW288',w.PIW288||0],['MD200 فعلية',fnum(w.MD200||0,1)+' °C'],['MD100 مطلوبة',fnum(w.MD100||0,1)+' °C'],['MD80',fnum(w.MD80||0,1)],['MD120',fnum(w.MD120||0,1)]].map(([a,b])=>`<div class="fact"><span>${a}</span><b>${b}</b></div>`).join('')+(S.src==='room'?`<div class="fact"><span>حرارة الغرفة</span><b>${S.T.toFixed(1)} °C</b></div>`:'');
+   const w=mem.words;$('#vals').innerHTML=[['PIW290',w.PIW290||0],['PIW288',w.PIW288||0],['MD200 فعلية',fnum(w.MD200||0,1)+' °C'],['MD100 مطلوبة',fnum(w.MD100||0,1)+' °C'],['MD80',fnum(w.MD80||0,1)],['MD120',fnum(w.MD120||0,1)]].map(([a,b])=>`<div class="fact"><span>${a}</span><b>${b}</b></div>`).join('')+(S.src==='room'?`<div class="fact"><span>حرارة الغرفة</span><b>${S.T.toFixed(1)} °C</b></div>`+(S.T>100?'<p class="sub" style="flex-basis:100%">المحوّل يعطي 10 v عند 100°C ولا يزيد، لذلك تبقى MD200 عند 100 مع أن الغرفة أسخن.</p>':'')+(roomNote(TP,S.Ta,mem.words.MD120||0)?`<p class="sub" style="flex-basis:100%">${roomNote(TP,S.Ta,mem.words.MD120||0)}</p>`:''):'');
    const c=$('#ch');if(c)W.chart(c,hist,{now:S.t,span:60,ymax:100,ticks:[0,25,50,75,100],unit:'°',series:[{key:'v',color:'--blue'},{key:'a',color:'--on'},{key:'b',color:'--stop'}]});chk()});
  },
  quiz:[

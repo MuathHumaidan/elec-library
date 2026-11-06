@@ -14,6 +14,45 @@ const nTarget=sp=>NS*(1-Rtot(sp));
 const STAGE_TXT=['لا شيء (الدائر مقصور)','R1','R1 + R2','R1 + R2 + R3'];
 const STAGE_SHORT=['قصر كامل','R1','R1+R2','R1+R2+R3'];
 
+/* ===== قيم المدرب للمختبرات التي يشغّلها المحرك المشترك (engine labs) — نفس المساعد في u3.js =====
+   الشريط يُحقن أعلى المختبر (قبل .grid) عند أول إطار، والقيم تُقرأ من التخزين منذ init حتى يعمل تبويب البرنامج أيضاً. */
+function engineTP(p,id,defs,opt){opt=opt||{};
+  const D={id,defs,v:Object.fromEntries(defs.map(d=>[d.k,d.value])),trainer:false,ver:0,P:null,msg:[],txt:opt.txt||{}};
+  const pull=()=>{D.v=D.P.v;D.trainer=D.P.trainer;D.msg=[];opt.apply&&opt.apply(D);D.P.warn&&D.P.warn(D.trainer&&D.msg.length?D.msg.join('<br>'):'')};
+  const dom=body=>{body.querySelectorAll('[data-tpv]').forEach(e=>{const f=D.txt[e.dataset.tpv];if(f)e.textContent=f()});opt.dom&&opt.dom(body,D)};
+  opt.apply&&opt.apply(D);
+  const in0=p.init;p.init=()=>{if(!D.P){D.P=B.params(document.createElement('div'),id,defs);pull()}return in0()};
+  const fr0=p.frame;p.frame=(el,s,pl,BB)=>{fr0&&fr0(el,s,pl,BB);const body=el&&el.closest('#tab-body');
+    if(body&&!body.querySelector('[data-tphost]')){const g=body.querySelector('.grid');if(!g)return;const h=document.createElement('div');h.setAttribute('data-tphost',id);g.parentNode.insertBefore(h,g);
+      D.P=B.params(h,id,defs,()=>{pull();D.ver++;dom(body)});pull();D.ver++;dom(body)}};
+  const sg0=p.sig;p.sig=pl=>(sg0?sg0(pl):'')+'|tp'+D.ver;
+  D.span=k=>`<span data-tpv="${k}">${D.txt[k]()}</span>`;
+  p.tp=D;return D;
+}
+const niceAxis=(top,base,st0)=>{const steps=[st0,20,50,100,200,500,1000,2000];let st=steps.find(s=>s>=st0&&Math.ceil(top/s)<=7)||2000;const y=Math.max(base,Math.ceil(top/st)*st);st=steps.find(s=>s>=st0&&y/s<=7&&y%s===0)||st;const t=[];for(let v=0;v<=y+1e-9;v+=st)t.push(v);return {ymax:y,ticks:t}};
+/* model in per-unit: M={ns, rt:[Rtot stage 0..3], xr}. Default = the constants above (unchanged behaviour). */
+const MDEF={ns:NS,rt:[0,1,2,3].map(Rtot),xr:XR};
+const IpuM=(n,Rt,M)=>{const s=clamp(1-n/M.ns,0.002,1),a=Rt/s;return 1/Math.sqrt(a*a+M.xr*M.xr)};
+const rotorDefs=()=>[
+  {k:'Ist',label:'تيار البدء المباشر بدون مقاومات (K2 مغلق)',unit:'A',value:580,min:150,max:3000,step:10,hint:'التيار الاسمي 100 A من مثال الكتاب ثابت'},
+  {k:'n3',label:'السرعة التي يستقر عندها مع R1 + R2 + R3',unit:'rpm',value:900,min:50,max:3500,step:0.5,hint:'أقل من السرعة مع R1 + R2'},
+  {k:'n2',label:'السرعة التي يستقر عندها مع R1 + R2',unit:'rpm',value:1150.5,min:50,max:3500,step:0.5,hint:'أقل من السرعة مع R1'},
+  {k:'n1',label:'السرعة التي يستقر عندها مع R1 فقط',unit:'rpm',value:1330.5,min:50,max:3500,step:0.5,hint:'أقل من السرعة الاسمية'},
+  {k:'n0',label:'السرعة الاسمية (العضو الدائر مقصور)',unit:'rpm',value:1455,min:50,max:3590,step:1,hint:'أقل من سرعة المجال الدوار'},
+  {k:'ns',label:'سرعة المجال الدوار (السرعة التزامنية)',unit:'rpm',value:1500,min:300,max:3600,step:1},
+  {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.1,min:0.1,max:20,step:0.1}];
+/* ترتيب السرعات: R1+R2+R3 < R1+R2 < R1 < الاسمية < المجال الدوار. أي تصحيح يُكتب في msg ليظهر للمدرب */
+function rotorModel(v,msg){const ns=v.ns,f=x=>String(B.round(x,1));
+  let n0=v.n0;
+  if(n0>ns-1){n0=ns-1;msg.push(`السرعة الاسمية يجب أن تكون أقل من سرعة المجال الدوار (<span class="ltr">${f(ns)} rpm</span>)، فاستعملنا <span class="ltr">${f(n0)} rpm</span>.`)}
+  else if(n0<ns*0.05){n0=Math.ceil(ns*0.05);msg.push(`السرعة الاسمية صغيرة جداً مقارنة بسرعة المجال الدوار (<span class="ltr">${f(ns)} rpm</span>)، فاستعملنا <span class="ltr">${f(n0)} rpm</span>.`)}
+  const ns_=[n0];const nm=['R1 فقط','R1 + R2','R1 + R2 + R3'],up=['السرعة الاسمية','السرعة مع R1 فقط','السرعة مع R1 + R2'];
+  [v.n1,v.n2,v.n3].forEach((n,j)=>{const lim=ns_[j];if(n>lim-1){n=lim-1;msg.push(`السرعة مع ${nm[j]} يجب أن تكون أقل من ${up[j]} (<span class="ltr">${f(lim)} rpm</span>)، فاستعملنا <span class="ltr">${f(n)} rpm</span>.`)}ns_.push(n)});
+  const rt=ns_.map(n=>Math.min(0.995,Math.max(1e-4,1-n/ns)));
+  let Ist=v.Ist;const Imax=INOM/Math.sqrt(rt[0]*rt[0]+1e-4);
+  if(Ist>Imax){Ist=Math.floor(Imax);msg.push(`تيار البدء المباشر لا يمكن أن يزيد على <span class="ltr">${f(Ist)} A</span> مع هذه السرعة الاسمية وسرعة المجال الدوار، فاستعملنا <span class="ltr">${f(Ist)} A</span>.`)}
+  const q=INOM/Ist;const xr=Math.sqrt(Math.max(q*q-rt[0]*rt[0],1e-4));return {ns,rt,xr}}
+
 // الشكل (1-4): K1 + F4 to the stator; rotor lines through R1 → R2 → R3 (star at the end); K2 / K3 / K4 short the rotor before R1 / after R1 / after R2
 function powerRotor(K1,K2,K3,K4){
   const sp=stageOf(K2,K3,K4),run=!!K1;
@@ -48,12 +87,14 @@ function powerRotor(K1,K2,K3,K4){
 }
 
 // motor plant (rotor current & speed) — numbers illustrative
-function rotorPlant(get,o){o=o||{};
-  const p=B.motorPlant(st=>{const k=get(st);if(!k.K1)return null;const sp=stageOf(k.K2,k.K3,k.K4),Rt=Rtot(sp);
-    return {target:nTarget(sp),tau:1.1,I:n=>INOM*Ipu(n,Rt),label:sp===0?'تشغيل كامل':'في الدائرة: '+STAGE_SHORT[sp],mode:sp===0?'run':'slow'}},
-    {ymax:600,ticks:[0,100,200,300,400,500,600],refs:[{v:579,color:'--stop'},{v:100,color:'--muted'}],nameplate:'3~ SLIP-RING MOTOR<br>380 v · 100 A<br>1455 rpm · 50 Hz'});
-  p.chart.span=24;p.chart.label='تيار الخط مع الزمن (آخر 24 ثانية) — أرقام توضيحية';
-  p.chart.legend='<span><i style="background:var(--blue)"></i>تيار المحرك</span><span><i style="background:var(--stop)"></i>لو بدأ مباشرة بدون مقاومات (≈ 580 A)</span><span><i style="background:var(--muted)"></i>التيار الاسمي 100 A (مثال الكتاب)</span>';
+function rotorPlant(get,o){o=o||{};let M=MDEF,tau=1.1;
+  const p=B.motorPlant(st=>{const k=get(st);if(!k.K1)return null;const sp=stageOf(k.K2,k.K3,k.K4),Rt=M.rt[sp];
+    return {target:M.ns*(1-Rt),tau,I:n=>INOM*IpuM(n,Rt,M),label:sp===0?'تشغيل كامل':'في الدائرة: '+STAGE_SHORT[sp],mode:sp===0?'run':'slow'}},
+    {ymax:600,ticks:[0,100,200,300,400,500,600],refs:[{v:579,color:'--stop'},{v:100,color:'--muted'}],nameplate:''});
+  p.chart.span=24;
+  const plate=()=>`3~ SLIP-RING MOTOR<br>380 v · 100 A<br>${Math.round(M.ns*(1-M.rt[0]))} rpm · 50 Hz`;
+  const lbl=()=>'تيار الخط مع الزمن (آخر 24 ثانية) — '+(D.trainer?'من قيم المدرب':'أرقام توضيحية');
+  const legend=()=>`<span><i style="background:var(--blue)"></i>تيار المحرك</span><span><i style="background:var(--stop)"></i>لو بدأ مباشرة بدون مقاومات (≈ ${D.txt.Ist()} A)</span><span><i style="background:var(--muted)"></i>التيار الاسمي 100 A (مثال الكتاب)</span>`;
   const st0=p.step;p.step=(dt,st,pl)=>{st0(dt,st,pl);pl.peak=Math.max(pl.peak||0,pl.I);const k=get(st);pl.sp=stageOf(k.K2,k.K3,k.K4);pl.K1=!!k.K1;if(!k.K1&&pl.n<5)pl.peak=0};
   const in0=p.init;p.init=()=>Object.assign(in0(),{peak:0,sp:3,K1:false});
   p.readouts=[{l:'المقاومات في الدائرة',chip:pl=>[pl.K1?STAGE_SHORT[pl.sp]:'متوقف',pl.K1?(pl.sp?'slow':'run'):'']},{l:'السرعة',v:pl=>Math.round(Math.abs(pl.n))+' rpm'},{l:'تيار الخط',v:pl=>Math.round(pl.I)+' A'}];
@@ -65,6 +106,17 @@ function rotorPlant(get,o){o=o||{};
     el.innerHTML=h};
   p.sig=pl=>pl.mode+'|'+pl.sp+'|'+pl.K1;
   p.label=pl=>pl.K1?(pl.sp===0?'تشغيل طبيعي':'بدء على مراحل'):'متوقف';
+  const D=engineTP(p,o.id,rotorDefs(),{
+    txt:{Ist:()=>String(Math.round(INOM*IpuM(0,M.rt[0],M)/10)*10),I3:()=>String(Math.round(INOM*IpuM(0,M.rt[3],M)/10)*10),n3:()=>String(Math.round(M.ns*(1-M.rt[3]))),n0:()=>String(Math.round(M.ns*(1-M.rt[0])))},
+    apply:D=>{M=D.trainer?rotorModel(D.v,D.msg):MDEF;tau=D.trainer?D.v.tau:1.1;
+      const I0=INOM*IpuM(0,M.rt[0],M);p.chart.refs[0].v=D.trainer?I0:579;
+      const ax=D.trainer?niceAxis(I0*1.04,600,100):{ymax:600,ticks:[0,100,200,300,400,500,600]};p.chart.ymax=ax.ymax;p.chart.ticks=ax.ticks},
+    dom:(body)=>{const np=body.querySelector('.nameplate');if(np)np.innerHTML=plate();const lg=body.querySelector('.legend');if(lg)lg.innerHTML=legend();
+      const c=body.querySelector('#plantChart');const h=c&&c.parentNode.previousElementSibling;if(h&&h.matches('h3.sm'))h.textContent=lbl()}});
+  D.M=()=>M;
+  Object.defineProperty(p,'nameplate',{get:plate,enumerable:true,configurable:true});
+  Object.defineProperty(p.chart,'label',{get:lbl,enumerable:true,configurable:true});
+  Object.defineProperty(p.chart,'legend',{get:legend,enumerable:true,configurable:true});
   return p;
 }
 const getK=st=>({K1:st.Q('Q4.1'),K2:st.Q('Q4.2'),K3:st.Q('Q4.3'),K4:st.Q('Q4.4')});
@@ -144,6 +196,9 @@ const QUIZ_COMMON={
 };
 
 /* =================== Lesson 4.1 =================== */
+const P41=rotorPlant(getK,{id:'u4-l1'});
+const n41=sp=>{const M=P41.tp.M();return P41.tp.trainer?M.ns*(1-M.rt[sp]):[1455,0,0,900][sp]};
+const i41=()=>{const M=P41.tp.M();return P41.tp.trainer?INOM*IpuM(0,M.rt[0],M):579};
 B.lesson({
  id:'u4-l1',unit:4,order:1,pages:'85–88',
  title:'لماذا مقاومات البدء؟ والدائرة الرئيسة للمحرك ذي العضو الدائر الملفوف',
@@ -182,15 +237,15 @@ B.lesson({
   {id:'K2',addr:'Q4.2',type:'toggle',label:'غلق K2 (قصر كامل)'}
  ],
  power:st=>powerRotor(st.Q('Q4.1'),st.Q('Q4.2'),st.Q('Q4.3'),st.Q('Q4.4')),powerRef:'الشكل (1-4) ص 88',
- plant:rotorPlant(getK),
+ plant:P41,
  steps:[
   {t:'الوضع الابتدائي',x:'في هذا المختبر تغلق المتممات بيدك (بدون دائرة تحكم) لتفهم الدائرة الرئيسة. كل المتممات مفتوحة والمحرك متوقف.'},
-  {t:'ابدأ على كل المقاومات',x:'اضغط مفتاح K1 فقط. يصل الجهد إلى العضو الثابت، والتيار في العضو الدائر يمر في R1 و R2 و R3. لاحظ أن تيار البدء نحو 230 A بدل 580 A.',done:s=>s.Q('Q4.1')&&!s.Q('Q4.2')&&!s.Q('Q4.3')&&!s.Q('Q4.4')&&s.plant.n>200},
-  {t:'انتظر استقرار السرعة',x:'السرعة تستقر قرب 900 rpm لأن المقاومة الكبيرة تقلل العزم عند السرعات العالية.',done:s=>s.Q('Q4.1')&&s.plant.n>850},
+  {t:'ابدأ على كل المقاومات',get x(){return `اضغط مفتاح K1 فقط. يصل الجهد إلى العضو الثابت، والتيار في العضو الدائر يمر في R1 و R2 و R3. لاحظ أن تيار البدء نحو ${P41.tp.span('I3')} A بدل ${P41.tp.span('Ist')} A.`},done:s=>s.Q('Q4.1')&&!s.Q('Q4.2')&&!s.Q('Q4.3')&&!s.Q('Q4.4')&&s.plant.n>n41(3)*200/900},
+  {t:'انتظر استقرار السرعة',get x(){return `السرعة تستقر قرب ${P41.tp.span('n3')} rpm لأن المقاومة الكبيرة تقلل العزم عند السرعات العالية.`},done:s=>s.Q('Q4.1')&&s.plant.n>n41(3)*850/900},
   {t:'أخرج R3',x:'اغلق K4. التيار يقصر عند K4 فلا يمر في R3. شاهد قفزة التيار الصغيرة ثم ارتفاع السرعة.',done:s=>s.Q('Q4.1')&&s.Q('Q4.4')},
   {t:'أخرج R2',x:'اغلق K3. الآن تبقى R1 فقط. (في التشغيل الحقيقي يفصل K4 هنا، لكن فصله أو بقاؤه لا يغير شيئاً لأن K3 قبله.)',done:s=>s.Q('Q4.1')&&s.Q('Q4.3')},
-  {t:'قصر العضو الدائر',x:'اغلق K2. كل المقاومات خارج الدائرة والمحرك يعمل بشكل طبيعي قرب 1455 rpm وتياره نحو 100 A.',done:s=>s.Q('Q4.1')&&s.Q('Q4.2')&&s.plant.n>1400},
-  {t:'قارن بالبدء المباشر',x:'افتح K1 وانتظر توقف المحرك، ثم مع بقاء K2 مغلقاً اغلق K1 من جديد. هذا بدء بدون مقاومات: التيار يقفز إلى نحو 580 A (مثال الكتاب 400–600 A).',done:s=>s.Q('Q4.1')&&s.Q('Q4.2')&&s.plant.I>450},
+  {t:'قصر العضو الدائر',get x(){return `اغلق K2. كل المقاومات خارج الدائرة والمحرك يعمل بشكل طبيعي قرب ${P41.tp.span('n0')} rpm وتياره نحو 100 A.`},done:s=>s.Q('Q4.1')&&s.Q('Q4.2')&&s.plant.n>n41(0)*1400/1455},
+  {t:'قارن بالبدء المباشر',get x(){return `افتح K1 وانتظر توقف المحرك، ثم مع بقاء K2 مغلقاً اغلق K1 من جديد. هذا بدء بدون مقاومات: التيار يقفز إلى نحو ${P41.tp.span('Ist')} A (مثال الكتاب 400–600 A).`},done:s=>s.Q('Q4.1')&&s.Q('Q4.2')&&s.plant.I>i41()*450/579},
   {t:'أوقف المحرك',x:'افتح K1. ينقطع الجهد عن العضو الثابت ويتوقف المحرك تدريجياً.',done:s=>!s.Q('Q4.1')&&s.plant.n<30}
  ],
  quiz:[
@@ -232,7 +287,7 @@ B.lesson({
  variants:VAR4('fixed'),
  power:st=>powerRotor(st.Q('Q4.1'),st.Q('Q4.2'),st.Q('Q4.3'),st.Q('Q4.4')),powerRef:'الشكل (1-4) ص 88',
  ctrl:CTRL4,ctrlMap:MAP4,ctrlRef:'الشكل (2-4) ص 89',
- plant:rotorPlant(getK,{timers:true}),
+ plant:rotorPlant(getK,{timers:true,id:'u4-l2'}),
  plcNote:'المختبر في هذا الدرس يعمل افتراضياً بالنسخة <b>المصححة</b> من برنامج الكتاب، لأنها تتصرف مثل الدائرة السلكية تماماً. نسخة الكتاب الحرفية وخطؤها تُشرح في الدرس 4.3. الضاغط S0 والقاطع F4 موصولان تلامساً مغلقاً: يصل للـ PLC 1 في الوضع العادي و 0 عند الضغط أو الفصل.',
  steps:[
   {t:'الوضع الابتدائي',x:'المحرك متوقف. في دائرة التحكم الجهد يصل حتى ضاغط S1 فقط، وفي الدائرة الرئيسة حتى مداخل K1.'},
@@ -280,7 +335,7 @@ B.lesson({
  io:IO4,inputs:IN4,
  variants:VAR4('book'),
  power:st=>powerRotor(st.Q('Q4.1'),st.Q('Q4.2'),st.Q('Q4.3'),st.Q('Q4.4')),powerRef:'الشكل (1-4) ص 88',
- plant:rotorPlant(getK,{timers:true}),
+ plant:rotorPlant(getK,{timers:true,id:'u4-l3'}),
  plcNote:'S0 (I0.1) و F4 (I0.0) موصولان تلامساً مغلقاً: يصل 1 في الوضع العادي و 0 عند الضغط. لذلك تظهر قيمتهما 1 في الجدول والمحرك متوقف.',
  steps:[
   {t:'نسخة الكتاب أولاً',x:'تأكد أن «نسخة البرنامج» على «كما في الكتاب». لاحظ في جدول المداخل أن I0.0 و I0.1 قيمتهما 1 (NC).'},
@@ -329,7 +384,7 @@ B.lesson({
  io:IO4,inputs:IN4,
  variants:VAR4('book'),
  power:st=>powerRotor(st.Q('Q4.1'),st.Q('Q4.2'),st.Q('Q4.3'),st.Q('Q4.4')),powerRef:'الشكل (1-4) ص 88',
- plant:rotorPlant(getK,{timers:true}),
+ plant:rotorPlant(getK,{timers:true,id:'u4-l4'}),
  plcNote:'اختر عرض STL وفعّل «تشغيل المسح ببطء»: في نسخة الكتاب ستجد في Network 3 أن RLO عند السطر <span class="ltr">R T 4</span> = 1 أثناء التشغيل.',
  steps:[
   {t:'جهّز العرض',x:'افتح تبويب «برنامج الـ PLC» في نافذة أخرى أو تنقّل بين التبويبين. اختر STL. الأزرار نفسها في الشريط العلوي.'},
