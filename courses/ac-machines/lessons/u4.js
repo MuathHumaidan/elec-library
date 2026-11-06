@@ -447,20 +447,27 @@ B.lesson({
 
 /* =============================== Lesson 4.3 — V curves, T–n, uses, condenser =============================== */
 const VK=50;                                   // V/A: E = 50·I_F (أرقام توضيحية، خطي كما يفترض الكتاب في ص 139)
-const Ef=(IF,sat)=>sat?520*Math.tanh(VK*IF/520):VK*IF;
+const DEFK={VK,ESAT:520,P3:36};                // القيم التوضيحية (المختبر يستبدلها بقيم المدرب إن وُجدت)
+const Ef=(IF,sat,k)=>{k=k||DEFK;return sat?k.ESAT*Math.tanh(k.VK*IF/k.ESAT):k.VK*IF};
 const LOADS=[[13690,'P<sub>1</sub>'],[24880,'P<sub>2</sub>'],[36000,'P<sub>3</sub>']];
-function vcurve(P,sat){const pts=[];let lim=null;for(let i=0;i<=200;i++){const IF=i*0.05;const m=motor(EX.V,Ef(IF,sat),EX.Xs,P);if(m.ok)pts.push([IF,m.Im]);else lim=IF}return {pts,lim}}
-const unityIF=(P,sat)=>{const E=Math.hypot(EX.V,EX.Xs*P/(3*EX.V));if(!sat)return E/VK;return 520/VK*Math.atanh(Math.min(0.999,E/520))};
-function vSVG(o){o=o||{};const sat=!!o.sat;const list=o.cond&&!o.all?[]:o.only!=null?[o.only]:[0,1,2];
-  return plotSVG({w:520,h:330,x0:0,x1:10,y0:0,y1:140,xt:[0,2,4,6,8,10],yt:[0,20,40,60,80,100,120,140],xl:'IF (A)',yl:'Iph (A)',clip:o.clip||'vc',aria:'منحنيات V',
-   under:(X,Y)=>{let s='';const u=[];for(let P=0;P<=40000;P+=2000)u.push([unityIF(P,sat),P/(3*EX.V)]);s+=`<path d="${u.map((p,i)=>(i?'L':'M')+fx(X(p[0]))+' '+fx(Y(p[1]))).join('')}" stroke="var(--muted)" stroke-dasharray="6 5" stroke-width="1.6" fill="none"/>`;return s},
-   series:(o.cond?[{pts:vcurve(0,sat).pts,col:'--blue',w:2.8}]:[]).concat(list.map(i=>({pts:vcurve(LOADS[i][0],sat).pts,col:o.hi===i?'--live':'--fg',w:o.hi===i?3:2}))),
-   extra:(X,Y)=>{let s='';list.forEach(i=>{const c=vcurve(LOADS[i][0],sat).pts,p=c[c.length-1];s+=`<text class="txt" x="${fx(X(p[0])-4)}" y="${fx(Y(p[1])-6)}" text-anchor="end">P<tspan font-size="9" dy="3">${i+1}</tspan></text>`});
-     s+=`<text class="txt m" x="${fx(X(unityIF(0,sat))+4)}" y="${fx(Y(0)-6)}" text-anchor="start">cos θ = 1.0</text>`;
-     s+=arT(X(1.6),Y(130),'معامل القدرة متخلف',{fs:12.5,col:'--live'})+arT(X(8.2),Y(130),'معامل القدرة متقدم',{fs:12.5,col:'--blue-ink'});
-     if(o.cond){s+=arT(X(2.0),Y(25),'Q من الشبكة إلى المحرك',{fs:11.5,col:'--muted'})+arT(X(7.3),Y(25),'Q من المحرك إلى الشبكة',{fs:11.5,col:'--muted'});if(sat)s+=arT(X(8.6),Y(88),'منطقة التشبع',{fs:12,col:'--stop'})}
+const loadP=(i,k)=>i===2?(k||DEFK).P3*1000:LOADS[i][0];
+const niceUp=x=>{const e=Math.pow(10,Math.floor(Math.log10(x)));return [1,2,2.5,5,10].map(m=>m*e).find(v=>v>=x*(1-1e-9))};
+const ifMax=k=>niceUp(500/(k||DEFK).VK);        // محور تيار المجال يغطي E حتى 500 V تقريباً
+function vcurve(P,sat,k){const pts=[];let lim=null;const x1=ifMax(k);for(let i=0;i<=200;i++){const IF=i*x1/200;const m=motor(EX.V,Ef(IF,sat,k),EX.Xs,P);if(m.ok)pts.push([IF,m.Im]);else lim=IF}return {pts,lim}}
+const unityIF=(P,sat,k)=>{k=k||DEFK;const E=Math.hypot(EX.V,EX.Xs*P/(3*EX.V));if(!sat)return E/k.VK;return k.ESAT/k.VK*Math.atanh(Math.min(0.999,E/k.ESAT))};
+function vSVG(o){o=o||{};const sat=!!o.sat,k=o.k||DEFK;const list=o.cond&&!o.all?[]:o.only!=null?[o.only]:[0,1,2];
+  const x1=ifMax(k),xs=x1/10;const cur=(o.cond?[{pts:vcurve(0,sat,k).pts,col:'--blue',w:2.8}]:[]).concat(list.map(i=>({pts:vcurve(loadP(i,k),sat,k).pts,col:o.hi===i?'--live':'--fg',w:o.hi===i?3:2})));
+  const imx=Math.max(0,...cur.map(c=>Math.max(0,...c.pts.map(p=>p[1])))),y1=Math.max(140,Math.ceil(imx*1.05/20)*20),ys=y1/140,yst=y1<=160?20:niceUp(y1/7);
+  const Pend=Math.max(40000,loadP(2,k)*1.1);
+  return plotSVG({w:520,h:330,x0:0,x1,y0:0,y1,xt:Array.from({length:6},(_,i)=>+(i*x1/5).toPrecision(6)),yt:Array.from({length:Math.floor(y1/yst+1e-9)+1},(_,i)=>i*yst),xl:'IF (A)',yl:'Iph (A)',clip:o.clip||'vc',aria:'منحنيات V',
+   under:(X,Y)=>{let s='';const u=[];for(let P=0;P<=Pend;P+=2000)u.push([unityIF(P,sat,k),P/(3*EX.V)]);s+=`<path d="${u.map((p,i)=>(i?'L':'M')+fx(X(p[0]))+' '+fx(Y(p[1]))).join('')}" stroke="var(--muted)" stroke-dasharray="6 5" stroke-width="1.6" fill="none"/>`;return s},
+   series:cur,
+   extra:(X,Y)=>{let s='';list.forEach(i=>{const c=vcurve(loadP(i,k),sat,k).pts,p=c[c.length-1];if(p)s+=`<text class="txt" x="${fx(X(p[0])-4)}" y="${fx(Y(p[1])-6)}" text-anchor="end">P<tspan font-size="9" dy="3">${i+1}</tspan></text>`});
+     s+=`<text class="txt m" x="${fx(X(unityIF(0,sat,k))+4)}" y="${fx(Y(0)-6)}" text-anchor="start">cos θ = 1.0</text>`;
+     s+=arT(X(1.6*xs),Y(130*ys),'معامل القدرة متخلف',{fs:12.5,col:'--live'})+arT(X(8.2*xs),Y(130*ys),'معامل القدرة متقدم',{fs:12.5,col:'--blue-ink'});
+     if(o.cond){s+=arT(X(2.0*xs),Y(25*ys),'Q من الشبكة إلى المحرك',{fs:11.5,col:'--muted'})+arT(X(7.3*xs),Y(25*ys),'Q من المحرك إلى الشبكة',{fs:11.5,col:'--muted'});if(sat)s+=arT(X(8.6*xs),Y(88*ys),'منطقة التشبع',{fs:12,col:'--stop'})}
      if(o.pt)s+=`<circle cx="${fx(X(o.pt[0]))}" cy="${fx(Y(o.pt[1]))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`;return s}})}
-function tnSVG(o){o=o||{};const Tr=0.45;return plotSVG({w:520,h:280,x0:0,x1:1.2,y0:0,y1:1.25,xt:[0,1],xf:v=>v?'ns':'0',yt:[0],xl:'n',yl:'T',clip:o.clip||'tn',aria:'منحنى العزم والسرعة',
+function tnSVG(o){o=o||{};const Tr=o.Tr!=null?o.Tr:0.45;return plotSVG({w:520,h:280,x0:0,x1:1.2,y0:0,y1:1.25,xt:[0,1],xf:v=>v?'ns':'0',yt:[0],xl:'n',yl:'T',clip:o.clip||'tn',aria:'منحنى العزم والسرعة',
   under:(X,Y)=>`<path d="M${X(0)} ${fx(Y(1))}H${X(1.2)}" stroke="var(--stop)" stroke-dasharray="6 5" stroke-width="1.6"/><path d="M${X(0)} ${fx(Y(Tr))}H${X(1.2)}" stroke="var(--blue)" stroke-dasharray="6 5" stroke-width="1.6"/>`,
   series:[{pts:[[1,0],[1,1]],col:'--fg',w:3.2}],
   extra:(X,Y)=>arT(X(0.42),Y(1)-7,'العزم الأقصى T<tspan font-size="9" dy="3">max</tspan>',{fs:12.5,col:'--stop'})+arT(X(0.42),Y(Tr)-7,'العزم المقنن T<tspan font-size="9" dy="3">rated</tspan>',{fs:12.5,col:'--blue-ink'})+
@@ -489,13 +496,13 @@ B.lesson({
  ],
  lab:(el)=>{
   let li=0,IF=4.6,sat=0,FP=100,Fpf=0.75,CIF=4.2,TL=0.3,nT=1,lostT=0,lastA='',lastB='',lastC='';
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l3tp"></div><div class="grid">
    <div class="panel c7"><h2>لوحة منحنيات V <small>مبنية على الشكلين (4-3) ص 130 و(4-5) ص 132</small></h2>
-    <div class="sm-row">${segHTML('ld',[[0,'P<sub>1</sub> = 13.69 kW'],[1,'P<sub>2</sub> = 24.88 kW'],[2,'P<sub>3</sub> = 36 kW'],[3,'بدون حمل (مكثف تزامني)']],0)}</div>
+    <div class="sm-row">${segHTML('ld',[[0,'P<sub>1</sub> = 13.69 kW'],[1,'P<sub>2</sub> = 24.88 kW'],[2,'P<sub>3</sub> = <span id="l3p3">36</span> kW'],[3,'بدون حمل (مكثف تزامني)']],0)}</div>
     <div class="svgbox" id="l3v"></div>
     ${sl('l3if','تيار المجال I<sub>F</sub>',0,10,0.05,IF)}
     <div class="sm-row">${swHTML('l3sat','sat','إظهار التشبع (الشكل 4-5)',0)}</div>
-    <p class="sub">P<sub>1</sub> و P<sub>2</sub> هما القدرتان الداخلتان في مثال (4-1)، و P<sub>3</sub> توضيحية. الآلة: <span class="ltr">V<sub>ph</sub> = 208 V</span>، <span class="ltr">X<sub>S</sub> = 2.5 Ω</span>، و <span class="ltr">E<sub>ph</sub> = 50·I<sub>F</sub></span> (توضيحي، خطي كما يفترض الكتاب في مثال 4-2).</p></div>
+    <p class="sub">P<sub>1</sub> و P<sub>2</sub> هما القدرتان الداخلتان في مثال (4-1)، و P<sub>3</sub> توضيحية. الآلة: <span class="ltr">V<sub>ph</sub> = 208 V</span>، <span class="ltr">X<sub>S</sub> = 2.5 Ω</span>، و <span class="ltr">E<sub>ph</sub> = <span id="l3vk">50</span>·I<sub>F</sub></span> (توضيحي، خطي كما يفترض الكتاب في مثال 4-2).</p></div>
    <div class="panel c5"><h2>عند النقطة الحالية</h2><div id="l3chip" style="margin-top:6px"></div>
     <div class="facts">${fact('E<sub>ph</sub>','l3e')}${fact('δ','l3d')}${fact('I<sub>ph</sub>','l3i')}${fact('معامل القدرة (↑ متقدم، ↓ متأخر)','l3pf')}${fact('Q (لكل الأوجه)','l3q')}</div>
     <div class="svgbox" id="l3ph" style="max-width:420px;margin-inline:auto"></div><div id="l3msg" class="sm-msg"></div></div>
@@ -503,37 +510,51 @@ B.lesson({
     <div class="sm-two"><div>${sl('l3fp','قدرة المصنع الفعالة',20,150,1,FP)}${sl('l3fpf','معامل قدرة المصنع (متأخر)',0.6,0.95,0.01,Fpf)}${sl('l3cif','تيار مجال المكثف التزامني',0,10,0.05,CIF)}
      <div class="facts">${fact('Q المصنع (يسحب)','l3qf')}${fact('Q المكثف التزامني','l3qc')}${fact('Q من الشبكة','l3qn')}${fact('معامل القدرة قبل → بعد','l3pp')}${fact('تيار الخط قبل → بعد','l3il')}</div></div>
      <div><div class="svgbox" id="l3tri"></div><p class="sub">المكثف التزامني هنا هو آلة مثال (4-1) نفسها بلا حمل (δ ≈ 0)، على شبكة <span class="ltr">208 V</span> دلتا: <span class="ltr">Q = 3·V·(E − V)/X<sub>S</sub></span>. نهمل مفاقيده.</p></div></div></div>
-   <div class="panel c12"><h2>العزم مع السرعة <small>مبني على الشكل (4-4) ص 131 — العزم المقنن 45% من الأقصى (توضيحي)</small></h2>
+   <div class="panel c12"><h2>العزم مع السرعة <small>مبني على الشكل (4-4) ص 131 — العزم المقنن <span id="l3trp">45</span>% من الأقصى (توضيحي)</small></h2>
     <div class="sm-two"><div class="svgbox" id="l3tn"></div><div>${sl('l3tl','عزم الحمل (نسبة من العزم الأقصى)',0,130,1,TL*100)}<div class="facts">${fact('السرعة','l3n')}${fact('الحالة','l3st')}</div><div class="sm-row"><button class="btn" id="l3re">أعد التشغيل</button></div><div id="l3tm" class="sm-msg"></div></div></div></div>
    <div class="panel c12"><h2>جرّب خطوة خطوة</h2><ol class="steps" id="l3steps"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);let seenLag=0,seenLead=0,seenU=0,seenCond=0,seenLost=0,seenPF=0;
+  const nf=x=>fm(+x.toPrecision(3));
+  // حدود تيار المجال في خطوات «جرّب» مكتوبة بالجهد الداخلي: 175 V (متأخر)، 300 V (متقدم)، 400 V (مكثف) ÷ (E/I_F)
+  const kIF={lag:175,lead:300,cond:400},thr=n=>kIF[n]/TP.v.VK,thS=n=>`<span data-l3k="${n}">${nf(thr(n))}</span>`;
+  const K=()=>({VK:TP.v.VK,ESAT:TP.v.ESAT,P3:TP.v.P3});
+  const txt=()=>{$('#l3p3').textContent=fm(TP.v.P3);$('#l3vk').textContent=fm(TP.v.VK);$('#l3trp').textContent=fm(TP.v.Tr);el.querySelectorAll('[data-l3k]').forEach(e=>e.textContent=nf(thr(e.dataset.l3k)))};
+  const rng=()=>{const x1=ifMax(K());['#l3if','#l3cif'].forEach(q=>{const r=$(q);r.max=x1;r.step=x1/200});IF=Math.min(IF,x1);CIF=Math.min(CIF,x1);$('#l3if').value=IF;$('#l3cif').value=CIF};
+  let vk0=50;
+  const TP=B.params($('#l3tp'),'u4-l3',[
+   {k:'VK',label:'الجهد الداخلي E<sub>ph</sub> لكل أمبير من تيار المجال',unit:'V/A',value:50,min:5,max:2000},
+   {k:'P3',label:'القدرة الداخلة للمنحنى الثالث P<sub>3</sub>',unit:'kW',value:36,min:25,max:100},
+   {k:'ESAT',label:'أعلى جهد داخلي عند التشبع',unit:'V',value:520,min:250,max:5000},
+   {k:'Tr',label:'العزم المقنن (نسبة من العزم الأقصى)',unit:'%',value:45,min:5,max:95}],v=>{
+    IF*=vk0/v.VK;CIF*=vk0/v.VK;vk0=v.VK;rng();txt();lastA=lastB=lastC=''});
+  if(TP.v.VK!==50){IF*=50/TP.v.VK;CIF*=50/TP.v.VK;vk0=TP.v.VK;rng()}txt();
   el.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{li=+b.dataset.ld;segSet(el,'ld',li);lastA=''});
   $('#l3if').oninput=e=>{IF=+e.target.value};$('#l3sat').onclick=()=>{sat=sat?0:1;swSet($('#l3sat'),sat);lastA=''};
   $('#l3fp').oninput=e=>{FP=+e.target.value};$('#l3fpf').oninput=e=>{Fpf=+e.target.value};$('#l3cif').oninput=e=>{CIF=+e.target.value};
   $('#l3tl').oninput=e=>{TL=+e.target.value/100};$('#l3re').onclick=()=>{if(TL<=1){nT=1;lostT=0}};
   const steps=stepsUI($('#l3steps'),[
-   {t:'معامل قدرة متأخر',x:'على P<sub>1</sub> اخفض I<sub>F</sub> إلى أقل من <span class="ltr">3.5 A</span>: التيار متأخر عن الجهد والمحرك يسحب Q من الشبكة (كأنه ملف).',done:()=>seenLag},
+   {t:'معامل قدرة متأخر',get x(){return `على P<sub>1</sub> اخفض I<sub>F</sub> إلى أقل من <span class="ltr">${thS('lag')} A</span>: التيار متأخر عن الجهد والمحرك يسحب Q من الشبكة (كأنه ملف).`},done:()=>seenLag},
    {t:'معامل قدرة = 1',x:'حرّك I<sub>F</sub> حتى تصل إلى أدنى نقطة في المنحنى (على الخط المتقطع): أقل تيار منتج ومعامل قدرة ≈ 1.',done:()=>seenU},
-   {t:'معامل قدرة متقدم',x:'زد I<sub>F</sub> فوق <span class="ltr">6 A</span>: التيار متقدم والمحرك يعطي Q للشبكة (كأنه مكثف).',done:()=>seenLead},
+   {t:'معامل قدرة متقدم',get x(){return `زد I<sub>F</sub> فوق <span class="ltr">${thS('lead')} A</span>: التيار متقدم والمحرك يعطي Q للشبكة (كأنه مكثف).`},done:()=>seenLead},
    {t:'قدرة أكبر',x:'اختر P<sub>3</sub>: المنحنى أعلى ونقطته الدنيا أبعد إلى اليمين، أي نحتاج تيار مجال أكبر لمعامل قدرة = 1.',done:()=>li===2},
-   {t:'المكثف التزامني',x:'اختر «بدون حمل» واضبط I<sub>F</sub> على 8 A أو أكثر: التيار متقدم بزاوية قريبة من 90° (ص 131).',done:()=>seenCond},
+   {t:'المكثف التزامني',get x(){return `اختر «بدون حمل» واضبط I<sub>F</sub> على <span class="ltr">${thS('cond')} A</span> أو أكثر: التيار متقدم بزاوية قريبة من 90° (ص 131).`},done:()=>seenCond},
    {t:'حسّن معامل قدرة المصنع',x:'في لوحة المصنع ارفع تيار مجال المكثف التزامني حتى يصبح معامل القدرة بعد التحسين 0.95 أو أكثر، ولاحظ نقص تيار الخط.',done:()=>seenPF},
    {t:'العزم الأقصى',x:'في لوحة العزم مع السرعة ارفع عزم الحمل فوق 100%: يفقد المحرك التزامن وتهبط السرعة إلى الصفر.',done:()=>seenLost}]);
   loopOn(el,dt=>{
    $('#l3if-v').textContent=fm(IF,2)+' A';$('#l3fp-v').textContent=FP+' kW';$('#l3fpf-v').textContent=fm(Fpf,2);$('#l3cif-v').textContent=fm(CIF,2)+' A';$('#l3tl-v').textContent=Math.round(TL*100)+' %';
    const sgA=[li,IF,sat].join();
-   if(sgA!==lastA){lastA=sgA;const P=li<3?LOADS[li][0]:0,E=Ef(IF,sat),m=motor(EX.V,E,EX.Xs,P);
-    $('#l3v').innerHTML=vSVG({sat,hi:li<3?li:-1,cond:li===3,all:1,pt:m.ok?[IF,m.Im]:null});
+   if(sgA!==lastA){lastA=sgA;const P=li<3?loadP(li,K()):0,E=Ef(IF,sat,K()),m=motor(EX.V,E,EX.Xs,P);
+    $('#l3v').innerHTML=vSVG({sat,k:K(),hi:li<3?li:-1,cond:li===3,all:1,pt:m.ok?[IF,m.Im]:null});
     $('#l3e').textContent=fm(E,1)+' V';
     if(m.ok){$('#l3d').textContent=fm(m.d,1)+'°';$('#l3i').textContent=fm(m.Im,2)+' A';$('#l3pf').textContent=fm(m.pf,3)+(m.lead>0?' ↑':m.lead<0?' ↓':'');$('#l3q').textContent=fm(Math.abs(m.Q)/1000,2)+' kvar';
      $('#l3chip').innerHTML=m.lead>0?chip('يعطي Q للشبكة — يتصرف كمكثف','blue'):m.lead<0?chip('يسحب Q من الشبكة — يتصرف كملف','warn'):chip('معامل القدرة = 1 — P فقط','ok');
-     if(m.lead<0&&li===0)seenLag=1;if(m.lead>0&&li===0&&IF>6)seenLead=1;if(Math.abs(m.th)<3&&li<3)seenU=1;if(li===3&&m.th>80)seenCond=1;
+     if(m.lead<0&&li===0)seenLag=1;if(m.lead>0&&li===0&&IF>thr('lead'))seenLead=1;if(Math.abs(m.th)<3&&li<3)seenU=1;if(li===3&&m.th>80)seenCond=1;
      const kI=li===3?1.2:1.6;$('#l3ph').innerHTML=phSVG({view:{x0:-60,x1:Math.max(300,E+30),y0:-170,y1:200},W:420,H:340,vecs:onePoint(EX.V,m,{kI}),arcs:phArcs(m)});
      $('#l3msg').innerHTML=`<div class="callout">${m.lead>0?'القدرة غير الفعالة تنتقل <b>من المحرك إلى الشبكة</b>.':m.lead<0?'القدرة غير الفعالة تنتقل <b>من الشبكة إلى المحرك</b>.':'لا تنتقل قدرة غير فعالة تقريباً.'}</div>`}
     else{['#l3d','#l3i','#l3pf','#l3q'].forEach(k=>$(k).textContent='—');$('#l3chip').innerHTML=chip('تيار المجال لا يكفي لهذا الحمل: فقد التزامن','bad');$('#l3ph').innerHTML='';$('#l3msg').innerHTML='<div class="callout err">لهذا الحمل يلزم <span class="ltr">sin|δ| = X<sub>S</sub>P/(3VE)</span> أكبر من 1، أي أن E صغير جداً: المحرك لا يستطيع حمل هذه القدرة. زد تيار المجال.</div>'}}
    const sgB=[FP,Fpf,CIF].join();
-   if(sgB!==lastB){lastB=sgB;const Qf=FP*Math.tan(Math.acos(Fpf)),E=Ef(CIF,0),Qc=3*EX.V*(E-EX.V)/EX.Xs/1000,Qn=Qf-Qc,pf2=FP/Math.hypot(FP,Qn);
+   if(sgB!==lastB){lastB=sgB;const Qf=FP*Math.tan(Math.acos(Fpf)),E=Ef(CIF,0,K()),Qc=3*EX.V*(E-EX.V)/EX.Xs/1000,Qn=Qf-Qc,pf2=FP/Math.hypot(FP,Qn);
     const I1=Math.hypot(FP,Qf)*1000/(R3*EX.V),I2=Math.hypot(FP,Qn)*1000/(R3*EX.V);if(pf2>=0.95&&Qc>0)seenPF=1;
     $('#l3qf').textContent=fm(Qf,1)+' kvar';$('#l3qc').textContent=(Qc>=0?'يعطي ':'يسحب ')+fm(Math.abs(Qc),1)+' kvar';$('#l3qn').textContent=fm(Qn,1)+' kvar'+(Qn<0?' (متقدم)':'');
     $('#l3pp').textContent=fm(Fpf,2)+' → '+fm(pf2,3)+(Qn<0?' متقدم':' متأخر');$('#l3il').textContent=fm(I1,0)+' → '+fm(I2,0)+' A';
@@ -546,8 +567,8 @@ B.lesson({
    if(TL>1&&nT>0){nT=Math.max(0,nT-dt*0.45);if(!lostT)lostT=1}
    if(lostT)seenLost=1;
    const sgC=[Math.round(TL*100),Math.round(nT*200),lostT].join();
-   if(sgC!==lastC){lastC=sgC;$('#l3tn').innerHTML=tnSVG({clip:'l3tnc',pt:[nT,Math.min(TL,1.2),lostT?'--stop':'--live']});$('#l3n').textContent=fm(nT*3600,0)+' rpm';
-    $('#l3st').innerHTML=lostT?chip('فقد التزامن','bad'):TL>0.45?chip('فوق العزم المقنن','warn'):chip('متزامن','ok');
+   if(sgC!==lastC){lastC=sgC;$('#l3tn').innerHTML=tnSVG({clip:'l3tnc',Tr:TP.v.Tr/100,pt:[nT,Math.min(TL,1.2),lostT?'--stop':'--live']});$('#l3n').textContent=fm(nT*3600,0)+' rpm';
+    $('#l3st').innerHTML=lostT?chip('فقد التزامن','bad'):TL>TP.v.Tr/100?chip('فوق العزم المقنن','warn'):chip('متزامن','ok');
     $('#l3tm').innerHTML=lostT?'<div class="callout err">العزم المطلوب تجاوز العزم الأقصى: فقد المحرك التزامن ويتباطأ حتى يتوقف (ص 127). اخفض العزم ثم «أعد التشغيل».</div>':'<div class="callout">السرعة ثابتة عند n<sub>s</sub> مهما تغير العزم ما دام أقل من العزم الأقصى.</div>'}
    steps.check()});
  },

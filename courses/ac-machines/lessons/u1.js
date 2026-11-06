@@ -528,8 +528,8 @@ B.lesson({
   {note:'<b>ملاحظة:</b> في مثال (1-1) الجهد <span class="ltr">240 V</span> والتوصيل «نجمة» معطيات لا تدخل في الحل؛ السرعات والتردد لا تعتمد عليها.'}
  ],
  lab:(el)=>{
-  let f=50,p=4,mode='load',load=0,nset=1440,n=null,af=0,ar=0,t=0,Er0=100;const did={};
-  el.innerHTML=`<div class="grid im-lab">
+  let f=50,p=4,mode='load',load=0,nset=1440,n=null,af=0,ar=0,t=0;const did={};
+  el.innerHTML=`<div id="l3tp"></div><div class="grid im-lab">
    <div class="panel c5"><h2>المجال والدوار <small>مبنية على ص 17–19 والمعادلات (1-2) إلى (1-5)</small></h2>
     <div class="svgbox" id="l3v" style="max-width:300px;margin-inline:auto"></div>
     <p class="sub">السهم الأحمر = المجال الدوار (يدور بـ n<sub>s</sub>)، والخط الأسود = علامة على الدوار (يدور بـ n). القضبان تتوهج أكثر كلما زاد تيار الدوار. العرض مبطأ 50 مرة.</p></div>
@@ -539,11 +539,17 @@ B.lesson({
     <div id="l3sp">${sl('l3n','سرعة العضو الدوار n',0,1500,1,nset)}<div class="im-row"><button class="btn" id="l3lock">الدوار ثابت (n = 0)</button><button class="btn" id="l3sync">n = n<sub>s</sub></button></div></div>
     <div class="facts">${fact('n<sub>s</sub> (1-1)','l3ns')}${fact('n','l3nn')}${fact('n<sub>slip</sub> (1-2)','l3nsl')}${fact('S (1-3)','l3S')}${fact('f<sub>r</sub> = S·f<sub>s</sub> (1-5)','l3fr')}${fact('جهد الدوار E<sub>r</sub> (توضيحي)','l3er')}</div>
     <div class="im-row"><span id="l3chip" class="im-chip"></span></div><div id="l3tq"></div></div>
-   <div class="panel c12"><h2><span>جهد العضو الدوار مع الزمن (ثانية واحدة)</span> <small>السعة ∝ S والتردد = f<sub>r</sub> — أرقام توضيحية: E<sub>r</sub> عند السكون = ${Er0} V، والمحور الرأسي يتكبر تلقائياً</small></h2><div class="svgbox" id="l3wv"></div></div>
+   <div class="panel c12"><h2><span>جهد العضو الدوار مع الزمن (ثانية واحدة)</span> <small>السعة ∝ S والتردد = f<sub>r</sub> — E<sub>r</sub> عند السكون = <span id="l3er0"></span> V، والمحور الرأسي يتكبر تلقائياً</small></h2><div class="svgbox" id="l3wv"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l3st"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
+  const TP=B.params($('#l3tp'),'u1-l3',[
+   {k:'Er0',label:'جهد العضو الدوار عند السكون E<sub>r</sub>',unit:'V',value:100,min:1,max:10000},
+   {k:'S0',label:'الانزلاق بلا حمل',unit:'',value:0.012,min:0.001,max:0.2,step:0.001},
+   {k:'Sfl',label:'الانزلاق عند الحمل الكامل',unit:'',value:0.045,min:0.002,max:0.5,step:0.001}],()=>{$('#l3er0').textContent=fm(TP.v.Er0,0)});
+  $('#l3er0').textContent=fm(TP.v.Er0,0);
   const ns=()=>120*f/p;
-  const Starget=()=>0.0333*(0.35+load/100);   // أرقام توضيحية: S ≈ 0.012 بلا حمل و ≈ 0.045 عند الحمل الكامل
+  const kS=()=>Math.max(TP.v.Sfl-TP.v.S0,1e-4);   // انزلاق لكل وحدة عزم حمل
+  const Starget=()=>TP.v.S0+kS()*load/100;
   const ui=()=>{$('#l3ld').style.display=mode==='load'?'':'none';$('#l3sp').style.display=mode==='speed'?'':'none';const r=$('#l3n');r.max=ns()};
   segBind(el,'f',v=>{const k=(n==null?0:n)/ns();f=+v;n=k*ns();nset=Math.min(nset,ns());ui()});segBind(el,'p',v=>{const k=(n==null?0:n)/ns();p=+v;n=k*ns();nset=Math.round(k*ns());ui();$('#l3n').value=nset});
   segBind(el,'md',v=>{mode=v;if(mode==='speed'){nset=Math.round(n);$('#l3n').value=nset}ui()});
@@ -559,16 +565,16 @@ B.lesson({
   ui();
   loopOn(el,dt=>{t+=dt;const Ns=ns();if(n==null)n=Ns*(1-Starget());
    let nt=mode==='load'?Ns*(1-Starget()):nset;n+=(nt-n)*(mode==='load'?(1-Math.exp(-dt/0.7)):1);if(Math.abs(n-nt)<0.05)n=nt;
-   const Sx=(Ns-n)/Ns,fr=Sx*f,Er=Sx*Er0;
+   const Sx=(Ns-n)/Ns,fr=Sx*f,Er=Sx*TP.v.Er0;
    af=(af+Ns/60*360*dt/50)%360;ar=(ar+n/60*360*dt/50)%360;
-   $('#l3v').innerHTML=slipViewSVG(af,ar,clamp(Sx/0.06,0,1),{lbl:'n_slip = '+fm(Ns-n,1)+' rpm'});
+   $('#l3v').innerHTML=slipViewSVG(af,ar,clamp(Sx/Math.max(0.06,TP.v.Sfl*1.3),0,1),{lbl:'n_slip = '+fm(Ns-n,1)+' rpm'});
    $('#l3l-v').textContent=load+' %';$('#l3n-v').textContent=fm(nset,0)+' rpm';
    $('#l3ns').textContent=fm(Ns,0)+' rpm';$('#l3nn').textContent=fm(n,1)+' rpm';$('#l3nsl').textContent=fm(Ns-n,1)+' rpm';$('#l3S').textContent=fm(Sx,4);$('#l3fr').textContent=fm(fr,2)+' Hz';$('#l3er').textContent=fm(Er,1)+' V';
    const ch=$('#l3chip');if(Sx<1e-6){ch.className='im-chip warn';ch.textContent='S = 0: لا جهد ولا تيار ولا عزم في الدوار'}else if(Sx>=0.999){ch.className='im-chip warn';ch.textContent='S = 1: الدوار ثابت، fr = fs'}else if(Sx>=0.005&&Sx<=0.02){ch.className='im-chip ok';ch.textContent='نطاق اللاحمل (0.005–0.02)'}else if(Sx>=0.03&&Sx<=0.05){ch.className='im-chip ld';ch.textContent='نطاق التحميل (0.03–0.05)'}else{ch.className='im-chip hot';ch.textContent=Sx>0.05?'انزلاق أكبر من نطاق الحمل الكامل':'بين النطاقين'}
-   if(mode==='load'){const Tm=Sx/0.0333,TL=0.35+load/100;$('#l3tq').innerHTML=`<div class="facts"><div class="fact"><span>عزم المحرك (نسبي)</span><b>${fm(Tm,2)}</b></div><div class="fact"><span>عزم الحمل + الاحتكاك (نسبي)</span><b>${fm(TL,2)}</b></div><div class="fact"><span>الحالة</span><b style="font-family:var(--font);font-size:15px">${Math.abs(Tm-TL)<0.01?'مستقر: العزمان متساويان':Tm<TL?'العزم أقل: السرعة تهبط':'العزم أكبر: السرعة تزيد'}</b></div></div><p class="sub">العزم هنا أرقام توضيحية تتناسب مع S في نطاق الانزلاق الصغير (ليس من الكتاب).</p>`}
+   if(mode==='load'){const Tm=Sx/kS(),TL=TP.v.S0/kS()+load/100;$('#l3tq').innerHTML=`<div class="facts"><div class="fact"><span>عزم المحرك (نسبي)</span><b>${fm(Tm,2)}</b></div><div class="fact"><span>عزم الحمل + الاحتكاك (نسبي)</span><b>${fm(TL,2)}</b></div><div class="fact"><span>الحالة</span><b style="font-family:var(--font);font-size:15px">${Math.abs(Tm-TL)<0.01?'مستقر: العزمان متساويان':Tm<TL?'العزم أقل: السرعة تهبط':'العزم أكبر: السرعة تزيد'}</b></div></div><p class="sub">العزم هنا أرقام توضيحية تتناسب مع S في نطاق الانزلاق الصغير (ليس من الكتاب).</p>`}
    else $('#l3tq').innerHTML='';
    const pts=[];for(let i=0;i<=900;i++){const x=i/900;pts.push([x,Er*Math.sin(2*PI*fr*x)])}
-   const ym=[2,5,10,20,50,100].find(v=>v>=Er*1.1)||110;
+   const ym=(()=>{const t=Math.max(Er*1.1,1e-3),e=Math.pow(10,Math.floor(Math.log10(t)));return [1,2,5,10].map(k=>k*e).find(v=>v>=t)})();
    $('#l3wv').innerHTML=plotSVG({w:760,h:200,x0:0,x1:1,y0:-ym*1.05,y1:ym*1.05,xt:[0,0.2,0.4,0.6,0.8,1],yt:[-ym,-ym/2,0,ym/2,ym],xl:'t (s)',yl:'e_r (V)',series:[{pts,col:'--live',w:1.8}],aria:'جهد الدوار مع الزمن'});
    steps.check()});
  },
@@ -877,7 +883,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let mk='m5',test='NL',mode='book',V=0,ang=0,warned=0;const rec={};const did={};
-  el.innerHTML=`<div class="grid im-lab">
+  el.innerHTML=`<div id="l5tp"></div><div class="grid im-lab">
    <div class="panel c12"><h2>منضدة الاختبار <small>مبنية على الأشكال (1-13) و(1-15) و(1-16) و(1-17) ص 27–31</small></h2>
     <div class="im-row"><div><div class="sub">المحرك</div>${segHTML('mk',[['m5','محرك مثال (1-5) — دلتا'],['m4','محرك مثال (1-4) — نجمة']],mk)}</div>
      <div><div class="sub">الاختبار</div>${segHTML('ts',[['NL','اللاحمل'],['BR','إعاقة الحركة'],['DC','التيار المستمر']],test)}</div></div>
@@ -891,7 +897,10 @@ B.lesson({
     <div id="l5tbl"></div><div id="l5res"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l5st"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
-  const M=()=>MOT[mk];
+  const TP=B.params($('#l5tp'),'u1-l5',[
+   {k:'R1m4',label:'مقاومة ملف العضو الثابت R<sub>1</sub> لمحرك مثال (1-4) (يظهر في اختبار التيار المستمر)',unit:'Ω',value:0.1,min:0.01,max:20,step:0.01}],()=>{
+    if(mk==='m4'){if(test==='DC')V=0;delete rec.DC;ui();draw();results()}});
+  const M=()=>mk==='m4'?Object.assign({},MOT.m4,{R1:TP.v.R1m4}):MOT[mk];
   const vmax=()=>test==='DC'?(M().conn===1?2*M().R1:2/3*M().R1)*M().Idc*1.4:M().VLr*(test==='NL'?1.15:1);
   const vstep=()=>test==='DC'?0.01:0.1;
   const read=()=>{const m=M();if(test==='DC'){const Rt=m.conn===1?2*m.R1:2/3*m.R1;const v=B.round(V,2),i=B.round(v/Rt,2);return {V:v,I:i}}
@@ -903,7 +912,7 @@ B.lesson({
    $('#l5sl').innerHTML=sl('l5v',test==='DC'?'جهد المصدر المستمر':'جهد الخط المسلط',0,fx(vmax()),vstep(),V);$('#l5v').oninput=e=>{V=+e.target.value;draw()};
    const st=vstep();$('#l5fine').innerHTML=[-10,-1,1,10].map(k=>`<button class="btn" data-fv="${k*st}">${k>0?'+':''}${fm(k*st,2)}</button>`).join('');
    $('#l5full').style.display=test==='BR'?'':'none';
-   $('#l5ill').textContent=mk==='m4'?'(مثال 1-4 لا يعطي اختبار تيار مستمر: R1 = 0.1 Ω في هذا المحرك أرقام توضيحية.)':'';};
+   $('#l5ill').textContent=mk==='m4'?`(مثال 1-4 لا يعطي اختبار تيار مستمر: R1 = ${fm(TP.v.R1m4)} Ω في هذا المحرك ${TP.trainer?'من قيم المدرب':'أرقام توضيحية'}.)`:'';};
   el.addEventListener('click',e=>{const b=e.target.closest('[data-fv]');if(b)setV(V+ +b.dataset.fv)});
   $('#l5zero').onclick=()=>setV(0);$('#l5full').onclick=()=>{setV(M().VLr);did.full=1};
   segBind(el,'mk',v=>{mk=v;V=0;Object.keys(rec).forEach(k=>delete rec[k]);ui();draw()});

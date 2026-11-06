@@ -314,6 +314,35 @@ const VIEWNOTE={
 /* ---------------- MATH ---------------- */
 B.math=function(el){try{if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})}catch(e){}};
 B.tex=(src,display)=>{try{return window.katex?katex.renderToString(src,{throwOnError:false,displayMode:!!display}):esc(src)}catch(e){return esc(src)}};
+/* ===== قيم المدرب: مفتاح «قيم توضيحية / قيم المدرب» لأي محاكاة فيها أرقام ليست من الكتاب =====
+ B.params(host, id, defs, onChange) → P
+   host: عنصر DOM يُرسم فيه الشريط. id: معرف فريد داخل المقرر (مثل 'u1-l3-wave').
+   defs: [{k,label,unit,value,min,max,step}]  value = القيمة التوضيحية الافتراضية.
+   onChange(v): تُستدعى عند أي تغيير (v = القيم الحالية).
+   P.v: القيم الحالية (توضيحية أو قيم المدرب). P.trainer: true إذا كانت قيم المدرب مفعلة.
+ تُحفظ قيم المدرب على هذا الجهاز فقط. */
+B.params=function(host,id,defs,onChange){
+ const key=`${(B.COURSE&&B.COURSE.key)||'lib'}-tp-${id}`;
+ const st=store.get(key,{on:false,vals:{}});
+ const P={v:{},trainer:false};
+ const dflt=()=>Object.fromEntries(defs.map(d=>[d.k,d.value]));
+ const clampD=(d,x)=>{x=+x;if(!isFinite(x))return d.value;if(d.min!=null&&x<d.min)x=d.min;if(d.max!=null&&x>d.max)x=d.max;return x};
+ const compute=()=>{P.trainer=!!st.on;P.v=dflt();if(st.on)defs.forEach(d=>{if(st.vals[d.k]!=null)P.v[d.k]=clampD(d,st.vals[d.k])})};
+ const fire=()=>{compute();store.set(key,st);try{onChange&&onChange(P.v)}catch(e){console.error(e)}};
+ const render=()=>{
+  host.classList.add('tp');
+  host.innerHTML=`<div class="tp-head"><span class="tp-lbl">أرقام المحاكاة:</span><div class="seg" role="group"><button data-tp="0" aria-pressed="${!st.on}">قيم توضيحية</button><button data-tp="1" aria-pressed="${!!st.on}">قيم المدرب</button></div>${st.on?'<button class="btn tp-reset" type="button">رجّع القيم التوضيحية</button>':''}</div>`+
+   (st.on?`<div class="tp-grid">${defs.map(d=>`<label class="tp-f"><span>${d.label}${d.unit?` <i class="ltr">(${d.unit})</i>`:''}</span><input type="number" inputmode="decimal" data-tpk="${d.k}" value="${d.dp!=null?fmtN(P.v[d.k],d.dp):P.v[d.k]}" ${d.min!=null?`min="${d.min}"`:''} ${d.max!=null?`max="${d.max}"`:''} step="${d.step||'any'}"></label>`).join('')}</div><p class="tp-note">هذه الأرقام محفوظة على هذا الجهاز فقط ولا تتغير عند الطلاب.</p>`
+   :`<p class="tp-note">أرقام توضيحية ليست من الكتاب. يستطيع المدرب وضع أرقامه باختيار «قيم المدرب».</p>`);
+  host.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{st.on=b.dataset.tp==='1';compute();render();fire()});
+  const r=host.querySelector('.tp-reset');if(r)r.onclick=()=>{st.vals={};compute();render();fire()};
+  host.querySelectorAll('[data-tpk]').forEach(inp=>{
+   inp.oninput=()=>{if(inp.value===''||!isFinite(+inp.value))return;st.vals[inp.dataset.tpk]=+inp.value;fire()};
+   inp.onchange=()=>{const d=defs.find(x=>x.k===inp.dataset.tpk);const v=clampD(d,inp.value);inp.value=v;st.vals[d.k]=v;fire()};});
+ };
+ compute();render();
+ return P;
+};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
 const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
 B.fmtN=fmtN;

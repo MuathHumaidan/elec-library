@@ -233,9 +233,9 @@ B.lesson({
  ],
  lab:(el)=>{
   let type='sal',P=6,n=1200,If=4.5,ang=0,lastS='';
-  const TK=100;                                    // T_ph·k_W  (رقم توضيحي)
-  const phi=I=>occ(I)/(SQ2*PI*60*TK);              // Wb — chosen so that at 60 Hz E_ph follows the O.C.C of الشكل (3-19)
-  el.innerHTML=`<div class="grid">
+  let TP=null;const TK=()=>TP.v.TK;               // T_ph·k_W  (رقم توضيحي — قيم المدرب)
+  const phi=I=>occ(I)/(SQ2*PI*60*TK());            // Wb — chosen so that at 60 Hz E_ph follows the O.C.C of الشكل (3-19)
+  el.innerHTML=`<div id="l1tp"></div><div class="grid">
    <div class="panel c6"><h2>المولد التزامني <small>مبنية على الشكلين (3-1) و(3-3) ص 93–94</small></h2>
     <div class="sg-row">${segHTML('ty',[['sal','دوار ذو أقطاب بارزة'],['cyl','دوار إسطواني']],type)}</div>
     <div class="sg-row"><span>عدد الأقطاب p:</span><span id="l1pp"></span></div>
@@ -250,10 +250,13 @@ B.lesson({
     <div id="l1msg" class="sg-msg"></div></div>
    <div class="panel c12"><h2>القوة الدافعة الكهربائية في الأوجه الثلاثة <small>آخر 50 ms (الموجات تتحرك مُبطّأة مع الدوار)</small></h2><div class="sg-chart"><canvas id="l1w"></canvas></div>
     ${legend([['--stop','الوجه a'],['--live','الوجه b'],['--blue','الوجه c']])}
-    <p class="sub">\\(T_{ph}k_W = 100\\) والفيض \\(\\phi\\) مقابل تيار المجال <b>أرقام توضيحية</b> اختيرت بحيث يتبع \\(E_{ph}\\) عند <span class="ltr">60 Hz</span> منحنى اللاحمل لمثال (3-1) (الشكل 3-19 ص 114).</p></div>
+    <p class="sub">\\(T_{ph}k_W\\) = <span class="ltr" id="l1tk"></span> والفيض \\(\\phi\\) مقابل تيار المجال <b>أرقام توضيحية</b> (إلا إذا وضع المدرب قيمته)، والفيض يُحسب بحيث يتبع \\(E_{ph}\\) عند <span class="ltr">60 Hz</span> منحنى اللاحمل لمثال (3-1) (الشكل 3-19 ص 114). لذلك تغيير \\(T_{ph}k_W\\) يغيّر الفيض فقط ولا يغيّر الجهد.</p></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l1st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
+  TP=B.params($('#l1tp'),'u3-l1',[
+   {k:'TK',label:'عدد لفات الوجه × معامل اللف T<sub>ph</sub>·k<sub>W</sub>',unit:'',value:100,min:1,max:100000}],()=>{$('#l1tk').textContent=fm(TK());lastS=''});
+  $('#l1tk').textContent=fm(TK());
   const POLES={sal:[6,8,12],cyl:[2,4]};
   const drawPoles=()=>{$('#l1pp').innerHTML=segHTML('pp',POLES[type].map(v=>[v,String(v)]),P);segOn($('#l1pp'),'pp',v=>{P=+v;lastS=''})};
   segOn(el,'ty',v=>{type=v;P=POLES[type][0];drawPoles();lastS=''});drawPoles();
@@ -274,12 +277,12 @@ B.lesson({
   ]);
   loopOn(el,dt=>{if(n!==lastN){movedN++;lastN=n}
    ang=(ang+n/60*360*dt/60)%360;
-   const fr=f(),Ph=phi(If),E=SQ2*PI*fr*Ph*TK;
+   const fr=f(),Ph=phi(If),E=SQ2*PI*fr*Ph*TK();
    $('#l1n-v').textContent=n+' rpm';$('#l1f-v').textContent=fm(If,1)+' A';
    $('#l1svg').innerHTML=`<svg viewBox="0 0 360 360" role="img" aria-label="مقطع المولد">${statorSVG(180,180)}<g transform="translate(180 180) rotate(${fx(ang)})">${type==='sal'?salientRotor(P,{flux:If>0.05,ang,hot:If>0.05}):cylRotor(P,{flux:If>0.05,ang,hot:If>0.05})}</g></svg>`;
    const sg=[type,P,n,If].join();
    if(sg!==lastS){lastS=sg;
-    $('#l1fr').textContent=fm(fr,2)+' Hz';$('#l1ph').textContent=fm(Ph*1000,2)+' mWb';$('#l1e').textContent=fm(E,1)+' V';$('#l1n60').textContent=fm(7200/P,0)+' rpm';
+    $('#l1fr').textContent=fm(fr,2)+' Hz';$('#l1ph').textContent=fm(Ph*1000,TK()>1000?5:2)+' mWb';$('#l1e').textContent=fm(E,1)+' V';$('#l1n60').textContent=fm(7200/P,0)+' rpm';
     let m='';
     const near=v=>Math.abs(fr-v)<0.05;
     if(n===0)m='<div class="callout">الدوار واقف: لا يقطع المجالُ ملفاتِ العضو الثابت فلا يتولد جهد.</div>';
@@ -670,14 +673,14 @@ B.lesson({
  ],
  lab:(el)=>{
   let mode='open',If=0,occR=[],sccR=[],warn=0,lastS='',vrI=692.8,vrPf=0.8,vrK='lag';
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l4tp"></div><div class="grid">
    <div class="panel c7"><h2>منصة الاختبارين <small>مبنية على الشكلين (3-10) و(3-12) ص 102–103</small></h2>
     <div class="sg-row">${segHTML('tm',[['open','اختبار اللاحمل (أطراف مفتوحة)'],['short','اختبار القصر (أطراف مقصورة)']],mode)}</div>
     <div id="l4s" class="svgbox" style="max-width:560px;margin-inline:auto"></div>
     <div id="l4sl"></div>
     <div class="sg-row"><button class="btn primary" id="l4take">سجّل القراءة</button><button class="btn" id="l4auto">قراءات تلقائية</button><button class="btn" id="l4clr">امسح القراءات</button></div>
     <div id="l4m" class="sg-msg"></div>
-    <p class="sub">منحنى اللاحمل من الشكل (3-19) ص 114 (<b>قراءات تقريبية</b> بالنظر، ويمر بنقاط الحل 4.1/4.5/5.7 A)، و<span class="ltr">R<sub>A</sub> = 0.015 Ω</span> والتيار المقنن <span class="ltr">692.8 A</span> لكل وجه من مثال (3-1). ميل خط S.C.C <b>توضيحي</b>، اختير ليعطي <span class="ltr">X<sub>S</sub> = 0.1 Ω</span> في المنطقة الخطية كما في المثال.</p></div>
+    <p class="sub">منحنى اللاحمل من الشكل (3-19) ص 114 (<b>قراءات تقريبية</b> بالنظر، ويمر بنقاط الحل 4.1/4.5/5.7 A)، و<span class="ltr">R<sub>A</sub> = 0.015 Ω</span> والتيار المقنن <span class="ltr">692.8 A</span> لكل وجه من مثال (3-1). ميل خط S.C.C <b>توضيحي</b> (<span class="ltr" id="l4kv"></span>)؛ القيمة التوضيحية اختيرت لتعطي <span class="ltr">X<sub>S</sub> = 0.1 Ω</span> في المنطقة الخطية كما في المثال.</p></div>
    <div class="panel c5"><h2><span>جدول القراءات وحساب X<sub>S</sub></span> <small>(3-11) و(3-12)</small></h2><div id="l4t" class="sg-tbl"></div></div>
    <div class="panel c4"><h2>O.C.C <small>الشكل (3-11)</small></h2><div class="sg-chart sm"><canvas id="l4o"></canvas></div>${legend([['--live','القراءات'],['--muted','خط الثغرة الهوائية',1]])}</div>
    <div class="panel c4"><h2>S.C.C <small>الشكل (3-13)</small></h2><div class="sg-chart sm"><canvas id="l4c"></canvas></div>${legend([['--blue','القراءات وامتدادها',1],['--stop','التيار المقنن',1]])}</div>
@@ -688,12 +691,17 @@ B.lesson({
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l4st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
-  const mkSl=()=>{$('#l4sl').innerHTML=mode==='open'?sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span>',0,10,0.05,If):sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span> (ارفعه ببطء)',0,1,0.01,If);$('#l4f').oninput=e=>{If=+e.target.value};lastS=''};
+  const TP=B.params($('#l4tp'),'u3-l4',[
+   {k:'K',label:'ميل خط S.C.C: تيار القصر لكل 1 A من تيار المجال',unit:'A/A',value:KSC,dp:2,min:10,max:1e6}],()=>{sccR=[];warn=0;If=Math.min(If,scMax());mkSl();kTxt()});
+  const K=()=>TP.v.K;
+  const scMax=()=>Math.max(1,Math.ceil(1.2*IRATED/K()*100)/100);   // أعلى تيار مجال في اختبار القصر (1 A بالقيم التوضيحية)
+  const kTxt=()=>{$('#l4kv').textContent=fm(K(),1)+' A/A'};kTxt();
+  const mkSl=()=>{$('#l4sl').innerHTML=mode==='open'?sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span>',0,10,0.05,If):sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span> (ارفعه ببطء)',0,scMax(),0.01,If);$('#l4f').oninput=e=>{If=+e.target.value};lastS=''};
   segOn(el,'tm',v=>{mode=v;If=0;mkSl()});mkSl();
   const kfit=()=>{if(!sccR.length)return null;let a=0,b=0;sccR.forEach(([x,y])=>{a+=x*y;b+=x*x});return b?a/b:null};
-  const take=(x)=>{x=x==null?If:x;if(mode==='open'){occR=occR.filter(r=>Math.abs(r[0]-x)>1e-6);occR.push([x,B.round(occ(x),1)]);occR.sort((a,b)=>a[0]-b[0])}else{const I=KSC*x;if(I>IRATED*1.0001){warn=1}sccR=sccR.filter(r=>Math.abs(r[0]-x)>1e-6);sccR.push([x,B.round(I,1)]);sccR.sort((a,b)=>a[0]-b[0])}lastS=''};
+  const take=(x)=>{x=x==null?If:x;if(mode==='open'){occR=occR.filter(r=>Math.abs(r[0]-x)>1e-6);occR.push([x,B.round(occ(x),1)]);occR.sort((a,b)=>a[0]-b[0])}else{const I=K()*x;if(I>IRATED*1.0001){warn=1}sccR=sccR.filter(r=>Math.abs(r[0]-x)>1e-6);sccR.push([x,B.round(I,1)]);sccR.sort((a,b)=>a[0]-b[0])}lastS=''};
   $('#l4take').onclick=()=>take();
-  $('#l4auto').onclick=()=>{if(mode==='open')[1,2,3,4,5,6,7,8,9,10].forEach(take);else[0.1,0.2,0.3,0.4,0.5].forEach(take)};
+  $('#l4auto').onclick=()=>{if(mode==='open')[1,2,3,4,5,6,7,8,9,10].forEach(take);else[0.1,0.2,0.3,0.4,0.5].map(v=>K()===KSC?v:Math.max(0.01,B.round(v*KSC/K(),2))).forEach(take)};
   $('#l4clr').onclick=()=>{occR=[];sccR=[];lastS=''};
   $('#l4vi').oninput=e=>{vrI=+e.target.value};$('#l4vp').oninput=e=>{vrPf=+e.target.value};segOn(el,'vk',v=>{vrK=v;lastS=''});
   let sawVRneg=0;
@@ -702,12 +710,12 @@ B.lesson({
    {t:'المنطقتان',x:'انظر إلى منحنى O.C.C: القراءات الأولى على خط الثغرة الهوائية (المنطقة 1)، ثم تنحني تحته عند التشبع (المنطقة 2).'},
    {t:'اختبار القصر',x:'اختر «أطراف مقصورة» وابدأ من الصفر. ارفع تيار المجال <b>ببطء</b> وسجّل قراءتين على الأقل دون تجاوز التيار المقنن.',done:()=>sccR.filter(r=>r[1]<=IRATED).length>=2},
    {t:'لا تتجاوز التيار المقنن',x:'لاحظ التحذير الأحمر إذا تجاوز \\(I_{SC}\\) القيمة المقننة <span class="ltr">692.8 A</span>: الكتاب يمنع ذلك.'},
-   {t:'X<sub>S</sub> من الاختبارين',x:'في الجدول: عند كل تيار مجال \\(Z_S=E_{ph}/I_{SC}\\) ثم \\(X_S=\\sqrt{Z_S^2-R_A^2}\\). القيمة ثابتة ≈ <span class="ltr">0.1 Ω</span> في المنطقة الخطية ثم تقل مع التشبع (الشكل 3-14).',done:()=>occR.length>=5&&sccR.length>=1},
+   {t:'X<sub>S</sub> من الاختبارين',x:'في الجدول: عند كل تيار مجال \\(Z_S=E_{ph}/I_{SC}\\) ثم \\(X_S=\\sqrt{Z_S^2-R_A^2}\\). القيمة ثابتة (≈ <span class="ltr">0.1 Ω</span> بالقيم التوضيحية) في المنطقة الخطية ثم تقل مع التشبع (الشكل 3-14).',done:()=>occR.length>=5&&sccR.length>=1},
    {t:'تنظيم الجهد',x:'في اللوحة الأخيرة اختر «متقدم» وخفّض معامل القدرة: يصبح \\(V_R\\%\\) سالباً، أي أن جهد اللاحمل أصغر من جهد الحمل.',done:()=>sawVRneg}
   ]);
-  loopOn(el,()=>{const I=mode==='short'?KSC*If:0,E=mode==='open'?occ(If):0,over=mode==='short'&&I>IRATED;
+  loopOn(el,()=>{const I=mode==='short'?K()*If:0,E=mode==='open'?occ(If):0,over=mode==='short'&&I>IRATED;
    $('#l4f-v').textContent=fm(If,2)+' A';$('#l4vi-v').textContent=fm(vrI,1)+' A';$('#l4vp-v').textContent=fm(vrPf,2);
-   const sg=[mode,If,occR.length,sccR.length,vrI,vrPf,vrK,warn].join();if(sg===lastS){steps.check();return}lastS=sg;
+   const sg=[mode,If,occR.length,sccR.length,vrI,vrPf,vrK,warn,K()].join();if(sg===lastS){steps.check();return}lastS=sg;
    $('#l4s').innerHTML='<div style="min-width:470px">'+testSVG(mode,{live:1,If,E:mode==='open'?E:null,Isc:mode==='short'?I:null,over})+'</div>';
    $('#l4m').innerHTML=over?`<div class="callout err"><b>تحذير:</b> تيار القصر <span class="ltr">${fm(I,1)} A</span> تجاوز القيمة المقننة <span class="ltr">692.8 A</span>. «يجب أن لا يترك تيار القصر يزداد عن القيمة المقننة» (ص 103). أنقص تيار المجال.</div>`:
      mode==='open'?`<div class="callout">أطراف مفتوحة: لا تيار في المنتج، والفولتميتر يقرأ \\(E_{ph}\\) = <span class="ltr">${fm(E,1)} V</span>.</div>`:`<div class="callout">أطراف مقصورة: الجهد على الأطراف صفر، والأميتر يقرأ <span class="ltr">I<sub>SC</sub> = ${fm(I,1)} A</span>. لاحظ كم يكفي تيار مجال صغير ليصل تيار القصر إلى قيمته المقننة.</div>`;B.math($('#l4m'));
@@ -718,9 +726,11 @@ B.lesson({
    const lin=occR.filter(r=>r[0]>0&&r[0]<=2.5);const sl0=lin.length?lin.reduce((a,r)=>a+r[1]/r[0],0)/lin.length:null;
    plot($('#l4o'),{xmax:10,ymax:700,xlabel:'IF (A)',ylabel:'Eph (V)',shade:occR.length>=4?[{x0:0,x1:3,color:'--blue',label:'(1)'},{x0:3,x1:10,color:'--live',label:'(2)',alpha:.06}]:[],
     series:(sl0?[{pts:[[0,0],[700/sl0,700]],color:'--muted',dash:[6,4],width:1.6}]:[]).concat([{pts:[[0,0]].concat(occR),color:'--live'}]),points:occR.map(r=>({x:r[0],y:r[1],color:'--live',r:4})).concat(mode==='open'?[{x:If,y:E,color:'--fg',r:3}]:[])});
-   plot($('#l4c'),{xmax:1,ymax:1200,xlabel:'IF (A)',ylabel:'Isc (A)',series:[{pts:[[0,IRATED],[1,IRATED]],color:'--stop',dash:[5,4],width:1.5}].concat(k?[{pts:[[0,0],[1,k]],color:'--blue',dash:[6,4],width:1.6}]:[]),points:sccR.map(r=>({x:r[0],y:r[1],color:r[1]>IRATED?'--stop':'--blue',r:4})).concat(mode==='short'?[{x:If,y:I,color:'--fg',r:3}]:[])});
+   const scX=scMax(),scY=Math.ceil(Math.max(K()*scX,IRATED*1.2)/200)*200;
+   plot($('#l4c'),{xmax:scX,ymax:scY,xlabel:'IF (A)',ylabel:'Isc (A)',series:[{pts:[[0,IRATED],[scX,IRATED]],color:'--stop',dash:[5,4],width:1.5}].concat(k?[{pts:[[0,0],[scX,k*scX]],color:'--blue',dash:[6,4],width:1.6}]:[]),points:sccR.map(r=>({x:r[0],y:r[1],color:r[1]>IRATED?'--stop':'--blue',r:4})).concat(mode==='short'?[{x:If,y:I,color:'--fg',r:3}]:[])});
    const xsPts=k?occR.filter(r=>r[0]>0).map(([x,e])=>{const Zs=e/(k*x);return [x,Math.sqrt(Math.max(0,Zs*Zs-RA31*RA31))]}):[];
-   plot($('#l4x'),{xmax:10,ymax:0.12,ystep:0.02,xlabel:'IF (A)',ylabel:'Xs (Ω)',series:[{pts:xsPts,color:'--on'}],points:xsPts.map(p=>({x:p[0],y:p[1],color:'--on',r:4}))});
+   const xsY=Math.max(0.12,Math.ceil(1.1*AIRGAP/K()*50)/50);
+   plot($('#l4x'),{xmax:10,ymax:xsY,ystep:xsY===0.12?0.02:xsY/6,xlabel:'IF (A)',ylabel:'Xs (Ω)',series:[{pts:xsPts,color:'--on'}],points:xsPts.map(p=>({x:p[0],y:p[1],color:'--on',r:4}))});
    // regulation
    const xsl=xsPts.filter(p=>p[0]<=2.5);const Xs=xsl.length?xsl.reduce((a,p)=>a+p[1],0)/xsl.length:null;
    if(Xs){const th=vrK==='unity'?0:(vrK==='lag'?-1:1)*Math.acos(vrPf)/D,Ev=cadd(Cx(480),cmul(Cx(RA31,Xs),cpol(vrI,th))),Em=cabs(Ev),VR=(Em-480)/480*100;if(VR<0)sawVRneg=1;
@@ -983,10 +993,11 @@ B.lesson({
   {note:'الكتاب لا يشرح ما يحدث للمولد <b>بعد</b> ربطه بالقضيب اللانهائي (أثر تغيير تيار المجال أو عزم المحرك الأولي)، مع أن أسئلة الفصل (5–7) ص 122 تسأل عنه.'+(EXTRA_INFINITE_BUS?' لذلك أضفنا القسم التالي، وهو معلَّم بوضوح أنه من خارج الكتاب.':'')}
  ].concat(EXTRA_INFINITE_BUS?EXTRA_THEORY:[]),
  lab:(el)=>{
-  const Fb=60,VbL=380,Vbp=VbL/SQ3,XS6=1,PLOSS=3;      // bus 380 V 60 Hz, Xs and losses: أرقام توضيحية
+  let Fb=60,VbL=380,Vbp=VbL/SQ3,XS6=1,PLOSS=3,TOLV=5,TOLF=0.2,TOLP=12;   // bus 380 V 60 Hz, Xs, losses and closing limits: أرقام توضيحية (قيم المدرب)
+  const NS=()=>30*Fb;                                 // السرعة التزامنية لمولد 4 أقطاب (1800 rpm بالقيم التوضيحية)
   let If=2,n=1740,seq=0,phi=Math.random()*360,closed=0,flash='',lastS='',bad=0,Pin=PLOSS,If2=4.5,swaps=0,seenQp=0,seenQn=0,lostSync=0;
-  const Vm=()=>VbL*occ(If)/occ(4.5)*(n/30/60),Fm=()=>n/30;
-  el.innerHTML=`<div class="grid">
+  const Vm=()=>VbL*occ(If)/occ(4.5)*(n/30/Fb),Fm=()=>n/30;
+  el.innerHTML=`<div id="l6tp"></div><div class="grid">
    <div class="panel c8"><h2>لوحة التزامن <small>مبنية على الشكل (3-18) ص 112</small></h2>
     <div id="l6d" class="svgbox" style="max-width:620px;margin-inline:auto"></div>
     <div id="l6msg" class="sg-msg"></div></div>
@@ -998,38 +1009,52 @@ B.lesson({
      <div class="sg-row"><button class="btn" data-dn="-5">−5</button><button class="btn" data-dn="-0.5">−0.5</button><button class="btn" data-dn="0.5">+0.5</button><button class="btn" data-dn="5">+5</button><span class="sub">rpm</span></div></div>
      <div class="c6"><div class="sg-row"><button class="btn" id="l6sw">بادل طرفين من أطراف المولد</button><span id="l6sq" class="sub"></span></div>
      <div class="sg-row"><button class="btn primary sg-big" id="l6cb">أغلق القاطع الرئيسي</button><button class="btn" id="l6op">افتح القاطع</button></div>
-     <p class="sub">القضيب: <span class="ltr">380 V</span> خطي و<span class="ltr">60 Hz</span> (<b>أرقام توضيحية</b>). جهد المولد يتبع منحنى اللاحمل لمثال (3-1) مقيساً بحيث يعطي <span class="ltr">380 V</span> عند <span class="ltr">4.5 A</span> و<span class="ltr">1800 rpm</span>. شرط الإغلاق الناجح في المحاكاة: فرق جهد ≤ 5%، فرق تردد ≤ 0.2 Hz، وفرق الطور ≤ 12° (حدود توضيحية).</p></div></div></div>
+     <p class="sub">القضيب: <span class="ltr"><span data-t6="vb"></span> V</span> خطي و<span class="ltr"><span data-t6="fb"></span> Hz</span> (<b>أرقام توضيحية</b>). جهد المولد يتبع منحنى اللاحمل لمثال (3-1) مقيساً بحيث يعطي <span class="ltr"><span data-t6="vb"></span> V</span> عند <span class="ltr">4.5 A</span> و<span class="ltr"><span data-t6="ns"></span> rpm</span>. شرط الإغلاق الناجح في المحاكاة: فرق جهد ≤ <span class="ltr"><span data-t6="tv"></span>%</span>، فرق تردد ≤ <span class="ltr"><span data-t6="tf"></span> Hz</span>، وفرق الطور ≤ <span class="ltr"><span data-t6="tp"></span>°</span> (حدود توضيحية).</p></div></div></div>
    ${EXTRA_INFINITE_BUS?`<div class="panel c12" id="l6x"><h2><span class="sg-tag">إضافة من خارج الكتاب</span> <span>بعد الربط بالقضيب اللانهائي</span></h2><div id="l6xb"></div></div>`:''}
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l6st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
-  const setN=v=>{n=clamp(v,1500,1950);$('#l6n').value=n};
+  const TP=B.params($('#l6tp'),'u3-l6',[
+   {k:'VbL',label:'الجهد الخطي للقضيب',unit:'V',value:380,min:1,max:1e6},
+   {k:'Fb',label:'تردد القضيب',unit:'Hz',value:60,min:10,max:400,step:0.1},
+   {k:'TOLV',label:'أكبر فرق جهد يُسمح معه بالإغلاق',unit:'%',value:5,min:0.1,max:50,step:0.1},
+   {k:'TOLF',label:'أكبر فرق تردد يُسمح معه بالإغلاق',unit:'Hz',value:0.2,min:0.01,max:5,step:0.01},
+   {k:'TOLP',label:'أكبر فرق طور يُسمح معه بالإغلاق',unit:'°',value:12,min:0.5,max:90,step:0.5}].concat(EXTRA_INFINITE_BUS?[
+   {k:'XS6',label:'الممانعة التزامنية X<sub>S</sub> (بعد الربط)',unit:'Ω',value:1,min:0.001,max:1e4},
+   {k:'PLOSS',label:'مفاقيد المولد (بعد الربط)',unit:'kW',value:3,min:0,max:1e5}]:[]),()=>{const F0=Fb;applyTP();
+     const sl6=$('#l6n');sl6.min=25*Fb;sl6.max=32.5*Fb;n=closed?NS():clamp(n*Fb/F0,25*Fb,32.5*Fb);sl6.value=n;if(closed){If2=If;xUI()}lastS=''});
+  function applyTP(){const v=TP.v;VbL=v.VbL;Fb=v.Fb;Vbp=VbL/SQ3;TOLV=v.TOLV;TOLF=v.TOLF;TOLP=v.TOLP;if(EXTRA_INFINITE_BUS){XS6=v.XS6;PLOSS=v.PLOSS}
+   el.querySelectorAll('[data-t6]').forEach(x=>{x.textContent=fm({vb:VbL,fb:Fb,ns:NS(),tv:TOLV,tf:TOLF,tp:TOLP}[x.dataset.t6])})}
+  applyTP();Pin=PLOSS;
+  {const sl6=$('#l6n');sl6.min=25*Fb;sl6.max=32.5*Fb;n=clamp(n*Fb/60,25*Fb,32.5*Fb);sl6.value=n}
+  const setN=v=>{n=clamp(v,25*Fb,32.5*Fb);$('#l6n').value=n};
   $('#l6f').oninput=e=>{If=+e.target.value;if(closed)If2=If};$('#l6n').oninput=e=>{if(!closed)n=+e.target.value;else $('#l6n').value=n};
   el.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{if(!closed)setN(n+ +b.dataset.dn)});
   $('#l6sw').onclick=()=>{if(closed){flash='<div class="callout err">افتح القاطع أولاً قبل تغيير توصيل الأطراف.</div>';return}seq=seq?0:1;swaps++;lastS=''};
-  const conds=()=>{const dv=Math.abs(Vm()-VbL)/VbL,df=Fm()-Fb,dp=Math.abs(wrap180(phi));return {seq:!!seq,v:dv<=0.05,f:Math.abs(df)<=0.2,p:dp<=12,df,dp}};
+  const conds=()=>{const dv=Math.abs(Vm()-VbL)/VbL,df=Fm()-Fb,dp=Math.abs(wrap180(phi));return {seq:!!seq,v:dv<=TOLV/100,f:Math.abs(df)<=TOLF,p:dp<=TOLP,df,dp}};
   $('#l6cb').onclick=()=>{if(closed)return;const c=conds();
-   if(c.seq&&c.v&&c.f&&c.p){closed=1;phi=0;n=1800;$('#l6n').value=n;If2=If;Pin=PLOSS;flash='<div class="callout"><b>تم الربط بنجاح.</b> أُغلق القاطع لحظة التزامن: المصباح الأول منطفئ والمؤشر عند الساعة 12. أصبح المولد مربوطاً بالقضيب اللانهائي.</div>'}
+   if(c.seq&&c.v&&c.f&&c.p){closed=1;phi=0;n=NS();$('#l6n').value=n;If2=If;Pin=PLOSS;flash='<div class="callout"><b>تم الربط بنجاح.</b> أُغلق القاطع لحظة التزامن: المصباح الأول منطفئ والمؤشر عند الساعة 12. أصبح المولد مربوطاً بالقضيب اللانهائي.</div>'}
    else{bad++;const L=[];if(!c.seq)L.push('تتابع الأطوار مختلف (الشرط 3)');if(!c.v)L.push('الجهدان غير متساويين (الشرط 1)');if(!c.f)L.push(`الترددان غير متساويين (الشرط 2)${c.df<0?' — المولد أبطأ من القضيب':''}`);if(!c.p)L.push(`الجهدان ليسا في نفس الطور: فرق الطور ${fm(c.dp,0)}° (الشرط 4)`);
     flash=`<div class="callout err"><b>تحذير: إغلاق خاطئ!</b> الشروط غير المتحققة: <ul>${L.map(x=>`<li>${x}</li>`).join('')}</ul>الكتاب (ص 111): مخالفة الشروط تؤدي إلى «إتلاف ملفات المولد بسبب مرور تيار كبير فيها أو إلى كسر عمود الدوران بسبب تحوله إلى محرك يدور باتجاه معاكس لدوران التوربينة». في المحاكاة لم يُغلق القاطع؛ صحّح الشروط وحاول مجدداً.</div>`}
    lastS=''};
   $('#l6op').onclick=()=>{if(!closed)return;closed=0;flash='<div class="callout">فُتح القاطع: المولد منفصل عن القضيب، ويمكنك تغيير سرعته مجدداً.</div>';lastS=''};
   const st=[
    {t:'ساوِ الجهدين',x:'ارفع تيار المجال تدريجياً حتى يتساوى \\(V_m\\) مع \\(V_b\\) (الفرق أقل من 2%).',done:()=>Math.abs(Vm()-VbL)/VbL<0.02},
-   {t:'قرّب التردد',x:'اضبط سرعة الدوران حتى يصبح فرق التردد أقل من <span class="ltr">0.5 Hz</span> (نحو <span class="ltr">1800 rpm</span>).',done:()=>Math.abs(Fm()-Fb)<0.5},
+   {t:'قرّب التردد',x:'اضبط سرعة الدوران حتى يصبح فرق التردد أقل من <span class="ltr">0.5 Hz</span> (نحو السرعة التزامنية: <span class="ltr">1800 rpm</span> بالقيم التوضيحية).',done:()=>Math.abs(Fm()-Fb)<0.5},
    {t:'تتابع الأطوار',x:'راقب المصابيح: إذا كانت تضيء وتنطفئ <b>معاً</b> (الحالة الأولى) فتتابع الأطوار مختلف. اضغط «بادل طرفين» حتى تتتابع الإضاءة (الحالة الثانية).',done:()=>seq===1},
    {t:'دقّق التردد',x:'اجعل فرق التردد صغيراً جداً (≤ <span class="ltr">0.1 Hz</span>): يتباطأ تتابع المصابيح ودوران مؤشر جهاز التزامن. المؤشر يدور نحو Fast إذا كان المولد أسرع ونحو Slow إذا كان أبطأ.',done:()=>seq&&Math.abs(Fm()-Fb)<=0.1},
    {t:'أغلق القاطع',x:'انتظر اللحظة التي ينطفئ فيها المصباح الأول ويضيء الثاني والثالث، ويقف المؤشر عند الساعة 12 (\\(V_S\\approx0\\))، ثم اضغط «أغلق القاطع الرئيسي». جرّب أيضاً الإغلاق في لحظة خاطئة لترى التحذير.',done:()=>closed}];
   if(EXTRA_INFINITE_BUS)st.push(
-   {t:'(إضافة) زد عزم المحرك الأولي',x:'في لوحة «بعد الربط» زد قدرة المحرك الأولي فوق <span class="ltr">60 kW</span>: تبقى السرعة <span class="ltr">1800 rpm</span> وتزيد δ والقدرة المرسلة إلى القضيب.',done:()=>closed&&Pin>=60},
+   {t:'(إضافة) زد عزم المحرك الأولي',x:'في لوحة «بعد الربط» زد قدرة المحرك الأولي فوق <span class="ltr">60 kW</span>: تبقى السرعة ثابتة عند السرعة التزامنية (<span class="ltr">1800 rpm</span> بالقيم التوضيحية) وتزيد δ والقدرة المرسلة إلى القضيب.',done:()=>closed&&Pin>=60},
    {t:'(إضافة) غيّر تيار المجال',x:'غيّر تيار المجال صعوداً وهبوطاً: القدرة الفعالة ثابتة تقريباً، والقدرة غير الفعالة تغير إشارتها (المولد يعطي ثم يأخذ قدرة غير فعالة).',done:()=>seenQp&&seenQn},
    {t:'(إضافة) فقد التزامن',x:'زد قدرة المحرك الأولي كثيراً أو أضعف المجال جداً حتى تتجاوز δ الزاوية 90°: يفقد المولد التزامن.',done:()=>lostSync});
   const steps=stepsUI($('#l6st'),st);
   const xb=EXTRA_INFINITE_BUS?$('#l6xb'):null;
   const xUI=()=>{if(!xb)return;if(!closed){xb.innerHTML='<p class="sub">أغلق القاطع بنجاح أولاً (اتبع خطوات التزامن). بعدها تظهر هنا تجربة تغيير عزم المحرك الأولي وتيار المجال. السلوك المعروض هنا <b>ليس من الكتاب</b>.</p>';return}
-   xb.innerHTML=`<div class="grid" style="margin-top:0"><div class="c6">${sl('l6p','قدرة المحرك الأولي (العزم × السرعة)',0,200,0.5,Pin)}<p class="sub">تيار المجال: استعمل المنزلق في لوحة «التحكم». السرعة مقفلة على تردد القضيب ولا تتحرك.</p>
+   const pMax=Math.max(200,Math.ceil(1.15*3*Vbp*Vbp*occ(8)/occ(4.5)/XS6/1000/10)*10);Pin=Math.min(Pin,pMax);
+   xb.innerHTML=`<div class="grid" style="margin-top:0"><div class="c6">${sl('l6p','قدرة المحرك الأولي (العزم × السرعة)',0,pMax,0.5,Pin)}<p class="sub">تيار المجال: استعمل المنزلق في لوحة «التحكم». السرعة مقفلة على تردد القضيب ولا تتحرك.</p>
     <div class="facts">${fact('السرعة','l6xn')}${fact('زاوية القدرة δ','l6xd')}${fact('القدرة الفعالة إلى القضيب','l6xp')}${fact('القدرة غير الفعالة','l6xq')}${fact('تيار الخط','l6xi')}${fact('معامل القدرة','l6xf')}</div><div id="l6xm" class="sg-msg"></div></div>
-    <div class="c6"><div id="l6xph" class="svgbox" style="max-width:480px;margin-inline:auto"></div><p class="sub">المخطط الاتجاهي لوجه واحد مع إهمال \\(R_A\\). \\(X_S = 1\\ \\Omega\\) والمفاقيد <span class="ltr">3 kW</span> <b>أرقام توضيحية</b>.</p></div></div>`;
+    <div class="c6"><div id="l6xph" class="svgbox" style="max-width:480px;margin-inline:auto"></div><p class="sub">المخطط الاتجاهي لوجه واحد مع إهمال \\(R_A\\). <span class="ltr">X<sub>S</sub> = ${fm(XS6)} Ω</span> والمفاقيد <span class="ltr">${fm(PLOSS)} kW</span> <b>أرقام توضيحية</b>.</p></div></div>`;
    B.math(xb);$('#l6p').oninput=e=>{Pin=+e.target.value}};
   let wasClosed=-1;
   loopOn(el,dt=>{
@@ -1048,10 +1073,10 @@ B.lesson({
    let extraMsg='';
    if(closed&&EXTRA_INFINITE_BUS&&$('#l6p')){$('#l6p-v').textContent=fm(Pin,1)+' kW';If2=If;
     const E=Vbp*occ(If2)/occ(4.5),Pe=(Pin-PLOSS)*1000,arg=Pe*XS6/(3*Vbp*Math.max(E,1e-6));
-    if(Math.abs(arg)>1||E<1){closed=0;lostSync=1;flash='<div class="callout err"><b>فقد التزامن (إضافة من خارج الكتاب):</b> القدرة المطلوبة تجاوزت \\(P_{max}=3VE/X_S\\) فتجاوزت δ الزاوية 90°. فُتح القاطع في المحاكاة. أعد التزامن من جديد.</div>';n=1800+12;$('#l6n').value=n;lastS=''}
+    if(Math.abs(arg)>1||E<1){closed=0;lostSync=1;flash='<div class="callout err"><b>فقد التزامن (إضافة من خارج الكتاب):</b> القدرة المطلوبة تجاوزت \\(P_{max}=3VE/X_S\\) فتجاوزت δ الزاوية 90°. فُتح القاطع في المحاكاة. أعد التزامن من جديد.</div>';n=NS()+12*Fb/60;$('#l6n').value=n;lastS=''}
     else{const d=Math.asin(arg)/D,Ev=cpol(E,d),Ic=cdiv(csub(Ev,Cx(Vbp)),Cx(0,XS6)),S=cmul(Cx(3*Vbp),Cx(Ic.re,-Ic.im)),P=S.re/1000,Q=S.im/1000,pfv=Math.abs(P)/Math.max(1e-9,Math.hypot(P,Q));
      if(Q>2)seenQp=1;if(Q<-2)seenQn=1;
-     $('#l6xn').textContent='1800 rpm';$('#l6xd').textContent=fm(d,2)+'°';$('#l6xp').textContent=fm(P,1)+' kW';$('#l6xq').textContent=fm(Q,1)+' kVAr';$('#l6xi').textContent=fm(cabs(Ic),1)+' A';
+     $('#l6xn').textContent=fm(NS(),0)+' rpm';$('#l6xd').textContent=fm(d,2)+'°';$('#l6xp').textContent=fm(P,1)+' kW';$('#l6xq').textContent=fm(Q,1)+' kVAr';$('#l6xi').textContent=fm(cabs(Ic),1)+' A';
      $('#l6xf').textContent=cabs(Ic)<0.5?'—':fm(pfv,3)+(Math.abs(Q)<0.5?'':Q>0?' متأخر':' متقدم');
      const sx=[Math.round(Pin*2),Math.round(If2*100)].join();if(sx!==$('#l6xph').dataset.s){$('#l6xph').dataset.s=sx;$('#l6xph').innerHTML=phasorSVG({V:Vbp,I:Ic,RA:0,XS:XS6,Iref:Math.max(50,cabs(Ic))});
       $('#l6xm').innerHTML=`<div class="callout">${P>0.5?'القدرة تنتقل <b>من المولد إلى القضيب</b> (δ موجبة).':P<-0.5?'القدرة تنتقل <b>من القضيب إلى الآلة</b>: قدرة المحرك الأولي أقل من المفاقيد، فالآلة تعمل كمحرك (δ سالبة).':'لا تقريباً قدرة فعالة متبادلة: المحرك الأولي يغطي المفاقيد فقط.'} ${Q>0.5?'تيار المجال كبير: المولد يعطي القضيب قدرة غير فعالة وتياره متأخر.':Q<-0.5?'تيار المجال صغير: المولد يأخذ قدرة غير فعالة من القضيب وتياره متقدم.':''}</div>`}}}

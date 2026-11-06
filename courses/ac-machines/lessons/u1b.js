@@ -404,7 +404,7 @@ B.lesson({
  ],
  lab:(el)=>{
   const st={VL:240,conn:'d',R1:.4,R2:.6,X1:1,X2:1,ns:1800,TL:69.7,orient:'n',mode:'book',fam:0,k:1,pre:0};
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="tqtp"></div><div class="grid">
    <div class="panel c7"><h2>منحنى العزم والانزلاق حيّاً <small>المعادلة (1-34)، والأشكال (1-19) و (1-20) و (1-21) ص 47–50</small></h2>
     <div class="u1b-row"><span class="lab">المحور:</span>${segHTML('to',[['s','الشكل (1-19): محور S'],['n','الشكل (1-20): محور n']],st.orient)}</div>
     <div class="u1b-row"><span class="lab">العزم الأقصى:</span>${segHTML('tm',[['book','طريقة الكتاب (بإهمال معاوقة الثابت)'],['full','المنحنى الكامل']],st.mode)}</div>
@@ -423,7 +423,7 @@ B.lesson({
     ${sl('tqtl','عزم الحمل <span class="ltr">T<sub>L</sub></span>',0,600,0.1,st.TL)}
     <div class="u1b-row"><span class="lab">مقاومة العضو الدوار (الشكل 1-21):</span>${segHTML('tk',[[1,'Ro'],[2,'2Ro'],[3,'3Ro'],[4,'4Ro'],[5,'5Ro'],[6,'6Ro']],st.k)}</div>
     <div class="u1b-row"><label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="tqfam"> اعرض عائلة المنحنيات الست</label></div>
-    <div class="u1b-row"><button class="btn primary" id="tq18">قيم مثال (1-8)</button><button class="btn" id="tqF">قيم توضيحية للشكل (1-21)</button></div></div>
+    <div class="u1b-row"><button class="btn primary" id="tq18">قيم مثال (1-8)</button><button class="btn" id="tqF"><span id="tqFl">قيم توضيحية</span> للشكل (1-21)</button></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="tqSt"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
@@ -435,7 +435,12 @@ B.lesson({
   $('#tqfam').onchange=e=>{st.fam=e.target.checked?1:0;draw()};
   const setAll=()=>{[['tqvl','VL'],['tqr1','R1'],['tqr2','R2'],['tqx1','X1'],['tqx2','X2'],['tqtl','TL']].forEach(([id,k])=>{$('#'+id).value=st[k]});segs.forEach(([a,k])=>segSet(el,a,st[k]))};
   $('#tq18').onclick=()=>{Object.assign(st,{VL:240,conn:'d',R1:.4,R2:.6,X1:1,X2:1,ns:1800,k:1,pre:18});setAll();draw()};
-  $('#tqF').onclick=()=>{Object.assign(st,{VL:240,conn:'d',R1:.4,R2:.4,X1:1,X2:1,ns:1800,k:1,fam:1,TL:60,pre:21});$('#tqfam').checked=true;setAll();draw()};
+  const TP=B.params($('#tqtp'),'u1-l8',[
+   {k:'Ro',label:'مقاومة الدوار Ro (زر الشكل 1-21)',unit:'Ω',value:0.4,min:0.05,max:3,step:0.01},
+   {k:'TL',label:'عزم الحمل T<sub>L</sub> (زر الشكل 1-21)',unit:'Nm',value:60,min:0,max:600,step:0.1}],()=>{fLbl();if(st.pre===21)applyF(st.k)});
+  const fLbl=()=>{$('#tqFl').textContent=TP.trainer?'قيم المدرب':'قيم توضيحية'};fLbl();
+  const applyF=k=>{Object.assign(st,{VL:240,conn:'d',R1:.4,R2:TP.v.Ro,X1:1,X2:1,ns:1800,k:k||1,fam:1,TL:TP.v.TL,pre:21});$('#tqfam').checked=true;setAll();draw()};
+  $('#tqF').onclick=()=>applyF();
   const W=()=>{const P=Object.assign(prm(),{R2:st.R2*st.k});return {P,tst:TQ.tst(P),tmf:TQ.tmF(P),so:TQ.opS(P,st.TL)}};
   const steps=stepsUI($('#tqSt'),[
    {t:'قيم مثال (1-8)',x:'اضغط «قيم مثال (1-8)». لاحظ <span class="ltr">T<sub>st</sub> ≈ 109.9 Nm</span> و <span class="ltr">I\'<sub>2st</sub> ≈ 107.33 A</span>، وهي نتائج المثال.',done:()=>st.pre===18},
@@ -443,7 +448,7 @@ B.lesson({
    {t:'اقلب المحور',x:'اختر «الشكل (1-19): محور S» ثم ارجع إلى الشكل (1-20). هو المنحنى نفسه، والفرق اتجاه المحور فقط.',done:()=>st.orient==='s'},
    {t:'العزم الأقصى بطريقتين',x:'اختر «المنحنى الكامل»: قمة منحنى (1-34) نحو <span class="ltr">188 Nm</span> عند <span class="ltr">S ≈ 0.29</span>. ثم ارجع إلى «طريقة الكتاب»: المنحنى المتقطع البرتقالي (1-35) قمته <span class="ltr">457.92 Nm</span> عند <span class="ltr">S<sub>m</sub> = 0.6</span> لأنه يهمل R<sub>1</sub> و X<sub>1</sub>.',done:()=>st.mode==='full'},
    {t:'حمل أكبر من عزم البدء',x:'ارفع <span class="ltr">T<sub>L</sub></span> فوق عزم البدء وتحت العزم الأقصى: المحرك لا يستطيع أن يبدأ بهذا الحمل، ويستطيع أن يحمله إذا بدأ بحمل خفيف (ص 48).',done:w=>st.TL>w.tst&&st.TL<w.tmf},
-   {t:'مقاومة العضو الدوار',x:'اضغط «قيم توضيحية للشكل (1-21)» ثم اختر <span class="ltr">4Ro</span> ثم <span class="ltr">5Ro</span>: تنتقل القمة نحو <span class="ltr">S = 1</span> ويرتفع عزم البدء، وارتفاع القمة لا يتغير.',done:()=>st.pre===21&&st.k===5},
+   {t:'مقاومة العضو الدوار',x:'اضغط زر «قيم توضيحية للشكل (1-21)» (أو «قيم المدرب للشكل (1-21)») ثم اختر <span class="ltr">4Ro</span> ثم <span class="ltr">5Ro</span>: تنتقل القمة نحو <span class="ltr">S = 1</span> ويرتفع عزم البدء، وارتفاع القمة لا يتغير.',done:()=>st.pre===21&&st.k===5},
    {t:'بعد أن تتجاوز القمة لحظة البدء',x:'اختر <span class="ltr">6Ro</span>: قمته خرجت عن <span class="ltr">S = 1</span> فصار عزم البدء <b>أقل</b> من 5Ro، كما في الشكل (1-21) (انظر ملاحظة الكتاب في الشرح).',done:()=>st.k===6}
   ],W);
   const draw=()=>{const P0=prm(),w=W(),P=w.P,K=TQ.K(st.ns);
@@ -594,9 +599,9 @@ function autoRun(mk){const plan={dol:[[0,{1:1}]],sr:[[0,{1:1}],[0.8,{1:1,2:1}],[
    if(n++%6===0||!tr.length||tr[tr.length-1][3]!==s.stage)tr.push([u,T,I,s.stage]);
    const du=(T-TLoad(u))/JM*dt;if(k===plan.length-1&&Math.abs(du)<2e-7)break;u=clamp(u+du,0,0.999);t+=dt}
   return tr}
-function scChart(which,mk,tr,pt,cvKey,W){const isT=which==='T',ym=isT?3:7,us=[];for(let i=0;i<=120;i++)us.push(i/120);
+function scChart(which,mk,tr,pt,cvKey,W,tl){tl=tl||TLoad;const isT=which==='T',ym=isT?3:7,us=[];for(let i=0;i<=120;i++)us.push(i/120);
   const ser=[{pts:us.map(u=>[u,isT?Td(u):Id(u)]),col:'--muted',w:1.7,dash:'6 4'}];
-  if(isT)ser.push({pts:us.map(u=>[u,TLoad(u)]),col:'--stop',w:1.3,dash:'2 4'});
+  if(isT)ser.push({pts:us.map(u=>[u,tl(u)]),col:'--stop',w:1.3,dash:'2 4'});
   if(cvKey&&cvKey!=='dol'){const cv=CUR[cvKey];ser.push({pts:us.map(u=>[u,isT?cv.T(u):cv.I(u)]),col:'--blue',w:1.4,op:.6})}
   if(tr.length>1)ser.push({pts:tr.map(q=>[q[0],isT?q[1]:q[2]]),col:'--live',w:3});
   return chartSVG({W:W||440,H:230,L:40,B:34,x0:0,x1:1,y0:0,y1:ym,yt:isT?[0,1,2,3]:[0,1,2,3,4,5,6,7],xt:[0,.25,.5,.75,1],xf:v=>v===0?'0':v===1?'ns':'',xl:'n',yl:isT?'T/Tn':'I/In',series:ser,aria:isT?'منحنى العزم':'منحنى التيار',
@@ -658,7 +663,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let mk='sd',c=C0(),u=0,tr=[],Imax=0,msg='',lastSig='',tChart=0,ang=0,visited=[],trip=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="sTp"></div><div class="grid">
    <div class="panel c7"><h2>لوحة البدء <small id="sFig"></small></h2>
     <div class="u1b-row">${segHTML('sm',MKS.map(k=>[k,SM[k].name]),mk)}</div>
     <p class="sub" style="margin-top:8px">اضغط على رقم القاطع في الرسم (أو على المفاتيح تحته) لتغلقه أو تفتحه. نفّذ «مراحل التشغيل» بترتيب الكتاب.</p>
@@ -666,14 +671,20 @@ B.lesson({
     <div class="u1b-row" id="sB"></div>
     <div id="sMsg" class="u1b-msg"></div>
     <h3 class="sm" style="margin-top:12px">مراحل التشغيل <span class="ref" id="sRef"></span></h3><ol class="u1b-stg" id="sStg"></ol></div>
-   <div class="panel c5"><h2>المحرك <small>أرقام توضيحية، والزمن مُبطّأ</small></h2>
+   <div class="panel c5"><h2>المحرك <small><span id="sTpL">أرقام توضيحية</span>، والزمن مُبطّأ</small></h2>
     <div class="svgbox" style="max-width:260px;margin-inline:auto"><svg viewBox="0 0 220 150" role="img" aria-label="سرعة المحرك"><circle cx="110" cy="70" r="52" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/><g id="sRot"><path d="M110 70L110 24" stroke="var(--live)" stroke-width="5" stroke-linecap="round"/><path d="M110 70L150 93M110 70L70 93" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/></g><circle cx="110" cy="70" r="6" fill="var(--fg)"/><rect x="20" y="132" width="180" height="10" rx="5" fill="var(--surface-2)" stroke="var(--line)"/><rect id="sBar" x="20" y="132" width="0" height="10" rx="5" fill="var(--on)"/></svg></div>
-    <div class="facts">${fact('السرعة <bdi dir="ltr">n</bdi> (n<sub>s</sub> = 1500)','sN')}${fact('التيار <bdi dir="ltr">I/I<sub>n</sub></bdi>','sI')}${fact('العزم <bdi dir="ltr">T/T<sub>n</sub></bdi>','sT')}${fact('أعلى تيار في هذا التشغيل','sMax')}${fact('التوصيلة','sL')}</div>
+    <div class="facts">${fact('السرعة <bdi dir="ltr">n</bdi> (n<sub>s</sub> = <span id="sNs">1500</span>)','sN')}${fact('التيار <bdi dir="ltr">I/I<sub>n</sub></bdi>','sI')}${fact('العزم <bdi dir="ltr">T/T<sub>n</sub></bdi>','sT')}${fact('أعلى تيار في هذا التشغيل','sMax')}${fact('التوصيلة','sL')}</div>
     <div class="u1b-row"><button class="btn" id="sRst">افصل الكل وأعد التجربة</button></div></div>
    <div class="panel c12"><h2>منحنى العزم والتيار <small>مثل الأشكال (1-24) و (1-26) و (1-28) و (1-30) و (1-32)</small></h2>
     <div class="u1b-two"><div class="svgbox" id="sCT"></div><div class="svgbox" id="sCI"></div></div>${scLegend}</div>
    <div class="panel c12">${tryList(['اختر «نجمة / دلتا»: أغلق القاطع 2 ثم القاطع 1. يبدأ المحرك بتيار نحو <span class="ltr">2.3 I<sub>n</sub></span> (ثلث المباشر). عندما تقترب السرعة من الثبات افتح 2 ثم أغلق 3: يقفز التيار والعزم إلى منحنى التوصيل المباشر (الشكل 1-28).','جرّب إغلاق 3 والقاطع 2 ما زال مغلقاً: قصر بين الأوجه وتُفصل القواطع.','اختر «توصيل مباشر» وأغلق 1: لاحظ التيار نحو <span class="ltr">7 I<sub>n</sub></span> عند البدء (الشكل 1-22)، ثم قارنه بكل طريقة.','«مقاومات الثابت» و«مقاومات الدوار»: نفّذ المراحل 1 ثم 2 ثم 3 ولاحظ القفزات في كل مرحلة (الشكلان 1-24 و 1-30).','«بادئ إلكتروني»: أغلق 1 وراقب التيار ثابتاً عند <span class="ltr">3 I<sub>n</sub></span> والعزم يرتفع بنعومة بلا قفزات (الشكل 1-32).'])}</div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
+  const TP=B.params($('#sTp'),'u1-l9',[
+   {k:'ns',label:'السرعة التزامنية للمحرك n<sub>s</sub>',unit:'rpm',value:1500,min:100,max:3600,step:1},
+   {k:'T0',label:'عزم الحمل عند البدء (نسبة إلى العزم المقنن T/T<sub>n</sub>)',unit:'',value:0.2,min:0,max:3,step:0.01},
+   {k:'T1',label:'عزم الحمل عند السرعة التزامنية (نسبة إلى T<sub>n</sub>)',unit:'',value:0.75,min:0,max:3,step:0.01}],()=>{tpUI();tChart=1});
+  const tpUI=()=>{$('#sNs').textContent=fm(TP.v.ns);$('#sTpL').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية'};tpUI();
+  const TLl=u=>TP.v.T0+(TP.v.T1-TP.v.T0)*u*u;   // load torque (default = TLoad: 0.2 + 0.55u²)
   const st=()=>SM[mk].state(c);
   const reset=()=>{c=C0();u=0;tr=[];Imax=0;msg='';visited=[];trip=0;lastSig=''};
   const toggle=k=>{if(trip){trip=0}const before=st();c[k]=c[k]?0:1;const s=st();
@@ -689,7 +700,7 @@ B.lesson({
   let prevOn=0;
   loopOn(el,dt=>{const s=st();let T=0,I=0;if(s.cv){const cv=CUR[s.cv];T=cv.T(u);I=cv.I(u)}
    if(s.cv&&!prevOn&&u<0.02){tr=[];Imax=0}prevOn=s.cv?1:0;
-   const du=(T-TLoad(u))/JM*dt;u=clamp(u+du,0,0.995);if(!s.cv&&u<0.002)u=0;
+   const du=(T-TLl(u))/JM*dt;u=clamp(u+du,0,0.995);if(!s.cv&&u<0.002)u=0;
    if(s.cv){const l=tr[tr.length-1];if(!l||Math.abs(u-l[0])>0.003||Math.abs(T-l[1])>0.04||l[3]!==s.stage){tr.push([u,T,I,s.stage]);if(tr.length>3000)tr.shift()}Imax=Math.max(Imax,I)}
    ang=(ang+u*360*dt*1.6)%360;$('#sRot').setAttribute('transform',`rotate(${ang.toFixed(1)} 110 70)`);$('#sBar').setAttribute('width',(180*u).toFixed(1));
    const sig=mk+JSON.stringify(c)+trip;
@@ -698,8 +709,8 @@ B.lesson({
     $('#sRef').textContent=SM[mk].fig.replace(/^.*?ص/,'ص');
     $('#sStg').innerHTML=SM[mk].stages.map((t,i)=>`<li class="${i===s.stage?'on':''} ${visited.includes(i)&&i!==s.stage?'ok':''}">${t}${i===s.stage?' ◀':''}</li>`).join('');$('#sMsg').innerHTML=msg}
    tChart+=dt;if(tChart>0.08){tChart=0;
-    $('#sCT').innerHTML=scChart('T',mk,tr,s.cv?[u,T,I]:null,s.cv);$('#sCI').innerHTML=scChart('I',mk,tr,s.cv?[u,T,I]:null,s.cv);
-    $('#sN').textContent=fm(Math.round(u*1500))+' rpm';$('#sI').textContent=fm(R(I,2));$('#sT').textContent=fm(R(T,2));$('#sMax').textContent=Imax?fm(R(Imax,2))+' In':'—';$('#sL').textContent=trip?'فُصل (خطأ)':(s.lbl||'—')}});
+    $('#sCT').innerHTML=scChart('T',mk,tr,s.cv?[u,T,I]:null,s.cv,0,TLl);$('#sCI').innerHTML=scChart('I',mk,tr,s.cv?[u,T,I]:null,s.cv,0,TLl);
+    $('#sN').textContent=fm(Math.round(u*TP.v.ns))+' rpm';$('#sI').textContent=fm(R(I,2));$('#sT').textContent=fm(R(T,2));$('#sMax').textContent=Imax?fm(R(Imax,2))+' In':'—';$('#sL').textContent=trip?'فُصل (خطأ)':(s.lbl||'—')}});
  },
  quiz:[
   {q:'لماذا يكون تيار البدء عالياً في المحرك الحثي؟',o:['لأن المقاومة \\(R\'_2\\frac{1-S}{S}\\) تساوي صفراً عند البدء (S = 1)','لأن الجهد يرتفع عند البدء','لأن التردد يقل','لأن مفاقيد الاحتكاك كبيرة'],c:0,e:'ص 58: عند S = 1 تصبح المقاومة الممثلة للحمل مقصورة فيرتفع التيار.'},

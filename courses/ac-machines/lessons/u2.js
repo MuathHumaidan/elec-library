@@ -89,6 +89,9 @@ const sample=(f,a,b,N)=>{N=N||80;const p=[];for(let i=0;i<=N;i++){const x=a+(b-a
 const SM=0.2;
 const Tkl=s=>{const a=Math.abs(s);if(a<1e-9)return 0;return Math.sign(s)*2/(a/SM+SM/a)};
 const Tfw=n=>Tkl(1-n),Tbw=n=>-Tkl(1+n),Ttot=n=>Tfw(n)+Tbw(n);
+const Tfw0=Tfw,Tbw0=Tbw,Ttot0=Ttot;
+/* نفس الشكل بانزلاق أقصى عزم sm (للمعمل: قيم المدرب) */
+const klossSet=sm=>{const k=s=>{const a=Math.abs(s);if(a<1e-9)return 0;return Math.sign(s)*2/(a/sm+sm/a)};const fw=n=>k(1-n),bw=n=>-k(1+n);return {fw,bw,tot:n=>fw(n)+bw(n)}};
 
 /* ---------- torque–speed curves read from the printed figures (approximate) ---------- */
 const CUR={
@@ -125,12 +128,18 @@ function tsPlot(type,o){o=o||{};const c=CUR[type],sw=c.sw;const P={w:520,h:290,x
 
 /* ---------- running-motor model shared by labs 2–5 (pu, أرقام توضيحية) ---------- */
 function mkMotor(type){return {type,on:0,n:0,sw:true,L:0.4,kind:'const',k:1,fail:0,stall:0,ang:0,T:0,TL:0}}
-function motorStep(m,dt,J){J=J||2.2;const c=CUR[m.type];
+/* J = ثابت زمن التسارع (s)، m.fr = عزم الاحتكاك عند سرعة التزامن (pu). خطوات أصغر تلقائياً إذا صغُر J (للثبات)؛ بالقيم التوضيحية خطوة واحدة دائماً */
+function motorStep(m,dt,J){J=J||2.2;const k=Math.max(1,Math.ceil(dt*25/J));if(k>1){for(let i=0;i<k;i++)motorStep1(m,dt/k,J);return m}return motorStep1(m,dt,J)}
+function motorStep1(m,dt,J){const c=CUR[m.type];
   if(c.sw!=null){if(m.sw&&m.n>=c.sw)m.sw=false;else if(!m.sw&&m.n<c.sw-0.03)m.sw=true}
   let T=0;if(m.on){T=(c.both&&m.sw&&!m.fail)?c.both(m.n)*(m.k==null?1:m.k):(m.customMain?m.customMain(m.n):c.main(m.n))}
-  const TL=m.L*(m.kind==='fan'?m.n*m.n:1),fr=0.05*m.n+(m.on?0:0.25*m.n);
+  const TL=m.L*(m.kind==='fan'?m.n*m.n:1),fr=(m.fr==null?0.05:m.fr)*m.n+(m.on?0:0.25*m.n);
   if(m.n<=1e-4&&T<=TL+1e-9){m.n=0;m.stall=m.on?m.stall+dt:0}else{m.stall=0;m.n=clamp(m.n+(T-TL-fr)/J*dt,0,0.999)}
   m.T=T;m.TL=m.n<=1e-4?Math.min(TL,T):TL;m.ang=(m.ang+m.n*240*dt)%360;return m}
+/* «قيم المدرب» لنموذج الحركة المشترك (الدروس 2–5) */
+const motorDefs=J0=>[
+  {k:'J',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:J0,min:0.1,max:30,step:0.1},
+  {k:'fr',label:'عزم الاحتكاك عند سرعة التزامن',unit:'pu',value:0.05,min:0,max:0.5,step:0.01}];
 const loadPts=m=>sample(n=>m.L*(m.kind==='fan'?n*n:1),0,1,40);
 function rotorSVG(id,lab){let s=`<svg viewBox="0 0 200 200" role="img" aria-label="العضو الدوار"><circle cx="100" cy="100" r="86" fill="var(--surface-2)" stroke="var(--line)" stroke-width="10"/><g id="${id}"><circle cx="100" cy="100" r="64" class="coil"/>`;
   for(let i=0;i<12;i++){const a=i*30*D;s+=`<circle cx="${fx(100+52*Math.cos(a))}" cy="${fx(100+52*Math.sin(a))}" r="5" fill="var(--wire)"/>`}
@@ -195,7 +204,7 @@ function fig22SVG(){let s=`<svg viewBox="0 0 600 290" role="img" aria-label="ا�
   [0,45,90,135,180,225].forEach((ph,i)=>{const cx=100+(i%3)*200,cy=i<3?72:212;s+=pulseCircle(cx,cy,46,ph)+S.t(cx-62,cy-48,String(i+1),'b');
     s+=S.t(cx+56,cy-30,'ωs','m','start');if(ph===0||ph===180)s+=S.t(cx,cy+64,'B = 0','m')});
   return s+'</svg>'}
-function fig23(o){o=o||{};const P={w:540,h:300,x0:-1,x1:1,y0:-1.15,y1:1.15,xt:[-1,-0.5,0,0.5,1],yt:[-1,-0.5,0,0.5,1],xf:v=>Math.abs(v).toFixed(1),yf:v=>v.toFixed(1),xl:'Speed (p.u.)',yl:'Torque',aria:'الشكل 2-3 منحنى العزم مع السرعة',
+function fig23(o){o=o||{};const Tfw=o.fw||Tfw0,Tbw=o.bw||Tbw0,Ttot=o.tot||Ttot0;const P={w:540,h:300,x0:-1,x1:1,y0:-1.15,y1:1.15,xt:[-1,-0.5,0,0.5,1],yt:[-1,-0.5,0,0.5,1],xf:v=>Math.abs(v).toFixed(1),yf:v=>v.toFixed(1),xl:'Speed (p.u.)',yl:'Torque',aria:'الشكل 2-3 منحنى العزم مع السرعة',
    series:[{pts:sample(Tfw,-1,1,160),col:'--stop',w:2.4},{pts:sample(Tbw,-1,1,160),col:'--blue',w:2.4},{pts:sample(Ttot,-1,1,160),col:'--fg',w:3}],
    extra:(X,Y)=>S.t(fx(X(0.82)),fx(Y(1.08)),'Forward Field','','middle')+`<g style="fill:var(--blue)">${S.t(fx(X(-0.5)),fx(Y(-1.0)),'Backward Field','b','middle')}</g>`+S.t(fx(X(0.4)),fx(Y(0.15)),'Total Torque','','start')+
     (o.live?`<path id="${o.live}-cur" d="" stroke="var(--live)" stroke-width="1.6" stroke-dasharray="5 4"/><circle id="${o.live}-f" r="5.5" cx="-20" cy="-20" fill="var(--stop)"/><circle id="${o.live}-b" r="5.5" cx="-20" cy="-20" fill="var(--blue)"/><circle id="${o.live}-t" r="6.5" cx="-20" cy="-20" fill="var(--fg)"/><circle id="${o.live}-op" r="8" cx="-20" cy="-20" fill="none" stroke="var(--live)" stroke-width="3"/>`:'')};
@@ -355,8 +364,8 @@ B.lesson({
  ],
  lab:(el)=>{
   let phi=0,play=0,vs=0.25,stage=0,played=0,cur=0.3,cMoved=0,on=0,n=0,L=0.05,ang=0,restT=0,dirs={p:0,m:0};
-  const F=fig23({live:'l1'});
-  el.innerHTML=`<div class="grid">
+  let F=null,K=null;
+  el.innerHTML=`<div id="l1tp"></div><div class="grid">
    <div class="panel c7"><h2>المجال النابض = مجالان دواران <small>مبنية على الشكل (2-2) ص 76</small></h2>
     <div class="svgbox" style="max-width:360px;margin-inline:auto"><svg viewBox="0 0 300 300" role="img" aria-label="المتجهات الدوارة" id="l1v"></svg></div>
     <div class="im-row"><button class="btn primary" id="l1play">تشغيل الدوران</button><span class="sub">المراحل كما في الشكل:</span>${segHTML('stg',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']],0)}</div>
@@ -364,8 +373,8 @@ B.lesson({
     <div class="facts">${fact('|B<sub>f</sub>| = |B<sub>b</sub>|','l1bf')}${fact('المحصلة B (رأسية)','l1b')}${fact('زاوية الدوران ω<sub>s</sub>t','l1ph')}</div></div>
    <div class="panel c5"><h2>المحصلة B مع الزمن</h2><div class="svgbox"><svg viewBox="0 0 320 200" id="l1w" role="img" aria-label="المحصلة مع الزمن"></svg></div>
     <p class="sub">المحصلة لا تدور: تكبر وتصغر وتنعكس على المحور الرأسي فقط، وأقصى قيمة لها \\(B_{1\\max}\\) = ضعف طول كل سهم.</p>${legend([['--stop','B<sub>f</sub> الأمامي (عكس عقارب الساعة)'],['--blue','B<sub>b</sub> الخلفي (مع عقارب الساعة)'],['--fg','B المحصلة']])}</div>
-   <div class="panel c7"><h2>عزم المجالين والمحصلة <small>مبنية على الشكل (2-3) ص 76 (أرقام توضيحية)</small></h2>
-    <div class="svgbox im-svg">${F.svg}</div>${legend([['--stop','الأمامي'],['--blue','الخلفي'],['--fg','المحصلة'],['--live','نقطة تشغيل المحرك']])}
+   <div class="panel c7"><h2>عزم المجالين والمحصلة <small>مبنية على الشكل (2-3) ص 76 (<span id="l1tpw">أرقام توضيحية</span>)</small></h2>
+    <div class="svgbox im-svg" id="l1tq"></div>${legend([['--stop','الأمامي'],['--blue','الخلفي'],['--fg','المحصلة'],['--live','نقطة تشغيل المحرك']])}
     ${sl('l1c','مؤشر السرعة للاستكشاف (موجب = مع المجال الأمامي)',-1,1,0.01,cur)}
     <div class="facts">${fact('عزم الأمامي','l1tf')}${fact('عزم الخلفي','l1tb')}${fact('المحصلة','l1tt')}</div><div class="callout" id="l1msg"></div></div>
    <div class="panel c5"><h2>المحرك <small>بيانات مثال (2-1): 60 Hz، 4 أقطاب</small></h2>
@@ -375,6 +384,12 @@ B.lesson({
     <div class="facts">${fact('السرعة','l1n')}${fact('الانزلاق S','l1s')}${fact('S<sub>b</sub> = 2 − S','l1sb')}${fact('الحالة','l1st')}</div></div>
    <div class="panel c12">${tryList(['اضغط المراحل 1 ثم 3 ثم 5: المحصلة صفر عندما يتعاكس السهمان، وأقصى قيمة عندما ينطبقان.','حرّك مؤشر السرعة إلى الصفر: عزم الأمامي يساوي عزم الخلفي ويعاكسه، فالمحصلة صفر.','صِل المصدر والدوار ساكن: لا يدور. ثم أعطه دفعة في أي اتجاه: يكمل في نفس الاتجاه.','اضبط الحمل حتى يصير الانزلاق 0.04 (1728 rpm) وانظر S<sub>b</sub> = 1.96 كما في الحل المصحح لمثال (2-1).'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l1steps"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
+  const drawF=()=>{K=klossSet(TP.v.SM);F=fig23({live:'l1',fw:K.fw,bw:K.bw,tot:K.tot});$('#l1tq').innerHTML=F.svg;$('#l1tpw').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية'};
+  const TP=B.params($('#l1tp'),'u2-l1',[
+   {k:'SM',label:'انزلاق أقصى عزم لكل مجال (يحدد شكل منحنيات العزم)',unit:'',value:0.2,min:0.05,max:0.8,step:0.01},
+   {k:'J',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.25,min:0.05,max:20,step:0.05},
+   {k:'fr',label:'عزم الاحتكاك عند سرعة التزامن',unit:'pu',value:0.02,min:0,max:0.3,step:0.01}],drawF);
+  drawF();
   $('#l1play').onclick=()=>{play=!play;played=played||play;$('#l1play').textContent=play?'إيقاف الدوران':'تشغيل الدوران';$('#l1play').classList.toggle('primary',!play);stage=0;segSet(el,'stg',-1)};
   el.querySelectorAll('[data-stg]').forEach(b=>b.onclick=()=>{stage=+b.dataset.stg;phi=[0,45,90,135,180,225][stage-1];play=0;$('#l1play').textContent='تشغيل الدوران';$('#l1play').classList.add('primary');segSet(el,'stg',stage);seen[stage]=1});
   const seen={};
@@ -400,8 +415,9 @@ B.lesson({
    if(tt-lastW>0.06){lastW=tt;const t0=Math.max(0,tt-6);let p='';hist.forEach((h,i)=>{p+=(i?'L':'M')+fx(20+(h[0]-t0)/6*290)+' '+fx(100-h[1]*80)});
     $('#l1w').innerHTML=`<path d="M20 100H312M20 18V182" stroke="var(--line)"/><path d="${p}" fill="none" stroke="var(--fg)" stroke-width="2.6"/>`+S.t(16,24,'+','m','end')+S.t(16,182,'−','m','end')+S.t(312,116,'t','m','end')}
    // motor
-   const T=on?Ttot(n):0,TL=L*n*Math.abs(n)+0.02*n+(on?0:0.2*n);
-   if(n!==0){const nn=n+(T-TL)/0.25*dt;n=(Math.sign(nn)!==Math.sign(n)||Math.abs(nn)<0.003)?0:clamp(nn,-0.999,0.999)}
+   const ks=Math.max(1,Math.ceil(dt*(2/TP.v.SM)/TP.v.J/2-1e-9)),h=dt/ks;  // خطوات أصغر عند قيم المدرب الحادة فقط (للثبات)
+   for(let i=0;i<ks;i++){const T=on?K.tot(n):0,TL=L*n*Math.abs(n)+TP.v.fr*n+(on?0:0.2*n);
+    if(n!==0){const nn=n+(T-TL)/TP.v.J*h;n=(Math.sign(nn)!==Math.sign(n)||Math.abs(nn)<0.003)?0:clamp(nn,-0.999,0.999)}}
    restT=on&&n===0?restT+dt:0;if(on&&n>0.8)dirs.p=1;if(on&&n<-0.8)dirs.m=1;
    ang=(ang-n*300*dt)%360;$('#l1r').setAttribute('transform',`rotate(${fx(ang)} 100 100)`);
    const Sx=n===0?1:1-Math.abs(n);
@@ -410,9 +426,9 @@ B.lesson({
    $('#l1L-v').textContent=fm(L,3)+' pu';
    // torque panel
    const P=F.P,cx=P.X(cur);$('#l1-cur').setAttribute('d',`M${fx(cx)} ${fx(P.Y(1.15))}V${fx(P.Y(-1.15))}`);
-   [['f',Tfw(cur)],['b',Tbw(cur)],['t',Ttot(cur)]].forEach(([k,v])=>{const c=$('#l1-'+k);c.setAttribute('cx',fx(cx));c.setAttribute('cy',fx(P.Y(v)))});
-   const op=$('#l1-op');if(on){op.setAttribute('cx',fx(P.X(n)));op.setAttribute('cy',fx(P.Y(Ttot(n))))}else{op.setAttribute('cx',-20)}
-   $('#l1tf').textContent=neg(Tfw(cur),2);$('#l1tb').textContent=neg(Tbw(cur),2);$('#l1tt').textContent=neg(Ttot(cur),2);$('#l1c-v').textContent=neg(cur,2)+' pu';
+   [['f',K.fw(cur)],['b',K.bw(cur)],['t',K.tot(cur)]].forEach(([k,v])=>{const c=$('#l1-'+k);c.setAttribute('cx',fx(cx));c.setAttribute('cy',fx(P.Y(v)))});
+   const op=$('#l1-op');if(on){op.setAttribute('cx',fx(P.X(n)));op.setAttribute('cy',fx(P.Y(K.tot(n))))}else{op.setAttribute('cx',-20)}
+   $('#l1tf').textContent=neg(K.fw(cur),2);$('#l1tb').textContent=neg(K.bw(cur),2);$('#l1tt').textContent=neg(K.tot(cur),2);$('#l1c-v').textContent=neg(cur,2)+' pu';
    $('#l1msg').innerHTML=Math.abs(cur)<0.015?'<b>السرعة صفر:</b> المحصلة = 0 ← لا يوجد عزم لبدء الحركة.':cur>0?'المحصلة موجبة: إذا دار الدوار مع المجال الأمامي يستمر في هذا الاتجاه (عزم الخلفي يعمل كفرملة صغيرة).':'المحصلة سالبة: إذا دار الدوار عكساً يستمر عكساً، والمجال «الأمامي» هو الذي يفرمل الآن.';
    steps.check()});
  },
@@ -467,18 +483,19 @@ B.lesson({
  lab:(el)=>{
   const m=mkMotor('split');m.L=0.3;let Rm=1.2,Xm=25,Ra=12,Xa=5,sig='',opened=0,failStall=0,usedEx=0;
   const T=tsPlot('split',{op:'l2'});
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l2tp"></div><div class="grid">
    <div class="panel c7"><h2>دائرة المحرك المشطور الوجه <small>مبنية على الشكل (2-4) ص 79</small></h2><div class="svgbox im-svg" id="l2c"></div>
     <div class="im-row">${swHTML('l2on','110 V','توصيل المصدر',0)}${swHTML('l2f','عطل','الملف المساعد مقطوع',0)}<div><div class="sub">نوع الحمل</div>${segHTML('ld',[['const','عزم ثابت'],['fan','مروحة']],'const')}</div></div>
     ${sl('l2L','عزم الحمل',0,2.5,0.05,m.L)}
     <div class="facts">${fact('السرعة (من سرعة التزامن)','l2n')}${fact('مفتاح الطرد المركزي','l2sw')}${fact('عزم المحرك','l2T')}${fact('الحالة','l2st')}</div></div>
-   <div class="panel c5"><h2>العزم مع السرعة <small>الشكل (2-4)</small></h2><div class="svgbox">${T.svg}</div>${legend([['--blue','الملفان معاً ثم الرئيسي فقط'],['--stop','عزم الحمل',1],['--live','نقطة التشغيل']])}<p class="sub">المنحنيات مقروءة من شكل الكتاب (تقريبية)، والسرعة والعزم بالـ pu. سرعة الوصول وزمن التسارع أرقام توضيحية.</p></div>
+   <div class="panel c5"><h2>العزم مع السرعة <small>الشكل (2-4)</small></h2><div class="svgbox">${T.svg}</div>${legend([['--blue','الملفان معاً ثم الرئيسي فقط'],['--stop','عزم الحمل',1],['--live','نقطة التشغيل']])}<p class="sub">المنحنيات مقروءة من شكل الكتاب (تقريبية)، والسرعة والعزم بالـ pu. سرعة الوصول وزمن التسارع <span id="l2tpw">أرقام توضيحية</span>.</p></div>
    <div class="panel c7"><h2>مخطط المتجهات عند البدء <small>مبني على الشكل (2-5) ص 79 — الجهد 110 V</small></h2><div class="svgbox" style="max-width:420px;margin-inline:auto" id="l2p"></div>
     <div class="im-sls">${sl('l2Rm','R<sub>m</sub> (Ω)',0.5,10,0.1,Rm)}${sl('l2Xm','X<sub>m</sub> (Ω)',5,40,0.5,Xm)}${sl('l2Ra','R<sub>a</sub> (Ω)',1,30,0.5,Ra)}${sl('l2Xa','X<sub>a</sub> (Ω)',0.5,25,0.5,Xa)}</div>
     <div class="im-row"><button class="btn" id="l2ex">قيم مثال (2-2)</button></div></div>
    <div class="panel c5"><h2>القيم المحسوبة <small>حساب دقيق بلا تقريب</small></h2><div class="facts">${fact('I<sub>m</sub>','l2Im')}${fact('I<sub>a</sub>','l2Ia')}${fact('I<sub>t</sub>','l2It')}${fact('معامل القدرة','l2pf')}${fact('الزاوية بين التيارين','l2al')}</div><div class="callout" id="l2msg"></div></div>
    <div class="panel c12">${tryList(['شغّل المحرك وراقب نقطة التشغيل: عند 75% من سرعة التزامن ينفتح المفتاح ويهبط العزم إلى منحنى «الرئيسي فقط».','فعّل عطل «الملف المساعد مقطوع» ثم شغّل: المحرك لا يبدأ (عزم الرئيسي وحده صفر عند السكون).','اجعل عزم الحمل الثابت أكبر من عزم البدء (أكثر من 1.25 pu): لا يبدأ المحرك. هذا سبب وصف عزم بدئه بالمتوسط.','في مخطط المتجهات كبّر R<sub>a</sub> أو صغّر X<sub>a</sub>: يقترب I<sub>a</sub> من V وتكبر الزاوية بين التيارين.'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l2steps"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
+  const TP=B.params($('#l2tp'),'u2-l2',motorDefs(2.2),()=>{$('#l2tpw').textContent=TP.trainer?'من قيم المدرب':'أرقام توضيحية'});
   $('#l2on').onclick=()=>{m.on=m.on?0:1;$('#l2on').setAttribute('aria-pressed',m.on?'true':'false')};
   $('#l2f').onclick=()=>{m.fail=m.fail?0:1;$('#l2f').setAttribute('aria-pressed',m.fail?'true':'false')};
   el.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{m.kind=b.dataset.ld;segSet(el,'ld',m.kind)});
@@ -503,7 +520,7 @@ B.lesson({
    {t:'قيم مثال (2-2)',x:'اضغط «قيم مثال (2-2)»: الزاوية بين التيارين <span class="ltr">64.63°</span> مطابقة للكتاب، و \\(I_m = 4.39\\) A (الكتاب طبع 4 A).',done:()=>usedEx},
    {t:'كبّر الزاوية',x:'كبّر \\(R_a\\) (سلك أرفع) حتى تتجاوز الزاوية 70°: كلما ابتعد التياران عن بعضهما تحسّن المجال الدوار.',done:()=>al>70}
   ]);
-  loopOn(el,dt=>{motorStep(m,dt);if(m.on&&!m.sw)opened=1;failStall=m.fail&&m.on&&m.n===0?failStall+dt:0;
+  loopOn(el,dt=>{m.fr=TP.v.fr;motorStep(m,dt,TP.v.J);if(m.on&&!m.sw)opened=1;failStall=m.fail&&m.on&&m.n===0?failStall+dt:0;
    const s=[m.on,m.sw,m.fail,m.n>0.01].join();if(s!==sig){sig=s;$('#l2c').innerHTML=circSVG('split',{on:m.on,sw:m.sw,fail:m.fail,n:m.n})}
    const P=T.P;$('#l2-pt').setAttribute('cx',m.on?fx(P.X(m.n)):-20);$('#l2-pt').setAttribute('cy',fx(P.Y(m.T)));$('#l2-ld').setAttribute('d',pathOf(P,loadPts(m)));
    $('#l2n').textContent=fm(m.n*100,1)+' %';$('#l2sw').textContent=m.sw?'مغلق':'مفتوح';$('#l2T').textContent=fm(m.T,2)+' pu';$('#l2L-v').textContent=fm(m.L,2)+' pu';
@@ -560,7 +577,7 @@ B.lesson({
  ],
  lab:(el)=>{
   const m=mkMotor('cstart');m.L=1.5;let C=100,sig='',hit90=0,opened=0,big=0,ghost=0,lowC=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l3tp"></div><div class="grid">
    <div class="panel c7"><h2>دائرة المحرك ذي مكثف البدء <small>مبنية على الشكل (2-6) ص 83 وقيم مثال (2-3)</small></h2><div class="svgbox im-svg" id="l3c"></div>
     ${sl('l3C','سعة مكثف البدء C',20,600,1,C)}
     <div class="im-row"><button class="btn" id="l3opt">قيمة مثال (2-3): 204 µF</button>${swHTML('l3on','127 V','توصيل المصدر',0)}${swHTML('l3g','قارن','منحنى المشطور (2-4)',0)}</div>
@@ -572,6 +589,7 @@ B.lesson({
     <p class="sub">المنحنى المطبوع في الكتاب يوافق الزاوية 90°. لتوضيح أثر المكثف نضرب منحنى البدء في \\(\\sin\\alpha\\) حيث \\(\\alpha\\) الزاوية بين التيارين (تبسيط توضيحي ليس من الكتاب: يهمل تغيّر مقدار \\(I_a\\) مع المكثف).</p></div>
    <div class="panel c12">${tryList(['حرّك منزلق المكثف حتى تصبح الزاوية بين التيارين 90° (حوالي 204 µF): هذه قيمة مثال (2-3).','لاحظ أن I<sub>a</sub> صار متقدماً عن V (فوق المحور) بينما I<sub>m</sub> متأخر (تحته).','شغّل المحرك مع حمل ثابت 1.5 pu: يبدأ بسهولة. ثم فعّل «قارن» لترى أن المحرك المشطور لا يستطيع بدء هذا الحمل.','صغّر المكثف كثيراً (أقل من 60 µF): تتغير الزاوية ويقل عزم البدء.'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l3steps"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);let T,r,lastK=-1;
+  const TP=B.params($('#l3tp'),'u2-l3',motorDefs(2.2));
   const drawT=()=>{T=tsPlot('cstart',{op:'l3',k:m.k,ghost:ghost?{f:CUR.split.both,to:0.75,l:'split-phase start'}:null});$('#l3t').innerHTML=T.svg};
   function upd(){r=capCurrents(C);m.k=Math.max(0,Math.sin(r.al*D));
    $('#l3p').innerHTML=phasorSVG(r.Im,r.Ia,{alpha:r.al,ok:Math.abs(r.al-90)<1});$('#l3C-v').textContent=fm(C,0)+' µF';$('#l3xc').textContent=fm(r.Xc,2)+' Ω';
@@ -591,7 +609,7 @@ B.lesson({
    {t:'قارن بالمشطور',x:'فعّل «قارن»: منحنى بدء المحرك المشطور (حوالي 1.25 pu) يقع تحت خط الحمل 1.5 pu، فلا يستطيع بدءه. لهذا يُستعمل ذو مكثف البدء في الضواغط والثلاجات.',done:()=>ghost},
    {t:'مكثف صغير جداً',x:'افصل المصدر، ثم صغّر السعة إلى أقل من <span class="ltr">60 µF</span>: تتغير الزاوية ويقل عزم البدء (منحنى البدء ينخفض).',done:()=>lowC}
   ]);
-  loopOn(el,dt=>{const was=m.n;motorStep(m,dt);if(m.on&&!m.sw)opened=1;if(m.on&&was===0&&m.n>0&&m.L>=1.45)big=1;
+  loopOn(el,dt=>{const was=m.n;m.fr=TP.v.fr;motorStep(m,dt,TP.v.J);if(m.on&&!m.sw)opened=1;if(m.on&&was===0&&m.n>0&&m.L>=1.45)big=1;
    const s=[m.on,m.sw,m.n>0.01].join();if(s!==sig){sig=s;$('#l3c').innerHTML=circSVG('cstart',{on:m.on,sw:m.sw,n:m.n})}
    const P=T.P;$('#l3-pt').setAttribute('cx',m.on?fx(P.X(m.n)):-20);$('#l3-pt').setAttribute('cy',fx(P.Y(m.T)));$('#l3-ld').setAttribute('d',pathOf(P,loadPts(m)));
    $('#l3n').textContent=fm(m.n*100,1)+' %';$('#l3sw').textContent=m.sw?'مغلق':'مفتوح';$('#l3L-v').textContent=fm(m.L,2)+' pu';
@@ -641,16 +659,20 @@ B.lesson({
  ],
  lab:(el)=>{
   let type='perm';const m=mkMotor(type);m.L=0.9;let sig='',T=null,seen={},stallPerm=0,twoC2=0,quietPerm=0,noisy=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l4tp"></div><div class="grid">
    <div class="panel c12"><h2>مقارنة أنواع المحركات ذات الملف المساعد <small>مبنية على الأشكال (2-4) و(2-6) و(2-8) و(2-9)</small></h2>
     <div class="wrap-in"><div><div class="sub">نوع المحرك</div>${segHTML('ty',TYPES,type)}</div>${swHTML('l4on','V','توصيل المصدر',0)}<div><div class="sub">نوع الحمل</div>${segHTML('ld4',[['const','عزم ثابت'],['fan','مروحة']],'const')}</div></div>
     ${sl('l4L','عزم الحمل',0,2.5,0.05,m.L)}</div>
    <div class="panel c7"><h2 id="l4h"></h2><div class="svgbox im-svg" id="l4c"></div>
     <div class="facts">${fact('السرعة','l4n')}${fact('المفتاح','l4sw')}${fact('عزم البدء (من المنحنى)','l4ts')}${fact('الحالة','l4st')}</div></div>
    <div class="panel c5"><h2>العزم مع السرعة</h2><div class="svgbox" id="l4t"></div>${legend([['--blue','منحنى المحرك'],['--stop','عزم الحمل',1],['--live','نقطة التشغيل']])}
-    <h3 class="sm">المجال الخلفي والضجيج أثناء التشغيل <small class="sub">(نسبي — أرقام توضيحية)</small></h3><div class="im-bar"><i id="l4bb" style="width:0"></i></div><p class="sub" id="l4bt"></p></div>
+    <h3 class="sm">المجال الخلفي والضجيج أثناء التشغيل <small class="sub">(نسبي — <span id="l4tpw">أرقام توضيحية</span>)</small></h3><div class="im-bar"><i id="l4bb" style="width:0"></i></div><p class="sub" id="l4bt"></p></div>
    <div class="panel c12">${tryList(['اختر «المكثف الدائم» مع حمل ثابت 0.9 pu وشغّل: لا يبدأ (عزم بدئه حوالي 0.7 pu فقط). اختر «المكثفين» وكرر: يبدأ.','في «المكثفين» راقب C<sub>2</sub>: يخرج بمفتاحه عند سرعة الفصل ويبقى C<sub>1</sub>.','شغّل «المكثف الدائم» بحمل مروحة، واضبط الحمل حتى يقترب مؤشر المجال الخلفي من الصفر: هذا «الحمل بعينه» الذي صُمم له المكثف.','قارن بالمشطور أو مكثف البدء بعد الفصل: المحرك يعمل بملف واحد فيعود المجال الخلفي كاملاً (ضجيج أكبر).'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l4steps"></ol></div></div>`;
   const $=s=>el.querySelector(s);
+  const ldTxt=()=>fm(TP.v.Ld,2).replace(/\.?0+$/,'')+' pu';
+  const TP=B.params($('#l4tp'),'u2-l4',motorDefs(2.2).concat([
+   {k:'Ld',label:'الحمل الذي صُمم له المكثف الدائم (يختفي عنده المجال الخلفي)',unit:'pu',value:1,min:0.1,max:2.5,step:0.05}]),
+   ()=>{el.querySelectorAll('.l4ldv').forEach(x=>x.textContent=ldTxt());$('#l4tpw').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية'});
   const setType=v=>{type=v;m.type=v;m.n=0;m.on=0;m.sw=true;$('#l4on').setAttribute('aria-pressed','false');segSet(el,'ty',v);seen[v]=1;
    T=tsPlot(v,{op:'l4'});$('#l4t').innerHTML=T.svg;$('#l4h').innerHTML=`${TNAME[v]} <small>الشكل ${CUR[v].fig} ${CUR[v].pg}</small>`;$('#l4ts').textContent=fm(CUR[v].both?CUR[v].both(0):CUR[v].main(0),2)+' pu';sig=''};
   el.querySelectorAll('[data-ty]').forEach(b=>b.onclick=()=>setType(b.dataset.ty));
@@ -658,15 +680,15 @@ B.lesson({
   $('#l4on').onclick=()=>{m.on=m.on?0:1;$('#l4on').setAttribute('aria-pressed',m.on?'true':'false')};$('#l4L').oninput=e=>{m.L=+e.target.value};
   setType('perm');
   const back=()=>{if(!m.on||m.n<0.05)return null;const c=CUR[type];if(c.both&&m.sw)return null;
-   if(type==='split'||type==='cstart')return 1;const Ld=1.0,TL=m.TL;return clamp(Math.abs(TL-Ld)/Ld,0,1)*0.85+0.03};
+   if(type==='split'||type==='cstart')return 1;const Ld=TP.v.Ld,TL=m.TL;return clamp(Math.abs(TL-Ld)/Ld,0,1)*0.85+0.03};
   const steps=stepsUI($('#l4steps'),[
    {t:'المكثف الدائم وحمل كبير',x:'اختر «المكثف الدائم» واجعل الحمل الثابت <span class="ltr">0.9 pu</span> ثم صِل المصدر: لا يبدأ، لأن عزم بدئه (حوالي <span class="ltr">0.7 pu</span>) أقل من الحمل.',done:()=>stallPerm>1.2},
    {t:'المحرك ذو المكثفين',x:'اختر «المكثفين» وصِل المصدر بنفس الحمل: يبدأ بعزم كبير (C<sub>1</sub> + C<sub>2</sub>)، ثم ينفتح مفتاح C<sub>2</sub> عند سرعة الفصل.',done:()=>twoC2},
-   {t:'الحمل الذي صُمم له المكثف',x:'اختر «المكثف الدائم» وحمل «مروحة»، وشغّل، ثم اضبط الحمل حتى يقترب مؤشر المجال الخلفي من الصفر (حوالي <span class="ltr">1 pu</span> عند السرعة الكاملة).',done:()=>quietPerm>1},
+   {t:'الحمل الذي صُمم له المكثف',get x(){return `اختر «المكثف الدائم» وحمل «مروحة»، وشغّل، ثم اضبط الحمل حتى يقترب مؤشر المجال الخلفي من الصفر (حوالي <span class="ltr l4ldv">${ldTxt()}</span> عند السرعة الكاملة).`},done:()=>quietPerm>1},
    {t:'محرك بملف واحد أثناء التشغيل',x:'اختر «المشطور» أو «مكثف البدء» وشغّل: بعد الفصل يعمل بالملف الرئيسي فقط، فيرجع المجال الخلفي كاملاً (ضجيج أكبر وكفاءة أقل).',done:()=>noisy},
    {t:'راجع جدول المقارنة',x:'ارجع إلى تبويب «الشرح» وقارن الأنواع الأربعة في الجدول: المفتاح، المكثف، عزم البدء، الهدوء، الاستخدامات.'}
   ]);
-  loopOn(el,dt=>{motorStep(m,dt);
+  loopOn(el,dt=>{m.fr=TP.v.fr;motorStep(m,dt,TP.v.J);
    if(type==='perm'&&m.on&&m.n===0&&m.kind==='const'&&m.L>0.7)stallPerm+=dt;else if(type!=='perm')stallPerm=0;
    if(type==='two'&&m.on&&!m.sw)twoC2=1;
    const bb=back();if(type==='perm'&&m.kind==='fan'&&bb!=null&&bb<0.12&&m.n>0.85)quietPerm+=dt;if((type==='split'||type==='cstart')&&bb===1)noisy=1;
@@ -709,18 +731,23 @@ B.lesson({
  ],
  lab:(el)=>{
   const m=mkMotor('shaded');m.L=0.2;m.kind='fan';let ring=1,ph=0,fv=0.6,sig='',seenRing=0,stallNo=0,runNo=0,T;
-  const DEL=55;  // تأخر الجزء المظلل (درجة) — رقم توضيحي
-  el.innerHTML=`<div class="grid">
+  // تأخر فيض الجزء المظلل (55°) وشدته النسبية (0.8): أرقام توضيحية → TP.v.DEL و TP.v.A
+  el.innerHTML=`<div id="l5tp"></div><div class="grid">
    <div class="panel c7"><h2>قطبان مظللان وعضو دوار <small>مبنية على الشكل (2-10) ص 87</small></h2><div class="svgbox" style="max-width:440px;margin-inline:auto" id="l5m"></div>
     <div class="im-row">${swHTML('l5on','V','توصيل المصدر',0)}${swHTML('l5ring','حلقة','الملف المظلِل موجود',1)}</div>
     ${sl('l5f','سرعة عرض التيار المتردد (مبطّأة جداً)',0.1,1.5,0.05,fv)}
     ${sl('l5L','حمل المروحة',0,1.2,0.05,m.L)}
     <div class="facts">${fact('السرعة','l5n')}${fact('عزم المحرك','l5T')}${fact('الحالة','l5st')}</div>
     <p class="sub">الأحمر = قطب شمالي، الأخضر = قطب جنوبي، وشدة اللون = شدة الفيض. المثلث الأسود يبين موضع مركز الفيض على وجه القطب.</p></div>
-   <div class="panel c5"><h2>فيض الجزأين مع الزمن</h2><div class="svgbox"><svg viewBox="0 0 320 200" id="l5w" role="img" aria-label="فيض الجزء المظلل وغير المظلل"></svg></div>${legend([['--fg','فيض الجزء غير المظلل'],['--live','فيض الجزء المظلل (متأخر)']])}<p class="sub">تأخر الجزء المظلل في الرسم ${DEL}° (رقم توضيحي؛ الكتاب لا يعطي قيمة).</p>
+   <div class="panel c5"><h2>فيض الجزأين مع الزمن</h2><div class="svgbox"><svg viewBox="0 0 320 200" id="l5w" role="img" aria-label="فيض الجزء المظلل وغير المظلل"></svg></div>${legend([['--fg','فيض الجزء غير المظلل'],['--live','فيض الجزء المظلل (متأخر)']])}<p class="sub">تأخر الجزء المظلل في الرسم <span class="ltr" id="l5del">55°</span> (<span id="l5dw">رقم توضيحي</span>؛ الكتاب لا يعطي قيمة).</p>
     <h3 class="sm">العزم مع السرعة <small>الشكل (2-11)</small></h3><div class="svgbox" id="l5t"></div></div>
    <div class="panel c12">${tryList(['صِل المصدر وراقب المثلث الأسود: يتحرك على وجه كل قطب من الجزء غير المظلل إلى الجزء المظلل، والدوار يدور في نفس الاتجاه.','لاحظ في المنحنى الزمني أن قمة فيض الجزء المظلل تأتي بعد قمة الجزء الآخر.','افصل المصدر وانتظر حتى يقف، ثم أزل الحلقة وصِل المصدر: الفيضان متساويان في الطور، والمجال نابض فقط، فلا يبدأ المحرك.','أعد الحلقة والمحرك يدور، ثم أزلها: يستمر في الدوران (مثل الدرس الأول: المحرك أحادي الوجه يكمل في اتجاه حركته).'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l5steps"></ol></div></div>`;
   const $=s=>el.querySelector(s);
+  const TP=B.params($('#l5tp'),'u2-l5',[
+   {k:'DEL',label:'تأخر فيض الجزء المظلل عن الجزء غير المظلل',unit:'°',value:55,min:0,max:90,step:1},
+   {k:'A',label:'شدة فيض الجزء المظلل (نسبة إلى غير المظلل)',unit:'',value:0.8,min:0.1,max:1,step:0.05}].concat(motorDefs(1.6)),
+   ()=>{$('#l5del').textContent=fm(TP.v.DEL,0)+'°';$('#l5dw').textContent=TP.trainer?'قيمة المدرب':'رقم توضيحي'});
+  $('#l5del').textContent=fm(TP.v.DEL,0)+'°';
   const noRing=n=>1.0*Ttot(n);  // بلا حلقة: محرك أحادي الوجه عادي (منحنى الشكل 2-3، أرقام توضيحية)
   const drawT=()=>{T=tsPlot('shaded',{op:'l5'});$('#l5t').innerHTML=T.svg};drawT();
   $('#l5on').onclick=()=>{m.on=m.on?0:1;$('#l5on').setAttribute('aria-pressed',m.on?'true':'false')};
@@ -734,8 +761,8 @@ B.lesson({
    {t:'الحمل والمنحنى',x:'أعد الحلقة وزد حمل المروحة: تنزل السرعة على منحنى الشكل (2-11). العزم صغير، لذلك يناسب هذا المحرك المراوح الصغيرة والمضخات الصغيرة.',done:()=>ring&&m.on&&m.L>0.8&&m.n>0.3}
   ]);
   const hist=[];let tt=0,lw=0;
-  loopOn(el,dt=>{tt+=dt;motorStep(m,dt,1.6);
-   if(m.on)ph=(ph+360*fv*dt)%360;const fu=m.on?Math.sin(ph*D):0,fs=m.on?(ring?0.8*Math.sin((ph-DEL)*D):fu):0;
+  loopOn(el,dt=>{tt+=dt;m.fr=TP.v.fr;motorStep(m,dt,TP.v.J);
+   if(m.on)ph=(ph+360*fv*dt)%360;const fu=m.on?Math.sin(ph*D):0,fs=m.on?(ring?TP.v.A*Math.sin((ph-TP.v.DEL)*D):fu):0;
    if(!ring&&m.on&&m.n===0)stallNo+=dt;if(!ring&&m.on&&m.n>0.5)runNo+=dt;
    $('#l5m').innerHTML=shadedSVG({fu,fs,ring,on:m.on,ang:m.ang,id:'l5r'});
    hist.push([tt,fu,fs]);while(hist.length&&tt-hist[0][0]>5)hist.shift();
