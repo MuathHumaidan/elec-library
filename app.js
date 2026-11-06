@@ -46,7 +46,7 @@ function renderHome(){
   const root=$('#view');document.title='تقنية التحكم المبرمج — الكتاب التفاعلي';
   const seen=store.get('plcbook-seen',{}),last=store.get('plcbook-last',null);
   const lastL=last&&B.LESSONS.find(l=>l.id===last);const first=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order)[0];
-  const nSeen=B.LESSONS.filter(l=>seen[l.id]).length;
+  const done=store.get('plcbook-done',{});const nSeen=B.LESSONS.filter(l=>done[l.id]).length;
   const pct=Math.round(nSeen/B.LESSONS.length*100);
   let h=`<section class="cover">
    <div class="cover-txt"><div class="eyebrow">205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية</div>
@@ -59,10 +59,10 @@ function renderHome(){
    <input id="q" type="search" placeholder="ابحث عن درس: مزمن، داهلندر، S/R، مصعد…" aria-label="ابحث عن درس"></div>`;
   h+=`<div class="toc" id="units">`;
   B.UNITS.sort((a,b)=>a.n-b.n).forEach(u=>{
-    const ls=B.LESSONS.filter(l=>l.unit===u.n).sort((a,b)=>a.order-b.order);const sn=ls.filter(l=>seen[l.id]).length;
+    const ls=B.LESSONS.filter(l=>l.unit===u.n).sort((a,b)=>a.order-b.order);const sn=ls.filter(l=>done[l.id]).length;
     const open=lastL?lastL.unit===u.n:u.n===1;
     h+=`<details class="unit" id="unit-${u.n}" ${open?'open':''}><summary><span class="un">${String(u.n).padStart(2,'0')}</span><span class="ut"><b>${u.title}</b><small>${ls.length} دروس · ص ${u.pages}</small></span><span class="up"><span class="uprog"><i style="width:${ls.length?Math.round(sn/ls.length*100):0}%"></i></span><small>${sn}/${ls.length}</small></span><span class="chev" aria-hidden="true"></span></summary>
-     ${u.blurb?`<p class="ublurb">${u.blurb}</p>`:''}<ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${seen[l.id]?'seen':''}"><span class="vk"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></details>`;
+     ${u.blurb?`<p class="ublurb">${u.blurb}</p>`:''}<ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${done[l.id]?'done':seen[l.id]?'seen':''}"><span class="vk" title="${done[l.id]?'أنجزته':seen[l.id]?'فتحته':''}"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></details>`;
   });
   h+=`</div><p class="nores" id="nores" hidden>لا يوجد درس بهذا الاسم.</p><p class="src">المصدر: مذكرة مقرر تقنية التحكم المبرمج (عملي) 205 كهر، المؤسسة العامة للتدريب التقني والمهني. أرقام الصفحات هي المطبوعة في الكتاب. أرقام التيار والسرعة في المحاكاة توضيحية.</p>`;
   root.innerHTML=h;window.scrollTo(0,0);
@@ -84,13 +84,13 @@ function renderLesson(L,tab){
   const hasLab=!!(L.program||L.lab||L.plant);const hasProg=!!(L.program||L.variants);
   const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك']].filter(Boolean);
   tab=tabs.find(t=>t[0]===tab)?tab:'theory';
-  const seen=store.get('plcbook-seen',{});
+  const seen=store.get('plcbook-seen',{});const done=store.get('plcbook-done',{});
   const ul=all.filter(x=>x.unit===L.unit);
   const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
   root.innerHTML=`<div class="lesson-layout">
    <aside class="lside" aria-label="دروس الوحدة"><a class="lside-back" href="#home">‹ فهرس المقرر</a>
     <div class="lside-unit"><span class="unum sm">${L.unit}</span><div><small>الوحدة ${AR[L.unit]}</small><b>${u.title}</b></div></div>
-    <ol>${ul.map(x=>`<li><a href="#${x.id}" class="${x===L?'on':''} ${seen[x.id]?'seen':''}"><span class="k">${x.unit}.${x.order}</span><span>${x.title}</span></a></li>`).join('')}</ol>
+    <ol>${ul.map(x=>`<li><a href="#${x.id}" class="${x===L?'on':''} ${done[x.id]?'done':seen[x.id]?'seen':''}"><span class="k">${x.unit}.${x.order}</span><span>${x.title}</span></a></li>`).join('')}</ol>
     <details class="lside-more"><summary>الوحدات الأخرى</summary><ul>${B.UNITS.filter(x=>x.n!==L.unit).map(x=>{const f=all.find(y=>y.unit===x.n);return f?`<li><a href="#${f.id}"><span class="k">${x.n}</span>${x.title}</a></li>`:''}).join('')}</ul></details>
    </aside>
    <div class="lmain">
@@ -99,10 +99,15 @@ function renderLesson(L,tab){
    <nav class="ltabs" role="tablist">${tabs.map((t,k)=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}">${t[1]}</button>`).join('')}</nav>
    <div id="strip-host"></div>
    <div id="tab-body"></div>
+   <div class="finish"><button class="fin-btn" id="finBtn" aria-pressed="${done[L.id]?'true':'false'}"></button><p class="sub" id="finNote"></p></div>
    <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>
    </div></div>
    <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[1]}</button>`).join('')}</nav>`;
   document.body.classList.add('in-lesson');
+  const fb=$('#finBtn',root),fn=$('#finNote',root);
+  const paint=()=>{const d=!!store.get('plcbook-done',{})[L.id];fb.setAttribute('aria-pressed',d);fb.innerHTML=d?'✓ أنجزت هذا الدرس':'أنهيت الدرس';fn.textContent=d?'يُحسب في نسبة إنجازك. اضغط مرة أخرى للتراجع.':'اضغطه بعد ما تقرأ الشرح وتجرّب المختبر وتحل الأسئلة.';
+    const a=root.querySelector(`.lside a[href="#${L.id}"]`);if(a){a.classList.toggle('done',d);a.classList.toggle('seen',!d)}};
+  fb.addEventListener('click',()=>{const dn=store.get('plcbook-done',{});if(dn[L.id])delete dn[L.id];else dn[L.id]=1;store.set('plcbook-done',dn);paint()});paint();
   $$('[data-unit]',root).forEach(a=>a.addEventListener('click',e=>{e.preventDefault();location.hash='home';setTimeout(()=>{const el=document.getElementById('unit-'+a.dataset.unit);el&&el.scrollIntoView()},60)}));
   // runtime is shared by lab & plc tabs
   stopRun();

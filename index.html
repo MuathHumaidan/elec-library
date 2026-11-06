@@ -412,6 +412,16 @@ body::before{background:var(--hero1)}
   .pager{grid-template-columns:1fr}
   .tblock{font-size:10.5px}
 }
+
+/* progress states: half = opened, full = done */
+.lessons a.seen .vk{background:linear-gradient(90deg,var(--surface) 50%,var(--blue) 50%);border-color:var(--blue);box-shadow:none}
+.lessons a.done .vk{background:var(--blue);border-color:var(--blue);box-shadow:inset 0 0 0 3px var(--surface)}
+.lside a.done .k{color:var(--blue)}.lside a.done .k::after{content:" ✓"}
+.lside a.seen .k{color:var(--muted)}
+.finish{margin-top:28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px;border:1px dashed var(--line);border-radius:14px;background:var(--surface)}
+.fin-btn{font:inherit;font-weight:700;font-size:15px;padding:10px 22px;border-radius:999px;border:2px solid var(--blue);background:var(--surface);color:var(--blue-ink);cursor:pointer}
+.fin-btn[aria-pressed="true"]{background:var(--blue);color:#fff}
+.fin-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 </style>
 </head>
 <body>
