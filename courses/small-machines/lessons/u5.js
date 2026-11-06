@@ -125,9 +125,19 @@ B.lesson({
  ],
  lab:(el,B)=>{
   let mode='gal',elk='CX',th={CX:30,CT:0,CD:0,CR:0},thx=40,thr=0,wr=0,brake=1,thd=30,diff='sub',thr2=0,wr2=0;
-  el.innerHTML=`<div class="grid"><div class="panel c12"><h2>مختبر أجهزة التزامن الذاتية <small>مبني على الأشكال (٥-١) و(٥-٢) و(٥-٣) ص 71–72</small></h2>
+  el.innerHTML=`<div id="l1tp"></div><div class="grid"><div class="panel c12"><h2>مختبر أجهزة التزامن الذاتية <small>مبني على الأشكال (٥-١) و(٥-٢) و(٥-٣) ص 71–72</small></h2>
     ${segHTML('m',[['gal','معرض العناصر الأربعة'],['tx','المرسل يحرك المستقبل'],['cd','المتحكم الفرقي']],mode)}</div><div class="c12" id="body" style="min-width:0"></div></div>`;
   const $=s=>el.querySelector(s);let frame=null;
+  // حركة دوار المستقبل (توضيحية): θ'' = −k·sin(خطأ) − b·ω. القيم الافتراضية k = 40، b = 11 بالكبح و 0.7 بدونه.
+  const P0=2*Math.PI/Math.sqrt(40),DB0=2/11,DN0=2/0.7;
+  const TP=B.params($('#l1tp'),'u5-l1',[
+   {k:'P',label:'زمن التأرجحة الواحدة لدوار المستقبل حول موضعه (يكبر مع ثقل العضو الدوار)',unit:'s',value:P0,min:0.2,max:10,step:0.01,dp:2},
+   {k:'DB',label:'زمن خمود التأرجح مع عنصر الكبح (كلما صغر هدأ الدوار أسرع)',unit:'s',value:DB0,min:0.02,max:60,step:0.01,dp:2},
+   {k:'DN',label:'زمن خمود التأرجح بعد نزع عنصر الكبح (احتكاك فقط)',unit:'s',value:DN0,min:0.02,max:60,step:0.01,dp:2}]);
+  // خطوة حركة واحدة؛ تُقسَّم إلى خطوات أصغر تلقائياً إذا صارت الحركة سريعة جداً (بالقيم التوضيحية خطوة واحدة دائماً)
+  const rx=(th,w,tgt,brk,dt)=>{const r=P0/TP.v.P,k=40*r*r,b=brk?11*(DB0/TP.v.DB):0.7*(DN0/TP.v.DN);
+   const n=Math.max(1,Math.ceil(dt/Math.min(0.4/Math.sqrt(k),1/b))),h=dt/n;
+   for(let i=0;i<n;i++){const err=wrap(th-tgt)*D;w+=(-k*Math.sin(err)-b*w)*h;th=wrap(th+w*h/D)}return [th,w]};
   const show=()=>{segSet(el,'m',mode);frame=null;const b=$('#body');
    if(mode==='gal'){b.innerHTML=`<div class="grid"><div class="panel c7"><h2 id="gT"></h2><div style="margin:6px 0">${segHTML('e',Object.keys(ELEM).map(k=>[k,k+' — '+ELEM[k].n]),elk)}</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;direction:ltr"><div style="width:210px" id="gSec"></div><div style="width:250px;cursor:grab" id="gSym"></div></div>
@@ -152,7 +162,7 @@ B.lesson({
      <div class="panel c12">${tryList(['أدر المرسل إلى 60°: يتبعه المستقبل ويقف عند 60°.','لاحظ تغير الجهود S1 و S2 و S3 مع الزاوية، وأيها يصير سالباً (معاكساً في الطور).','انزع عنصر الكبح ثم حرّك المرسل بسرعة: يتأرجح المستقبل حول الموضع قبل أن يستقر.'])}</div></div>`;
      $('#tA').addEventListener('input',e=>{thx=+e.target.value});el.querySelectorAll('[data-br]').forEach(x=>x.addEventListener('click',()=>{brake=+x.dataset.br;segSet(el,'br',brake)}));
      dragKnobs($('#tP'),560,330,()=>[{cx:130,cy:150,r:110,set:v=>{thx=Math.round(wrap(v))}}]);
-     frame=dt=>{const err=wrap(thr-thx)*D;const b=brake?11:0.7;wr+=(-40*Math.sin(err)-b*wr)*dt;thr=wrap(thr+wr*dt/D);
+     frame=dt=>{[thr,wr]=rx(thr,wr,thx,brake,dt);
        const v=coilV(thx);$('#tP').innerHTML=pairSVG({thx,thy:thr,right:'CR',volts:v,rightRotLive:1});$('#tA').value=thx;$('#tA-v').textContent=thx;
        $('#tF').innerHTML=facts([['زاوية المرسل θx',degTxt(thx)],['زاوية المستقبل',degTxt(thr)],['الفرق',degTxt(wrap(thr-thx))]].concat(['S1','S2','S3'].map((k,i)=>[`جهد ${k} (نسبي)`,(v[i]>=0?'+':'−')+Math.abs(v[i]).toFixed(2)])))}}
    else{b.innerHTML=`<div class="grid"><div class="panel c8"><h2>المتحكم الفرقي بين المرسل والمستقبل <small>توضيح — ليس من الكتاب</small></h2><div class="svgbox" id="dP" style="max-width:640px;margin-inline:auto"></div>
@@ -163,7 +173,7 @@ B.lesson({
      const sl=()=>{$('#dX').value=thx;$('#dX-v').textContent=thx;$('#dD').value=thd;$('#dD-v').textContent=thd};
      $('#dX').addEventListener('input',e=>{thx=+e.target.value});$('#dD').addEventListener('input',e=>{thd=+e.target.value});
      el.querySelectorAll('[data-dw]').forEach(x=>x.addEventListener('click',()=>{diff=x.dataset.dw;segSet(el,'dw',diff)}));
-     frame=dt=>{const tgt=wrap(diff==='sub'?thx-thd:thx+thd);const err=wrap(thr2-tgt)*D;wr2+=(-40*Math.sin(err)-11*wr2)*dt;thr2=wrap(thr2+wr2*dt/D);sl();
+     frame=dt=>{const tgt=wrap(diff==='sub'?thx-thd:thx+thd);[thr2,wr2]=rx(thr2,wr2,tgt,1,dt);sl();
        let s=`<svg viewBox="0 0 640 260" role="img" aria-label="مرسل ثم متحكم فرقي ثم مستقبل">`;
        const bundle=(x1,x2,lab)=>[0,1,2].map(i=>S.w(`M${x1} ${118+i*12}H${x2}`,'live')).join('')+S.t((x1+x2)/2,106,lab,'m');
        s+=bundle(150,250,'S1 S2 S3 → S1 S2 S3')+bundle(390,490,'R1 R2 R3 → S1 S2 S3');
@@ -229,7 +239,7 @@ B.lesson({
  ],
  lab:(el,B)=>{
   let mode='det',thx=0,tht=0,Er=100,G=1,v=0,hist=[],t=0;
-  el.innerHTML=`<div class="grid"><div class="panel c12"><h2>كاشف الخطأ وسيرفو الموضع <small>مبني على الشكلين (٥-٤) و(٥-٥) ص 73–75</small></h2>
+  el.innerHTML=`<div id="l2tp"></div><div class="grid"><div class="panel c12"><h2>كاشف الخطأ وسيرفو الموضع <small>مبني على الشكلين (٥-٤) و(٥-٥) ص 73–75</small></h2>
     ${segHTML('m',[['det','كاشف الخطأ — الشكل (٥-٤)'],['servo','التحكم في الموضع — الشكل (٥-٥)']],mode)}</div>
    <div class="panel c8"><h2 id="hT"></h2><div class="svgbox" id="P" style="max-width:640px;margin-inline:auto;cursor:grab"></div>
     <div class="wrap-in">${slHTML('sX','محور الدخل (دوار المرسل) θx =',-180,180,1,thx,'°')}<span id="tBox" style="display:contents">${slHTML('sT','دوار المحول θt =',-180,180,1,tht,'°')}</span>${slHTML('sE','أقصى جهد Er =',10,200,1,Er,'V')}<span id="gBox" style="display:contents">${slHTML('sG','كسب المكبر =',0.2,3,0.1,G,'')}</span></div>
@@ -238,16 +248,22 @@ B.lesson({
     <div class="svgbox" id="C"></div><p class="sub">المنحنى \\(e = E_r\\sin\\alpha\\) من الكتاب؛ النقطة = الوضع الحالي.</p></div>
    <div class="panel c12" id="tr"></div></div>`;
   const $=s=>el.querySelector(s);
+  const hintTxt=()=>mode==='det'?'دوار CX يسار ودوار CT يمين. الزاويتان مقيستان من موضع صفر كل جهاز: CX منطبق على S1، و CT متعامد على S1.':`المحرك يدير محور الخرج ودوار CT معاً حتى يصير e = 0. سرعة المحرك ${TP.trainer?'من قيم المدرب':'أرقام توضيحية'}: يتجه المحرك نحو سرعة <span class="ltr">= الكسب × ${B.fmtN(TP.v.K)} °/s × sin α</span> ويبلغها بعد زمن تسارع نحو <span class="ltr">${B.fmtN(TP.v.tau)} s</span>، لذلك تقل سرعته كلما اقترب الخرج من الدخل.`;
+  const TP=B.params($('#l2tp'),'u5-l2',[
+   {k:'K',label:'سرعة محرك التحكم عند أكبر جهد خطأ (α = 90°) وكسب المكبر = 1',unit:'°/s',value:180,min:5,max:3000,step:5},
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.3,min:0.02,max:30,step:0.01}],()=>{$('#hint').innerHTML=hintTxt()});
   const setMode=m=>{mode=m;segSet(el,'m',m);$('#tBox').style.display=m==='det'?'contents':'none';$('#gBox').style.display=m==='servo'?'contents':'none';hist=[];
     $('#hT').innerHTML=m==='det'?'مرسل التحكم CX ومحول التحكم CT <small>اسحب أي دوار</small>':'نظام التحكم في الموضع <small>اسحب محور الدخل (المؤشر يسار أسفل) أو دوار CX</small>';
-    $('#hint').innerHTML=m==='det'?'دوار CX يسار ودوار CT يمين. الزاويتان مقيستان من موضع صفر كل جهاز: CX منطبق على S1، و CT متعامد على S1.':'المحرك يدير محور الخرج ودوار CT معاً حتى يصير e = 0. السرعة والكسب أرقام توضيحية.';
+    $('#hint').innerHTML=hintTxt();
     $('#tr').innerHTML=m==='det'?tryList(['ابدأ والدواران في موضع الصفر: e = 0 (وضع الاتزان).','أدر المرسل وحده 60° ضد عقارب الساعة: <span class="ltr">e = 100 sin 60° = 86.6 V</span> (هذا س٥-١١).','أدر المحول بنفس الزاوية: يعود e إلى الصفر لأن α = θx − θt = 0.','اجعل α = 180°: e = 0 أيضاً (الزاوية بين الملفين 270°)، لكن لاحظ أن الإشارة تنقلب حولها.']):tryList(['أدر محور الدخل إلى 90°: يظهر جهد e فيدور المحرك ومحور الخرج حتى يتبع محور الدخل ويعود e إلى الصفر.','زد كسب المكبر: يتبع محور الخرج أسرع.','لاحظ مخطط e مع الزمن: يبدأ كبيراً ثم ينزل إلى الصفر.'])};
   el.querySelectorAll('[data-m]').forEach(x=>x.addEventListener('click',()=>setMode(x.dataset.m)));
   [['sX',x=>thx=x],['sT',x=>tht=x],['sE',x=>Er=x],['sG',x=>G=x]].forEach(([id,f])=>$('#'+id).addEventListener('input',e=>f(+e.target.value)));
   dragKnobs($('#P'),mode==='det'?560:640,330,()=>mode==='det'?[{cx:130,cy:150,r:110,set:a=>{thx=Math.round(wrap(a))}},{cx:430,cy:150,r:110,set:a=>{tht=Math.round(wrap(a-90))}}]:[{cx:110,cy:150,r:60,set:a=>{thx=Math.round(wrap(a))}},{cx:110,cy:252,r:40,set:a=>{thx=Math.round(wrap(a))}}]);
   setMode(mode);
   loopOn(el,dt=>{t+=dt;const al=wrap(thx-tht),e=Er*Math.sin(al*D);
-   if(mode==='servo'){v+=(G*180*Math.sin(al*D)-v)*dt/0.3;tht=wrap(tht+v*dt);hist.push([t,e]);while(hist.length&&t-hist[0][0]>10)hist.shift()}else v=0;
+   if(mode==='servo'){// خطوات أصغر تلقائياً إذا صارت الحركة سريعة جداً (بالقيم التوضيحية خطوة واحدة دائماً)
+    const K=TP.v.K,tau=TP.v.tau,n=Math.max(1,Math.ceil(dt/Math.min(0.5*tau,0.5/Math.max(G*K*D,1e-9)))),h=dt/n;
+    for(let i=0;i<n;i++){const a2=i?wrap(thx-tht):al;v+=(G*K*Math.sin(a2*D)-v)*h/tau;tht=wrap(tht+v*h)}hist.push([t,e]);while(hist.length&&t-hist[0][0]>10)hist.shift()}else v=0;
    $('#sX').value=thx;$('#sX-v').textContent=thx;$('#sT').value=Math.round(tht);$('#sT-v').textContent=Math.round(tht);$('#sE-v').textContent=Er;$('#sG-v').textContent=G.toFixed(1);
    $('#P').innerHTML=mode==='det'?pairSVG({thx,thy:tht+90,right:'CT',volts:coilV(thx),e,rightRotLive:Math.abs(e)>0.5}):servoSVG(thx,tht,e/Er,G);
    $('#F').innerHTML=facts([['α = θx − θt',degTxt(al)],['e = Er sin α',(e<=-0.05?'−':'')+Math.abs(e).toFixed(1)+' V'],['الطور',Math.abs(e)<0.5?'—':e>0?'في طور المصدر':'عكس طور المصدر']].concat(mode==='servo'?[['سرعة المحرك',Math.abs(v)<0.5?'متوقف':(v>0?'↺ ':'↻ ')+Math.abs(v).toFixed(0)+' °/s']]:[]));

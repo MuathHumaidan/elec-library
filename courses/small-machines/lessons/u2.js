@@ -179,8 +179,8 @@ const Cx=(re,im)=>({re,im:im||0}),cadd=(a,b)=>Cx(a.re+b.re,a.im+b.im),csub=(a,b)
 const wrap180=d=>{d=((d+180)%360+360)%360-180;return d};
 /* single-phase-motor equivalent circuit used as an induction tacho (أرقام توضيحية) */
 const IND={V:115,f:50,ns:3000,R1:30,X1:25,Xm:250,R2:200,X2:25};
-function indModel(nr,n){const s=1-nr/IND.ns;const Zr=x=>Cx(IND.R2/x,IND.X2);const Zf=cpar(Cx(0,IND.Xm),Zr(s)),Zb=cpar(Cx(0,IND.Xm),Zr(2-s));
-  const Zin=cadd(cadd(Cx(IND.R1,IND.X1),cmul(Cx(.5),Zf)),cmul(Cx(.5),Zb));const I1=cdiv(Cx(IND.V),Zin);
+function indModel(nr,n,P){P=P||IND;const s=1-nr/P.ns;const Zr=x=>Cx(P.R2/x,P.X2);const Zf=cpar(Cx(0,P.Xm),Zr(s)),Zb=cpar(Cx(0,P.Xm),Zr(2-s));
+  const Zin=cadd(cadd(Cx(P.R1,P.X1),cmul(Cx(.5),Zf)),cmul(Cx(.5),Zb));const I1=cdiv(Cx(P.V),Zin);
   const Ea=cmul(cmul(Cx(0,.5*n),I1),csub(Zf,Zb));return {s,Zf,Zb,I1,Ea}}
 
 /* ---------- مثال (٢-٤) solver, book procedure (shared with س٢-٣) ---------- */
@@ -238,7 +238,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let n=1000,Kg=0.1,tau=0.1,act=0,read=0,t=0,ang=0,jumped=0,lastS='';const hist=[];
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l1tp"></div><div class="grid">
    <div class="panel c7"><h2>عمود يدور وعليه مولد تاكو <small>مبنية على المعادلة (٢-١) ص 29</small></h2>
     <div class="svgbox" style="max-width:520px;margin-inline:auto"><svg viewBox="0 0 420 150" role="img" aria-label="عمود ومولد تاكو">
      <rect x="8" y="38" width="96" height="74" rx="10" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.6"/><text class="txt" x="56" y="80" text-anchor="middle" font-size="18">M</text>
@@ -250,18 +250,24 @@ B.lesson({
     ${sl('l1n','سرعة العمود <span class="ltr">n</span>',0,3000,10,n)}
     ${sl('l1k','ثابت توليد الجهد <span class="ltr">K<sub>g</sub></span> (ميل الخط)',0.02,0.2,0.005,Kg)}
     ${sl('l1t','الثابت الزمني للتاكو <span class="ltr">τ</span>',0.02,1.5,0.02,tau)}
-    <div class="tk-row">${swHTML('l1act','ΔV و Δβ','مولد فعلي (توضيحي)',0)}<button class="btn" id="l1jump">قفزة سرعة 1000 ⇄ 2000 rpm</button></div>
+    <div class="tk-row">${swHTML('l1act','ΔV و Δβ','مولد فعلي (<span class="l1tpw">توضيحي</span>)',0)}<button class="btn" id="l1jump">قفزة سرعة 1000 ⇄ 2000 rpm</button></div>
     <div class="facts">${fact('السرعة بالراديان ω','l1w')}${fact('الجهد المثالي <bdi dir="ltr">K<sub>g</sub>ω</bdi>','l1vi')}${fact('قراءة الفولتميتر','l1vr')}${fact('السرعة المحسوبة من القراءة','l1nr')}</div></div>
    <div class="panel c5"><h2>الفولتميتر على أطراف التاكو</h2><div class="svgbox tk-svg" id="l1m"></div>
     <div id="l1ph"></div></div>
    <div class="panel c6"><h2><span>العلاقة بين <bdi dir="ltr">V<sub>a</sub></bdi> و <bdi dir="ltr">ω</bdi></span></h2><div class="tk-chart"><canvas id="l1c"></canvas></div>
-    ${legend([['--blue','الخط المثالي <span class="ltr">V<sub>a</sub> = K<sub>g</sub>ω</span>'],['--live','المولد الفعلي (أرقام توضيحية)'],['--stop','ΔV']])}</div>
+    ${legend([['--blue','الخط المثالي <span class="ltr">V<sub>a</sub> = K<sub>g</sub>ω</span>'],['--live','المولد الفعلي (<span class="l1tpw">أرقام توضيحية</span>)'],['--stop','ΔV']])}</div>
    <div class="panel c6"><h2>القراءة مع الزمن <small>آخر 8 ثوانٍ</small></h2><div class="tk-chart"><canvas id="l1h"></canvas></div>
     ${legend([['--muted','الجهد المطابق للسرعة الحقيقية',1],['--blue','قراءة الفولتميتر (تتأخر بالثابت الزمني τ)']])}</div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l1st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
-  const actV=w=>Kg*w*(1-0.00055*w),actB=w=>0.4+0.012*w;     // أرقام توضيحية فقط
+  const TP=B.params($('#l1tp'),'u2-l1',[
+   {k:'dv',label:'نقص جهد المولد الفعلي عن الخط المستقيم عند ω = 100 rad/s',unit:'%',value:5.5,min:0,max:15,step:0.1},
+   {k:'b0',label:'خطأ زاوية الوجه Δβ عند السرعات الصغيرة جدًا',unit:'°',value:0.4,min:0,max:5,step:0.1},
+   {k:'b1',label:'زيادة Δβ لكل 100 rad/s',unit:'°',value:1.2,min:0,max:3,step:0.1}],()=>{tpw();lastS=''});
+  const tpw=()=>el.querySelectorAll('.l1tpw').forEach(x=>x.textContent=TP.trainer?'قيم المدرب':x.closest('.sw')?'توضيحي':'أرقام توضيحية');tpw();
+  // الافتراضي: 5.5/10000 = 0.00055 و 0.4 + 0.012ω كما كانت
+  const actV=w=>Kg*w*(1-TP.v.dv/10000*w),actB=w=>TP.v.b0+TP.v.b1/100*w;
   const ideal=w=>Kg*w;
   $('#l1n').oninput=e=>{n=+e.target.value};$('#l1k').oninput=e=>{Kg=+e.target.value};$('#l1t').oninput=e=>{tau=+e.target.value};
   $('#l1act').onclick=()=>{act=act?0:1;$('#l1act').setAttribute('aria-pressed',act?'true':'false');lastS=''};
@@ -286,7 +292,7 @@ B.lesson({
    plot($('#l1h'),{xmin:Math.max(0,t-8),xmax:Math.max(8,t),ymax:70,xlabel:'t (s)',ylabel:'V (V)',series:[{pts:hist.map(h=>[h[0],h[1]]),color:'--muted',dash:[5,4],width:2},{pts:hist.map(h=>[h[0],h[2]]),color:'--blue'}]});
    steps.check()});
   function phasorDB(db){const cx=40,cy=96,R=78,b0=60,b1=b0+db*3;const P=d=>[cx+R*Math.cos(d*PI/180),cy-R*Math.sin(d*PI/180)];const p0=P(b0),p1=P(b1);
-   return `<h3 class="sm">خطأ زاوية الوجه <span class="ltr">Δβ</span> (أرقام توضيحية، والزاوية مكبّرة 3 مرات في الرسم)</h3><div class="svgbox tk-svg"><svg viewBox="0 0 260 120" role="img" aria-label="متجه جهد الخرج">
+   return `<h3 class="sm">خطأ زاوية الوجه <span class="ltr">Δβ</span> (${TP.trainer?'قيم المدرب':'أرقام توضيحية'}، والزاوية مكبّرة 3 مرات في الرسم)</h3><div class="svgbox tk-svg"><svg viewBox="0 0 260 120" role="img" aria-label="متجه جهد الخرج">
     ${arrowP(cx,cy,cx+200,cy,'--muted',1.6)}<text class="txt m" x="${cx+200}" y="${cy+16}" text-anchor="end">field axis</text>
     ${arrowP(cx,cy,p0[0],p0[1],'--blue',2.6)}${arrowP(cx,cy,p1[0],p1[1],'--live',2.6)}
     <text class="txt b" x="${p0[0]+6}" y="${p0[1]+4}">ideal β</text><text class="txt" x="${p1[0]-6}" y="${p1[1]}" text-anchor="end" style="fill:var(--live)">actual</text>
@@ -436,7 +442,7 @@ B.lesson({
  lab:(el)=>{
   const KE=K_EX*0.1;  // 0.1146 V/(rad/s) — مثال (٢-١)
   const D={n:2000,Vb:2,kk:0.3,RLp:56,Ra:20};let {n,Vb,kk,RLp,Ra}=D,lastS='',usedRL=0,usedAg=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l3tp"></div><div class="grid">
    <div class="panel c12"><h2>الشكل (٢-٢) تفاعلياً حسب المعادلة (٢-٨) <small>مبنية على الشكل (٢-٢) ص 31 والمعادلة (٢-٨) ص 33</small></h2>
     <div class="tk-chart"><canvas id="l3p"></canvas></div>
     ${legend([['--blue','الخاصية المثالية (<span class="ltr">R<sub>L</sub> = ∞</span> وبلا جهد فرش)'],['--live','الخاصية الفعلية حسب (٢-٨)'],['--stop','المنطقة الميتة Δω والخطأ ΔV']])}</div>
@@ -447,23 +453,29 @@ B.lesson({
     ${sl('l3rl','مقاومة جهاز القياس <span class="ltr">R<sub>L</sub></span>',0,100,1,RLp)}
     ${sl('l3ra','مقاومة المنتج <span class="ltr">R<sub>a</sub></span>',0,100,1,Ra)}
     <div class="tk-row"><button class="btn primary" id="l3big">الطريقة الأولى: جهاز قياس بمقاومة كبيرة</button><button class="btn primary" id="l3ag">الطريقة الثانية: فرش من الفضة</button><button class="btn" id="l3c">فرش كربونية</button><button class="btn" id="l3r">القيم الابتدائية</button></div>
-    <p class="sub"><span class="ltr">K<sub>E</sub></span> من مثال (٢-١): <span class="ltr">0.1146 V/(rad/s)</span>. باقي القيم <b>أرقام توضيحية</b> (الكتاب لا يعطي قيماً لـ V<sub>brush</sub> و K<sub>r</sub>).</p></div>
+    <p class="sub"><span class="ltr">K<sub>E</sub></span> من مثال (٢-١): <span class="ltr">0.1146 V/(rad/s)</span>. باقي القيم <b id="l3tpw">أرقام توضيحية</b> (الكتاب لا يعطي قيماً لـ V<sub>brush</sub> و K<sub>r</sub>): جهد التلامس للفرش الكربونية <span class="ltr" id="l3vcT"></span> وللفرش الفضية <span class="ltr" id="l3vaT"></span>.</p></div>
    <div class="panel c7"><h2>عند السرعة المختارة</h2>
     <div class="facts">${fact('Δω (حافة المنطقة الميتة)','l3dz')}${fact('الجهد المثالي <bdi dir="ltr">K<sub>E</sub>ω</bdi>','l3vi')}${fact('الجهد الفعلي <bdi dir="ltr">V<sub>a</sub></bdi>','l3va')}${fact('ΔV','l3dv')}${fact('تيار المنتج <bdi dir="ltr">I<sub>a</sub></bdi>','l3ia')}${fact('السرعة التي «يقرؤها» التاكو','l3nr')}</div>
     <h3 class="sm" style="margin-top:14px">أين يذهب الجهد المتولد؟</h3><div class="svgbox" id="l3bar"></div><div id="l3msg" class="tk-msg"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l3st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
+  const TP=B.params($('#l3tp'),'u2-l3',[
+   {k:'Vc',label:'جهد التلامس للفرش الكربونية (زر «فرش كربونية» والقيم الابتدائية)',unit:'V',value:2,min:0,max:5,step:0.1},
+   {k:'Vag',label:'جهد التلامس للفرش الفضية (زر «فرش من الفضة»)',unit:'V',value:0.2,min:0,max:5,step:0.05}],()=>{tpw();lastS=''});
+  const tpw=()=>{$('#l3tpw').textContent=TP.trainer?'من قيم المدرب':'أرقام توضيحية';$('#l3vcT').textContent=fm(TP.v.Vc,2)+' V';$('#l3vaT').textContent=fm(TP.v.Vag,2)+' V'};tpw();
+  Vb=TP.v.Vc;
   const sync=()=>{$('#l3n').value=n;$('#l3vb').value=Vb;$('#l3kk').value=kk;$('#l3rl').value=RLp;$('#l3ra').value=Ra};
+  sync();
   $('#l3n').oninput=e=>{n=+e.target.value};$('#l3vb').oninput=e=>{Vb=+e.target.value};$('#l3kk').oninput=e=>{kk=+e.target.value};$('#l3rl').oninput=e=>{RLp=+e.target.value};$('#l3ra').oninput=e=>{Ra=+e.target.value};
-  $('#l3big').onclick=()=>{RLp=100;usedRL=1;sync()};$('#l3ag').onclick=()=>{Vb=0.2;usedAg=1;sync()};$('#l3c').onclick=()=>{Vb=2;sync()};$('#l3r').onclick=()=>{({n,Vb,kk,RLp,Ra}=D);sync()};
+  $('#l3big').onclick=()=>{RLp=100;usedRL=1;sync()};$('#l3ag').onclick=()=>{Vb=TP.v.Vag;usedAg=1;sync()};$('#l3c').onclick=()=>{Vb=TP.v.Vc;sync()};$('#l3r').onclick=()=>{({n,Vb,kk,RLp,Ra}=D);Vb=TP.v.Vc;sync()};
   const Va=(w,RL)=>Math.max(0,(KE*w-Vb)/(1+(kk*w+Ra)/RL));
   const steps=stepsUI($('#l3st'),[
-   {t:'المنطقة الميتة',x:'اخفض السرعة حتى تدخل المنطقة الحمراء (تحت Δω): الفولتميتر يقرأ صفراً رغم أن العمود يدور، لأن <span class="ltr">E<sub>a</sub></span> أقل من جهد التلامس.',done:()=>Vb>0.3&&n*N2W<Vb/KE&&n>0},
+   {t:'المنطقة الميتة',x:'اخفض السرعة حتى تدخل المنطقة الحمراء (تحت Δω): الفولتميتر يقرأ صفراً رغم أن العمود يدور، لأن <span class="ltr">E<sub>a</sub></span> أقل من جهد التلامس.',done:()=>Vb>0&&n*N2W<Vb/KE&&n>0},
    {t:'جهد الفرش يكبّر المنطقة الميتة',x:'ارفع <span class="ltr">V<sub>brush</sub></span> إلى <span class="ltr">4 V</span> أو أكثر: تتسع المنطقة الميتة (Δω = V<sub>brush</sub>/K<sub>E</sub>).',done:()=>Vb>=4},
    {t:'رد فعل المنتج يحني المنحنى',x:'ارفع <span class="ltr">K·K<sub>r</sub></span> إلى <span class="ltr">0.6</span> أو أكثر واترك R<sub>L</sub> صغيرة: المنحنى البرتقالي ينحني للأسفل عند السرعات العالية ويكبر ΔV.',done:()=>kk>=0.6},
    {t:'الطريقة الأولى',x:'اضغط «جهاز قياس بمقاومة كبيرة»: يقل تيار المنتج جداً فيختفي أثر رد فعل المنتج وهبوط R<sub>a</sub>، ويستقيم المنحنى (لكن المنطقة الميتة تبقى).',done:()=>usedRL},
-   {t:'الطريقة الثانية',x:'اضغط «فرش من الفضة»: يقل جهد التلامس فتصغر المنطقة الميتة كثيراً.',done:()=>usedAg&&Vb<=0.3},
+   {t:'الطريقة الثانية',x:'اضغط «فرش من الفضة»: يقل جهد التلامس فتصغر المنطقة الميتة كثيراً.',done:()=>usedAg&&Vb<=Math.max(0.3,TP.v.Vag)},
    {t:'قارن مع فرش الكربون',x:'اضغط «فرش كربونية» ثم «فرش من الفضة» مرة أخرى وراقب حافة المنطقة الميتة Δω في البطاقات.'}
   ],()=>({}));
   loopOn(el,()=>{const RL=logR(RLp),w=n*N2W,va=Va(w,RL),vi=KE*w,Ia=va/RL,dz=Vb/KE;
@@ -546,7 +558,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let nr=0,dir=1,ratio=0.8,mis=0,t=0,ang=0,lastS='',rev=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l4tp"></div><div class="grid">
    <div class="panel c5"><h2>المولد الحثي <small>مبنية على الشكل (٢-٣) ص 36</small></h2>
     <div class="svgbox" id="l4s" style="max-width:340px;margin-inline:auto"></div>
     <p class="sub">السهم الأزرق <span class="ltr">φ<sub>f</sub></span> على محور ملف المجال m، والبرتقالي <span class="ltr">φ<sub>g</sub></span> على محور ملف التوليد a. الأسهم والدوران مبطّأة جداً للرؤية.</p></div>
@@ -558,16 +570,28 @@ B.lesson({
     <div class="facts">${fact('الانزلاق s','l4s1')}${fact('|Z<sub>f</sub>|','l4zf')}${fact('|Z<sub>b</sub>|','l4zb')}${fact('|Z<sub>f</sub> − Z<sub>b</sub>|','l4dz')}${fact('E<sub>a</sub> (فعّال)','l4ea')}${fact('زاوية E<sub>a</sub> عن جهد المصدر','l4ph')}${fact('تردد E<sub>a</sub>','l4f')}${fact('Δβ (تغيّر الزاوية)','l4db')}</div>
     <div id="l4msg" class="tk-msg"></div></div>
    <div class="panel c6"><h2>راسم الإشارة: جهد المصدر وجهد ملف التوليد</h2><div class="tk-chart"><canvas id="l4o"></canvas></div>
-    ${legend([['--muted','جهد ملف المجال (المصدر 115 V، 50 Hz)',1],['--live','الجهد على ملف التوليد a']])}</div>
+    ${legend([['--muted','جهد ملف المجال (المصدر <span class="ltr l4vT">115 V</span>، 50 Hz)',1],['--live','الجهد على ملف التوليد a']])}</div>
    <div class="panel c6"><h2><span><bdi dir="ltr">E<sub>a</sub></bdi> مع السرعة من (٢-١٣)</span></h2><div class="tk-chart"><canvas id="l4p"></canvas></div>
     ${legend([['--live','<span class="ltr">|E<sub>a</sub>|</span> من الدائرة المكافئة'],['--blue','خط مستقيم مثالي <span class="ltr">E<sub>a</sub> = K<sub>g</sub>ω</span>',1]])}
-    <p class="sub">ثوابت الدائرة المكافئة <b>أرقام توضيحية</b>: <span class="ltr">V = 115 V, 50 Hz, 2 poles (n<sub>s</sub> = 3000 rpm), R<sub>1</sub> = 30, X<sub>1</sub> = 25, X<sub>m</sub> = 250, R<sub>2</sub> = 200, X<sub>2</sub> = 25 Ω</span>.</p></div>
+    <p class="sub">ثوابت الدائرة المكافئة <b id="l4tpw">أرقام توضيحية</b>: <span class="ltr" id="l4cT"></span>. المحور الرأسي في الرسمين يتكبر تلقائياً مع القيم.</p></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l4st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
   $('#l4n').oninput=e=>{nr=+e.target.value};$('#l4r').oninput=e=>{ratio=+e.target.value};$('#l4m').oninput=e=>{mis=+e.target.value};
   el.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{dir=+b.dataset.dir;if(dir<0&&nr>200)rev=1;el.querySelectorAll('[data-dir]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
-  const ref=indModel(100,1),refPh=cang(ref.Ea);  // reference phase at low speed (forward)
+  const E0=cabs(indModel(2700,1.2).Ea);  // أكبر جهد بالقيم التوضيحية (لتكبير المحاور تلقائياً)
+  let PI4=Object.assign({},IND),refPh=0;
+  const TP=B.params($('#l4tp'),'u2-l4',[
+   {k:'V',label:'جهد مصدر ملف المجال',unit:'V',value:115,min:1,max:1000,step:1},
+   {k:'R1',label:'مقاومة ملف المجال R<sub>1</sub>',unit:'Ω',value:30,min:0,max:1000,step:0.1},
+   {k:'X1',label:'ممانعة تسرب ملف المجال X<sub>1</sub>',unit:'Ω',value:25,min:0,max:1000,step:0.1},
+   {k:'Xm',label:'ممانعة المغنطة X<sub>m</sub>',unit:'Ω',value:250,min:1,max:10000,step:1},
+   {k:'R2',label:'مقاومة الدوار (الكأس) R<sub>2</sub>',unit:'Ω',value:200,min:1,max:10000,step:1},
+   {k:'X2',label:'ممانعة تسرب الدوار X<sub>2</sub>',unit:'Ω',value:25,min:0,max:1000,step:0.1}],()=>{upd4();lastS=''});
+  function upd4(){PI4=Object.assign({},IND,TP.v);refPh=cang(indModel(100,1,PI4).Ea);  // reference phase at low speed (forward)
+   const q=TP.v;el.querySelectorAll('.l4vT').forEach(x=>x.textContent=fm(q.V)+' V');$('#l4tpw').textContent=TP.trainer?'من قيم المدرب':'أرقام توضيحية';
+   $('#l4cT').innerHTML=`V = ${fm(q.V)} V, 50 Hz, 2 poles (n<sub>s</sub> = 3000 rpm), R<sub>1</sub> = ${fm(q.R1)}, X<sub>1</sub> = ${fm(q.X1)}, X<sub>m</sub> = ${fm(q.Xm)}, R<sub>2</sub> = ${fm(q.R2)}, X<sub>2</sub> = ${fm(q.X2)} Ω`}
+  upd4();
   const steps=stepsUI($('#l4st'),[
    {t:'السكون = محول',x:'اجعل السرعة صفراً و δ = 0. يوجد فيض <span class="ltr">φ<sub>f</sub></span> متردد على محور ملف المجال، لكن الجهد على ملف التوليد صفر لأنه متعامد مع الفيض. لاحظ أن <span class="ltr">Z<sub>f</sub> = Z<sub>b</sub></span> عند <span class="ltr">s = 1</span>.',done:()=>nr===0&&mis===0},
    {t:'ابدأ الدوران',x:'ارفع السرعة إلى نحو <span class="ltr">1000 rpm</span>: يظهر <span class="ltr">φ<sub>g</sub></span> على محور ملف التوليد، ويظهر على راسم الإشارة جهد <b>بنفس تردد المصدر 50 Hz</b>.',done:()=>Math.abs(nr-1000)<40},
@@ -576,11 +600,11 @@ B.lesson({
    {t:'خطأ التعامد',x:'أوقف الدوار (سرعة صفر) واجعل δ أكبر من <span class="ltr">2°</span>: يظهر جهد على ملف التوليد رغم السكون، وهذا ما يحذر منه الكتاب ص 38.',done:()=>nr===0&&mis>2},
    {t:'زاوية الطور',x:'أعد δ = 0 وحرّك السرعة من الصغيرة إلى الكبيرة وراقب «Δβ»: في هذا النموذج تتغير زاوية الخرج قليلاً مع السرعة، وهذا هو خطأ زاوية الوجه من متطلبات الدرس 2.1.'}
   ],()=>({}));
-  loopOn(el,dt=>{t+=dt;const sp=nr*dir,m=indModel(sp,ratio);const res=cmul(Cx(ratio*Math.sin(mis*PI/180)),Cx(IND.V));const Et=cadd(m.Ea,res);
+  loopOn(el,dt=>{t+=dt;const sp=nr*dir,m=indModel(sp,ratio,PI4);const res=cmul(Cx(ratio*Math.sin(mis*PI/180)),Cx(PI4.V));const Et=cadd(m.Ea,res);
    const Em=cabs(Et),ph=Em>1e-6?wrap180(cang(Et)):0;
    ang=(ang+sp/60*360*dt/60)%360;const vis=Math.cos(2*PI*1.0*t);
    $('#l4n-v').textContent=nr+' rpm';$('#l4r-v').textContent=fm(ratio,2);$('#l4m-v').textContent=fm(mis,1)+'°';
-   const maxE=cabs(indModel(2700,1.2).Ea);
+   const maxE=cabs(indModel(2700,1.2,PI4).Ea);
    $('#l4s').innerHTML=indSVG({ang,arrows:1,pf:0.85*vis,pg:clamp(Em/maxE,0,1)*0.95*Math.cos(2*PI*t+ph*PI/180),mis:mis*4});
    const sg=[nr,dir,ratio,mis].join();
    if(sg!==lastS){lastS=sg;
@@ -588,13 +612,15 @@ B.lesson({
     $('#l4ea').textContent=fm(Em,2)+' V';$('#l4ph').textContent=Em>0.005?fm(ph,1)+'°':'—';$('#l4f').textContent=Em>0.005?'50 Hz':'—';
     $('#l4db').textContent=Em>0.005&&mis===0?fm(wrap180(ph-refPh-(dir<0?180:0)),2)+'°':'—';
     $('#l4msg').innerHTML=nr===0&&mis===0?'<div class="callout">الدوار ساكن: مولد التاكو «محول» ثانويه مقصور (الكأس)، والفيض المحصل <span class="ltr">φ<sub>f</sub></span> متعامد مع ملف التوليد فلا يتولد عليه جهد: <span class="ltr">E<sub>a</sub> = 0</span>.</div>':
-     nr===0&&mis>0?`<div class="callout err">الملفان غير متعامدين بدقة: يصل جزء من فيض ملف المجال إلى ملف التوليد فيظهر جهد <span class="ltr">${fm(Em,2)} V</span> والدوار ساكن! (الرقم توضيحي)</div>`:'';
+     nr===0&&mis>0?`<div class="callout err">الملفان غير متعامدين بدقة: يصل جزء من فيض ملف المجال إلى ملف التوليد فيظهر جهد <span class="ltr">${fm(Em,2)} V</span> والدوار ساكن! (${TP.trainer?'من قيم المدرب':'الرقم توضيحي'})</div>`:'';
     B.math($('#l4msg'));
-    const ns=[];for(let i=0;i<=54;i++)ns.push(i*50);const kL=cabs(indModel(100,ratio).Ea)/100;
-    plot($('#l4p'),{xmax:2700,ymax:70,xlabel:'n (rpm)',ylabel:'|Ea| (V)',series:[{pts:[[0,0],[2700,kL*2700]],color:'--blue',dash:[6,4],width:2},{pts:ns.map(x=>[x,cabs(indModel(x,ratio).Ea)]),color:'--live'}],points:[{x:nr,y:cabs(m.Ea),color:'--live'}]});
+    const ns=[];for(let i=0;i<=54;i++)ns.push(i*50);const kL=cabs(indModel(100,ratio,PI4).Ea)/100;
+    const yE=maxE===E0?70:70*maxE/Math.max(E0,1e-9);   // بالقيم التوضيحية 70 V تماماً
+    plot($('#l4p'),{xmax:2700,ymax:yE,xlabel:'n (rpm)',ylabel:'|Ea| (V)',series:[{pts:[[0,0],[2700,kL*2700]],color:'--blue',dash:[6,4],width:2},{pts:ns.map(x=>[x,cabs(indModel(x,ratio,PI4).Ea)]),color:'--live'}],points:[{x:nr,y:cabs(m.Ea),color:'--live'}]});
    }
-   const pts1=[],pts2=[],T=0.04;for(let i=0;i<=160;i++){const tt=i/160*T,w=2*PI*50*tt;pts1.push([tt*1000,IND.V*Math.SQRT2*Math.sin(w)]);pts2.push([tt*1000,Em*Math.SQRT2*Math.sin(w+ph*PI/180)])}
-   plot($('#l4o'),{xmax:40,ymin:-180,ymax:180,ystep:60,xlabel:'t (ms)',ylabel:'v (V)',series:[{pts:pts1,color:'--muted',dash:[5,4],width:2},{pts:pts2,color:'--live'}]});
+   const pts1=[],pts2=[],T=0.04;for(let i=0;i<=160;i++){const tt=i/160*T,w=2*PI*50*tt;pts1.push([tt*1000,PI4.V*Math.SQRT2*Math.sin(w)]);pts2.push([tt*1000,Em*Math.SQRT2*Math.sin(w+ph*PI/180)])}
+   const yO=PI4.V===IND.V&&Em*Math.SQRT2<=180?180:60*Math.ceil(Math.max(PI4.V,Em)*Math.SQRT2*1.05/60);   // بالقيم التوضيحية ±180 V
+   plot($('#l4o'),{xmax:40,ymin:-yO,ymax:yO,ystep:yO/3,xlabel:'t (ms)',ylabel:'v (V)',series:[{pts:pts1,color:'--muted',dash:[5,4],width:2},{pts:pts2,color:'--live'}]});
    steps.check()});
  },
  examples:[
@@ -632,10 +658,10 @@ B.lesson({
   {note:'<b>توضيح للمتدرب (ليس من نص الكتاب) — كيف يقيس الإستروبوسكوب السرعة؟</b> مصباح يومض بعدد ومضات نختاره في الدقيقة. نضع علامة على العمود. إذا كان عدد الومضات في الدقيقة = عدد الدورات في الدقيقة، تظهر العلامة <b>ثابتة</b> في مكان واحد لأن الضوء يلتقطها في نفس الموضع كل مرة. عندها نقرأ السرعة من الجهاز مباشرة. ثم نصحح ثابت التاكو: $$K_g(\\text{الجديد}) = \\frac{V_a}{\\omega_{\\text{الإستروبوسكوب}}}$$ <b>تنبيه:</b> العلامة تبدو ثابتة أيضاً إذا كانت الومضات نصف السرعة أو ثلثها؛ لذلك نبدأ بعدد ومضات كبير وننزل حتى أول مرة تظهر فيها علامة واحدة ثابتة.'}
  ],
  lab:(el)=>{
-  const Ks=0.02;  // V(peak) per rpm — أرقام توضيحية
-  const Knom=0.1,errs=[-0.08,-0.06,0.05,0.07];const Ktrue=Knom*(1+errs[Math.floor(Math.random()*errs.length)]);
+  const errs=[-0.08,-0.06,0.05,0.07],rndErr=errs[Math.floor(Math.random()*errs.length)];
+  let Ks=0.02,Knom=0.1,Ktrue=Knom*(1+rndErr);  // أرقام توضيحية (تتبع «قيم المدرب» أدناه)
   let n=1500,p=1,ph3=0,fac=1,F=2000,Kuse=Knom,t=0,ang=0,lastS='',fixed=0,fixedOK=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l5tp"></div><div class="grid">
    <div class="panel c5"><h2>أ) المولد التزامني <small>مبنية على نص ص 40 (لا يوجد شكل في الكتاب)</small></h2>
     <div class="svgbox" id="l5g" style="max-width:280px;margin-inline:auto"></div>
     ${sl('l5n','سرعة العمود <span class="ltr">n</span>',0,3000,10,n)}
@@ -643,9 +669,9 @@ B.lesson({
     ${sl('l5f','تغيّر كثافة المجال أو الحمل أو الحرارة (توضيحي)',70,110,1,100)}</div>
    <div class="panel c7"><h2>الجهد المتولد على الثابت <small>آخر 100 ms</small></h2><div class="tk-chart"><canvas id="l5o"></canvas></div>
     <div class="facts">${fact('القيمة العظمى للجهد','l5e')}${fact('التردد f','l5fr')}${fact('السرعة من الجهد','l5nv')}${fact('السرعة من التردد','l5nf')}</div>
-    <p class="sub">«السرعة من الجهد» تفترض الثابت الأصلي للمولد <span class="ltr">0.02 V/rpm</span> (رقم توضيحي)، و«السرعة من التردد» = <span class="ltr">60f/p</span>.</p><div id="l5msg"></div></div>
+    <p class="sub">«السرعة من الجهد» تفترض الثابت الأصلي للمولد <span class="ltr" id="l5ksT">0.02 V/rpm</span> (<span id="l5tpw">رقم توضيحي</span>)، و«السرعة من التردد» = <span class="ltr">60f/p</span>.</p><div id="l5msg"></div></div>
    <div class="panel c7"><h2>ب) معايرة تاكو تيار مستمر بالإستروبوسكوب <small>مبنية على البند ٢-٥ ص 40</small></h2>
-    <p class="sub">على نفس العمود تاكو تيار مستمر مكتوب على لوحته <span class="ltr">K<sub>g</sub> = 0.1 V/(rad/s)</span>، لكن ثابته الحقيقي تغيّر مع الزمن (قيمة مخفية، أرقام توضيحية). وُجّه الإستروبوسكوب إلى علامة على العمود.</p>
+    <p class="sub">على نفس العمود تاكو تيار مستمر مكتوب على لوحته <span class="ltr">K<sub>g</sub> = <span id="l5knT">0.1</span> V/(rad/s)</span>، لكن ثابته الحقيقي تغيّر مع الزمن (قيمة مخفية، <span id="l5tpw2">أرقام توضيحية</span>). وُجّه الإستروبوسكوب إلى علامة على العمود.</p>
     ${sl('l5s','ومضات الإستروبوسكوب في الدقيقة',200,4000,1,F)}
     <div class="tk-row"><button class="btn" data-fd="-10">−10</button><button class="btn" data-fd="-1">−1</button><button class="btn" data-fd="1">+1</button><button class="btn" data-fd="10">+10</button><button class="btn primary" id="l5fix">صحّح ثابت توليد الجهد</button><button class="btn" id="l5undo">أعد ثابت اللوحة</button></div>
     <div class="facts">${fact('جهد التاكو V<sub>a</sub>','l5va')}${fact('K<sub>g</sub> المستعمل في القراءة','l5ku')}${fact('قراءة التاكو','l5nt')}${fact('قراءة الإستروبوسكوب','l5ns')}${fact('خطأ التاكو','l5er')}</div><div id="l5cm" class="tk-msg"></div></div>
@@ -653,6 +679,13 @@ B.lesson({
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l5st"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
+  const TP=B.params($('#l5tp'),'u2-l5',[
+   {k:'Ks',label:'ثابت المولد التزامني (القيمة العظمى للجهد لكل 1 rpm)',unit:'V/rpm',value:0.02,min:0.001,max:1,step:0.001},
+   {k:'Knom',label:'ثابت توليد الجهد المكتوب على لوحة تاكو التيار المستمر K<sub>g</sub>',unit:'V/(rad/s)',value:0.1,min:0.005,max:2,step:0.001},
+   {k:'err',label:'فرق الثابت الحقيقي عن ثابت اللوحة (0 = يختار المختبر عشوائيًا واحدًا من −8 أو −6 أو +5 أو +7 %)',unit:'%',value:0,min:-50,max:50,step:0.5}],()=>{upd5();Kuse=Knom;fixed=0;fixedOK=0;lastS=''});
+  function upd5(){Ks=TP.v.Ks;Knom=TP.v.Knom;Ktrue=Knom*(1+(TP.v.err?TP.v.err/100:rndErr));
+   $('#l5ksT').textContent=fm(Ks)+' V/rpm';$('#l5knT').textContent=fm(Knom);$('#l5tpw').textContent=TP.trainer?'من قيم المدرب':'رقم توضيحي';$('#l5tpw2').textContent=TP.trainer?'من قيم المدرب':'أرقام توضيحية'}
+  upd5();Kuse=Knom;
   $('#l5n').oninput=e=>{n=+e.target.value};$('#l5f').oninput=e=>{fac=+e.target.value/100};$('#l5s').oninput=e=>{F=+e.target.value};
   el.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{p=+b.dataset.pp;el.querySelectorAll('[data-pp]').forEach(x=>x.setAttribute('aria-pressed',x===b));lastS=''});
   el.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ph3=+b.dataset.ph;el.querySelectorAll('[data-ph]').forEach(x=>x.setAttribute('aria-pressed',x===b));lastS=''});
@@ -693,7 +726,8 @@ B.lesson({
     $('#l5e').textContent=fm(Epk,1)+' V';$('#l5fr').textContent=fm(f,1)+' Hz';$('#l5nv').textContent=fm(Epk/Ks,0)+' rpm';$('#l5nf').textContent=fm(60*f/p,0)+' rpm';
     $('#l5msg').innerHTML=Math.abs(fac-1)>0.005&&n>0?`<div class="callout err">${fac<1?'ضعف':'زاد'} المجال بنسبة <span class="ltr">${fm(Math.abs(fac-1)*100,0)} %</span>: القراءة من الجهد خاطئة بنفس النسبة، والقراءة من التردد صحيحة. لهذا «قياس السرعة بواسطة قياس التردد يكون عادة أكثر دقة» (ص 40).</div>`:'';
     const ser=[],ph=ph3?[0,120,240]:[0],cols=['--live','--blue','--muted'];ph.forEach((d,i)=>{const pts=[];for(let j=0;j<=300;j++){const tt=j/300*0.1;pts.push([tt*1000,Epk*Math.sin(2*PI*f*tt-d*PI/180)])}ser.push({pts,color:cols[i],width:2})});
-    plot($('#l5o'),{xmax:100,ymin:-70,ymax:70,ystep:35,xlabel:'t (ms)',ylabel:'e (V)',series:ser})}
+    const yG=Ks===0.02?70:70*Ks/0.02;   // بالقيم التوضيحية ±70 V تماماً
+    plot($('#l5o'),{xmax:100,ymin:-yG,ymax:yG,ystep:yG/2,xlabel:'t (ms)',ylabel:'e (V)',series:ser})}
    steps.check()});
  },
  quiz:[

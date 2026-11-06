@@ -194,7 +194,7 @@ B.lesson({
  ],
  lab:(el,B)=>{
   let src='ac',pol=1,revF=0,on=1,f=60,ph=0,rot=0,w=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l1tp"></div><div class="grid">
    <div class="panel c12"><h2>مختبر: انعكاس التيارين معاً <small>مبني على نص ص 59 ودائرة الشكل (٤-٢)</small></h2>
     <div class="wrap-in" style="align-items:flex-end">
      <div><div class="sub">المصدر</div>${segHTML('src',[['dc','تيار مستمر DC'],['ac','تيار متردد AC']],src)}</div>
@@ -211,6 +211,8 @@ B.lesson({
    <div class="panel c12">${tryList(['شغّل على <b>AC</b>: لاحظ أن سهم المجال وسهم تيار المنتج ينقلبان <b>معاً</b>، والعزم ينبض بضعف التردد لكنه لا يصير سالباً، فيدور الدوار في اتجاه واحد.','بدّل إلى <b>DC</b> ثم اعكس قطبية المصدر: ينعكس التياران معاً ويبقى اتجاه الدوران كما هو.','اعكس <b>أطراف ملف المجال فقط</b>: ينقلب العزم فيعكس المحرك اتجاهه (هذا جواب س٤-٣).','قارن تردد نبض العزم عند 50 Hz و 60 Hz: هو دائماً ضعف تردد المصدر.'])}</div>
   </div>`;
   const $=s=>el.querySelector(s);
+  const TP=B.params($('#l1tp'),'u4-l1',[
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.8,min:0.05,max:30,step:0.05}]);
   const bind=(a,fn)=>el.querySelectorAll(`[data-${a}]`).forEach(b=>b.addEventListener('click',()=>{fn(b.dataset[a]);segSet(el,a,b.dataset[a])}));
   bind('src',v=>{src=v});bind('on',v=>{on=+v});bind('rev',v=>{revF=+v});bind('pol',v=>{pol=+v});bind('f',v=>{f=+v});
   const RX=330,RY=150,RR=46;
@@ -230,7 +232,7 @@ B.lesson({
    $('#polBox').style.display=src==='dc'?'':'none';$('#fBox').style.display=src==='ac'?'':'none';
    ph+=2*Math.PI*0.5*dt;
    const i=!on?0:src==='dc'?pol*0.7071:Math.sin(ph),iF=revF?-i:i,T=iF*i,Tav=!on?0:(revF?-0.5:0.5);
-   w+=(4*T-1.0*w)*dt/0.8;rot+=w*dt*60;
+   w+=(4*T-1.0*w)*dt/TP.v.tau;rot+=w*dt*60;
    rotG.setAttribute('transform',`rotate(${(-rot).toFixed(1)} ${RX} ${RY})`);
    const sk=src+pol;if(sk!==lastSrc){lastSrc=sk;srcG.innerHTML=`<circle cx="60" cy="150" r="26" class="coil"/>`+(src==='ac'?`<path d="M45 150q7.5 -13 15 0t15 0" fill="none" stroke="var(--fg)" stroke-width="1.8"/>`+S.t(60,196,'AC','b'):S.t(60,140,pol>0?'+':'−','',null,18)+S.t(60,170,pol>0?'−':'+','',null,18)+S.t(60,196,'DC','b'))}
    let s='';const L=Math.abs(i)*44;
@@ -342,11 +344,11 @@ B.lesson({
 });
 
 /* =================== Lesson 4.3 — repulsion motor =================== */
-const ZH=4; // illustrative impedance ratio high/low position (not from the book)
-const repI=a=>{const c=Math.cos(a*D),s=Math.sin(a*D);return 1/(c*c+ZH*s*s)};
-const repTraw=a=>Math.sin(2*a*D)*repI(a)*repI(a);
-const TMAX=(()=>{let m=0;for(let a=0;a<=90;a+=0.25)m=Math.max(m,repTraw(a));return m})();
-const repT=a=>repTraw(a)/TMAX;
+const ZH=4; // illustrative impedance ratio high/low position (not from the book) — trainer field in the lab (TP.v.ZH)
+const repI=(a,z)=>{z=z==null?ZH:z;const c=Math.cos(a*D),s=Math.sin(a*D);return 1/(c*c+z*s*s)};
+const repTraw=(a,z)=>Math.sin(2*a*D)*repI(a,z)*repI(a,z);
+const TMAXc={};const TMAX=z=>{z=z==null?ZH:z;if(TMAXc[z]==null){let m=0;for(let a=0;a<=90;a+=0.25)m=Math.max(m,repTraw(a,z));TMAXc[z]=m}return TMAXc[z]};
+const repT=(a,z)=>repTraw(a,z)/TMAX(z);
 function repulsionSVG(a,o){o=o||{};const cx=150,cy=150,R=96,r=62;let s=`<svg viewBox="0 0 ${o.eq?560:300} 300" role="img" aria-label="المحرك التنافري">`;
   // stator ring and winding A (axis vertical)
   s+=`<circle cx="${cx}" cy="${cy}" r="${R+18}" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.4"/><circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.2"/>`;
@@ -399,7 +401,7 @@ B.lesson({
  ],
  lab:(el,B)=>{
   let a=90,on=0,rot=0,w=0,warn='',anim=null;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l3tp"></div><div class="grid">
    <div class="panel c7"><h2>قرص زاوية الفرش <small>مبني على الشكل (٤-٤) ص 64</small></h2>
     <p class="sub">اسحب الفرش (أو أي نقطة على المحرك) لتدير محور الفرش، أو استخدم المنزلق.</p>
     <div class="svgbox" id="mot" style="max-width:420px;margin-inline:auto;touch-action:none;cursor:grab"></div>
@@ -410,9 +412,16 @@ B.lesson({
    <div class="panel c5"><h2>ماذا يحدث؟</h2><div class="facts" id="facts"></div><p class="sub" id="pos"></p>
     <div class="svgbox" id="ch"></div>
     <div class="legend"><span><i style="background:var(--blue)"></i>تيار الثابت (نسبي)</span><span><i style="background:var(--live)"></i>العزم (نسبي)</span><span><i style="background:var(--on)"></i>منطقة ١٨–٢٠°</span></div>
-    <p class="sub"><b>منحنى توضيحي — ليس من الكتاب:</b> رُسم ليطابق ما يقوله الكتاب فقط: العزم صفر عند 0° و 90°، وأكبر تيار عند 0° وأصغره عند 90°. الأرقام نسبية.</p></div>
+    <p class="sub"><b>منحنى توضيحي — ليس من الكتاب:</b> رُسم ليطابق ما يقوله الكتاب فقط: العزم صفر عند 0° و 90°، وأكبر تيار عند 0° وأصغره عند 90°. الأرقام نسبية. <span id="l3zh"></span></p></div>
    <div class="panel c12">${tryList(['ابدأ والمصدر مفصول، ضع الفرش عند 90° (موقع المعاوقة الكبيرة) ثم صِل المصدر: التيار أصغر ما يمكن ولا يدور المحرك.','أزح الفرش تدريجياً نحو 20°: يبدأ الدوران <b>عكس</b> اتجاه إزاحة الفرش، ولاحظ ظهور السهم F.','ضع α = 0°: أكبر تيار للثابت ولا عزم (موقع المعاوقة الصغيرة).','افصل المصدر، ضع الفرش عند 10° ثم صِل: يظهر تحذير تيار بدء كبير.','اضغط زر البدء في الاتجاه الآخر: الإزاحة إلى الجهة الأخرى تعكس الدوران (س٤-٤).'])}</div></div>`;
   const $=s=>el.querySelector(s);
+  let last='';
+  const zTxt=()=>{$('#l3zh').innerHTML=`المعاوقة في موقع المعاوقة الكبيرة هنا <span class="ltr">${B.fmtN(TP.v.ZH)}</span> أضعافها في موقع المعاوقة الصغيرة، لذلك أصغر تيار (عند 90°) = <span class="ltr">${(100/TP.v.ZH).toFixed(0)}%</span> من أكبر تيار (عند 0°)${TP.trainer?' (من قيم المدرب)':''}.`};
+  const TP=B.params($('#l3tp'),'u4-l3',[
+   {k:'ZH',label:'كم ضعفاً تكبر معاوقة الثابت في موقع المعاوقة الكبيرة (90°) عنها في موقع المعاوقة الصغيرة (0°)',unit:'',value:4,min:1.2,max:100,step:0.1},
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.2,min:0.05,max:30,step:0.05}],()=>{last='';zTxt()});
+  zTxt();
+  const rI=x=>repI(x,TP.v.ZH),rT=x=>repT(x,TP.v.ZH);
   const mot=$('#mot');
   const setA=v=>{a=clamp(Math.round(v),-90,90);$('#sa').value=a;$('#sa-v').textContent=a};
   const drag=e=>{const svg=mot.querySelector('svg');if(!svg)return;const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*300,y=(e.clientY-r.top)/r.height*300;
@@ -420,21 +429,20 @@ B.lesson({
   let dragging=false;mot.addEventListener('pointerdown',e=>{dragging=true;mot.setPointerCapture&&mot.setPointerCapture(e.pointerId);drag(e)});
   mot.addEventListener('pointermove',e=>{if(dragging)drag(e)});['pointerup','pointercancel'].forEach(ev=>mot.addEventListener(ev,()=>{dragging=false}));
   $('#sa').addEventListener('input',e=>{setA(+e.target.value);anim=null});
-  const setOn=v=>{if(v&&!on){const I=repI(a);warn=Math.abs(a)<80?`<div class="callout err"><b>تيار بدء كبير:</b> وصلت المصدر والفرش عند ${a}° بعيدة عن موقع المعاوقة الكبيرة (تيار الثابت ≈ ${(I*100).toFixed(0)}% من أكبر قيمة). الكتاب: «عند بدء حركة المحرك التنافري يجب أن تكون الفرش في موقع المعاوقة الكبيرة».</div>`:`<div class="callout">بدء صحيح: الفرش في موقع المعاوقة الكبيرة، تيار البدء أقل ما يمكن (${(repI(a)*100).toFixed(0)}%). الآن أزح الفرش.</div>`}if(!v)warn='';on=v;segSet(el,'on',on);$('#warn').innerHTML=warn};
+  const setOn=v=>{if(v&&!on){const I=rI(a);warn=Math.abs(a)<80?`<div class="callout err"><b>تيار بدء كبير:</b> وصلت المصدر والفرش عند ${a}° بعيدة عن موقع المعاوقة الكبيرة (تيار الثابت ≈ ${(I*100).toFixed(0)}% من أكبر قيمة). الكتاب: «عند بدء حركة المحرك التنافري يجب أن تكون الفرش في موقع المعاوقة الكبيرة».</div>`:`<div class="callout">بدء صحيح: الفرش في موقع المعاوقة الكبيرة، تيار البدء أقل ما يمكن (${(rI(a)*100).toFixed(0)}%). الآن أزح الفرش.</div>`}if(!v)warn='';on=v;segSet(el,'on',on);$('#warn').innerHTML=warn};
   el.querySelectorAll('[data-on]').forEach(b=>b.addEventListener('click',()=>setOn(+b.dataset.on)));
   const start=(from,to)=>{setOn(0);setA(from);setOn(1);anim={from,to,t:0}};
   $('#st1').addEventListener('click',()=>start(90,20));$('#st2').addEventListener('click',()=>start(-90,-20));
   setA(a);
-  let last='';
   loopOn(el,dt=>{
    if(anim){anim.t+=dt;const u=clamp((anim.t-0.8)/2.2,0,1);setA(anim.from+(anim.to-anim.from)*u);if(u>=1)anim=null}
-   const T=on?repT(a):0,I=on?repI(a):0;
-   w+=(T*3-w)*dt/1.2;rot+=w*dt*120;
+   const T=on?rT(a):0,I=on?rI(a):0;
+   w+=(T*3-w)*dt/TP.v.tau;rot+=w*dt*120;
    const sig=a+'|'+on;if(sig!==last){last=sig;mot.innerHTML=repulsionSVG(a);
      const ch=plotSVG({w:420,h:240,x0:-90,x1:90,y0:-1.1,y1:1.1,xt:[-90,-45,0,45,90],yt:[-1,-0.5,0,0.5,1],yf:v=>v.toFixed(1),xl:'α (°)',aria:'العزم والتيار مع الزاوية',
       under:(X,Y)=>[[18,20],[-20,-18]].map(([p,q])=>`<rect x="${fx(X(p))}" y="${Y(1.1)}" width="${fx(X(q)-X(p))}" height="${fx(Y(-1.1)-Y(1.1))}" fill="var(--on-soft)"/>`).join(''),
-      series:[{pts:Array.from({length:181},(_,i)=>[i-90,repI(i-90)]),col:'--blue',w:2},{pts:Array.from({length:181},(_,i)=>[i-90,repT(i-90)]),col:'--live',w:2.8}],
-      extra:(X,Y)=>`<path d="M${fx(X(a))} ${Y(1.1)}V${Y(-1.1)}" stroke="var(--fg)" stroke-width="1.2"/><circle cx="${fx(X(a))}" cy="${fx(Y(repT(a)))}" r="5" fill="var(--live)"/><circle cx="${fx(X(a))}" cy="${fx(Y(repI(a)))}" r="5" fill="var(--blue)"/>`});
+      series:[{pts:Array.from({length:181},(_,i)=>[i-90,rI(i-90)]),col:'--blue',w:2},{pts:Array.from({length:181},(_,i)=>[i-90,rT(i-90)]),col:'--live',w:2.8}],
+      extra:(X,Y)=>`<path d="M${fx(X(a))} ${Y(1.1)}V${Y(-1.1)}" stroke="var(--fg)" stroke-width="1.2"/><circle cx="${fx(X(a))}" cy="${fx(Y(rT(a)))}" r="5" fill="var(--live)"/><circle cx="${fx(X(a))}" cy="${fx(Y(rI(a)))}" r="5" fill="var(--blue)"/>`});
      $('#ch').innerHTML=ch;
      const pos=Math.abs(a)<=2?'<b>موقع المعاوقة الصغيرة</b> (α ≈ 0°): أكبر تيار للثابت ولا عزم — مثل محول ثانويه مقصور.':Math.abs(a)>=88?'<b>موقع المعاوقة الكبيرة</b> (α ≈ 90°): أصغر تيار ولا عزم — مثل محول ثانويه مفتوح. هنا يكون البدء.':(Math.abs(a)>=18&&Math.abs(a)<=20)?'الفرش مزاحة <b>١٨–٢٠ درجة</b> عن محور المجال الرئيسي كما يوصي الكتاب.':'الفرش بين الموقعين: يوجد T و F فيتولد عزم.';
      $('#pos').innerHTML=pos;}

@@ -16,7 +16,7 @@ const tryBox=id=>`<h3 style="font-size:15px;margin-top:12px">جرّب</h3><ol cl
 /* free-order «جرّب» list: each item ticks itself when its condition first becomes true */
 function tryList(host,items){const done=items.map(()=>false);
   const draw=()=>{host.innerHTML=items.map((s,j)=>`<li class="${done[j]?'done':''}" style="color:var(--fg)"><span class="k">${done[j]?'✓':j+1}</span><div><h4>${s.t}</h4><p style="display:block">${s.x}</p></div></li>`).join('')};draw();
-  return {check(w){let ch=false;items.forEach((s,j)=>{if(!done[j]&&s.done&&s.done(w)){done[j]=true;ch=true}});if(ch)draw()}};}
+  return {check(w){let ch=false;items.forEach((s,j)=>{if(!done[j]&&s.done&&s.done(w)){done[j]=true;ch=true}});if(ch)draw()},redraw:draw};}
 const box=(svg,max)=>`<div class="svgbox" style="margin-inline:auto;${max?`max-width:${max}px`:''}">${svg}</div>`;
 const tx=(x,y,s,o)=>{o=o||{};return `<text class="txt${o.ar?' ar':''}${o.c?' '+o.c:''}" x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" text-anchor="${o.a||'middle'}"${o.fs?` font-size="${o.fs}"`:''}${o.col?` style="fill:var(${o.col})"`:''}>${s}</text>`};
 const nf=(v,d)=>(Math.abs(v)<1e-12?0:v).toFixed(d);
@@ -160,7 +160,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let src='2ph',k=0,d=1,shorted=false,w=0,th=0,phi=0,t=0,hist=[],ht=0,lastSig='';const flags={};
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="u3l1tp"></div><div class="grid">
    <div class="panel c12"><h2>مختبر المحرك ثنائي الوجه <small>مبني على الشكل (٣-١) ص 46 والمعادلة (٣-١)</small></h2>
     <div class="wrap-in" style="align-items:flex-end">
      <div><div class="sub">المصدر</div>${segHTML('src',[['2ph','ثنائي الوجه'],['cap','أحادي الوجه + مكثف'],['1ph','أحادي الوجه بدون مكثف']],src)}</div>
@@ -174,7 +174,7 @@ B.lesson({
     <div class="legend"><span><i style="background:var(--blue)"></i>ملف التحكم a (رأسي)</span><span><i style="background:var(--live)"></i>ملف الجهد الثابت m (أفقي)</span><span><i style="background:var(--on)"></i>المجال المحصّل</span></div></div>
    <div class="panel c5"><h2>التوصيل</h2><div class="svgbox" id="wir"></div>
     <h2 style="margin-top:12px">السرعة مع الزمن <small>آخر 10 ثوانٍ</small></h2><div class="svgbox" id="ch"></div></div>
-   <div class="panel c12"><p class="sub"><b>أرقام توضيحية:</b> السرعة والعزم معروضان كنسبة مئوية (الكتاب لا يعطي أرقاماً لهذا الدرس). سرعة رسم المجال والدوار مبطأة كثيراً حتى تراها العين، والدوران كمحرك وجه واحد بعد الدفعة نموذج توضيحي لما ذكره الكتاب.</p>${tryBox('try')}</div>
+   <div class="panel c12"><p class="sub"><b id="u3l1w">أرقام توضيحية</b>: السرعة والعزم معروضان كنسبة مئوية (الكتاب لا يعطي أرقاماً لهذا الدرس). أضفنا احتكاكاً صغيراً قدره <span class="ltr" id="u3l1fr"></span> % من عزم البدء عند الجهد الكامل، لذلك تستقر السرعة عند الجهد الكامل على <span class="ltr" id="u3l1ws"></span> % وليس 100 % تماماً. سرعة رسم المجال والدوار مبطأة كثيراً حتى تراها العين، والدوران كمحرك وجه واحد بعد الدفعة نموذج توضيحي لما ذكره الكتاب.</p>${tryBox('try')}</div>
   </div>`;
   const tl=tryList(q(el,'#try'),[
    {t:'شغّل المحرك',x:'ارفع جهد ملف التحكم إلى 50 % أو أكثر. يتكون مجال دوار ويبدأ الدوار الدوران، وكلما زاد الجهد زاد العزم والسرعة.',done:()=>src!=='1ph'&&k>=0.5&&w>0.3},
@@ -183,6 +183,11 @@ B.lesson({
    {t:'قصر ملف التحكم',x:'شغّل مفتاح «قصر ملف التحكم» والجهد صفر: يتوقف الدوار، وإذا دفعته لا يستمر. هذا ما يطلبه الكتاب ص 46.',done:()=>flags.single&&shorted&&Math.abs(w)<0.02},
    {t:'بدون مكثف',x:'اختر «أحادي الوجه بدون مكثف» وارفع الجهد: التياران في الطور نفسه، فالمجال نابض لا يدور، والمحرك لا يبدأ الحركة وحده.',done:()=>src==='1ph'&&k>=0.5&&Math.abs(w)<0.02},
    {t:'أضف المكثف',x:'اختر «أحادي الوجه + مكثف»: المكثف على التوالي مع ملف الجهد الثابت يصنع فرق 90°، فيعود المجال دواراً ويدور المحرك.',done:()=>src==='cap'&&k>=0.3&&Math.abs(w)>0.2}]);
+  const tpLbl=()=>{q(el,'#u3l1w').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية';q(el,'#u3l1fr').textContent=B.fmtN(TP.v.fr);q(el,'#u3l1ws').textContent=B.fmtN(Math.max(0,100-TP.v.fr))};
+  const TP=B.params(q(el,'#u3l1tp'),'u3-l1',[
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.45,min:0.05,max:20,step:0.05},
+   {k:'fr',label:'عزم الاحتكاك (نسبة من عزم البدء عند الجهد الكامل)',unit:'%',value:2,min:0,max:30,step:0.5}],tpLbl);
+  tpLbl();
   const va=q(el,'#va'),shB=q(el,'#sh'),revB=q(el,'#rev');
   const sync=()=>{q(el,'#va-v').textContent=Math.round(k*100)+' %';segSet(el,'src',src);shB.setAttribute('aria-pressed',shorted?'true':'false');shB.disabled=k>0;shB.style.opacity=k>0?.45:1;revB.setAttribute('aria-pressed',d<0?'true':'false')};
   va.addEventListener('input',()=>{k=+va.value/100;if(k>0)shorted=false;sync()});
@@ -195,10 +200,13 @@ B.lesson({
   loopOn(el,dt=>{
    t+=dt;phi+=dt*2*Math.PI*0.5;
    const rotating=src!=='1ph'&&k>0;let T;
+   const tau=TP.v.tau,fr=TP.v.fr/100,ns=Math.max(1,Math.ceil(dt/(0.5*tau)-1e-9)),h=dt/ns;  // خطوات أصغر فقط عند ثابت زمن صغير جداً (للثبات)
+   for(let i=0;i<ns;i++){
    if(rotating)T=k*d-w;else if(shorted)T=-w;else T=T1(w);
    if(!rotating&&!shorted&&Math.abs(w)>0.3&&k===0)flags.single=1;
-   const fr=0.02;let a=T-fr*Math.sign(w);if(Math.abs(w)<0.01&&Math.abs(T)<=fr){w=0;a=0}
-   w+=a/0.45*dt;th+=w*dt*360*0.45;
+   let a=T-fr*Math.sign(w);if(Math.abs(w)<0.01&&Math.abs(T)<=fr){w=0;a=0}
+   w+=a/tau*h}
+   th+=w*dt*360*0.45;
    const f=fieldPaths(src,k,d,phi,160,74);
    q(el,'#u3l1-B').setAttribute('d',f.B);q(el,'#u3l1-Bh').setAttribute('d',f.H);q(el,'#u3l1-tr').setAttribute('d',f.T);
    q(el,'#u3l1-rot').setAttribute('transform',`rotate(${(th%360).toFixed(1)} 160 160)`);
@@ -265,7 +273,7 @@ B.lesson({
  ],
  lab:(el)=>{
   let sm=0.15,va=1,wop=0.4;const flags={};
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="u3l2tp"></div><div class="grid">
    <div class="panel c6"><h2>(١) أثر مقاومة الدوار <small>مبني على الشكل (٣-٢) ص 47</small></h2>
     ${slHTML('r2','مقاومة الدوار R<sub>2</sub> (نسبية)',0,100,1,0)}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn" data-p="a">المنحنى a</button><button class="btn" data-p="b">المنحنى b</button><button class="btn" data-p="c">المنحنى c</button><button class="btn" data-p="d">أكبر من c</button></div>
@@ -275,7 +283,7 @@ B.lesson({
     ${slHTML('va','جهد ملف التحكم V<sub>a</sub>',0,100,5,100)}${slHTML('wo','سرعة الدوار ω (نقطة التشغيل)',0,110,1,40)}
     <div class="svgbox" id="p2"></div><div class="ex-f" id="eq" style="text-align:center"></div>
     <div class="facts">${fact('عزم البدء T<sub>st</sub> = K<sub>v</sub>V<sub>a</sub>','g1')}${fact('سرعة اللاحمل ω<sub>o</sub>','g2')}${fact('العزم عند السرعة المختارة','g3')}</div><div id="m2"></div></div>
-   <div class="panel c12"><p class="sub"><b>أرقام توضيحية:</b> القيم بالوحدة النسبية (pu). في اللوحة (١) استعملنا علاقة المحرك الحثي المعروفة لرسم المنحنيات (ليست من الكتاب)، مع بقاء أقصى عزم ثابتاً كما يقول الكتاب. في اللوحة (٢) أخذنا <span class="ltr">\\(K_\\omega = K_v = 1\\)</span> pu.</p>${tryBox('try')}</div></div>`;
+   <div class="panel c12"><p class="sub"><b>أرقام توضيحية:</b> القيم بالوحدة النسبية (pu). في اللوحة (١) استعملنا علاقة المحرك الحثي المعروفة لرسم المنحنيات (ليست من الكتاب)، مع بقاء أقصى عزم ثابتاً كما يقول الكتاب. في اللوحة (٢) أخذنا <span id="u3l2k"></span> (<span id="u3l2kw"></span>).</p>${tryBox('try')}</div></div>`;
   const tl=tryList(q(el,'#try'),[
    {t:'المحرك الحثي العادي',x:'ابدأ بالمنحنى a: القمة قرب سرعة التزامن، وعزم البدء صغير، والمنحنى بعيد عن الخط المستقيم.',done:()=>sm<0.2},
    {t:'زِد مقاومة الدوار',x:'حرّك منزلق R₂: القمة تنتقل نحو السرعة صفر، لكن ارتفاعها (أقصى عزم) لا يتغير.',done:()=>sm>0.4&&sm<0.7},
@@ -291,15 +299,22 @@ B.lesson({
     q(el,'#m1').innerHTML=`<div class="callout">${sm<0.3?'مثل المنحنى <b>a</b>: محرك حثي عادي، قمة العزم قرب التزامن، والعلاقة غير خطية.':sm<0.9?'مثل المنحنى <b>b</b>: القمة انتقلت إلى سرعة أقل، والارتفاع نفسه.':sm<1.15?'مثل المنحنى <b>c</b>: أقصى عزم عند بدء الحركة — هكذا يُصمم دوار محرك التحكم.':'أقصى عزم عند سرعة <b>بعكس اتجاه المجال</b>: من السرعة 0 إلى 1 العلاقة شبه <b>خط مستقيم ذي ميل سالب</b>، فيعمل المحرك مستقراً عند أي سرعة.'}</div>`};
   r2.addEventListener('input',()=>{sm=smOf(+r2.value);draw1()});
   el.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{sm=b.dataset.p==='d'?2.2:SM[b.dataset.p];r2.value=vOf(sm);draw1()}));
-  const draw2=()=>{q(el,'#va-v').textContent=va.toFixed(2)+' pu';q(el,'#wo-v').textContent=wop.toFixed(2)+' pu';const T=-wop+va;
-    const L=[1,0.8,0.6].map(v=>({pts:[[0,v],[v,0]],col:'--muted',w:1.8,dash:'5 4'}));L.push({pts:[[0,va],[Math.max(va,0.001),0]],col:'--blue',w:3});
-    const lab=[1,0.8,0.6].map(v=>({x:v,y:0,s:v.toFixed(1),dy:16,c:'m'}));
-    q(el,'#p2').innerHTML=plot({W:460,H:270,x:[0,1.12],y:[-0.25,1.12],xt:[0,0.5,1],yt:[0,0.5,1],xl:'ω (pu)',yl:'T (pu)',lines:L,dots:[{x:wop,y:T,col:T<0?'--stop':'--on'}],hl:[],labels:[{x:wop,y:T,s:`(${wop.toFixed(2)}, ${T.toFixed(2)})`,dy:-12,a:'start',dx:6}],aria:'خطوط العزم والسرعة'});
-    q(el,'#eq').innerHTML=B.tex(`T=-K_\\omega\\,\\omega+K_v V_a=-(1)(${wop.toFixed(2)})+(1)(${va.toFixed(2)})=${T.toFixed(2)}\\ \\text{pu}`,true);
-    q(el,'#g1').textContent=va.toFixed(2)+' pu';q(el,'#g2').textContent=va.toFixed(2)+' pu';q(el,'#g3').textContent=T.toFixed(2)+' pu';
+  const draw2=()=>{const Kw=TP.v.Kw,Kv=TP.v.Kv,xs=Kv/Kw,ys=Kv,tl=v=>[v,String(+v.toPrecision(3))];
+    q(el,'#va-v').textContent=va.toFixed(2)+' pu';q(el,'#wo-v').textContent=wop.toFixed(2)+' pu';const T=-Kw*wop+Kv*va,Tst=Kv*va,w0=Kv*va/Kw;
+    const L=[1,0.8,0.6].map(v=>({pts:[[0,Kv*v],[v*xs,0]],col:'--muted',w:1.8,dash:'5 4'}));L.push({pts:[[0,Tst],[Math.max(w0,0.001),0]],col:'--blue',w:3});
+    const lab=[1,0.8,0.6].map(v=>({x:v*xs,y:0,s:v.toFixed(1),dy:16,c:'m'}));
+    q(el,'#p2').innerHTML=plot({W:460,H:270,x:[0,1.12*xs],y:[-0.25*ys,1.12*ys],xt:[0,0.5,1].map(v=>tl(v*xs)),yt:[0,0.5,1].map(v=>tl(v*ys)),xl:'ω (pu)',yl:'T (pu)',lines:L,dots:[{x:wop,y:T,col:T<0?'--stop':'--on'}],hl:[],labels:[{x:wop,y:T,s:`(${wop.toFixed(2)}, ${T.toFixed(2)})`,dy:-12,a:'start',dx:6}],aria:'خطوط العزم والسرعة'});
+    q(el,'#eq').innerHTML=B.tex(`T=-K_\\omega\\,\\omega+K_v V_a=-(${B.fmtN(Kw)})(${wop.toFixed(2)})+(${B.fmtN(Kv)})(${va.toFixed(2)})=${T.toFixed(2)}\\ \\text{pu}`,true);
+    q(el,'#g1').textContent=Tst.toFixed(2)+' pu';q(el,'#g2').textContent=w0.toFixed(2)+' pu';q(el,'#g3').textContent=T.toFixed(2)+' pu';
     q(el,'#m2').innerHTML=T<-0.001?'<div class="callout err">السرعة المختارة أكبر من سرعة اللاحمل لهذا الجهد: العزم سالب (يعمل المحرك على فرملة الحمل). توضيح ليس من الكتاب.</div>':Math.abs(T)<0.011?'<div class="callout">العزم صفر: هذه هي <b>سرعة اللاحمل</b> لهذا الجهد.</div>':wop<0.011?'<div class="callout">السرعة صفر: هذا هو <b>عزم البدء</b>، وهو أقصى عزم للمحرك.</div>':''};
   q(el,'#va').addEventListener('input',e=>{va=+e.target.value/100;if(va<=0.6)flags.low=1;draw2()});
   q(el,'#wo').addEventListener('input',e=>{wop=+e.target.value/100;flags.moved=1;draw2()});
+  const tpK=()=>{const Kw=TP.v.Kw,Kv=TP.v.Kv;q(el,'#u3l2k').innerHTML=B.tex(`K_\\omega = ${B.fmtN(Kw)}`)+' pu و '+B.tex(`K_v = ${B.fmtN(Kv)}`)+' pu';q(el,'#u3l2kw').textContent=TP.trainer?'قيم المدرب':'قيم توضيحية';
+    const wo=q(el,'#wo'),mx=Math.max(5,Math.round(110*Kv/Kw));wo.max=mx;if(wop*100>mx){wop=mx/100;wo.value=mx}};
+  const TP=B.params(q(el,'#u3l2tp'),'u3-l2',[
+   {k:'Kw',label:'ميل خط العزم والسرعة K<sub>ω</sub> — اللوحة (٢)',unit:'pu',value:1,min:0.1,max:10,step:0.01},
+   {k:'Kv',label:'ثابت الجهد K<sub>v</sub> (عزم البدء عند الجهد الكامل) — اللوحة (٢)',unit:'pu',value:1,min:0.1,max:10,step:0.01}],()=>{tpK();draw2()});
+  tpK();
   draw1();draw2();B.math(el);
   loopOn(el,()=>tl.check());
  },
@@ -360,8 +375,8 @@ B.lesson({
       el.querySelectorAll('[data-hp]').forEach(b=>b.onclick=()=>{hi=b.dataset.hp;draw()})};draw()}}
  ],
  lab:(el)=>{
-  let V=0.6,d=0,t=0,ht=0,hist=[];const R={cup:{w:0,th:0,J:0.15,t0:null,tau:null},cage:{w:0,th:0,J:0.6,t0:null,tau:null}};const TC=0.07,flags={};
-  el.innerHTML=`<div class="grid">
+  let V=0.6,d=0,t=0,ht=0,hist=[];const R={cup:{w:0,th:0,t0:null,tau:null},cage:{w:0,th:0,t0:null,tau:null}};const flags={};
+  el.innerHTML=`<div id="u3l3tp"></div><div class="grid">
    <div class="panel c12"><h2>سباق الاستجابة: الكأس المجرور ضد الدوار العادي <small>مبني على الشكل (٣-٤) ونص ص 48</small></h2>
     <div class="wrap-in" style="align-items:flex-end">${slHTML('v','جهد ملفات الثابت (يتحكم في السرعة)',0,100,5,60)}
      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="go">▶ تشغيل</button><button class="btn" id="rv">⇄ عكس الاتجاه</button><button class="btn" id="st">■ إيقاف</button></div></div>
@@ -371,27 +386,38 @@ B.lesson({
     </div><div id="msg"></div></div>
    <div class="panel c12"><h2>السرعة مع الزمن <small>آخر 8 ثوانٍ</small></h2><div class="svgbox" id="ch"></div>
     <div class="legend"><span><i style="background:var(--blue)"></i>الكأس المجرور</span><span><i style="background:var(--live)"></i>الدوار العادي</span></div>
-    <p class="sub"><b>أرقام توضيحية:</b> افترضنا أن القصور الذاتي للكأس ربع قصور الدوار العادي، وأضفنا للدوار العادي عزماً صغيراً متذبذباً يمثل العضة المغناطيسية بين الأسنان. الكتاب يذكر الفكرة فقط ولا يعطي أرقاماً.</p>${tryBox('try')}</div></div>`;
+    <p class="sub"><b id="u3l3w">أرقام توضيحية</b>: ثابت زمن التسارع للكأس <span class="ltr" id="u3l3a"></span> s وللدوار العادي <span class="ltr" id="u3l3b"></span> s، وأضفنا للدوار العادي عزماً صغيراً متذبذباً قدره <span class="ltr" id="u3l3c"></span> % يمثل العضة المغناطيسية بين الأسنان، واحتكاكاً قدره <span class="ltr" id="u3l3f"></span> % للاثنين (نسبةً إلى عزم المحرك عند الجهد الكامل). لذلك يختلف «زمن الوصول إلى 63 %» المقاس قليلاً عن ثابت الزمن نفسه، خصوصاً في الدوار العادي. الكتاب يذكر الفكرة فقط ولا يعطي أرقاماً.</p>${tryBox('try')}</div></div>`;
+  const TP=B.params(q(el,'#u3l3tp'),'u3-l3',[
+   {k:'Jc',label:'ثابت زمن التسارع للكأس المجرور (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.15,min:0.02,max:20,step:0.01},
+   {k:'Jg',label:'ثابت زمن التسارع للدوار العادي (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.6,min:0.02,max:20,step:0.01},
+   {k:'TC',label:'عزم العضة المغناطيسية في الدوار العادي (نسبة من عزم المحرك عند الجهد الكامل)',unit:'%',value:7,min:0,max:50,step:0.5},
+   {k:'fr',label:'عزم الاحتكاك (نسبة من عزم المحرك عند الجهد الكامل)',unit:'%',value:1,min:0,max:20,step:0.5}],()=>{tpLbl();tl.redraw()});
+  const TC=()=>TP.v.TC/100,FR=()=>TP.v.fr/100;
+  /* حدود خطوتي «سرعة منخفضة» و«جهد صغير جداً» من القيم الحالية (المنزلق بخطوة 5 %): بالقيم التوضيحية 10–20 % و 5 % */
+  const lowR=()=>{const lo=Math.max(5,Math.ceil((TP.v.TC+TP.v.fr)/5-1e-9)*5);return [lo,lo+10]},stuckV=()=>Math.floor(TP.v.TC/5+1e-9)*5;
+  const tpLbl=()=>{q(el,'#u3l3w').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية';q(el,'#u3l3a').textContent=B.fmtN(TP.v.Jc);q(el,'#u3l3b').textContent=B.fmtN(TP.v.Jg);q(el,'#u3l3c').textContent=B.fmtN(TP.v.TC);q(el,'#u3l3f').textContent=B.fmtN(TP.v.fr)};
   const tl=tryList(q(el,'#try'),[
    {t:'شغّل الاثنين معاً',x:'اضغط «تشغيل»: الكأس المجرور يصل إلى سرعته أسرع بكثير لأن قصوره الذاتي ضعيف جداً.',done:()=>R.cup.tau&&R.cage.tau},
    {t:'اعكس الاتجاه',x:'اضغط «عكس الاتجاه» وقارن: الكأس يعكس حركته قبل الدوار العادي بوقت واضح.',done:()=>flags.rev&&R.cup.w<-0.3},
-   {t:'سرعة منخفضة',x:'خفّض الجهد إلى 10–20 %: لاحظ اهتزاز سرعة الدوار العادي (العضة المغناطيسية) بينما يدور الكأس بنعومة.',done:()=>d!==0&&V<=0.2&&V>0.08&&Math.abs(R.cup.w)>0.05},
-   {t:'جهد صغير جداً',x:'اجعل الجهد 5 %: الدوار العادي قد يعلق بين الأسنان ولا يدور، أما الكأس فيدور ببطء.',done:()=>d!==0&&V<=0.06&&V>0&&Math.abs(R.cage.w)<0.01&&Math.abs(R.cup.w)>0.02},
+   {t:'سرعة منخفضة',get x(){const [a,b]=lowR();return `خفّض الجهد إلى ${a}–${b} %: لاحظ اهتزاز سرعة الدوار العادي (العضة المغناطيسية) بينما يدور الكأس بنعومة.`},done:()=>{const b=lowR()[1];return d!==0&&V<=b/100&&V>TC()+FR()&&Math.abs(R.cup.w)>0.05}},
+   {t:'جهد صغير جداً',get x(){const v=stuckV();return v>=5?`اجعل الجهد ${v} %: الدوار العادي قد يعلق بين الأسنان ولا يدور، أما الكأس فيدور ببطء.`:'عزم العضة بالقيم الحالية أصغر من 5 %، فلن يعلق الدوار العادي عند أي جهد على المنزلق (أصغر خطوة 5 %). ارفع عزم العضة لترى التعلق.'},done:()=>{const v=stuckV();return v>=5&&d!==0&&V<=v/100+0.01&&V>0&&Math.abs(R.cage.w)<0.01&&Math.abs(R.cup.w)>0.02}},
    {t:'التحكم بالجهد',x:'غيّر الجهد أثناء الدوران: سرعة الكأس تتبع الجهد (الكتاب: التحكم في السرعة بتغيير جهد ملفات الثابت).',done:()=>flags.vchg&&d!==0}]);
+  tpLbl();
   const vs=q(el,'#v');const sv=()=>{q(el,'#v-v').textContent=Math.round(V*100)+' %'};sv();
   vs.addEventListener('input',()=>{V=+vs.value/100;if(d)flags.vchg=1;sv()});
   const step=nd=>{d=nd;['cup','cage'].forEach(k=>{R[k].t0=t;R[k].tau=null;R[k].w0=R[k].w})};
   q(el,'#go').addEventListener('click',()=>step(d||1));q(el,'#rv').addEventListener('click',()=>{flags.rev=1;step(d?-d:-1)});q(el,'#st').addEventListener('click',()=>step(0));
   loopOn(el,dt=>{t+=dt;const n=6,h=dt/n;
-   ['cup','cage'].forEach(k=>{const r=R[k];for(let i=0;i<n;i++){let T=d*V-r.w;if(k==='cage')T-=TC*Math.sin(12*r.th);
-     const fr=0.01;let a=T-fr*Math.sign(r.w);if(Math.abs(r.w)<0.004&&Math.abs(T)<=fr){r.w=0;a=0}r.w+=a/r.J*h;r.th+=r.w*h*2*Math.PI*0.6}
+   const tc=TC(),fr=FR();
+   ['cup','cage'].forEach(k=>{const r=R[k],J=k==='cup'?TP.v.Jc:TP.v.Jg;for(let i=0;i<n;i++){let T=d*V-r.w;if(k==='cage')T-=tc*Math.sin(12*r.th);
+     let a=T-fr*Math.sign(r.w);if(Math.abs(r.w)<0.004&&Math.abs(T)<=fr){r.w=0;a=0}r.w+=a/J*h;r.th+=r.w*h*2*Math.PI*0.6}
      if(r.t0!=null&&r.tau==null&&d!==0){const tgt=d*V,frac=(r.w-r.w0)/(tgt-r.w0||1e-9);if(Math.abs(tgt-r.w0)>0.05&&frac>=0.632)r.tau=t-r.t0}
      const g=q(el,'#u3'+k);if(g)g.setAttribute('transform',`rotate(${((r.th*180/Math.PI)%360).toFixed(1)} 90 90)`);});
    ht+=dt;if(ht>0.05){ht=0;hist.push([t,R.cup.w*100,R.cage.w*100]);while(hist.length&&hist[0][0]<t-8)hist.shift();
      q(el,'#ch').innerHTML=plot({W:760,H:240,x:[t-8,t],y:[-110,110],yt:[-100,-50,0,50,100],xt:[],ax0:false,xl:'t →',yl:'speed %',lines:[{pts:hist.map(p=>[p[0],p[2]]),col:'--live'},{pts:hist.map(p=>[p[0],p[1]]),col:'--blue'}],aria:'السرعة مع الزمن للدوارين'});
      q(el,'#sCup').textContent=Math.round(R.cup.w*100)+' %';q(el,'#sCage').textContent=Math.round(R.cage.w*100)+' %';
      q(el,'#tCup').textContent=R.cup.tau!=null?R.cup.tau.toFixed(2)+' s':'—';q(el,'#tCage').textContent=R.cage.tau!=null?R.cage.tau.toFixed(2)+' s':'—';
-     q(el,'#msg').innerHTML=d!==0&&V>0&&V<=TC&&Math.abs(R.cage.w)<0.01?'<div class="callout err">الدوار العادي عالق: عزم المحرك عند هذا الجهد أصغر من «العضة» بين أسنانه. الكأس المجرور لا أسنان له فيدور. (توضيح)</div>':''}
+     q(el,'#msg').innerHTML=d!==0&&V>0&&V<=tc&&Math.abs(R.cage.w)<0.01?'<div class="callout err">الدوار العادي عالق: عزم المحرك عند هذا الجهد أصغر من «العضة» بين أسنانه. الكأس المجرور لا أسنان له فيدور. (توضيح)</div>':''}
    tl.check()});
  },
  quiz:[
@@ -558,10 +584,11 @@ function dcCircuitSVG(o){o=o||{};const pm=!!o.pm,L=!!o.live,c=L?'live':'',va=o.V
   if(L)s+=tx(375,62,o.lbl||'',{c:'b'});
   return s+'</svg>'}
 function fig38SVG(cur){const ref=[[1,'Va1'],[0.75,'Va2'],[0.5,'Va3']];
-  const L=ref.map(([v])=>({pts:[[0,v],[v,0]],col:cur?'--muted':'--fg',w:cur?1.6:2.4,dash:cur?'5 4':''}));
-  if(cur)L.push({pts:[[0,cur.Va],[cur.Va,0]],col:'--blue',w:3});
-  return plot({W:460,H:270,x:cur?[-1.1,1.1]:[0,1.1],y:cur?[-1.1,1.1]:[0,1.1],xt:cur?[-1,-0.5,0.5,1]:[[0.5,'ωo3'],[0.75,'ωo2'],[1,'ωo1']],yt:cur?[-1,-0.5,0.5,1]:[[0.5,'Tst3'],[0.75,'Tst2'],[1,'Tst1']],ml:cur?44:58,xl:'ω',yl:'T',lines:L,
-    labels:ref.map(([v,l])=>({x:v*0.5,y:v*0.5,s:l,dx:6,dy:-4,a:'start',c:'b'})),dots:cur&&cur.dot?[cur.dot]:[],hl:cur&&cur.TL?[{y:cur.TL,col:'--stop',label:'TL'}]:[],aria:'منحنى العزم والسرعة لمحرك التحكم للتيار المستمر'})}
+  const xs=cur&&cur.xs||1,ys=cur&&cur.ys||1,tk=v=>[v,String(+v.toPrecision(3))];   // xs = ωo و ys = Tst عند الجهد الكامل (لقيم المدرب)
+  const L=ref.map(([v])=>({pts:[[0,v*ys],[v*xs,0]],col:cur?'--muted':'--fg',w:cur?1.6:2.4,dash:cur?'5 4':''}));
+  if(cur)L.push({pts:[[0,cur.Va*ys],[cur.Va*xs,0]],col:'--blue',w:3});
+  return plot({W:460,H:270,x:cur?[-1.1*xs,1.1*xs]:[0,1.1],y:cur?[-1.1*ys,1.1*ys]:[0,1.1],xt:cur?[-1,-0.5,0.5,1].map(v=>tk(v*xs)):[[0.5,'ωo3'],[0.75,'ωo2'],[1,'ωo1']],yt:cur?[-1,-0.5,0.5,1].map(v=>tk(v*ys)):[[0.5,'Tst3'],[0.75,'Tst2'],[1,'Tst1']],ml:cur?44:58,xl:'ω',yl:'T',lines:L,
+    labels:ref.map(([v,l])=>({x:v*0.5*xs,y:v*0.5*ys,s:l,dx:6,dy:-4,a:'start',c:'b'})),dots:cur&&cur.dot?[cur.dot]:[],hl:cur&&cur.TL?[{y:cur.TL,col:'--stop',label:'TL'}]:[],aria:'منحنى العزم والسرعة لمحرك التحكم للتيار المستمر'})}
 /* DC servo forms */
 function pcMotorSVG(id){let s=`<svg viewBox="0 0 360 180" role="img" aria-label="المحرك ذو الدائرة المطبوعة">`;
   s+=`<circle cx="90" cy="90" r="78" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.8"/>`;
@@ -628,14 +655,14 @@ B.lesson({
  ],
  lab:(el)=>{
   let Va=0.75,TL=0.1,pm=false,w=0,th=0,form='pc',feat=null,ht=0,lastSig='';const flags={},angF={pc:0,sw:0,mc:0};
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="u3l5tp"></div><div class="grid">
    <div class="panel c12"><h2>محرك تحكم للتيار المستمر <small>مبني على الشكلين (٣-٧) و (٣-٨) ص 52</small></h2>
     <div class="wrap-in" style="align-items:flex-end">${slHTML('va','جهد المنتج V<sub>a</sub> (والإشارة = الاتجاه)',-100,100,5,75)}${slHTML('tl','عزم الحمل T<sub>L</sub>',0,60,2,10)}
      <div><div class="sub">المجال</div>${segHTML('pm',[[0,'تغذية مستقلة V<sub>f</sub> ثابت'],[1,'مغناطيس دائم']],0)}</div></div>
     <div class="facts">${fact('السرعة ω','fw')}${fact('العزم T','fT')}${fact('تيار المنتج I<sub>a</sub>','fI')}${fact('القوة الدافعة العكسية E<sub>a</sub>','fE')}${fact('الاتجاه','fd')}</div><div id="msg"></div></div>
    <div class="panel c7"><h2>الدائرة <small>الشكل (٣-٧)</small></h2><div class="svgbox" id="cir"></div></div>
    <div class="panel c5"><h2>العزم والسرعة <small>الشكل (٣-٨)</small></h2><div class="svgbox" id="tw"></div><p class="sub">الخطوط الرمادية Va1 و Va2 و Va3 من الشكل، والخط الأخضر لجهدك الآن، والخط الأحمر عزم الحمل.</p></div>
-   <div class="panel c12"><p class="sub"><b>أرقام توضيحية بالوحدة النسبية (pu):</b> استعملنا علاقات محرك التيار المستمر المعروفة (ليست من نص الكتاب): <span class="ltr">\\(E_a = K\\omega\\)</span>، <span class="ltr">\\(I_a = (V_a - E_a)/R_a\\)</span>، <span class="ltr">\\(T = K I_a\\)</span> مع <span class="ltr">\\(K = R_a = 1\\)</span> pu، فيصير <span class="ltr">\\(T = V_a - \\omega\\)</span>: خط مستقيم ذو ميل سالب كما يقول الكتاب.</p>${tryBox('try')}</div>
+   <div class="panel c12"><p class="sub"><b><span id="u3l5w">أرقام توضيحية</span> بالوحدة النسبية (pu):</b> استعملنا علاقات محرك التيار المستمر المعروفة (ليست من نص الكتاب): <span class="ltr">\\(E_a = K\\omega\\)</span>، <span class="ltr">\\(I_a = (V_a - E_a)/R_a\\)</span>، <span class="ltr">\\(T = K I_a\\)</span> مع <span id="u3l5k"></span>، فيصير <span class="ltr" id="u3l5eq"></span>: خط مستقيم ذو ميل سالب كما يقول الكتاب. السرعة أقل من سرعة اللاحمل لأن عزم الحمل T<sub>L</sub> لا يساوي صفراً. وثابت زمن التسارع هو الزمن الذي يحتاجه عزم قدره 1 pu ليرفع السرعة من الصفر إلى 1 pu.</p>${tryBox('try')}</div>
    <div class="panel c12"><h2>قارن أشكال محركات التحكم للتيار المستمر <small>ص 53–54</small></h2>
     ${segHTML('fm',Object.entries(FORMS).map(([k,f])=>[k,f.t]),form)}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;align-items:start;margin-top:10px"><div class="svgbox" id="fsv" style="max-width:420px;margin-inline:auto"></div><div id="ftx"></div></div>
@@ -649,6 +676,14 @@ B.lesson({
    {t:'زِد الحمل',x:'زِد عزم الحمل: نقطة التشغيل تنزلق على الخط نحو سرعة أقل وتيار أكبر.',done:()=>TL>=0.4&&Math.abs(w)>0.05},
    {t:'المغناطيس الدائم',x:'بدّل المجال إلى «مغناطيس دائم»: السلوك نفسه، لأن المهم أن يبقى المجال ثابتاً.',done:()=>pm},
    {t:'قارن الأشكال',x:'في لوحة المقارنة اضغط «محاثة ملفات صغيرة» ثم «تبريد أفضل»: أيّ الأنواع ذكرها الكتاب؟',done:()=>flags.f2}]);
+  const tpLbl=()=>{const K=TP.v.K,Ra=TP.v.Ra;q(el,'#u3l5w').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية';
+    q(el,'#u3l5k').innerHTML=B.tex(`K = ${B.fmtN(K)}`)+' pu و '+B.tex(`R_a = ${B.fmtN(Ra)}`)+' pu';
+    q(el,'#u3l5eq').innerHTML=K===1&&Ra===1?B.tex('T = V_a - \\omega'):B.tex(`T = \\frac{${B.fmtN(K)}}{${B.fmtN(Ra)}}\\left(V_a - ${B.fmtN(K)}\\,\\omega\\right)`)};
+  const TP=B.params(q(el,'#u3l5tp'),'u3-l5',[
+   {k:'K',label:'ثابت المحرك K (E<sub>a</sub> = Kω و T = K I<sub>a</sub>)',unit:'pu',value:1,min:0.2,max:5,step:0.01},
+   {k:'Ra',label:'مقاومة المنتج R<sub>a</sub>',unit:'pu',value:1,min:0.1,max:10,step:0.01},
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.35,min:0.05,max:20,step:0.05}],()=>{tpLbl();lastSig=''});
+  tpLbl();
   const sync=()=>{q(el,'#va-v').textContent=Math.round(Va*100)+' %';q(el,'#tl-v').textContent=Math.round(TL*100)+' %';segSet(el,'pm',pm?1:0);segSet(el,'fm',form);
     el.querySelectorAll('[data-ft]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ft===feat?'true':'false'));
     q(el,'#fsv').innerHTML=FORMS[form].svg('u3fm');q(el,'#ftx').innerHTML=`<p><b>${FORMS[form].t}</b> <span class="ref">${FORMS[form].ref}</span> ${FORMS[form].fig?`— الشكل ${FORMS[form].fig}`:'— لا يوجد شكل في الكتاب (رسم توضيحي)'}</p><p class="sub">${FORMS[form].txt}</p>`;
@@ -659,14 +694,15 @@ B.lesson({
   el.querySelectorAll('[data-fm]').forEach(b=>b.addEventListener('click',()=>{form=b.dataset.fm;sync()}));
   const fseen=new Set();el.querySelectorAll('[data-ft]').forEach(b=>b.addEventListener('click',()=>{feat=feat===b.dataset.ft?null:b.dataset.ft;if(feat)fseen.add(feat);if(fseen.has('ind')&&fseen.has('cool'))flags.f2=1;sync()}));
   sync();B.math(el);
-  loopOn(el,dt=>{const n=4,h=dt/n;let T=0;
-   for(let i=0;i<n;i++){T=Va-w;const sgn=Math.abs(w)>1e-3?Math.sign(w):Math.sign(T);let net=T-TL*sgn;if(Math.abs(w)<2e-3&&Math.abs(T)<=TL){net=0;w=0}w+=net/0.35*h}
+  loopOn(el,dt=>{const K=TP.v.K,Ra=TP.v.Ra,tau=TP.v.tau,Tq=x=>K*(Va-K*x)/Ra;let T=0;
+   const n=Math.max(4,Math.ceil(dt*K*K/(Ra*tau)/0.5-1e-9)),h=dt/n;   // خطوات أصغر فقط عند قيم مدرب حادة (للثبات)؛ بالقيم التوضيحية 4 دائماً
+   for(let i=0;i<n;i++){T=Tq(w);const sgn=Math.abs(w)>1e-3?Math.sign(w):Math.sign(T);let net=T-TL*sgn;if(Math.abs(w)<2e-3&&Math.abs(T)<=TL){net=0;w=0}w+=net/tau*h}
    th+=w*dt*360*0.6;const g=q(el,'#u3fm');angF[form]+=0.5*dt*360*0.4;if(g){const c=form==='pc'?'270 90':'90 90';g.setAttribute('transform',`rotate(${(angF[form]%360).toFixed(1)} ${c})`)}
-   ht+=dt;if(ht<0.06)return;ht=0;T=Va-w;
-   q(el,'#fw').textContent=w.toFixed(2)+' pu';q(el,'#fT').textContent=T.toFixed(2)+' pu';q(el,'#fI').textContent=T.toFixed(2)+' pu';q(el,'#fE').textContent=w.toFixed(2)+' pu';q(el,'#fd').textContent=Math.abs(w)<0.01?'متوقف':w>0?'⟳ أمامي':'⟲ عكسي';
-   q(el,'#cir').innerHTML=dcCircuitSVG({pm,live:Math.abs(Va)>0.001,Va,lbl:`Ia = ${T.toFixed(2)} pu`});
-   q(el,'#tw').innerHTML=fig38SVG({Va,TL:TL*(w<-0.01||(Va<0&&Math.abs(w)<0.01)?-1:1),dot:{x:w,y:T,col:'--stop'}});
-   const sg=[Math.abs(w)<0.01&&Math.abs(Va)>0].join();if(sg!==lastSig){lastSig=sg;q(el,'#msg').innerHTML=Math.abs(w)<0.01&&Math.abs(Va)>0?'<div class="callout err">عزم المحرك عند السرعة صفر (عزم البدء = V<sub>a</sub> بالـ pu) لا يكفي لتحريك الحمل: زِد الجهد أو خفّف الحمل.</div>':''}
+   ht+=dt;if(ht<0.06)return;ht=0;T=Tq(w);const Ia=(Va-K*w)/Ra;
+   q(el,'#fw').textContent=w.toFixed(2)+' pu';q(el,'#fT').textContent=T.toFixed(2)+' pu';q(el,'#fI').textContent=Ia.toFixed(2)+' pu';q(el,'#fE').textContent=(K*w).toFixed(2)+' pu';q(el,'#fd').textContent=Math.abs(w)<0.01?'متوقف':w>0?'⟳ أمامي':'⟲ عكسي';
+   q(el,'#cir').innerHTML=dcCircuitSVG({pm,live:Math.abs(Va)>0.001,Va,lbl:`Ia = ${Ia.toFixed(2)} pu`});
+   q(el,'#tw').innerHTML=fig38SVG({Va,TL:TL*(w<-0.01||(Va<0&&Math.abs(w)<0.01)?-1:1),dot:{x:w,y:T,col:'--stop'},xs:1/K,ys:K/Ra});
+   const dflt=K===1&&Ra===1,sg=[Math.abs(w)<0.01&&Math.abs(Va)>0,dflt?'':Math.round(Va*100)].join();if(sg!==lastSig){lastSig=sg;q(el,'#msg').innerHTML=Math.abs(w)<0.01&&Math.abs(Va)>0?`<div class="callout err">عزم المحرك عند السرعة صفر (${dflt?'عزم البدء = V<sub>a</sub> بالـ pu':`عزم البدء = K V<sub>a</sub>/R<sub>a</sub> = ${nf(Math.abs(K*Va/Ra),2)} pu`}) لا يكفي لتحريك الحمل: زِد الجهد أو خفّف الحمل.</div>`:''}
    tl.check()});
  },
  quiz:[
