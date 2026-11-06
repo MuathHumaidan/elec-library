@@ -9,6 +9,9 @@ const $=(s,r)=>(r||document).querySelector(s), $$=(s,r)=>[...(r||document).query
 const AR=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
 
 B.UNITS=[];  // {n,title,pages,blurb}
+B.COURSE={key:'plcbook',code:'205 كهر',title:'تقنية التحكم المبرمج',sub:'(عملي)',eyebrow:'205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية',lead:'',source:''};
+B.course=c=>{Object.assign(B.COURSE,c)};
+const KK=n=>B.COURSE.key+'-'+n;
 B.unit=u=>{B.UNITS.push(u)};
 B.lesson=L=>{B.LESSONS.push(L)};
 
@@ -43,16 +46,16 @@ const RUNG=`<svg viewBox="0 0 360 120" role="img" aria-label="سلّم برمج�
  <text class="rt" x="78" y="86" text-anchor="middle" style="fill:#93bba6">S1</text><text class="rt" x="178" y="86" text-anchor="middle" style="fill:#93bba6">S0</text><text class="rt" x="290" y="86" text-anchor="middle" style="fill:#93bba6">K1</text>
 </svg>`;
 function renderHome(){
-  const root=$('#view');document.title='تقنية التحكم المبرمج — الكتاب التفاعلي';
-  const seen=store.get('plcbook-seen',{}),last=store.get('plcbook-last',null);
+  const root=$('#view');const C=B.COURSE;document.title=C.title+' — الكتاب التفاعلي';
+  const seen=store.get(KK('seen'),{}),last=store.get(KK('last'),null);
   const lastL=last&&B.LESSONS.find(l=>l.id===last);const first=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order)[0];
-  const done=store.get('plcbook-done',{});const nSeen=B.LESSONS.filter(l=>done[l.id]).length;
+  const done=store.get(KK('done'),{});const nSeen=B.LESSONS.filter(l=>done[l.id]).length;
   const pct=Math.round(nSeen/B.LESSONS.length*100);
   let h=`<section class="cover">
-   <div class="cover-txt"><div class="eyebrow">205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية</div>
-   <h1>تقنية التحكم المبرمج <span>(عملي)</span></h1>
-   <p class="lead">الكتاب كاملاً بوحداته العشر: شرح مطابق للمذكرة بأرقام صفحاتها وأشكالها، ومحاكاة حية لكل درس.</p>
-   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت</a><span class="cta-note">${lastL.unit}.${lastL.order} ${lastL.title}</span>`:`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a>`}</div></div>
+   <div class="cover-txt"><div class="eyebrow">${C.eyebrow}</div>
+   <h1>${C.title} ${C.sub?`<span>${C.sub}</span>`:''}</h1>
+   <p class="lead">${C.lead||'الكتاب كاملاً: شرح مطابق للمذكرة بأرقام صفحاتها وأشكالها، ومحاكاة حية لكل درس.'}</p>
+   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت</a><span class="cta-note">${lastL.unit}.${lastL.order} ${lastL.title}</span>`:(first?`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a>`:'<span class="cta-note">الدروس قيد الإعداد.</span>')}</div></div>
    <div class="cover-meta"><div class="meta-num"><b>${B.UNITS.length}</b><span>وحدات</span></div><div class="meta-num"><b>${B.LESSONS.length}</b><span>درساً</span></div><div class="meta-num"><b>${pct}%</b><span>أنجزت</span></div>
    <div class="meta-bar"><i style="width:${pct}%"></i></div></div></section>
    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -64,7 +67,7 @@ function renderHome(){
     h+=`<details class="unit" id="unit-${u.n}" ${open?'open':''}><summary><span class="un">${String(u.n).padStart(2,'0')}</span><span class="ut"><b>${u.title}</b><small>${ls.length} دروس · ص ${u.pages}</small></span><span class="up"><span class="uprog"><i style="width:${ls.length?Math.round(sn/ls.length*100):0}%"></i></span><small>${sn}/${ls.length}</small></span><span class="chev" aria-hidden="true"></span></summary>
      ${u.blurb?`<p class="ublurb">${u.blurb}</p>`:''}<ol class="lessons">${ls.map(l=>`<li data-s="${esc((l.title+' '+(l.summary||'')).toLowerCase())}"><a href="#${l.id}" class="${done[l.id]?'done':seen[l.id]?'seen':''}"><span class="vk" title="${done[l.id]?'أنجزته':seen[l.id]?'فتحته':''}"></span><span class="ln">${u.n}.${l.order}</span><span class="lt">${l.title}</span><span class="lp">ص ${l.pages}</span></a></li>`).join('')}</ol></details>`;
   });
-  h+=`</div><p class="nores" id="nores" hidden>لا يوجد درس بهذا الاسم.</p><p class="src">المصدر: مذكرة مقرر تقنية التحكم المبرمج (عملي) 205 كهر، المؤسسة العامة للتدريب التقني والمهني. أرقام الصفحات هي المطبوعة في الكتاب. أرقام التيار والسرعة في المحاكاة توضيحية.</p>`;
+  h+=`</div><p class="nores" id="nores" hidden>لا يوجد درس بهذا الاسم.</p><p class="src">${C.source||('المصدر: الحقيبة التدريبية «'+C.title+'»، المؤسسة العامة للتدريب التقني والمهني. أرقام الصفحات هي المطبوعة في الكتاب.')}</p>`;
   root.innerHTML=h;window.scrollTo(0,0);
   $('#q').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();let any=0;
     $$('.unit',root).forEach(u=>{let k=0;$$('li',u).forEach(li=>{const m=!q||li.dataset.s.includes(q)||u.querySelector('.ut b').textContent.toLowerCase().includes(q);li.hidden=!m;if(m)k++});u.hidden=!k;if(q&&k)u.open=true;any+=k});
@@ -76,17 +79,17 @@ let RUN=null; // active lab runtime
 function stopRun(){if(RUN){RUN.stop();RUN=null}}
 
 function renderLesson(L,tab){
-  {const sn=store.get('plcbook-seen',{});sn[L.id]=1;store.set('plcbook-seen',sn);store.set('plcbook-last',L.id)}
-  const root=$('#view');document.title=L.title+' — التحكم المبرمج';
+  {const sn=store.get(KK('seen'),{});sn[L.id]=1;store.set(KK('seen'),sn);store.set(KK('last'),L.id)}
+  const root=$('#view');document.title=L.title+' — '+B.COURSE.title;
   const u=B.UNITS.find(x=>x.n===L.unit)||{title:''};
   const all=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order);const i=all.indexOf(L);
   const prev=all[i-1],next=all[i+1];
   const hasLab=!!(L.program||L.lab||L.plant);const hasProg=!!(L.program||L.variants);
-  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك']].filter(Boolean);
+  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.examples&&L.examples.length&&['examples','الأمثلة المحلولة'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك']].filter(Boolean);
   tab=tabs.find(t=>t[0]===tab)?tab:'theory';
-  const seen=store.get('plcbook-seen',{});const done=store.get('plcbook-done',{});
+  const seen=store.get(KK('seen'),{});const done=store.get(KK('done'),{});
   const ul=all.filter(x=>x.unit===L.unit);
-  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
+  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',examples:'<path d="M5 3h14v18H5zM8 7h8M8 11h3M13 11h3M8 15h3M13 15h3"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
   root.innerHTML=`<div class="lesson-layout">
    <aside class="lside" aria-label="دروس الوحدة"><a class="lside-back" href="#home">‹ فهرس المقرر</a>
     <div class="lside-unit"><span class="unum sm">${L.unit}</span><div><small>الوحدة ${AR[L.unit]}</small><b>${u.title}</b></div></div>
@@ -102,12 +105,12 @@ function renderLesson(L,tab){
    <div class="finish"><button class="fin-btn" id="finBtn" aria-pressed="${done[L.id]?'true':'false'}"></button><p class="sub" id="finNote"></p></div>
    <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>
    </div></div>
-   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[1]}</button>`).join('')}</nav>`;
+   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[0]==='examples'?'الأمثلة':t[1]}</button>`).join('')}</nav>`;
   document.body.classList.add('in-lesson');
   const fb=$('#finBtn',root),fn=$('#finNote',root);
-  const paint=()=>{const d=!!store.get('plcbook-done',{})[L.id];fb.setAttribute('aria-pressed',d);fb.innerHTML=d?'✓ أنجزت هذا الدرس':'أنهيت الدرس';fn.textContent=d?'يُحسب في نسبة إنجازك. اضغط مرة أخرى للتراجع.':'اضغطه بعد ما تقرأ الشرح وتجرّب المختبر وتحل الأسئلة.';
+  const paint=()=>{const d=!!store.get(KK('done'),{})[L.id];fb.setAttribute('aria-pressed',d);fb.innerHTML=d?'✓ أنجزت هذا الدرس':'أنهيت الدرس';fn.textContent=d?'يُحسب في نسبة إنجازك. اضغط مرة أخرى للتراجع.':'اضغطه بعد ما تقرأ الشرح وتجرّب المختبر وتحل الأسئلة.';
     const a=root.querySelector(`.lside a[href="#${L.id}"]`);if(a){a.classList.toggle('done',d);a.classList.toggle('seen',!d)}};
-  fb.addEventListener('click',()=>{const dn=store.get('plcbook-done',{});if(dn[L.id])delete dn[L.id];else dn[L.id]=1;store.set('plcbook-done',dn);paint()});paint();
+  fb.addEventListener('click',()=>{const dn=store.get(KK('done'),{});if(dn[L.id])delete dn[L.id];else dn[L.id]=1;store.set(KK('done'),dn);paint()});paint();
   $$('[data-unit]',root).forEach(a=>a.addEventListener('click',e=>{e.preventDefault();location.hash='home';setTimeout(()=>{const el=document.getElementById('unit-'+a.dataset.unit);el&&el.scrollIntoView()},60)}));
   // runtime is shared by lab & plc tabs
   stopRun();
@@ -121,6 +124,8 @@ function renderLesson(L,tab){
     else if(t==='lab'){if(L.lab&&!L.program&&!L.plant){body.innerHTML='<div id="custom-lab"></div>';L.lab($('#custom-lab'),B)}else{RUN.attach('lab',body,strip)}}
     else if(t==='plc'){RUN.attach('plc',body,strip)}
     else if(t==='quiz')renderQuiz(L,body);
+    else if(t==='examples')renderExamples(L,body);
+    B.math(body);
   };
   $$('.ltabs button,.bnav button',root).forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab);const tb=$('.ltabs',root);if(tb&&tb.getBoundingClientRect().top<0)window.scrollTo(0,root.querySelector('.lesson-head').offsetTop+root.querySelector('.lesson-head').offsetHeight-10)}));
   let t0=tab;try{t0=sessionStorage.getItem('tab-'+L.id)||tab}catch(e){}
@@ -305,6 +310,30 @@ const VIEWNOTE={
   fbd:'FBD (المخطط الصندوقي): البوابة &amp; تعني «و» (كل المداخل لازم 1)، والبوابة &gt;=1 تعني «أو». الدائرة الصغيرة على المدخل = عكس (NOT).',
   stl:'STL (قائمة الأوامر): A = و، AN = و-ليس، O = أو، ON = أو-ليس، A( … ) = قوس، = اكتب النتيجة، S تثبيت، R إلغاء. RLO هي نتيجة المنطق بعد كل سطر.'
 };
+
+/* ---------------- MATH ---------------- */
+B.math=function(el){try{if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})}catch(e){}};
+B.tex=(src,display)=>{try{return window.katex?katex.renderToString(src,{throwOnError:false,displayMode:!!display}):esc(src)}catch(e){return esc(src)}};
+B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
+const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
+B.fmtN=fmtN;
+/* ---------------- WORKED EXAMPLES ----------------
+ L.examples=[{title,ref,q:html,given:[{id,label,sym,unit,value,step,min,max}],solve:(g,B)=>[{t:html,f:latex,v:number|string,unit,dp,final:bool}],note}] */
+function renderExamples(L,body){
+  body.innerHTML='<div class="exs">'+L.examples.map((x,i)=>`<section class="ex" data-i="${i}"><header><h2>${x.title}</h2>${x.ref?`<span class="ref">${x.ref}</span>`:''}</header>
+   <div class="ex-q">${x.q||''}</div>
+   ${x.given&&x.given.length?`<div class="ex-given"><div class="ex-gh"><b>المعطيات</b><span class="sub">غيّر الأرقام وشاهد الحل يتغير</span><button class="btn" data-reset>قيم الكتاب</button></div><div class="ex-grid">${x.given.map(g=>`<label class="ex-in"><span>${g.label}${g.sym?` <span class="ltr">${B.tex(g.sym)}</span>`:''}</span><span class="ex-inbox"><input type="number" inputmode="decimal" step="${g.step||'any'}" ${g.min!=null?`min="${g.min}"`:''} ${g.max!=null?`max="${g.max}"`:''} data-g="${g.id}" value="${g.value}" id="ex${i}-${g.id}"><em>${g.unit||''}</em></span></label>`).join('')}</div></div>`:''}
+   <ol class="ex-steps"></ol>${x.note?`<div class="callout">${x.note}</div>`:''}</section>`).join('')+'</div>';
+  $$('.ex',body).forEach(sec=>{const x=L.examples[+sec.dataset.i];
+    const run=()=>{const g={};$$('[data-g]',sec).forEach(inp=>{g[inp.dataset.g]=parseFloat(inp.value)});
+      const book=x.given?x.given.every(q=>g[q.id]===q.value):true;let steps=[];
+      try{steps=x.solve(g,B,book)||[]}catch(e){steps=[{t:'تعذّر الحساب بهذه القيم.'}]}
+      $('.ex-steps',sec).innerHTML=steps.map(st=>`<li class="${st.final?'final':''}">${st.t?`<div class="ex-t">${st.t}</div>`:''}${st.f?`<div class="ex-f">${B.tex(st.f,true)}</div>`:''}${st.v!=null?`<div class="ex-v"><span class="ltr">${fmtN(st.v,st.dp)} ${st.unit||''}</span></div>`:''}</li>`).join('')+(book?'':'<li class="ex-mine"><div class="ex-t">الأرقام الآن من عندك وليست من الكتاب.</div></li>');
+    };
+    $$('[data-g]',sec).forEach(inp=>inp.addEventListener('input',run));
+    const rb=$('[data-reset]',sec);if(rb)rb.addEventListener('click',()=>{x.given.forEach(q=>{$(`[data-g="${q.id}"]`,sec).value=q.value});run()});
+    run();});
+}
 
 /* ---------------- QUIZ ---------------- */
 function renderQuiz(L,body){
