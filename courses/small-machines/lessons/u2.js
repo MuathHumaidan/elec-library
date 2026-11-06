@@ -682,7 +682,7 @@ B.lesson({
   const TP=B.params($('#l5tp'),'u2-l5',[
    {k:'Ks',label:'ثابت المولد التزامني (القيمة العظمى للجهد لكل 1 rpm)',unit:'V/rpm',value:0.02,min:0.001,max:1,step:0.001},
    {k:'Knom',label:'ثابت توليد الجهد المكتوب على لوحة تاكو التيار المستمر K<sub>g</sub>',unit:'V/(rad/s)',value:0.1,min:0.005,max:2,step:0.001},
-   {k:'err',label:'فرق الثابت الحقيقي عن ثابت اللوحة (0 = يختار المختبر عشوائيًا واحدًا من −8 أو −6 أو +5 أو +7 %)',unit:'%',value:0,min:-50,max:50,step:0.5}],()=>{upd5();Kuse=Knom;fixed=0;fixedOK=0;lastS=''});
+   {k:'err',label:'فرق الثابت الحقيقي عن ثابت اللوحة',hint:'إذا تركته 0 يختار المختبر في كل مرة فرقاً عشوائياً (−8 أو −6 أو +5 أو +7 %) حتى يكتشفه المتدرب بنفسه بالمعايرة. وإذا كتبت رقماً آخر يصبح هو الفرق.',unit:'%',value:0,min:-50,max:50,step:0.5}],()=>{upd5();Kuse=Knom;fixed=0;fixedOK=0;lastS=''});
   function upd5(){Ks=TP.v.Ks;Knom=TP.v.Knom;Ktrue=Knom*(1+(TP.v.err?TP.v.err/100:rndErr));
    $('#l5ksT').textContent=fm(Ks)+' V/rpm';$('#l5knT').textContent=fm(Knom);$('#l5tpw').textContent=TP.trainer?'من قيم المدرب':'رقم توضيحي';$('#l5tpw2').textContent=TP.trainer?'من قيم المدرب':'أرقام توضيحية'}
   upd5();Kuse=Knom;
