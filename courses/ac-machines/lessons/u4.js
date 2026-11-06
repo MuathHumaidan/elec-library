@@ -206,6 +206,12 @@ function makeSim(method){
     sim.ns=60*fNow;                                                     // 2-pole: n_s = 120 f / 2
   };
   sim.reset(method);return sim}
+/* «قيم المدرب» لنموذج الحركة المشترك (الدرسان 4-1 و4-2). J = ثابت زمن التسارع (s): زمن الوصول من السكون إلى n_s بعزم صافٍ = العزم الأقصى؛
+   المدى 1–10 s حتى يبقى «رفع التردد تدريجياً» ناجحاً و«بسرعة كبيرة» فاقداً للتزامن. الاحتكاك ≤ 0.08 حتى يعلق الدوار المصمت بلا حمل ويصل محرك البدء قرب n_s */
+const simDefs=()=>[
+  {k:'J',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:2,min:1,max:10,step:0.1},
+  {k:'fric',label:'عزم الاحتكاك (نسبة من العزم الأقصى)',unit:'pu',value:0.03,min:0,max:0.08,step:0.01}];
+const simTP=(sim,TP)=>{sim.J=TP.v.J;sim.fric=TP.v.fric};
 const stateChip=sim=>sim.locked?chip('متزامن: يدور مع المجال بالسرعة التزامنية','ok'):!sim.stator?chip('العضو الثابت مفصول','')
   :sim.lost&&sim.t-sim.lostT<6?chip(sim.w>0.02?'فقد التزامن! يتباطأ':'فقد التزامن','bad'):sim.w<0.02?(sim.field==='dc'?chip('واقف ويهتز — لا يبدأ وحده','bad'):chip('واقف','')):chip('يدور دون تزامن','warn');
 
@@ -248,7 +254,7 @@ B.lesson({
  ],
  lab:(el)=>{
   const sim=makeSim('none');let book=1,lastS='',sawVib=0,sawLost=0,sawRun=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l1tp"></div><div class="grid">
    <div class="panel c7"><h2>مختبر المجالين <small>مبني على الشكل (4-2) ص 127 — الحركة مرسومة أبطأ بكثير من الحقيقة</small></h2>
     <div class="sm-row">${segHTML('bk',[[1,'كما في الكتاب'],[0,'المصحح']],1)}</div><div id="l1bk" class="sub" style="margin-top:6px"></div>
     <div class="svgbox" style="max-width:360px;margin-inline:auto">${crossSVG({pre:'a1',phiS:102,phiR:90})}</div>
@@ -264,6 +270,8 @@ B.lesson({
    <div class="panel c12"><h2>جرّب خطوة خطوة</h2><ol class="steps" id="l1steps"></ol></div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
+  const d40=()=>fm(-Math.asin(clamp(0.40+TP.v.fric,0,1))/D,0),d40S=()=>`<span data-l1d>${d40()}</span>`;
+  const TP=B.params($('#l1tp'),'u4-l1',simDefs(),()=>{simTP(sim,TP);el.querySelectorAll('[data-l1d]').forEach(e=>e.textContent=d40())});simTP(sim,TP);
   const bkTxt=()=>{$('#l1bk').innerHTML=book?'<b>كما في الكتاب:</b> «B<sub>R</sub> سيحاول أن يكون متعامداً مع B<sub>S</sub>» — لذلك يُرسم مجال الدوار هنا متأخراً 90° زيادة على δ. لاحظ أن هذا يخالف الشكل (4-2) نفسه.':'<b>المصحح:</b> مجال الدوار يحاول أن ينطبق على مجال الثابت كقطعتي مغناطيس؛ الزاوية بينهما هي δ فقط، صغيرة بلا حمل وتكبر مع الحمل.'};bkTxt();
   el.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{book=+b.dataset.bk;segSet(el,'bk',book);bkTxt()});
   $('#l1st').onclick=()=>{sim.stator=sim.stator?0:1;swSet($('#l1st'),sim.stator)};
@@ -277,10 +285,10 @@ B.lesson({
    {t:'غذِّ المجال والدوار واقف',x:'شغّل «تيار المجال». الدوار يهتز يميناً ويساراً ولا يبدأ الدوران: الزاوية بين المجالين تتسع بسرعة، فالعزم يتغير اتجاهه باستمرار (ص 127).',done:()=>sawVib},
    {t:'أدر الدوار قرب السرعة التزامنية أولاً',x:'افصل تيار المجال، ثم شغّل «محرك بدء يدير الدوار» حتى تقترب السرعة من n<sub>s</sub>.',done:()=>sim.field!=='dc'&&sim.w>0.95},
    {t:'الآن غذِّ المجال بالتيار المستمر',x:'شغّل «تيار المجال»: الزاوية بين المجالين صغيرة فيقفل الدوار على المجال ويدور بالسرعة التزامنية تماماً. ثم افصل محرك البدء.',done:()=>sim.locked&&!sim.pony},
-   {t:'حمّل المحرك',x:'ارفع الحمل إلى نحو <span class="ltr">40%</span>: السرعة لا تتغير، لكن الدوار يتأخر عن المجال بزاوية أكبر (δ ≈ −23°)، ويطول E<sub>ph</sub>sin δ في المخطط الاتجاهي.',done:()=>sim.locked&&sim.TL>=0.38},
+   {t:'حمّل المحرك',get x(){return `ارفع الحمل إلى نحو <span class="ltr">40%</span>: السرعة لا تتغير، لكن الدوار يتأخر عن المجال بزاوية أكبر (<span class="ltr">δ ≈ ${d40S()}°</span> مع الاحتكاك)، ويطول E<sub>ph</sub>sin δ في المخطط الاتجاهي.`},done:()=>sim.locked&&sim.TL>=0.38},
    {t:'تجاوز العزم الأقصى',x:'ارفع الحمل فوق <span class="ltr">100%</span>: تبلغ δ القيمة −90° ثم يفقد الدوار التزامن ويتباطأ حتى يتوقف (ص 127).',done:()=>sawLost},
    {t:'أعد التشغيل',x:'اضغط «إعادة» وكرر التشغيل الصحيح: العضو الثابت ← محرك البدء ← تيار المجال ← افصل محرك البدء.'}]);
-  loopOn(el,dt=>{sim.step(dt);if(sim.field==='dc'&&sim.stator&&!sim.locked&&sim.w<0.02&&sim.vibT>1.2)sawVib=1;if(sim.lost&&sim.w<0.02)sawLost=1;
+  loopOn(el,dt=>{simTP(sim,TP);sim.step(dt);if(sim.field==='dc'&&sim.stator&&!sim.locked&&sim.w<0.02&&sim.vibT>1.2)sawVib=1;if(sim.lost&&sim.w<0.02)sawLost=1;
    const off=book&&(sim.field==='dc'||sim.locked)?-90:0;
    crossMove(el,'a1',sim.thS,sim.thR+off+sim.jit,0);
    const fc=el.querySelectorAll('[data-fc="a1"]');fc.forEach(r=>r.style.fill=sim.field==='dc'?'var(--live)':'var(--live-soft)');
@@ -366,7 +374,7 @@ B.lesson({
  ],
  lab:(el)=>{
   const sim=makeSim('pony');let sdone=0,meth='pony',lastS='',auto=null,hist=[],ht=0,sparkSeen=0;
-  el.innerHTML=`<div class="grid">
+  el.innerHTML=`<div id="l2tp"></div><div class="grid">
    <div class="panel c12"><h2>اختر طريقة البدء <small>مبنية على نص ص 128–129 (لا يوجد شكل في الكتاب؛ الرسوم والأرقام توضيحية)</small></h2>
     <div class="sm-row">${segHTML('mt',Object.keys(METH).map(k=>[k,METH[k].n]),meth)}</div><div class="callout" id="l2txt"></div></div>
    <div class="panel c7"><h2>المحرك <small id="l2sub"></small></h2><div class="svgbox" id="l2x" style="max-width:340px;margin-inline:auto"></div><div id="l2pony"></div>
@@ -384,6 +392,7 @@ B.lesson({
     ${sl('l2tl','حمل أثناء البدء (نسبة من العزم الأقصى)',0,40,1,0)}</div></div>`;
   B.math(el);
   const $=s=>el.querySelector(s);
+  const TP=B.params($('#l2tp'),'u4-l2',simDefs(),()=>simTP(sim,TP));simTP(sim,TP);
   const setUI=()=>{segSet(el,'mt',meth);$('#l2txt').innerHTML=`<b>${METH[meth].n} (${METH[meth].ref}):</b> ${METH[meth].txt}`;
    $('#l2pw').style.display=meth==='pony'?'':'none';$('#l2fw').style.display=meth==='eddy'?'none':'';$('#l2vw').style.display=meth==='vfd'?'':'none';
    $('#l2sub').textContent=meth==='eddy'?'دوار مصمت بلا قضبان':meth==='damper'?'دوار بأقطاب بارزة وقضبان تخميد':'دوار بأقطاب بارزة';
@@ -400,11 +409,11 @@ B.lesson({
   $('#l2tl').oninput=e=>{sim.TL=+e.target.value/100};
   $('#l2rs').onclick=reset;
   const act={stator:()=>{sim.stator=1;swSet($('#l2st'),1)},pony:v=>()=>{sim.pony=v;swSet($('#l2pn'),v);$('#l2pony').innerHTML=box(shaftSVG(v,sim.w),330)},field:v=>()=>{sim.field=v;segSet(el,'fd',v)},ramp:()=>{sim.rate='slow';segSet(el,'rt','slow');sim.ramp=1;$('#l2rp').textContent='أوقف رفع التردد'}};
-  const PLAN={pony:[[act.field('R'),0.6],[act.stator,0.8],[act.pony(1),s=>s.w>0.985],[act.field('dc'),s=>s.locked&&s.t-s.lockedT>1.2],[act.pony(0),0]],
+  const PLAN={pony:[[act.field('R'),0.6],[act.stator,0.8],[act.pony(1),s=>s.w>0.985-Math.max(0,s.fric-0.03)/5],[act.field('dc'),s=>s.locked&&s.t-s.lockedT>1.2],[act.pony(0),0]],
    damper:[[act.field('R'),0.6],[act.stator,s=>s.w>0.94],[act.field('dc'),0]],eddy:[[act.stator,0]],vfd:[[act.field('dc'),0.6],[act.stator,1.0],[act.ramp,0]]};
   $('#l2au').onclick=()=>{reset();auto={i:0,t:0,plan:PLAN[meth]}};
   setUI();
-  loopOn(el,dt=>{
+  loopOn(el,dt=>{simTP(sim,TP);
    if(auto){const p=auto.plan[auto.i];if(!p)auto=null;else{if(auto.t===0)p[0]();auto.t+=dt;const w=p[1];if(typeof w==='number'?auto.t>=w:w(sim)){auto.i++;auto.t=0}}}
    sim.step(dt);ht+=dt;
    if(Math.floor(ht*10)!==Math.floor((ht-dt)*10)){hist.push([ht,sim.ws,sim.w]);while(hist.length&&ht-hist[0][0]>20)hist.shift()}
@@ -549,7 +558,7 @@ B.lesson({
     $('#l3e').textContent=fm(E,1)+' V';
     if(m.ok){$('#l3d').textContent=fm(m.d,1)+'°';$('#l3i').textContent=fm(m.Im,2)+' A';$('#l3pf').textContent=fm(m.pf,3)+(m.lead>0?' ↑':m.lead<0?' ↓':'');$('#l3q').textContent=fm(Math.abs(m.Q)/1000,2)+' kvar';
      $('#l3chip').innerHTML=m.lead>0?chip('يعطي Q للشبكة — يتصرف كمكثف','blue'):m.lead<0?chip('يسحب Q من الشبكة — يتصرف كملف','warn'):chip('معامل القدرة = 1 — P فقط','ok');
-     if(m.lead<0&&li===0)seenLag=1;if(m.lead>0&&li===0&&IF>thr('lead'))seenLead=1;if(Math.abs(m.th)<3&&li<3)seenU=1;if(li===3&&m.th>80)seenCond=1;
+     if(m.lead<0&&li===0&&IF<thr('lag'))seenLag=1;if(m.lead>0&&li===0&&IF>thr('lead'))seenLead=1;if(Math.abs(m.th)<3&&li<3)seenU=1;if(li===3&&m.th>80&&IF>=thr('cond')-1e-9)seenCond=1;
      const kI=li===3?1.2:1.6;$('#l3ph').innerHTML=phSVG({view:{x0:-60,x1:Math.max(300,E+30),y0:-170,y1:200},W:420,H:340,vecs:onePoint(EX.V,m,{kI}),arcs:phArcs(m)});
      $('#l3msg').innerHTML=`<div class="callout">${m.lead>0?'القدرة غير الفعالة تنتقل <b>من المحرك إلى الشبكة</b>.':m.lead<0?'القدرة غير الفعالة تنتقل <b>من الشبكة إلى المحرك</b>.':'لا تنتقل قدرة غير فعالة تقريباً.'}</div>`}
     else{['#l3d','#l3i','#l3pf','#l3q'].forEach(k=>$(k).textContent='—');$('#l3chip').innerHTML=chip('تيار المجال لا يكفي لهذا الحمل: فقد التزامن','bad');$('#l3ph').innerHTML='';$('#l3msg').innerHTML='<div class="callout err">لهذا الحمل يلزم <span class="ltr">sin|δ| = X<sub>S</sub>P/(3VE)</span> أكبر من 1، أي أن E صغير جداً: المحرك لا يستطيع حمل هذه القدرة. زد تيار المجال.</div>'}}
@@ -841,7 +850,7 @@ const G9=[{id:'V',label:'جهد الخط للمصدر (نجمة)',sym:'V_L',unit
 const G10=[{id:'V',label:'جهد المصدر (دلتا)',sym:'V',unit:'V',value:480},{id:'Xs',label:'الممانعة التزامنية',sym:'X_S',unit:'Ω',value:1},{id:'hp',label:'الحمل',sym:'P_o',unit:'hp',value:400},
  {id:'pf',label:'معامل القدرة',sym:'\\cos\\theta',unit:'',value:0.85,step:0.01},{id:'lead',label:'نوعه: 1 = متقدم، 0 = متأخر',sym:'',unit:'',value:1,step:1,min:0,max:1},{id:'pct',label:'زيادة تيار المجال',sym:'',unit:'%',value:10}];
 const gv=G=>Object.fromEntries(G.map(q=>[q.id,q.value]));
-const R9a=solveLoad(gv(G9),{conn:'star',vmode:'div'}).R,R9b=solveLoad(gv(G9),{conn:'star',vmode:'nodiv'}).R,R10=solveField(gv(G10),{hp:1}).R;
+const R9a=solveLoad(gv(G9),{conn:'star',vmode:'div'}).R,R10=solveField(gv(G10),{hp:1}).R;
 const ex9txt=(R,lab)=>`<b>${lab}</b> \\(V_{ph}=${n_(R.Vph)}\\) V؛ \\(P_{in}=${n_(R.Pin1)}\\) kw؛ \\(I_L=I_{ph}=${fm(R.IL,1)}\\) A؛ \\(I_{ph}=${fm(R.Iph,1)}\\angle{${ang(R.ia)}^\\circ}\\) A؛ \\(E_{Ph}=${n_(R.Em)}\\angle{${ang(R.Ea)}^\\circ}\\) V. بعد زيادة الحمل: \\(P_{in}=${n_(R.Pin2)}\\) kw، \\(\\delta=${n_(R.d)}^\\circ\\)، \\(E_{Ph}=${n_(R.Em)}\\angle{-${n_(R.d)}^\\circ}\\) V، \\(I_{ph}=I_L=${fm(R.I2,1)}\\angle{${ang(R.I2a)}^\\circ}\\) A، \\(\\cos\\theta=${fm(R.pf2,3)}\\) ${R.I2a>0?'متقدم':'متأخر'}.`;
 B.lesson({
  id:'u4-l6',unit:4,order:6,pages:'141–143',

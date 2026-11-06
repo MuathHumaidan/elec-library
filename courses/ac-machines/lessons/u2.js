@@ -111,7 +111,7 @@ const CUR={
 };
 const TNAME={split:'المحرك المشطور الوجه',cstart:'المحرك ذو مكثف البدء',perm:'المحرك ذو المكثف الدائم',two:'المحرك ذو المكثفين',shaded:'المحرك ذو الوجه المظلل'};
 /* torque–speed plot of one motor type (as printed); o.op adds a live operating point + load line */
-function tsPlot(type,o){o=o||{};const c=CUR[type],sw=c.sw;const P={w:520,h:290,x0:0,x1:1.05,y0:0,y1:c.ymax*1.05,xt:[0,0.2,0.4,0.6,0.8,1.0],yt:c.yt,yf:v=>v.toFixed(1),xl:'Speed (pu)',yl:(type==='two'?'Toque':'Torque')+' (pu)',aria:'منحنى العزم مع السرعة',
+function tsPlot(type,o){o=o||{};const c0=CUR[type],km=o.km==null?1:o.km,c=km===1?c0:Object.assign({},c0,{main:n=>c0.main(n)*km}),sw=c.sw;const P={w:520,h:290,x0:0,x1:1.05,y0:0,y1:c.ymax*1.05,xt:[0,0.2,0.4,0.6,0.8,1.0],yt:c.yt,yf:v=>v.toFixed(1),xl:'Speed (pu)',yl:(type==='two'?'Toque':'Torque')+' (pu)',aria:'منحنى العزم مع السرعة',
   series:[],extra:(X,Y)=>{let s='';
    if(c.both){s+=`<path d="M${fx(X(sw))} ${fx(Y(0))}V${fx(Y(c.ymax))}" stroke="var(--muted)" stroke-dasharray="6 4" stroke-width="1.4"/>`+S.t(fx(X(sw)-4),fx(Y(c.ymax*0.97)),'Switching Speed','m','end');
      s+=`<path d="M${fx(X(sw))} ${fx(Y(c.both(sw)*(o.k||1)))}V${fx(Y(c.main(sw)))}" stroke="var(--fg)" stroke-width="2.2"/>`;
@@ -732,6 +732,7 @@ B.lesson({
  lab:(el)=>{
   const m=mkMotor('shaded');m.L=0.2;m.kind='fan';let ring=1,ph=0,fv=0.6,sig='',seenRing=0,stallNo=0,runNo=0,T;
   // تأخر فيض الجزء المظلل (55°) وشدته النسبية (0.8): أرقام توضيحية → TP.v.DEL و TP.v.A
+  // العزم: منحنى الشكل (2-11) × f، f = (A·sin DEL)/(0.8·sin 55°) (تقريب منا؛ القيم الافتراضية تعطي f = 1 أي منحنى الكتاب تماماً)، وأقصى f = 1.6
   el.innerHTML=`<div id="l5tp"></div><div class="grid">
    <div class="panel c7"><h2>قطبان مظللان وعضو دوار <small>مبنية على الشكل (2-10) ص 87</small></h2><div class="svgbox" style="max-width:440px;margin-inline:auto" id="l5m"></div>
     <div class="im-row">${swHTML('l5on','V','توصيل المصدر',0)}${swHTML('l5ring','حلقة','الملف المظلِل موجود',1)}</div>
@@ -739,22 +740,28 @@ B.lesson({
     ${sl('l5L','حمل المروحة',0,1.2,0.05,m.L)}
     <div class="facts">${fact('السرعة','l5n')}${fact('عزم المحرك','l5T')}${fact('الحالة','l5st')}</div>
     <p class="sub">الأحمر = قطب شمالي، الأخضر = قطب جنوبي، وشدة اللون = شدة الفيض. المثلث الأسود يبين موضع مركز الفيض على وجه القطب.</p></div>
-   <div class="panel c5"><h2>فيض الجزأين مع الزمن</h2><div class="svgbox"><svg viewBox="0 0 320 200" id="l5w" role="img" aria-label="فيض الجزء المظلل وغير المظلل"></svg></div>${legend([['--fg','فيض الجزء غير المظلل'],['--live','فيض الجزء المظلل (متأخر)']])}<p class="sub">تأخر الجزء المظلل في الرسم <span class="ltr" id="l5del">55°</span> (<span id="l5dw">رقم توضيحي</span>؛ الكتاب لا يعطي قيمة).</p>
-    <h3 class="sm">العزم مع السرعة <small>الشكل (2-11)</small></h3><div class="svgbox" id="l5t"></div></div>
+   <div class="panel c5"><h2>فيض الجزأين مع الزمن</h2><div class="svgbox"><svg viewBox="0 0 320 200" id="l5w" role="img" aria-label="فيض الجزء المظلل وغير المظلل"></svg></div>${legend([['--fg','فيض الجزء غير المظلل'],['--live','فيض الجزء المظلل (متأخر)']])}<p class="sub">تأخر فيض الجزء المظلل <span class="ltr" id="l5del">55°</span> وشدته <span class="ltr" id="l5a">0.8</span> (<span id="l5dw">أرقام توضيحية</span>؛ الكتاب لا يعطي قيمة). يغيّران الرسم وعزم المحرك معاً.</p>
+    <h3 class="sm">العزم مع السرعة <small>الشكل (2-11)</small></h3><div class="svgbox" id="l5t"></div><p class="sub">ربط العزم بزاوية التأخر تقريب منا وليس من الكتاب: العزم يتناسب مع قوة فيض الجزء المظلل × جا زاوية التأخر.</p></div>
    <div class="panel c12">${tryList(['صِل المصدر وراقب المثلث الأسود: يتحرك على وجه كل قطب من الجزء غير المظلل إلى الجزء المظلل، والدوار يدور في نفس الاتجاه.','لاحظ في المنحنى الزمني أن قمة فيض الجزء المظلل تأتي بعد قمة الجزء الآخر.','افصل المصدر وانتظر حتى يقف، ثم أزل الحلقة وصِل المصدر: الفيضان متساويان في الطور، والمجال نابض فقط، فلا يبدأ المحرك.','أعد الحلقة والمحرك يدور، ثم أزلها: يستمر في الدوران (مثل الدرس الأول: المحرك أحادي الوجه يكمل في اتجاه حركته).'])}<h3 class="sm">التجربة الموجّهة</h3><ol class="steps" id="l5steps"></ol></div></div>`;
   const $=s=>el.querySelector(s);
   const TP=B.params($('#l5tp'),'u2-l5',[
    {k:'DEL',label:'تأخر فيض الجزء المظلل عن الجزء غير المظلل',unit:'°',value:55,min:0,max:90,step:1},
    {k:'A',label:'شدة فيض الجزء المظلل (نسبة إلى غير المظلل)',unit:'',value:0.8,min:0.1,max:1,step:0.05}].concat(motorDefs(1.6)),
-   ()=>{$('#l5del').textContent=fm(TP.v.DEL,0)+'°';$('#l5dw').textContent=TP.trainer?'قيمة المدرب':'رقم توضيحي'});
-  $('#l5del').textContent=fm(TP.v.DEL,0)+'°';
+   ()=>{upd5();drawT()});
   const noRing=n=>1.0*Ttot(n);  // بلا حلقة: محرك أحادي الوجه عادي (منحنى الشكل 2-3، أرقام توضيحية)
-  const drawT=()=>{T=tsPlot('shaded',{op:'l5'});$('#l5t').innerHTML=T.svg};drawT();
+  // معامل العزم f (تقريب منا): بالقيم الافتراضية f = 1 تماماً (البسط = المقام)
+  let f=1;const fOf=()=>{const v=(TP.v.A*Math.sin(TP.v.DEL*D))/(0.8*Math.sin(55*D));return isFinite(v)?clamp(v,0,1.6):0};
+  const ringMain=n=>CUR.shaded.main(n)*f;
+  const setMain=()=>{m.customMain=ring?(f===1?null:ringMain):noRing};
+  const tsTxt=()=>f<1e-3?'بهذه القيم عزم البدء صفر فلا يبدأ الدوار: زد زاوية التأخر أو شدة فيض الجزء المظلل في «قيم المدرب».':`الدوار يبدأ وحده بعزم صغير (حوالي <span class="ltr">${fm(0.5*f,2).replace(/\.?0+$/,'')} pu</span>) — لا يحتاج ملفاً مساعداً ولا مكثفاً.`;
+  function upd5(){f=fOf();setMain();$('#l5del').textContent=fm(TP.v.DEL,0)+'°';$('#l5a').textContent=fm(TP.v.A,2).replace(/\.?0+$/,'');$('#l5dw').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية';
+   el.querySelectorAll('.l5tsv').forEach(x=>x.innerHTML=tsTxt())}
+  const drawT=()=>{T=tsPlot('shaded',{op:'l5',km:f});$('#l5t').innerHTML=T.svg};upd5();drawT();
   $('#l5on').onclick=()=>{m.on=m.on?0:1;$('#l5on').setAttribute('aria-pressed',m.on?'true':'false')};
-  $('#l5ring').onclick=()=>{ring=ring?0:1;$('#l5ring').setAttribute('aria-pressed',ring?'true':'false');m.customMain=ring?null:noRing;seenRing=1};
+  $('#l5ring').onclick=()=>{ring=ring?0:1;$('#l5ring').setAttribute('aria-pressed',ring?'true':'false');setMain();seenRing=1};
   $('#l5f').oninput=e=>{fv=+e.target.value};$('#l5L').oninput=e=>{m.L=+e.target.value};
   const steps=stepsUI($('#l5steps'),[
-   {t:'صِل المصدر',x:'شغّل المصدر. الدوار يبدأ وحده بعزم صغير (حوالي 0.5 pu) — لا يحتاج ملفاً مساعداً ولا مكثفاً.',done:()=>m.on&&m.n>0.3},
+   {t:'صِل المصدر',get x(){return `شغّل المصدر. <span class="l5tsv">${tsTxt()}</span>`},done:()=>m.on&&m.n>0.3},
    {t:'اتجاه حركة المجال',x:'راقب المثلث الأسود والألوان: الفيض يصل قمته في الجزء غير المظلل أولاً ثم في الجزء المظلل. الدوار يدور من الجزء غير المظلل نحو المظلل (مع عقارب الساعة في هذا الرسم).'},
    {t:'بلا حلقة من السكون',x:'افصل المصدر حتى يقف، ثم أزل الحلقة وصِل المصدر: لا يدور، لأن المجال صار نابضاً فقط.',done:()=>stallNo>1.5},
    {t:'إزالة الحلقة أثناء الدوران',x:'أعد الحلقة حتى يدور المحرك، ثم أزلها وهو يدور: يكمل الدوران. هذا تطبيق لنظرية المجالين في الدرس الأول.',done:()=>runNo>1.5},
@@ -770,7 +777,7 @@ B.lesson({
     $('#l5w').innerHTML=`<path d="M20 100H312M20 18V182" stroke="var(--line)"/><path d="${pth(1)}" fill="none" stroke="var(--fg)" stroke-width="2.6"/><path d="${pth(2)}" fill="none" stroke="var(--live)" stroke-width="2.6"/>`+S.t(16,24,'Φ','m','end')+S.t(312,116,'t','m','end')}
    const P=T.P;$('#l5-pt').setAttribute('cx',m.on&&ring?fx(P.X(m.n)):-20);$('#l5-pt').setAttribute('cy',fx(P.Y(m.T)));$('#l5-ld').setAttribute('d',pathOf(P,loadPts(m)));
    $('#l5n').textContent=fm(m.n*100,1)+' %';$('#l5T').textContent=fm(m.T,2)+' pu';$('#l5f-v').textContent=fm(fv,2)+' Hz';$('#l5L-v').textContent=fm(m.L,2)+' pu';
-   $('#l5st').innerHTML=!m.on?(m.n>0.01?'يتباطأ':'متوقف'):m.n===0?'<span class="im-chip trip">لا يبدأ (مجال نابض)</span>':ring?'<span class="im-chip run">يدور ↻</span>':'<span class="im-chip warn">يدور بلا حلقة</span>';
+   $('#l5st').innerHTML=!m.on?(m.n>0.01?'يتباطأ':'متوقف'):m.n===0?(ring&&f>=1e-3?'<span class="im-chip trip">لا يبدأ (عزم البدء أقل من الحمل)</span>':'<span class="im-chip trip">لا يبدأ (مجال نابض)</span>'):ring?'<span class="im-chip run">يدور ↻</span>':'<span class="im-chip warn">يدور بلا حلقة</span>';
    steps.check()});
  },
  quiz:[

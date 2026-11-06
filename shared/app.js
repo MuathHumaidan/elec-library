@@ -326,19 +326,23 @@ B.params=function(host,id,defs,onChange){
  const st=store.get(key,{on:false,vals:{}});
  const P={v:{},trainer:false};
  const dflt=()=>Object.fromEntries(defs.map(d=>[d.k,d.value]));
+ const rng=d=>d.min!=null&&d.max!=null?`المسموح: من <span class="ltr">${fmtN(d.min)}</span> إلى <span class="ltr">${fmtN(d.max)}</span>`:d.min!=null?`المسموح: <span class="ltr">${fmtN(d.min)}</span> فأكثر`:d.max!=null?`المسموح: حتى <span class="ltr">${fmtN(d.max)}</span>`:'';
  const clampD=(d,x)=>{x=+x;if(!isFinite(x))return d.value;if(d.min!=null&&x<d.min)x=d.min;if(d.max!=null&&x>d.max)x=d.max;return x};
  const compute=()=>{P.trainer=!!st.on;P.v=dflt();if(st.on)defs.forEach(d=>{if(st.vals[d.k]!=null)P.v[d.k]=clampD(d,st.vals[d.k])})};
  const fire=()=>{compute();store.set(key,st);try{onChange&&onChange(P.v)}catch(e){console.error(e)}};
  const render=()=>{
   host.classList.add('tp');
   host.innerHTML=`<div class="tp-head"><span class="tp-lbl">أرقام المحاكاة:</span><div class="seg" role="group"><button data-tp="0" aria-pressed="${!st.on}">قيم توضيحية</button><button data-tp="1" aria-pressed="${!!st.on}">قيم المدرب</button></div>${st.on?'<button class="btn tp-reset" type="button">رجّع القيم التوضيحية</button>':''}</div>`+
-   (st.on?`<div class="tp-grid">${defs.map(d=>`<label class="tp-f"><span>${d.label}${d.unit?` <i class="ltr">(${d.unit})</i>`:''}</span><input type="number" inputmode="decimal" data-tpk="${d.k}" value="${d.dp!=null?fmtN(P.v[d.k],d.dp):P.v[d.k]}" ${d.min!=null?`min="${d.min}"`:''} ${d.max!=null?`max="${d.max}"`:''} step="${d.step||'any'}"></label>`).join('')}</div><p class="tp-note">هذه الأرقام محفوظة على هذا الجهاز فقط ولا تتغير عند الطلاب.</p>`
+   (st.on?`<div class="tp-grid">${defs.map(d=>`<label class="tp-f"><span>${d.label}${d.unit?` <i class="ltr">(${d.unit})</i>`:''}</span><input type="number" inputmode="decimal" data-tpk="${d.k}" value="${d.dp!=null?fmtN(P.v[d.k],d.dp):P.v[d.k]}" ${d.min!=null?`min="${d.min}"`:''} ${d.max!=null?`max="${d.max}"`:''} step="${d.step||'any'}"><small class="tp-rng">${rng(d)}</small><small class="tp-err" data-tperr="${d.k}" hidden></small></label>`).join('')}</div><p class="tp-note">هذه الأرقام محفوظة على هذا الجهاز فقط ولا تتغير عند الطلاب.</p>`
    :`<p class="tp-note">أرقام توضيحية ليست من الكتاب. يستطيع المدرب وضع أرقامه باختيار «قيم المدرب».</p>`);
   host.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{st.on=b.dataset.tp==='1';compute();render();fire()});
   const r=host.querySelector('.tp-reset');if(r)r.onclick=()=>{st.vals={};compute();render();fire()};
   host.querySelectorAll('[data-tpk]').forEach(inp=>{
    inp.oninput=()=>{if(inp.value===''||!isFinite(+inp.value))return;st.vals[inp.dataset.tpk]=+inp.value;fire()};
-   inp.onchange=()=>{const d=defs.find(x=>x.k===inp.dataset.tpk);const v=clampD(d,inp.value);inp.value=v;st.vals[d.k]=v;fire()};});
+   inp.onchange=()=>{const d=defs.find(x=>x.k===inp.dataset.tpk);const raw=+inp.value,v=clampD(d,inp.value);const em=host.querySelector(`[data-tperr="${d.k}"]`);
+    if(inp.value===''||!isFinite(raw)){em.textContent=`اكتب رقماً. رجّعناها إلى ${fmtN(v)}.`;em.hidden=false}
+    else if(v!==raw){em.textContent=`${raw<v?'أقل':'أعلى'} قيمة مسموحة ${fmtN(v)} حتى تبقى المحاكاة صحيحة، فرجّعناها لها.`;em.hidden=false}else em.hidden=true;
+    inp.value=v;st.vals[d.k]=v;fire()};});
  };
  compute();render();
  return P;

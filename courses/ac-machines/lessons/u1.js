@@ -55,7 +55,7 @@ function stepsUI(host,steps){let i=0;
   const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
   host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
-  return {check(){const s=steps[i];if(s&&s.done&&s.done()){i++;draw()}}};}
+  return {check(){const s=steps[i];if(s&&s.done&&s.done()){i++;draw()}},redraw:draw};}
 const sl=(id,label,min,max,step,val)=>`<label class="im-sl"><span class="im-h"><span>${label}</span><b id="${id}-v"></b></span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label.replace(/<[^>]+>/g,'')}"></label>`;
 const segHTML=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
 const segSet=(el,attr,v)=>el.querySelectorAll(`[data-${attr}]`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset[attr])===String(v))));
@@ -545,7 +545,8 @@ B.lesson({
   const TP=B.params($('#l3tp'),'u1-l3',[
    {k:'Er0',label:'جهد العضو الدوار عند السكون E<sub>r</sub>',unit:'V',value:100,min:1,max:10000},
    {k:'S0',label:'الانزلاق بلا حمل',unit:'',value:0.012,min:0.001,max:0.2,step:0.001},
-   {k:'Sfl',label:'الانزلاق عند الحمل الكامل',unit:'',value:0.045,min:0.002,max:0.5,step:0.001}],()=>{$('#l3er0').textContent=fm(TP.v.Er0,0)});
+   {k:'Sfl',label:'الانزلاق عند الحمل الكامل',unit:'',value:0.045,min:0.002,max:0.5,step:0.001},
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.7,min:0.05,max:30,step:0.05}],()=>{$('#l3er0').textContent=fm(TP.v.Er0,0);steps.redraw()});
   $('#l3er0').textContent=fm(TP.v.Er0,0);
   const ns=()=>120*f/p;
   const kS=()=>Math.max(TP.v.Sfl-TP.v.S0,1e-4);   // انزلاق لكل وحدة عزم حمل
@@ -556,15 +557,15 @@ B.lesson({
   $('#l3l').oninput=e=>{load=+e.target.value};$('#l3n').oninput=e=>{nset=+e.target.value};
   $('#l3lock').onclick=()=>{nset=0;$('#l3n').value=0;did.lock=1};$('#l3sync').onclick=()=>{nset=ns();$('#l3n').value=nset;did.sync=1};
   const steps=stepsUI($('#l3st'),[
-   {t:'بلا حمل',x:'اترك الحمل صفراً: يستقر الدوار قريباً جداً من n<sub>s</sub> والانزلاق في نطاق اللاحمل (0.01–0.02 للمحركات الصغيرة، ص 18). العزم يساوي الاحتكاك فقط.',done:()=>mode==='load'&&load===0&&n>0.985*ns()},
-   {t:'حمّل المحرك',x:'ارفع الحمل إلى <span class="ltr">100%</span>: تهبط السرعة، يزيد (n<sub>s</sub> − n)، تتوهج القضبان أكثر، ويزيد العزم حتى يساوي عزم الحمل ثم تستقر السرعة. الانزلاق الآن في نطاق 0.03–0.05.',done:()=>mode==='load'&&load>=100&&Math.abs(n-ns()*(1-Starget()))<1},
+   {t:'بلا حمل',get x(){return `اترك الحمل صفراً: يستقر الدوار قريباً جداً من n<sub>s</sub> والانزلاق نحو <span class="ltr">S = ${fm(TP.v.S0)}</span> (نطاق اللاحمل في الكتاب 0.01–0.02 للمحركات الصغيرة، ص 18). العزم يساوي الاحتكاك فقط.`},done:()=>mode==='load'&&load===0&&n>ns()*(1-1.25*TP.v.S0)},
+   {t:'حمّل المحرك',get x(){return `ارفع الحمل إلى <span class="ltr">100%</span>: تهبط السرعة، يزيد (n<sub>s</sub> − n)، تتوهج القضبان أكثر، ويزيد العزم حتى يساوي عزم الحمل ثم تستقر السرعة. الانزلاق الآن نحو <span class="ltr">S = ${fm(TP.v.Sfl)}</span> (نطاق الحمل الكامل في الكتاب 0.03–0.05).`},done:()=>mode==='load'&&load>=100&&Math.abs(n-ns()*(1-Starget()))<1},
    {t:'الدوار ثابت',x:'اختر «السرعة مباشرة» ثم «الدوار ثابت»: <span class="ltr">S = 1</span> و f<sub>r</sub> = f<sub>s</sub> تماماً كالمحول (ص 19).',done:()=>mode==='speed'&&nset===0&&did.lock},
    {t:'الدوار بالسرعة التزامنية',x:'اضغط «n = n<sub>s</sub>»: <span class="ltr">S = 0</span> و <span class="ltr">f<sub>r</sub> = 0</span>: لا قطع لخطوط المجال، فلا جهد ولا تيار في الدوار. لذلك لا يصل الدوار وحده إلى n<sub>s</sub>.',done:()=>mode==='speed'&&did.sync&&Math.abs(nset-ns())<0.5},
    {t:'مثال (1-1) حياً',x:'اختر <span class="ltr">p = 4</span> و <span class="ltr">50 Hz</span> وفي «السرعة مباشرة» اضبط <span class="ltr">n = 1425 rpm</span>: تقرأ <span class="ltr">S = 0.05</span> و <span class="ltr">f<sub>r</sub> = 2.5 Hz</span> كما في المثال.',done:()=>mode==='speed'&&p===4&&f===50&&nset===1425}
   ]);
   ui();
   loopOn(el,dt=>{t+=dt;const Ns=ns();if(n==null)n=Ns*(1-Starget());
-   let nt=mode==='load'?Ns*(1-Starget()):nset;n+=(nt-n)*(mode==='load'?(1-Math.exp(-dt/0.7)):1);if(Math.abs(n-nt)<0.05)n=nt;
+   let nt=mode==='load'?Ns*(1-Starget()):nset;n+=(nt-n)*(mode==='load'?(1-Math.exp(-dt/TP.v.tau)):1);if(Math.abs(n-nt)<0.05)n=nt;
    const Sx=(Ns-n)/Ns,fr=Sx*f,Er=Sx*TP.v.Er0;
    af=(af+Ns/60*360*dt/50)%360;ar=(ar+n/60*360*dt/50)%360;
    $('#l3v').innerHTML=slipViewSVG(af,ar,clamp(Sx/Math.max(0.06,TP.v.Sfl*1.3),0,1),{lbl:'n_slip = '+fm(Ns-n,1)+' rpm'});

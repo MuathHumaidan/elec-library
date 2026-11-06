@@ -46,7 +46,7 @@ function stepsUI(host,steps,getW){let i=0;
   const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
   host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
-  return {check(){const s=steps[i];if(s&&s.done&&s.done(getW())){i++;draw()}}};}
+  return {check(){const s=steps[i];if(s&&s.done&&s.done(getW())){i++;draw()}},redraw:draw};}
 const sl=(id,label,min,max,step,val)=>`<label class="u1b-sl"><span class="h"><span>${label}</span><b id="${id}-v"></b></span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label.replace(/<[^>]+>/g,'')}"></label>`;
 const segHTML=(attr,items,cur)=>`<div class="seg u1b-seg" role="group">${items.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
 const segSet=(el,attr,v)=>el.querySelectorAll(`[data-${attr}]`).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[attr])===String(v)));
@@ -437,8 +437,9 @@ B.lesson({
   $('#tq18').onclick=()=>{Object.assign(st,{VL:240,conn:'d',R1:.4,R2:.6,X1:1,X2:1,ns:1800,k:1,pre:18});setAll();draw()};
   const TP=B.params($('#tqtp'),'u1-l8',[
    {k:'Ro',label:'مقاومة الدوار Ro (زر الشكل 1-21)',unit:'Ω',value:0.4,min:0.05,max:3,step:0.01},
-   {k:'TL',label:'عزم الحمل T<sub>L</sub> (زر الشكل 1-21)',unit:'Nm',value:60,min:0,max:600,step:0.1}],()=>{fLbl();if(st.pre===21)applyF(st.k)});
-  const fLbl=()=>{$('#tqFl').textContent=TP.trainer?'قيم المدرب':'قيم توضيحية'};fLbl();
+   {k:'TL',label:'عزم الحمل T<sub>L</sub> (زر الشكل 1-21)',unit:'Nm',value:60,min:0,max:600,step:0.1}],()=>{fLbl();if(st.pre===21)applyF(st.k);steps.redraw()});
+  const fLblT=()=>TP.trainer?'قيم المدرب':'قيم توضيحية',fLbl=()=>{$('#tqFl').textContent=fLblT()};fLbl();
+  const fq=k=>{const P={V:240,R1:.4,R2:TP.v.Ro*k,X1:1,X2:1,ns:1800};return {sm:TQ.smF(P),tst:TQ.tst(P)}};   // the figure (1-21) preset at k×Ro (live)
   const applyF=k=>{Object.assign(st,{VL:240,conn:'d',R1:.4,R2:TP.v.Ro,X1:1,X2:1,ns:1800,k:k||1,fam:1,TL:TP.v.TL,pre:21});$('#tqfam').checked=true;setAll();draw()};
   $('#tqF').onclick=()=>applyF();
   const W=()=>{const P=Object.assign(prm(),{R2:st.R2*st.k});return {P,tst:TQ.tst(P),tmf:TQ.tmF(P),so:TQ.opS(P,st.TL)}};
@@ -448,8 +449,8 @@ B.lesson({
    {t:'اقلب المحور',x:'اختر «الشكل (1-19): محور S» ثم ارجع إلى الشكل (1-20). هو المنحنى نفسه، والفرق اتجاه المحور فقط.',done:()=>st.orient==='s'},
    {t:'العزم الأقصى بطريقتين',x:'اختر «المنحنى الكامل»: قمة منحنى (1-34) نحو <span class="ltr">188 Nm</span> عند <span class="ltr">S ≈ 0.29</span>. ثم ارجع إلى «طريقة الكتاب»: المنحنى المتقطع البرتقالي (1-35) قمته <span class="ltr">457.92 Nm</span> عند <span class="ltr">S<sub>m</sub> = 0.6</span> لأنه يهمل R<sub>1</sub> و X<sub>1</sub>.',done:()=>st.mode==='full'},
    {t:'حمل أكبر من عزم البدء',x:'ارفع <span class="ltr">T<sub>L</sub></span> فوق عزم البدء وتحت العزم الأقصى: المحرك لا يستطيع أن يبدأ بهذا الحمل، ويستطيع أن يحمله إذا بدأ بحمل خفيف (ص 48).',done:w=>st.TL>w.tst&&st.TL<w.tmf},
-   {t:'مقاومة العضو الدوار',x:'اضغط زر «قيم توضيحية للشكل (1-21)» (أو «قيم المدرب للشكل (1-21)») ثم اختر <span class="ltr">4Ro</span> ثم <span class="ltr">5Ro</span>: تنتقل القمة نحو <span class="ltr">S = 1</span> ويرتفع عزم البدء، وارتفاع القمة لا يتغير.',done:()=>st.pre===21&&st.k===5},
-   {t:'بعد أن تتجاوز القمة لحظة البدء',x:'اختر <span class="ltr">6Ro</span>: قمته خرجت عن <span class="ltr">S = 1</span> فصار عزم البدء <b>أقل</b> من 5Ro، كما في الشكل (1-21) (انظر ملاحظة الكتاب في الشرح).',done:()=>st.k===6}
+   {t:'مقاومة العضو الدوار',get x(){const a=fq(4),b=fq(5);return `اضغط زر «${fLblT()} للشكل (1-21)» ثم اختر <span class="ltr">4Ro</span> ثم <span class="ltr">5Ro</span>: `+(b.sm<1?`تنتقل القمة نحو <span class="ltr">S = 1</span> (من <span class="ltr">S ≈ ${fm(R(a.sm,2))}</span> إلى <span class="ltr">S ≈ ${fm(R(b.sm,2))}</span>)`:a.sm<1?`القمة تنتقل من <span class="ltr">S ≈ ${fm(R(a.sm,2))}</span> وتخرج عن <span class="ltr">S = 1</span> عند 5Ro (<span class="ltr">S ≈ ${fm(R(b.sm,2))}</span>)`:`القمتان خارج <span class="ltr">S = 1</span> بهذه القيم (<span class="ltr">S ≈ ${fm(R(a.sm,2))}</span> ثم <span class="ltr">${fm(R(b.sm,2))}</span>)`)+` و${b.tst>=a.tst?'يرتفع':'ينخفض'} عزم البدء (من <span class="ltr">${fm(R(a.tst,1))}</span> إلى <span class="ltr">${fm(R(b.tst,1))} Nm</span>)، وارتفاع القمة لا يتغير.`},done:()=>st.pre===21&&st.k===5},
+   {t:'بعد أن تتجاوز القمة لحظة البدء',get x(){const b=fq(5),c=fq(6),lo=c.tst<b.tst;return `اختر <span class="ltr">6Ro</span>: `+(c.sm>=1?`قمته خارج <span class="ltr">S = 1</span> (<span class="ltr">S ≈ ${fm(R(c.sm,2))}</span>)`:`قمته ما زالت قبل <span class="ltr">S = 1</span> (<span class="ltr">S ≈ ${fm(R(c.sm,2))}</span>)`)+` فصار عزم البدء <b>${lo?'أقل':'أكبر'}</b> من 5Ro (<span class="ltr">${fm(R(c.tst,1))}</span> مقابل <span class="ltr">${fm(R(b.tst,1))} Nm</span>)`+(lo&&c.sm>=1&&b.sm<1?'، كما في الشكل (1-21) (انظر ملاحظة الكتاب في الشرح).':'. عزم البدء يكون أكبر ما يمكن عندما تقع القمة عند <span class="ltr">S = 1</span> تماماً (انظر ملاحظة الكتاب في الشرح).')},done:()=>st.k===6}
   ],W);
   const draw=()=>{const P0=prm(),w=W(),P=w.P,K=TQ.K(st.ns);
    $('#tqvl-v').textContent=st.VL+' V'+(st.conn==='y'?' (Vph = '+fm(R(P0.V,2))+' V)':'');$('#tqr1-v').textContent=fm(st.R1,2)+' Ω';$('#tqr2-v').textContent=fm(st.R2,2)+' Ω'+(st.k>1?' × '+st.k+' = '+fm(R(st.R2*st.k,2))+' Ω':'');$('#tqx1-v').textContent=fm(st.X1,2)+' Ω';$('#tqx2-v').textContent=fm(st.X2,2)+' Ω';$('#tqtl-v').textContent=fm(st.TL,1)+' Nm';
@@ -495,7 +496,7 @@ const Td=mono([[0,2],[0.15,1.85],[0.3,1.72],[0.45,1.8],[0.6,2.05],[0.72,2.4],[0.
 const Id=mono([[0,7],[0.2,6.85],[0.4,6.6],[0.6,6.1],[0.75,5.3],[0.85,4.3],[0.92,3.1],[0.96,1.4],[0.98,0.95],[1,0.4]]);
 const aR=(u,r)=>{const z=1/Id(u);return z/(z+r)};                // voltage share left for the motor with a series impedance r (per unit)
 const TLoad=u=>0.2+0.55*u*u;                                       // illustrative load torque
-const JM=2.0;                                                      // illustrative inertia (slowed down so the start can be watched)
+const JM=2.0;                                                      // acceleration time constant (s) for the static theory figures; the lab uses the trainer field TP.v.tau (default = JM)
 const CUR={
  dol:{T:Td,I:Id},
  sr1:{T:u=>aR(u,.108)**2*Td(u),I:u=>aR(u,.108)*Id(u)},
@@ -682,7 +683,8 @@ B.lesson({
   const TP=B.params($('#sTp'),'u1-l9',[
    {k:'ns',label:'السرعة التزامنية للمحرك n<sub>s</sub>',unit:'rpm',value:1500,min:100,max:3600,step:1},
    {k:'T0',label:'عزم الحمل عند البدء (نسبة إلى العزم المقنن T/T<sub>n</sub>)',unit:'',value:0.2,min:0,max:3,step:0.01},
-   {k:'T1',label:'عزم الحمل عند السرعة التزامنية (نسبة إلى T<sub>n</sub>)',unit:'',value:0.75,min:0,max:3,step:0.01}],()=>{tpUI();tChart=1});
+   {k:'T1',label:'عزم الحمل عند السرعة التزامنية (نسبة إلى T<sub>n</sub>)',unit:'',value:0.75,min:0,max:3,step:0.01},
+   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:JM,min:0.2,max:30,step:0.1}],()=>{tpUI();tChart=1});
   const tpUI=()=>{$('#sNs').textContent=fm(TP.v.ns);$('#sTpL').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية'};tpUI();
   const TLl=u=>TP.v.T0+(TP.v.T1-TP.v.T0)*u*u;   // load torque (default = TLoad: 0.2 + 0.55u²)
   const st=()=>SM[mk].state(c);
@@ -700,7 +702,9 @@ B.lesson({
   let prevOn=0;
   loopOn(el,dt=>{const s=st();let T=0,I=0;if(s.cv){const cv=CUR[s.cv];T=cv.T(u);I=cv.I(u)}
    if(s.cv&&!prevOn&&u<0.02){tr=[];Imax=0}prevOn=s.cv?1:0;
-   const du=(T-TLl(u))/JM*dt;u=clamp(u+du,0,0.995);if(!s.cv&&u<0.002)u=0;
+   {const tau=TP.v.tau,nS=Math.max(1,Math.ceil(dt*40/tau)),h=dt/nS;   // du/dt = (T − TL)/tau ; sub-steps only when tau is small (default: one step)
+    for(let j=0;j<nS;j++){const Tj=j?(s.cv?CUR[s.cv].T(u):0):T;u=clamp(u+(Tj-TLl(u))/tau*h,0,0.995)}}
+   if(!s.cv&&u<0.002)u=0;
    if(s.cv){const l=tr[tr.length-1];if(!l||Math.abs(u-l[0])>0.003||Math.abs(T-l[1])>0.04||l[3]!==s.stage){tr.push([u,T,I,s.stage]);if(tr.length>3000)tr.shift()}Imax=Math.max(Imax,I)}
    ang=(ang+u*360*dt*1.6)%360;$('#sRot').setAttribute('transform',`rotate(${ang.toFixed(1)} 110 70)`);$('#sBar').setAttribute('width',(180*u).toFixed(1));
    const sig=mk+JSON.stringify(c)+trip;
