@@ -52,7 +52,7 @@ function renderHome(){
    <div class="cover-txt"><div class="eyebrow">205 كهر · القوى الكهربائية — الآلات والمعدات الكهربائية</div>
    <h1>تقنية التحكم المبرمج <span>(عملي)</span></h1>
    <p class="lead">الكتاب كاملاً بوحداته العشر: شرح مطابق للمذكرة بأرقام صفحاتها وأشكالها، ومحاكاة حية لكل درس.</p>
-   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت</a><span class="cta-note">${lastL.unit}.${lastL.order} ${lastL.title}</span>`:`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a><a class="cta sec" href="#u2-l1">جرّب درس نجمة / دلتا</a>`}</div></div>
+   <div class="hero-actions">${lastL?`<a class="cta pri" href="#${lastL.id}">تابع من حيث توقفت</a><span class="cta-note">${lastL.unit}.${lastL.order} ${lastL.title}</span>`:`<a class="cta pri" href="#${first.id}">ابدأ الدرس الأول</a>`}</div></div>
    <div class="cover-meta"><div class="meta-num"><b>${B.UNITS.length}</b><span>وحدات</span></div><div class="meta-num"><b>${B.LESSONS.length}</b><span>درساً</span></div><div class="meta-num"><b>${pct}%</b><span>أنجزت</span></div>
    <div class="meta-bar"><i style="width:${pct}%"></i></div></div></section>
    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
