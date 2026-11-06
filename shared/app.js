@@ -315,7 +315,7 @@ const VIEWNOTE={
 B.math=function(el){try{if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})}catch(e){}};
 B.tex=(src,display)=>{try{return window.katex?katex.renderToString(src,{throwOnError:false,displayMode:!!display}):esc(src)}catch(e){return esc(src)}};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
-const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
+const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
 B.fmtN=fmtN;
 /* ---------------- WORKED EXAMPLES ----------------
  L.examples=[{title,ref,q:html,given:[{id,label,sym,unit,value,step,min,max}],solve:(g,B)=>[{t:html,f:latex,v:number|string,unit,dp,final:bool}],note}] */
@@ -343,7 +343,7 @@ function renderQuiz(L,body){
     L.quiz.map((q,i)=>{const a=ans[i];return `<div class="qq"><h3>${i+1}. ${q.q}</h3><div class="opts">`+q.o.map((o,j)=>{let c='';if(a!=null){if(j===q.c)c='right';else if(j===a)c='wrong'}
       return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${o}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>';
     $$('.opt',body).forEach(b=>b.addEventListener('click',()=>{ans[b.dataset.q]=+b.dataset.o;draw()}));
-    $('#qreset',body).addEventListener('click',()=>{ans={};draw()});};
+    $('#qreset',body).addEventListener('click',()=>{ans={};draw()});B.math(body);};
   draw();
 }
 

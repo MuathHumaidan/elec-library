@@ -1,1 +1,758 @@
-/* unit 2 — to be built */
+/* Unit 2 — مولدات التاكو (ص 27–42) */
+(function(B){
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const PI=Math.PI,N2W=PI/30,W2N=30/PI;            // rpm <-> rad/s
+const fm=(x,d)=>B.fmtN(x,d);
+const lt=s=>`<span class="ltr">${s}</span>`;
+const K_EX=12/(1000*N2W*0.1);                      // من مثال (٢-١): 12 V عند 0.1 A و 1000 rpm  =>  K_E = 1.1459·I_f
+
+/* ---------- styles used only by this unit (CSS variables only) ---------- */
+(function css(){if(typeof document==='undefined'||document.getElementById('u2tk-css'))return;const s=document.createElement('style');s.id='u2tk-css';s.textContent=`
+.tk-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px}
+.tk-sl .tk-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tk-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:14px}
+.tk-sl input[type=range]{width:100%;accent-color:var(--blue);direction:ltr;margin:4px 0}
+.tk-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.tk-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.tk-leg i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:5px}
+.tk-leg i.d{background:none!important;border-top:3px dashed currentColor;height:0}
+.tk-chart{position:relative;height:230px;margin-top:8px}.tk-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+.tk-chart.sm{height:170px}
+.tk-q{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0;background:var(--surface)}
+.tk-q summary{cursor:pointer;font-weight:600;line-height:1.7}
+.tk-q ol{margin:6px 0}
+.tk-ans{margin-top:8px;border-inline-start:3px solid var(--blue);padding:6px 12px;background:var(--blue-soft);border-radius:0 10px 10px 0}
+.tk-svg{max-width:440px;margin-inline:auto}
+.tk-msg{margin-top:10px}
+.tk-try{margin:6px 0 0;padding-inline-start:22px;font-size:14px;line-height:1.8}
+`;document.head.appendChild(s)})();
+
+/* ---------- small lab helpers ---------- */
+function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
+function stepsUI(host,steps,getW){let i=0;
+  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
+    (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
+  host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
+  return {check(){const s=steps[i];if(s&&s.done&&s.done(getW())){i++;draw()}}};}
+const sl=(id,label,min,max,step,val)=>`<label class="tk-sl"><span class="tk-h"><span>${label}</span><b id="${id}-v"></b></span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label.replace(/<[^>]+>/g,'')}"></label>`;
+const segHTML=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const swHTML=(id,b,label,on)=>`<button class="sw" id="${id}" aria-pressed="${on?'true':'false'}"><span class="knob"></span><b>${b}</b><small>${label}</small></button>`;
+const fact=(l,id)=>`<div class="fact"><span>${l}</span><b id="${id}">—</b></div>`;
+function cssv(){const cs=getComputedStyle(document.documentElement);return n=>cs.getPropertyValue(n).trim()||'#888'}
+function niceStep(range,n){const raw=range/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<1.5?1:m<3?2:m<7?5:10)*p}
+const logR=p=>Math.pow(10,1+4*p/100);              // slider 0..100  ->  10 Ω .. 100 kΩ
+const fmtR=r=>r>=1000?fm(r/1000,r>=10000?0:1)+' kΩ':fm(r,0)+' Ω';
+
+/* canvas x-y plot:  o={xmin,xmax,ymin,ymax,xlabel,ylabel,series:[{pts,color,width,dash}],points:[{x,y,color}],shade:[{x0,x1,color,label}],arrows:[{x,y0,y1,color,label}]} */
+function plot(cv,o){
+  const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;if(!r.width||!r.height)return;
+  const Wd=Math.round(r.width*dpr),Hd=Math.round(r.height*dpr);if(cv.width!==Wd||cv.height!==Hd){cv.width=Wd;cv.height=Hd}
+  const g=cv.getContext('2d'),w=r.width,h=r.height,col=cssv();g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);g.direction='ltr';
+  const l=46,rt=12,t=12,bm=34,pw=w-l-rt,ph=h-t-bm;
+  const x0=o.xmin||0,x1=o.xmax,y0=o.ymin||0,y1=o.ymax;
+  const X=x=>l+(x-x0)/(x1-x0)*pw,Y=y=>t+ph-(y-y0)/(y1-y0)*ph;
+  const font=(col('--mono')||'monospace');g.font='11px '+font;
+  (o.shade||[]).forEach(s=>{if(s.x1<=s.x0)return;g.fillStyle=col(s.color);g.globalAlpha=.16;g.fillRect(X(s.x0),t,X(Math.min(s.x1,x1))-X(s.x0),ph);g.globalAlpha=1});
+  g.strokeStyle=col('--line');g.lineWidth=1;g.fillStyle=col('--muted');
+  const xs=o.xstep||niceStep(x1-x0,6),ys=o.ystep||niceStep(y1-y0,5);
+  g.textAlign='center';g.textBaseline='top';
+  for(let v=Math.ceil(x0/xs-1e-9)*xs;v<=x1+1e-9;v+=xs){const xx=X(v);g.beginPath();g.moveTo(xx,t);g.lineTo(xx,t+ph);g.stroke();g.fillText(String(+v.toFixed(6)),xx,t+ph+4)}
+  g.textAlign='right';g.textBaseline='middle';
+  for(let v=Math.ceil(y0/ys-1e-9)*ys;v<=y1+1e-9;v+=ys){const yy=Y(v);g.beginPath();g.moveTo(l,yy);g.lineTo(l+pw,yy);g.stroke();g.fillText(String(+v.toFixed(6)),l-5,yy)}
+  g.strokeStyle=col('--fg');g.lineWidth=1.3;g.beginPath();g.moveTo(l,t);g.lineTo(l,t+ph);g.lineTo(l+pw,t+ph);g.stroke();
+  if(y0<0&&y1>0){g.beginPath();g.moveTo(l,Y(0));g.lineTo(l+pw,Y(0));g.stroke()}
+  g.fillStyle=col('--muted');g.textAlign='right';g.textBaseline='bottom';if(o.xlabel)g.fillText(o.xlabel,l+pw,h-1);
+  g.save();g.beginPath();g.rect(l,t,pw,ph);g.clip();
+  (o.shade||[]).forEach(s=>{if(s.label&&s.x1>s.x0){g.fillStyle=col(s.color);g.textAlign='left';g.textBaseline='bottom';g.fillText(s.label,X(s.x0)+3,t+ph-3)}});
+  (o.series||[]).forEach(s=>{if(!s.pts||!s.pts.length)return;g.strokeStyle=col(s.color);g.lineWidth=s.width||2.4;g.setLineDash(s.dash||[]);g.beginPath();s.pts.forEach((p,i)=>{const xx=X(p[0]),yy=Y(p[1]);i?g.lineTo(xx,yy):g.moveTo(xx,yy)});g.stroke();g.setLineDash([])});
+  (o.arrows||[]).forEach(a=>{if(Math.abs(Y(a.y1)-Y(a.y0))<4)return;const xx=X(a.x),ya=Y(a.y0),yb=Y(a.y1),c=col(a.color||'--stop');g.strokeStyle=c;g.fillStyle=c;g.lineWidth=1.8;g.setLineDash([4,3]);g.beginPath();g.moveTo(xx,ya);g.lineTo(xx,yb);g.stroke();g.setLineDash([]);
+    [[ya,yb],[yb,ya]].forEach(([p,q])=>{const d=q>p?1:-1;g.beginPath();g.moveTo(xx,q);g.lineTo(xx-4,q-6*d);g.lineTo(xx+4,q-6*d);g.closePath();g.fill()});
+    if(a.label){g.textAlign=xx>l+pw-60?'right':'left';g.textBaseline='middle';g.font='bold 12px '+font;g.fillText(a.label,xx+(g.textAlign==='right'?-7:7),(ya+yb)/2);g.font='11px '+font}});
+  (o.points||[]).forEach(p=>{g.fillStyle=col(p.color||'--fg');g.beginPath();g.arc(X(p.x),Y(p.y),p.r||5,0,7);g.fill();g.strokeStyle=col('--surface');g.lineWidth=2;g.stroke()});
+  g.restore();
+  if(o.ylabel){g.fillStyle=col('--muted');g.textAlign='left';g.textBaseline='top';g.fillText(o.ylabel,l+5,t+2)}
+}
+const legend=items=>`<div class="tk-leg">${items.map(([c,l,d])=>`<span><i class="${d?'d':''}" style="${d?'color':'background'}:var(${c})"></i>${l}</span>`).join('')}</div>`;
+
+/* analog voltmeter (DC) */
+function meterSVG(v,vmax,lbl,sub){
+  const cx=110,cy=112,R=84,a=clamp(v/vmax,0,1.03),th=PI-a*PI;
+  let s=`<svg viewBox="0 0 220 150" role="img" aria-label="جهاز قياس"><rect x="4" y="4" width="212" height="142" rx="12" fill="var(--surface-2)" stroke="var(--line)"/>`;
+  s+=`<path d="M${cx-R} ${cy}A${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="var(--line)" stroke-width="2"/>`;
+  for(let i=0;i<=10;i++){const t=PI-i/10*PI,r1=i%2?R-6:R-11;s+=`<path d="M${(cx+R*Math.cos(t)).toFixed(1)} ${(cy-R*Math.sin(t)).toFixed(1)}L${(cx+r1*Math.cos(t)).toFixed(1)} ${(cy-r1*Math.sin(t)).toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`;
+    if(i%2===0)s+=`<text class="txt m" x="${(cx+(R-22)*Math.cos(t)).toFixed(1)}" y="${(cy-(R-22)*Math.sin(t)+4).toFixed(1)}" text-anchor="middle">${+(vmax*i/10).toFixed(2)}</text>`}
+  s+=`<text class="txt" x="${cx}" y="${cy-30}" text-anchor="middle" font-size="16">${lbl||'V'}</text>`;
+  s+=`<path d="M${cx} ${cy}L${(cx+(R-4)*Math.cos(th)).toFixed(1)} ${(cy-(R-4)*Math.sin(th)).toFixed(1)}" stroke="var(--stop)" stroke-width="2.6" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="5" fill="var(--fg)"/>`;
+  s+=`<text class="txt" x="${cx}" y="${cy+26}" text-anchor="middle" font-size="15">${sub||''}</text>`;
+  return s+'</svg>';
+}
+const sb=(b,x)=>`${b}<tspan font-size="9" dy="4">${x}</tspan><tspan dy="-4"></tspan>`;
+/* zig-zag resistor */
+function zig(x1,y1,x2,y2,n){n=n||6;const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,nx=-uy,ny=ux,lead=len*0.18,seg=(len-2*lead)/n;let p=`M${x1} ${y1}L${(x1+ux*lead).toFixed(1)} ${(y1+uy*lead).toFixed(1)}`;
+  for(let i=0;i<n;i++){const s=(i%2?-1:1)*7,m=lead+seg*(i+0.5);p+=`L${(x1+ux*m+nx*s).toFixed(1)} ${(y1+uy*m+ny*s).toFixed(1)}`}
+  return p+`L${(x2-ux*lead).toFixed(1)} ${(y2-uy*lead).toFixed(1)}L${x2} ${y2}`}
+function arrowP(x1,y1,x2,y2,color,w){const L=Math.hypot(x2-x1,y2-y1);if(L<3)return '';const ux=(x2-x1)/L,uy=(y2-y1)/L,h=Math.min(10,L*.5);
+  return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${(x2-ux*h*.8).toFixed(1)} ${(y2-uy*h*.8).toFixed(1)}" stroke="var(${color})" stroke-width="${w||3}" stroke-linecap="round"/><path d="M${x2.toFixed(1)} ${y2.toFixed(1)}L${(x2-ux*h-uy*h*.5).toFixed(1)} ${(y2-uy*h+ux*h*.5).toFixed(1)}L${(x2-ux*h+uy*h*.5).toFixed(1)} ${(y2-uy*h-ux*h*.5).toFixed(1)}Z" fill="var(${color})"/>`}
+
+/* ---------- الشكل (٢-١): DC tacho with separately excited field ---------- */
+function dcCircuitSVG(o){o=o||{};const live=!!o.live,If=o.If||0,sw=o.sw!==false,Va=o.Va||0,Ia=o.Ia||0;
+  const fc=live?(If>0?'w flow':'w'):'w',ac=live?(Va>0.01?(sw&&Ia>1e-6?'w flow':'w live'):'w'):'w',lc=live?(sw&&Ia>1e-6?'w flow':''):'';
+  let s=`<svg viewBox="0 0 520 240" role="img" aria-label="مولد التاكو للتيار المستمر ذو التغذية المستقلة">`;
+  // field circuit
+  s+=`<path class="${fc}" d="M50 99V40H150V62M150 168V196H50V131"/><path class="${fc}" d="${zig(150,62,150,168,8)}"/>`;
+  s+=`<circle cx="50" cy="115" r="16" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.8"/>`+arrowP(50,128,50,102,'--fg',2);
+  s+=`<text class="txt" x="28" y="119" text-anchor="end">${sb('V','f')}</text>`;
+  s+=arrowP(80,30,118,30,'--blue',2)+`<text class="txt b" x="99" y="22" text-anchor="middle">${sb('I','f')}</text>`;
+  s+=`<text class="txt" x="166" y="119">R</text>`;
+  if(live)s+=`<text class="txt b" x="100" y="216" text-anchor="middle">${sb('I','f')} = ${fm(If,3)} A</text>`;
+  // armature circuit
+  s+=`<path class="${ac}" d="M250 89V40H282"/><path class="${ac}" d="${zig(282,40,348,40,6)}"/><path class="${ac}" d="M348 40H392"/>`;
+  s+=`<path class="${ac}" d="M250 141V196H372"/>`;
+  s+=`<path class="${live?(sw&&Ia>1e-6?'w flow':''):'w'}" d="M432 40H470V62M470 168V196H372"/><path class="${live?(sw&&Ia>1e-6?'w flow':'w'):'w'}" d="${zig(470,62,470,168,8)}"/>`;
+  // switch
+  s+=`<circle cx="392" cy="40" r="3.5" fill="var(--fg)"/><circle cx="432" cy="40" r="3.5" fill="var(--fg)"/>`;
+  s+=sw?`<path d="M392 40L432 40" stroke="var(--fg)" stroke-width="2.4"/>`:`<path d="M392 40L428 20" stroke="var(--fg)" stroke-width="2.4"/>`;
+  s+=`<text class="txt m" x="412" y="62" text-anchor="middle">switch</text>`;
+  // generator
+  s+=`<circle cx="250" cy="115" r="26" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/><rect x="243" y="83" width="14" height="8" fill="var(--fg)"/><rect x="243" y="139" width="14" height="8" fill="var(--fg)"/>`;
+  s+=`<text class="txt" x="250" y="119" text-anchor="middle">${sb('E','a')}</text>`;
+  s+=arrowP(232,52,232,80,'--blue',2)+`<text class="txt b" x="226" y="68" text-anchor="end">${sb('I','a')}</text>`;
+  s+=`<text class="txt" x="315" y="24" text-anchor="middle">${sb('R','a')}</text>`;
+  // terminals + Va
+  s+=`<circle cx="372" cy="40" r="4" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/><circle cx="372" cy="196" r="4" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>`;
+  s+=arrowP(372,170,372,66,'--fg',1.6)+`<text class="txt" x="364" y="112" text-anchor="end">${sb('V','a')} = ${sb('V','T')}</text>`;
+  s+=arrowP(490,82,490,118,'--blue',2)+`<text class="txt b" x="496" y="104" text-anchor="start">${sb('I','L')}</text><text class="txt" x="452" y="119" text-anchor="end">${sb('R','L')}</text>`;
+  if(live)s+=`<text class="txt b" x="372" y="226" text-anchor="middle">${sb('V','a')} = ${fm(Va,2)} V · ${sb('I','a')} = ${Ia<0.01?fm(Ia*1000,2)+' mA':fm(Ia,3)+' A'}</text>`;
+  return s+'</svg>';
+}
+/* ---------- الشكل (٢-٢): ideal vs actual characteristic ---------- */
+function fig22SVG(){
+  const ox=60,oy=230,Wx=380,Hy=200;let s=`<svg viewBox="0 0 470 270" role="img" aria-label="العلاقة بين الجهد المتولد وسرعة الدوران">`;
+  s+=`<path d="M${ox} ${oy}H${ox+Wx}M${ox} ${oy}V${oy-Hy}" stroke="var(--fg)" stroke-width="1.8" fill="none"/>`+arrowP(ox+Wx-4,oy,ox+Wx+6,oy,'--fg',1.8)+arrowP(ox,oy-Hy+4,ox,oy-Hy-6,'--fg',1.8);
+  s+=`<text class="txt" x="${ox+Wx}" y="${oy+22}" text-anchor="end">Speed (ω)</text><text class="txt" x="${ox+6}" y="${oy-Hy-2}" text-anchor="start">Generated Voltage (${sb('V','a')})</text>`;
+  // ideal line
+  s+=`<path d="M${ox} ${oy}L${ox+330} ${oy-185}" stroke="var(--blue)" stroke-width="2.6" fill="none"/>`;
+  s+=`<text class="txt b" x="${ox+212}" y="${oy-150}" text-anchor="end">Ideal Characteristic</text><text class="txt b" x="${ox+212}" y="${oy-136}" text-anchor="end">${sb('R','L')} = ∞</text>`;
+  // actual curve: starts at dead zone, bends down
+  let p='';const dz=34;for(let i=0;i<=40;i++){const x=dz+i*(330-dz)/40,u=(x-dz),y=0.56*u/(1+u/700)*1.0;p+=(i?'L':'M')+(ox+x).toFixed(1)+' '+(oy-y).toFixed(1)}
+  s+=`<path d="${p}" stroke="var(--live)" stroke-width="2.6" fill="none"/>`;
+  s+=`<text class="txt" x="${ox+300}" y="${oy-88}" text-anchor="start" style="fill:var(--live)">Actual</text><text class="txt" x="${ox+300}" y="${oy-74}" text-anchor="start" style="fill:var(--live)">Characteristic</text><text class="txt" x="${ox+300}" y="${oy-60}" text-anchor="start" style="fill:var(--live)">${sb('R','L')} = small</text>`;
+  // dead zone
+  s+=`<rect x="${ox}" y="${oy-Hy}" width="${dz}" height="${Hy}" fill="var(--stop)" opacity=".1"/>`;
+  s+=`<path d="M${ox} ${oy+10}H${ox+dz}" stroke="var(--stop)" stroke-width="1.6"/><path d="M${ox} ${oy+5}V${oy+15}M${ox+dz} ${oy+5}V${oy+15}" stroke="var(--stop)" stroke-width="1.6"/>`;
+  s+=`<text class="txt" x="${ox+dz/2}" y="${oy+28}" text-anchor="middle" style="fill:var(--stop)">Δω</text><text class="txt" x="${ox+dz+4}" y="${oy-8}" text-anchor="start" style="fill:var(--stop)">Dead zone</text>`;
+  // ΔV
+  const xv=ox+280,yi=oy-280*185/330,u=280-dz,ya=oy-0.56*u/(1+u/700);
+  s+=`<path d="M${xv} ${yi}V${ya}" stroke="var(--stop)" stroke-width="1.8" stroke-dasharray="5 4"/>`+arrowP(xv,(yi+ya)/2,xv,yi+1,'--stop',1.6)+arrowP(xv,(yi+ya)/2,xv,ya-1,'--stop',1.6);
+  s+=`<text class="txt" x="${xv+8}" y="${(yi+ya)/2+4}" style="fill:var(--stop)">ΔV</text>`;
+  return s+'</svg>';
+}
+/* ---------- الشكل (٢-٣): induction tacho ---------- */
+function indSVG(o){o=o||{};const cx=160,cy=160,ang=o.ang||0,pf=o.pf==null?0.8:o.pf,pg=o.pg||0,mis=(o.mis||0);
+  let s=`<svg viewBox="0 0 320 330" role="img" aria-label="رسم توضيحي لمولد تاكو حثي">`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="118" fill="none" stroke="var(--line)" stroke-width="16"/>`;
+  const coil=(x,y,vert,cls,lab)=>{let p='';const n=5;for(let i=0;i<n;i++){const k=i*9-18;p+=vert?`M${x-20} ${y+k}h40`:`M${x+k} ${y-20}v40`}
+    return `<rect x="${vert?x-24:x-26}" y="${vert?y-26:y-24}" width="${vert?48:52}" height="${vert?52:48}" rx="6" fill="var(--surface)" stroke="var(${cls})" stroke-width="2"/><path d="${p}" stroke="var(${cls})" stroke-width="3" stroke-linecap="round"/>`};
+  // field winding m (horizontal axis) — left & right
+  s+=coil(cx-98,cy,false,'--blue')+coil(cx+98,cy,false,'--blue');
+  // generating winding a (vertical axis) — top & bottom, optionally misaligned
+  s+=`<g transform="rotate(${(mis).toFixed(2)} ${cx} ${cy})">`+coil(cx,cy-98,true,'--live')+coil(cx,cy+98,true,'--live')+`</g>`;
+  // rotor (drag cup) with 8 small circles as printed + centre
+  s+=`<g id="indRot" transform="rotate(${ang.toFixed(1)} ${cx} ${cy})"><circle cx="${cx}" cy="${cy}" r="58" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/>`;
+  for(let i=0;i<8;i++){const t=i*PI/4;s+=`<circle cx="${(cx+46*Math.cos(t)).toFixed(1)}" cy="${(cy+46*Math.sin(t)).toFixed(1)}" r="6" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.4"/>`}
+  s+=`<circle cx="${cx}" cy="${cy}" r="9" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/></g>`;
+  // flux arrows
+  if(o.arrows){const lf=pf*62,lg=pg*62;
+    if(Math.abs(lf)>3)s+=arrowP(cx-lf,cy,cx+lf,cy,'--blue',3.4);
+    if(Math.abs(lg)>3)s+=arrowP(cx,cy+lg,cx,cy-lg,'--live',3.4);
+    s+=`<text class="txt b" x="${cx+44}" y="${cy-8}">${sb('φ','f')}</text>`;if(Math.abs(lg)>3)s+=`<text class="txt" x="${cx+8}" y="${cy-40}" style="fill:var(--live)">${sb('φ','g')}</text>`}
+  s+=`<text class="txt" x="${cx}" y="${cy-132}" text-anchor="middle" style="fill:var(--live)">a  Generating Winding</text>`;
+  s+=`<text class="txt b" x="${cx}" y="${cy+150}" text-anchor="middle">m  Field Winding (left/right)</text>`;
+  s+=`<text class="txt m" x="${cx}" y="${cy+166}" text-anchor="middle">Stator Windings · Rotor</text>`;
+  return s+'</svg>';
+}
+
+/* ---------- complex helpers (for الشكل ٢-٣ model and مثال ٢-٤) ---------- */
+const Cx=(re,im)=>({re,im:im||0}),cadd=(a,b)=>Cx(a.re+b.re,a.im+b.im),csub=(a,b)=>Cx(a.re-b.re,a.im-b.im),cmul=(a,b)=>Cx(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re),
+  cdiv=(a,b)=>{const d=b.re*b.re+b.im*b.im;return Cx((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d)},cabs=a=>Math.hypot(a.re,a.im),cang=a=>Math.atan2(a.im,a.re)*180/PI,cpol=(m,d)=>Cx(m*Math.cos(d*PI/180),m*Math.sin(d*PI/180)),
+  cpar=(a,b)=>cdiv(cmul(a,b),cadd(a,b));
+const wrap180=d=>{d=((d+180)%360+360)%360-180;return d};
+/* single-phase-motor equivalent circuit used as an induction tacho (أرقام توضيحية) */
+const IND={V:115,f:50,ns:3000,R1:30,X1:25,Xm:250,R2:200,X2:25};
+function indModel(nr,n){const s=1-nr/IND.ns;const Zr=x=>Cx(IND.R2/x,IND.X2);const Zf=cpar(Cx(0,IND.Xm),Zr(s)),Zb=cpar(Cx(0,IND.Xm),Zr(2-s));
+  const Zin=cadd(cadd(Cx(IND.R1,IND.X1),cmul(Cx(.5),Zf)),cmul(Cx(.5),Zb));const I1=cdiv(Cx(IND.V),Zin);
+  const Ea=cmul(cmul(Cx(0,.5*n),I1),csub(Zf,Zb));return {s,Zf,Zb,I1,Ea}}
+
+/* ---------- مثال (٢-٤) solver, book procedure (shared with س٢-٣) ---------- */
+function solveInd(g,isBook,labels){
+  const k=B.round(0.5*g.n*g.I1m,3);                       // 1.436
+  const dR=B.round(g.Rf-g.Rb,2),dX=B.round(g.Xf-g.Xb,2);   // 29.92 , 38.18
+  const dZ=Cx(g.Rf-g.Rb,g.Xf-g.Xb),zm=B.round(cabs(dZ),1),za=B.round(cang(dZ),2);   // 48.5 , 51.92
+  const Em=B.round(k*zm,2),Ea=B.round(g.I1a+za+90,2);
+  const exact=cmul(cmul(Cx(0,.5*g.n),cpol(g.I1m,g.I1a)),dZ);
+  const sg=v=>(v<0?'-':'+')+' j'+fm(Math.abs(v),2);
+  return [
+   {t:'الجهد المتولد على الملف المساعد (المعادلة ٢-١٣):',f:'E_a = j\\,0.5\\times n\\,I_1\\cdot(Z_f - Z_b)'},
+   {t:'بالتعويض:',f:`= j\\,0.5\\times ${g.n}\\times ${g.I1m}\\angle ${g.I1a}^\\circ\\,(${g.Rf} + j${g.Xf} - ${g.Rb} - j${g.Xb})`},
+   {t:'نضرب الأعداد الحقيقية: 0.5 × n × |I<sub>1</sub>|',v:k,dp:3,unit:`∠ ${fm(g.I1a,1)}°`},
+   {t:'نطرح المعاوقتين ثم نحوّل الناتج إلى الصورة القطبية (المقدار بتقريب الكتاب لخانة واحدة):',f:`Z_f - Z_b = ${fm(dR,2)} ${sg(dX)} = ${fm(zm,1)}\\angle ${fm(za,2)}^\\circ`},
+   {t:'نضرب (المقادير تُضرب والزوايا تُجمع، و j تضيف 90°):',f:`= j\\,(${fm(k,3)}\\angle ${fm(g.I1a,1)}^\\circ)\\times(${fm(zm,1)}\\angle ${fm(za,2)}^\\circ)`},
+   {t:labels.final,v:`${fm(Em,2)} ∠ ${fm(Ea,2)}°`,unit:'volt',final:true},
+   {t:labels.say(fm(Em,2),fm(Ea,2))},
+   {t:'للمقارنة (ليس من الكتاب): الحساب بلا تقريب للخطوات يعطي',v:`${fm(cabs(exact),2)} ∠ ${fm(cang(exact),2)}°`,unit:'V'}
+  ];
+}
+
+/* ============================== Lesson 2.1 ============================== */
+B.lesson({
+ id:'u2-l1',unit:2,order:1,pages:'28–29',
+ title:'مولدات التاكو: التعريف والمتطلبات الرئيسية',
+ summary:'مولد التاكو مولد صغير يحوّل سرعة الدوران إلى جهد يتناسب معها (Va = Kg·ω)، وأنواعه الثلاثة، والمتطلبات الخمس التي تراعى عند تصميمه (ΔV و Δβ و Kg والقصور الذاتي والثابت الزمني).',
+ theory:[
+  {h:'الهدف العام والأهداف التفصيلية',ref:'ص 28',html:`<p><b>الهدف العام للوحدة:</b> معرفة تركيب وأنواع مولدات التاكو.</p><p><b>الأهداف التفصيلية:</b></p><ol><li>أن يميز المتدرب بين أنواع التاكومترات.</li><li>أن يحدد المتدرب أسباب الخطأ في قراءة التاكومترات وطرق تلافيها.</li><li>أن يتمكن المتدرب من معايرة التاكومترات.</li></ol>`},
+  {err:'في الهدف الثالث (ص 28) كُتب «أن يتمكن <b>المتدر</b> من معايرة التاكومترات»، والصحيح «المتدرب» (خطأ مطبعي).'},
+  {h:'ما هو مولد التاكو؟',ref:'ص 29',html:`<p>«مولدات التاكو أو <b>التاكومترات</b> هي أجهزة لقياس السرعة الدورانية، وهي عبارة عن مولدات صغيرة القدرة تعمل على تحويل السرعة الدورانية إلى إشارة كهربائية متناسبة معها يمكن قياسها. تعتمد علاقة التحويل على العلاقة بين سرعة الدوران والقوة الدافعة الكهربائية المتولدة حيث أن العلاقة العامة لخرج مولد التاكو هي:»</p>
+   $$V_a = K_g\\cdot\\omega \\qquad (٢-١)$$
+   $$\\omega=\\frac{d\\theta}{dt}$$
+   <p>«حيث <b>\\(\\omega\\)</b> هي سرعة الدوران <b>بالراديان في الثانية</b> و <b>\\(K_g\\)</b> هو <b>ثابت توليد الجهد أو ميل الخط</b> الذي يمثل العلاقة بين \\(\\omega\\) و \\(V_a\\).»</p>`},
+  {note:`<b>توضيح للمتدرب (ليس من نص الكتاب):</b> السرعة تُكتب عادة بالدورة في الدقيقة <span class="ltr">(rpm)</span>، ونحوّلها إلى راديان في الثانية هكذا: $$\\omega=\\frac{2\\pi\\,n}{60}$$ فمثلاً <span class="ltr">1000 rpm ≈ 104.72 rad/s</span>. وحدة \\(K_g\\) هي <span class="ltr">V/(rad/s)</span>. إذا كان <span class="ltr">K<sub>g</sub> = 0.1</span> فعند <span class="ltr">1000 rpm</span> يكون <span class="ltr">V<sub>a</sub> ≈ 10.47 V</span>. وبالعكس: نقيس الجهد فنعرف السرعة \\(\\omega=V_a/K_g\\). هذا هو كل عمل التاكومتر.`},
+  {h:'أنواع مولدات التاكو',ref:'ص 29',html:`<p>«تصنف مولدات التاكو حسب تصميمها ونظرية عملها من حيث إنها <b>مولدات للتيار المستمر</b> أو <b>مولدات حثيه</b> أو <b>تزامنية</b>.»</p>
+   <table class="tt"><thead><tr><th>النوع</th><th>البند في الكتاب</th><th>الدرس هنا</th></tr></thead><tbody>
+   <tr><td>مولدات التاكو للتيار المستمر</td><td>٢-٢ (ص 30–35)</td><td>2.2 و 2.3</td></tr>
+   <tr><td>مولدات التاكو الحثية</td><td>٢-٣ (ص 36–39)</td><td>2.4</td></tr>
+   <tr><td>مولدات التاكو التزامنية</td><td>٢-٤ (ص 40)</td><td>2.5</td></tr></tbody></table>`},
+  {h:'٢-١ المتطلبات الرئيسية لمولدات التاكو',ref:'ص 29',html:`<p>«هناك متطلبات تجب مراعاتها عند تصميم التاكومترات وهي:»</p>
+   <ol type="a" style="list-style:none;padding-inline-start:6px"><li>أ. أقل خطأ ممكن في القيمة العددية للجهد المتولد (<span class="ltr">ΔV</span>). ويقصد به أقل انحراف لخصائص المولد عن العلاقة الخطية.</li>
+   <li>ب. أقل خطأ ممكن في زاوية الوجه (<span class="ltr">Δβ</span>).</li>
+   <li>ج. أكبر معامل تكبير ممكن \\(K_g\\).</li>
+   <li>د. أقل قصور ذاتي للمحرك.</li>
+   <li>هـ. أقل ثابت زمني للنظام الكهروميكانيكي.</li></ol>
+   <p>«يعرف <b>الخطأ في القيمة العددية للجهد (<span class="ltr">ΔV</span>)</b>، بأنه الفرق بين الجهد المتولد بالفعل عند سرعة معينة والجهد المعطى من العلاقة المثالية لجهد الخرج عند نفس السرعة.»</p>
+   <p>«يعرف <b>الخطأ في زاوية الوجه لجهد الخرج (<span class="ltr">Δβ</span>)</b>، بأنه الفرق بين الزاوية β التي ينحرف بها متجه جهد الخرج عن اتجاه المجال عن نفس الزاوية في العلاقة المثالية.»</p>`},
+  {note:`<b>توضيح للمتدرب (ليس من نص الكتاب) — المتطلبات بكلمات بسيطة:</b><ul>
+   <li><b>ΔV صغير:</b> الجهد الحقيقي يكاد ينطبق على الخط المستقيم \\(V_a=K_g\\omega\\). لو كان المثالي <span class="ltr">10 V</span> والفعلي <span class="ltr">9.8 V</span> فإن <span class="ltr">ΔV = 0.2 V</span>.</li>
+   <li><b>Δβ صغير:</b> يهم في التاكو الذي يعطي جهداً متردداً (الحثي): زاوية طور الخرج يجب أن تبقى ثابتة مهما تغيرت السرعة.</li>
+   <li><b>K<sub>g</sub> كبير:</b> فولتات أكثر لكل وحدة سرعة، فتظهر التغيرات الصغيرة في السرعة بوضوح.</li>
+   <li><b>قصور ذاتي صغير:</b> المقصود الجزء الدوار للتاكو (الكتاب يقول «للمحرك»): خفيف فلا يُثقل العمود الذي نقيس سرعته.</li>
+   <li><b>ثابت زمني صغير:</b> القراءة تلحق بالسرعة الحقيقية بسرعة عندما تتغير.</li></ul>جرّب كل ذلك في تبويب «المختبر».`}
+ ],
+ lab:(el)=>{
+  let n=1000,Kg=0.1,tau=0.1,act=0,read=0,t=0,ang=0,jumped=0,lastS='';const hist=[];
+  el.innerHTML=`<div class="grid">
+   <div class="panel c7"><h2>عمود يدور وعليه مولد تاكو <small>مبنية على المعادلة (٢-١) ص 29</small></h2>
+    <div class="svgbox" style="max-width:520px;margin-inline:auto"><svg viewBox="0 0 420 150" role="img" aria-label="عمود ومولد تاكو">
+     <rect x="8" y="38" width="96" height="74" rx="10" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.6"/><text class="txt" x="56" y="80" text-anchor="middle" font-size="18">M</text>
+     <rect x="104" y="69" width="176" height="12" fill="var(--wire)"/>
+     <g id="l1disk"><circle cx="186" cy="75" r="32" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/><path d="M186 75L186 45" stroke="var(--live)" stroke-width="4" stroke-linecap="round"/><circle cx="186" cy="75" r="4" fill="var(--fg)"/></g>
+     <rect x="280" y="46" width="78" height="58" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2"/><text class="txt b" x="319" y="80" text-anchor="middle" font-size="16">TG</text>
+     <path class="w live" d="M330 46V22H412"/><path class="w live" d="M308 104V128H412"/><text class="txt" x="404" y="16" text-anchor="end">+</text><text class="txt" x="404" y="144" text-anchor="end">−</text>
+     <text class="txt m" x="186" y="132" text-anchor="middle">shaft (drawn 50× slower)</text></svg></div>
+    ${sl('l1n','سرعة العمود <span class="ltr">n</span>',0,3000,10,n)}
+    ${sl('l1k','ثابت توليد الجهد <span class="ltr">K<sub>g</sub></span> (ميل الخط)',0.02,0.2,0.005,Kg)}
+    ${sl('l1t','الثابت الزمني للتاكو <span class="ltr">τ</span>',0.02,1.5,0.02,tau)}
+    <div class="tk-row">${swHTML('l1act','ΔV و Δβ','مولد فعلي (توضيحي)',0)}<button class="btn" id="l1jump">قفزة سرعة 1000 ⇄ 2000 rpm</button></div>
+    <div class="facts">${fact('السرعة بالراديان ω','l1w')}${fact('الجهد المثالي <bdi dir="ltr">K<sub>g</sub>ω</bdi>','l1vi')}${fact('قراءة الفولتميتر','l1vr')}${fact('السرعة المحسوبة من القراءة','l1nr')}</div></div>
+   <div class="panel c5"><h2>الفولتميتر على أطراف التاكو</h2><div class="svgbox tk-svg" id="l1m"></div>
+    <div id="l1ph"></div></div>
+   <div class="panel c6"><h2><span>العلاقة بين <bdi dir="ltr">V<sub>a</sub></bdi> و <bdi dir="ltr">ω</bdi></span></h2><div class="tk-chart"><canvas id="l1c"></canvas></div>
+    ${legend([['--blue','الخط المثالي <span class="ltr">V<sub>a</sub> = K<sub>g</sub>ω</span>'],['--live','المولد الفعلي (أرقام توضيحية)'],['--stop','ΔV']])}</div>
+   <div class="panel c6"><h2>القراءة مع الزمن <small>آخر 8 ثوانٍ</small></h2><div class="tk-chart"><canvas id="l1h"></canvas></div>
+    ${legend([['--muted','الجهد المطابق للسرعة الحقيقية',1],['--blue','قراءة الفولتميتر (تتأخر بالثابت الزمني τ)']])}</div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l1st"></ol></div></div>`;
+  B.math(el);
+  const $=s=>el.querySelector(s);
+  const actV=w=>Kg*w*(1-0.00055*w),actB=w=>0.4+0.012*w;     // أرقام توضيحية فقط
+  const ideal=w=>Kg*w;
+  $('#l1n').oninput=e=>{n=+e.target.value};$('#l1k').oninput=e=>{Kg=+e.target.value};$('#l1t').oninput=e=>{tau=+e.target.value};
+  $('#l1act').onclick=()=>{act=act?0:1;$('#l1act').setAttribute('aria-pressed',act?'true':'false');lastS=''};
+  $('#l1jump').onclick=()=>{n=Math.abs(n-1000)<Math.abs(n-2000)?2000:1000;$('#l1n').value=n;jumped=1};
+  const steps=stepsUI($('#l1st'),[
+   {t:'حوّل السرعة إلى راديان',x:'اضبط السرعة على <span class="ltr">1000 rpm</span>. لاحظ أن <span class="ltr">ω ≈ 104.7 rad/s</span>، وأن الجهد = K<sub>g</sub> × ω.',done:()=>Math.abs(n-1000)<15},
+   {t:'ضاعف السرعة',x:'ارفع السرعة إلى <span class="ltr">2000 rpm</span>: يتضاعف الجهد لأن العلاقة (٢-١) خطية.',done:()=>Math.abs(n-2000)<15},
+   {t:'غيّر ميل الخط K<sub>g</sub>',x:'زد K<sub>g</sub> إلى <span class="ltr">0.15</span> أو أكثر: الخط يصبح أشد ميلاً والجهد أكبر عند نفس السرعة (المتطلب ج).',done:()=>Kg>=0.15},
+   {t:'المولد الفعلي و ΔV',x:'شغّل «مولد فعلي». المنحنى البرتقالي ينحرف عن الخط المستقيم، والسهم الأحمر هو <span class="ltr">ΔV</span> عند السرعة الحالية. ويظهر أيضاً خطأ زاوية الوجه <span class="ltr">Δβ</span>.',done:()=>act},
+   {t:'الثابت الزمني',x:'اجعل <span class="ltr">τ</span> أكبر من <span class="ltr">0.8 s</span> ثم اضغط «قفزة سرعة»: القراءة الزرقاء تتأخر عن الحقيقية. أعد τ صغيراً وكرر: تلحق القراءة فوراً (المتطلب هـ).',done:()=>tau>0.8&&jumped}
+  ],()=>({}));
+  loopOn(el,dt=>{t+=dt;const w=n*N2W,Vt=act?Math.max(0,actV(w)):ideal(w);read+=(Vt-read)*(1-Math.exp(-dt/tau));
+   ang=(ang+n/60*360*dt/50)%360;$('#l1disk').setAttribute('transform',`rotate(${ang.toFixed(1)} 186 75)`);
+   hist.push([t,Vt,read]);while(hist.length&&t-hist[0][0]>8)hist.shift();
+   $('#l1n-v').textContent=n+' rpm';$('#l1k-v').textContent=fm(Kg,3)+' V/(rad/s)';$('#l1t-v').textContent=fm(tau,2)+' s';
+   $('#l1w').textContent=fm(w,2)+' rad/s';$('#l1vi').textContent=fm(ideal(w),2)+' V';$('#l1vr').textContent=fm(read,2)+' V';$('#l1nr').textContent=fm(read/Kg*W2N,0)+' rpm';
+   const sg=[n,Kg,act,Math.round(read*20)].join();if(sg!==lastS){lastS=sg;$('#l1m').innerHTML=meterSVG(read,70,'V',fm(read,2)+' V');
+    $('#l1ph').innerHTML=act?phasorDB(actB(w)):`<p class="sub">في المولد المثالي لا يوجد خطأ في القيمة ولا في زاوية الوجه. شغّل «مولد فعلي» لترى <span class="ltr">ΔV</span> و <span class="ltr">Δβ</span>.</p>`}
+   const ws=[];for(let i=0;i<=60;i++)ws.push(i*330/60);
+   plot($('#l1c'),{xmax:330,ymax:70,xlabel:'ω (rad/s)',ylabel:'Va (V)',series:[{pts:ws.map(x=>[x,ideal(x)]),color:'--blue'}].concat(act?[{pts:ws.map(x=>[x,actV(x)]),color:'--live'}]:[]),
+    arrows:act?[{x:w,y0:ideal(w),y1:actV(w),label:'ΔV = '+fm(ideal(w)-actV(w),2)+' V'}]:[],points:[{x:w,y:act?actV(w):ideal(w),color:act?'--live':'--blue'}]});
+   plot($('#l1h'),{xmin:Math.max(0,t-8),xmax:Math.max(8,t),ymax:70,xlabel:'t (s)',ylabel:'V (V)',series:[{pts:hist.map(h=>[h[0],h[1]]),color:'--muted',dash:[5,4],width:2},{pts:hist.map(h=>[h[0],h[2]]),color:'--blue'}]});
+   steps.check()});
+  function phasorDB(db){const cx=40,cy=96,R=78,b0=60,b1=b0+db*3;const P=d=>[cx+R*Math.cos(d*PI/180),cy-R*Math.sin(d*PI/180)];const p0=P(b0),p1=P(b1);
+   return `<h3 class="sm">خطأ زاوية الوجه <span class="ltr">Δβ</span> (أرقام توضيحية، والزاوية مكبّرة 3 مرات في الرسم)</h3><div class="svgbox tk-svg"><svg viewBox="0 0 260 120" role="img" aria-label="متجه جهد الخرج">
+    ${arrowP(cx,cy,cx+200,cy,'--muted',1.6)}<text class="txt m" x="${cx+200}" y="${cy+16}" text-anchor="end">field axis</text>
+    ${arrowP(cx,cy,p0[0],p0[1],'--blue',2.6)}${arrowP(cx,cy,p1[0],p1[1],'--live',2.6)}
+    <text class="txt b" x="${p0[0]+6}" y="${p0[1]+4}">ideal β</text><text class="txt" x="${p1[0]-6}" y="${p1[1]}" text-anchor="end" style="fill:var(--live)">actual</text>
+    <text class="txt" x="150" y="40" style="fill:var(--stop)">Δβ = ${fm(db,2)}°</text></svg></div>`}
+ },
+ quiz:[
+  {q:'مولد التاكو جهاز يحوّل:',o:['السرعة الدورانية إلى إشارة كهربائية متناسبة معها','الجهد الكهربائي إلى سرعة دورانية','التيار إلى عزم','الحرارة إلى جهد'],c:0,e:'ص 29: «مولدات صغيرة القدرة تعمل على تحويل السرعة الدورانية إلى إشارة كهربائية متناسبة معها يمكن قياسها».'},
+  {q:'في المعادلة V<sub>a</sub> = K<sub>g</sub>·ω تقاس السرعة ω بوحدة:',o:['rpm','rad/s (راديان في الثانية)','Hz','درجة'],c:1,e:'ص 29: ω هي سرعة الدوران بالراديان في الثانية.'},
+  {q:'ماذا يسمي الكتاب الثابت K<sub>g</sub>؟',o:['مقاومة المنتج','ثابت توليد الجهد أو ميل الخط','الثابت الزمني','تيار المجال'],c:1,e:'K_g هو ثابت توليد الجهد أو ميل الخط الذي يمثل العلاقة بين ω و V_a.'},
+  {q:'عمود يدور بسرعة 1500 rpm. سرعته بالراديان في الثانية تقريباً:',o:['25 rad/s','157.1 rad/s','1500 rad/s','9425 rad/s'],c:1,e:'ω = 2π × 1500 ÷ 60 ≈ 157.1 rad/s (تحويل توضيحي).'},
+  {q:'الخطأ في القيمة العددية للجهد ΔV هو:',o:['الفرق بين الجهد الفعلي والجهد من العلاقة المثالية عند نفس السرعة','الفرق بين سرعتين','الجهد عند السكون','زاوية متجه الخرج'],c:0,e:'تعريف الكتاب ص 29.'},
+  {q:'أي مما يلي <b>ليس</b> من متطلبات تصميم التاكومترات في الكتاب؟',o:['أقل خطأ في زاوية الوجه','أكبر معامل تكبير K_g','أكبر قصور ذاتي','أقل ثابت زمني'],c:2,e:'المطلوب أقل قصور ذاتي، لا أكبر.'},
+  {q:'تصنف مولدات التاكو حسب تصميمها ونظرية عملها إلى:',o:['مستمر وحثي وتزامني','نجمة ودلتا','خطوة وهجين','تنافري وعام'],c:0,e:'ص 29: مولدات للتيار المستمر أو مولدات حثية أو تزامنية.'},
+  {q:'في مولد تاكو مثالي، إذا تضاعفت السرعة فإن الجهد:',o:['يبقى ثابتاً','يقل للنصف','يتضاعف','يزيد أربع مرات'],c:2,e:'V_a = K_g·ω علاقة خطية: ضعف ω يعطي ضعف V_a.'}
+ ]
+});
+
+/* ============================== Lesson 2.2 ============================== */
+B.lesson({
+ id:'u2-l2',unit:2,order:2,pages:'30–32، 34–35',
+ title:'مولد التاكو للتيار المستمر: التركيب وتأثير مقاومة الحمل',
+ summary:'تركيب مولد التاكو للتيار المستمر ذي التغذية المستقلة (الشكل ٢-١)، والعلاقة الخطية عند اللاحمل، ثم كيف تُنقص مقاومة الحمل الجهد على الأطراف، مع المثالين (٢-١) و (٢-٢).',
+ theory:[
+  {h:'٢-٢ مولدات التاكو للتيار المستمر (Direct Current Tacho-Generators)',ref:'ص 30',html:`<p>«مولدات التاكو للتيار المستمر، هي في الأساس مولدات للتيار المستمر صغيرة الحجم، فتركيبها ونظرية عملها تمامًا كما في آلات التيار المستمر، وأغلب الأنواع انتشارًا هي مولدات التاكو للتيار المستمر ذات <b>التغذية المستقلة لملفات المجال</b> أو ذات <b>مغناطيسات طبيعية دائمة</b> لتوليد المجال المغناطيسي.»</p>
+   <p>«وفي حالة مولدات التاكو للتيار المستمر ذات التغذية المستقلة لملفات المجال فإن الجهد المغذي للمجال يكون من مصدر تيار مستمر خارجي أو بطاريات أو مصادر القدرة الساكنة ذات التيار المستمر <span class="ltr">(Solid-states d c power supply)</span> كما هو واضح من الشكل (٢-١).»</p>`},
+  {fig:'(٢-١)',ref:'ص 30',caption:'مولد التاكو للتيار المستمر ذات التغذية المستقلة لملفات المجال: يسارًا دائرة المجال (المصدر \\(V_f\\) والتيار \\(I_f\\) في ملف المجال R)، ويمينًا دائرة المنتج (\\(E_a\\) و \\(R_a\\) والمفتاح ومقاومة الحمل \\(R_L\\))',draw:()=>`<div class="svgbox" style="max-width:600px;margin-inline:auto">${dcCircuitSVG()}</div>`},
+  {h:'خصائص الخرج',ref:'ص 30',html:`<p>«خصائص الخرج لمولدات التاكو للتيار المستمر، هي العلاقة بين الجهد على أطراف المنتج \\(V_a\\) وسرعة الدوران \\(\\omega\\)، عند ثبات الفيض المغناطيسي \\(\\phi\\)، وثبات مقاومة الحمل \\(R_L\\)»</p>
+   $$E_a \\propto N\\,\\phi$$ $$E_a \\propto \\omega\\,\\phi = K\\,\\omega\\,\\phi$$ $$\\text{but }\\ \\phi = \\text{constant}$$ $$E_a \\propto \\omega$$
+   $$E_a = K_E\\cdot\\omega \\qquad (٢-٢)$$ $$\\text{where }\\ K_E = K\\cdot\\phi$$`},
+  {html:`<p>«ويلاحظ أن الجهد يمكن التحكم فيه عن طريق السرعة \\(\\omega\\) وكذلك تيار المجال \\(I_f\\) وعند ثبات المجال المغناطيسي \\(\\Phi\\) يمكن التحكم في الجهد عن طريق السرعة فقط.» <span class="ref">ص 31</span></p>`},
+  {h:'تأثير توصيل الحمل',ref:'ص 31',html:`<p>«المعادلة (٢-٢) تمثل العلاقة بين الجهد المتولد \\(E_a\\) وسرعة الدوران \\(\\omega\\) <b>عند اللاحمل (\\(R_L=\\infty\\))</b> وهي علاقة خطية، ولكن عند توصيل أطراف المنتج لأي جهاز له مقاومة داخلية \\(R_L\\) فإن فرق الجهد على الأطراف يصبح كالتالي:»</p>
+   $$V_a = E_a - I_a R_a \\qquad (٢-٣)$$
+   <p>«حيث \\(I_a\\) هو تيار المنتج، \\(R_a\\) هي <b>مقاومة ملفات المنتج بالإضافة إلى مقاومة التلامس بين مبدل التيار (الموحد) والفرش الكربونية</b>.» «من خلال الشكل (٢-٢) وكذلك المعادلة (٢-٣) يمكن إثبات أن مولد التاكو للتيار المستمر له علاقة خطية بين الجهد والسرعة.»</p>`},
+  {fig:'(٢-٢)',ref:'ص 31',caption:'العلاقة بين الجهد المتولد وسرعة الدوران لمولد تاكو تيار مستمر ذات التغذية المستقلة وتظهر فيها المنطقة الميتة منحنى الحمل',draw:()=>`<div class="svgbox" style="max-width:560px;margin-inline:auto">${fig22SVG()}</div>`},
+  {err:'كُتب على الخط المستقيم في الشكل (٢-٢) «<span class="ltr">Idial Characteristic</span>»، والصحيح «<span class="ltr">Ideal Characteristic</span>» (الخاصية المثالية). وعنوان الشكل «… وتظهر فيها المنطقة الميتة منحني الحمل» كما طُبع.'},
+  {h:'اشتقاق تأثير مقاومة الحمل',ref:'ص 32',html:`<p>تيار المنتج هو نفسه تيار الحمل:</p>
+   $$I_a = \\frac{V_a}{R_L} \\qquad (٢-٤)$$
+   $$V_a = E_a - \\frac{V_a}{R_L}\\cdot R_a$$ $$V_a\\left(1+\\frac{R_a}{R_L}\\right) = E_a$$ $$V_a = \\frac{E_a}{\\left(1+\\dfrac{R_a}{R_L}\\right)}$$
+   $$V_a = \\frac{K_E\\cdot\\omega}{\\left(1+\\dfrac{R_a}{R_L}\\right)} \\qquad (٢-٥)$$
+   <p>«المعادلة (٢-٥) تبين أن تاكومترات التيار المستمر لها علاقة خطية بين \\(V_a\\) و \\(\\omega\\)، طالما أن كلًا من \\(R_a\\) و \\(\\phi\\) ثابتان في القيمة. كلما تغيرت قيمة \\(R_a\\) أو قيمة \\(\\phi\\) ابتعدت هذه العلاقة عن العلاقة الخطية. أيضًا هذه العلاقة تكون خطية عندما تكون <b>\\(R_L\\) كبيرة القيمة</b>. ولكن إذا انخفضت هذه المقاومة فإن العلاقة تكون غير خطية كما هو واضح من شكل (٢-٢)، أي أنه يمكن أن يحدث خطأ في قراءة السرعة وهذا يرجع لسببين» — وهما موضوع الدرس التالي.</p>`},
+  {note:`<b>توضيح للمتدرب (ليس من نص الكتاب):</b> في (٢-٥) القوس \\(1+R_a/R_L\\) يقسم الجهد. إذا كانت \\(R_L\\) كبيرة جداً (فولتميتر جيد) يصبح القوس ≈ 1 فيكون \\(V_a\\approx E_a\\). مثال: <span class="ltr">E<sub>a</sub> = 20 V</span>، <span class="ltr">R<sub>a</sub> = 1 Ω</span>، <span class="ltr">R<sub>L</sub> = 99 Ω</span> ⇒ <span class="ltr">V<sub>a</sub> = 20 ÷ 1.0101 ≈ 19.8 V</span>. الخط يبقى مستقيماً لكن ميله يقل؛ وانحناؤه الحقيقي يأتي من الأسباب في الدرس التالي.`},
+  {h:'مثالا الكتاب (٢-١) و (٢-٢)',ref:'ص 34–35',html:`<p>المثالان محلولان في تبويب «الأمثلة المحلولة» بأرقام الكتاب، ويمكنك تغيير الأرقام. وتعليق الكتاب بعد المثال (٢-١): «من المثال السابق يلاحظ أن الجهد المتولد \\(E_a\\) والجهد على أطراف المنتج \\(V_a\\) يمكن التحكم فيها عن طريق السرعة \\(\\omega\\) وكذلك تيار المجال \\(I_f\\) ولكن عند ثبات المجال المغناطيسي \\(\\Phi\\) يمكن التحكم في الجهد عن طريق السرعة فقط.»</p>`},
+  {err:'في مثال (٢-١) ص 34 يكتب جدول المعطيات <span class="ltr">I<sub>f2</sub> = 0.2 A</span>، بينما نص السؤال والحساب يستعملان <span class="ltr">0.15 A</span>، والناتج <span class="ltr">18 V</span> صحيح لـ <span class="ltr">0.15 A</span> (لو كانت 0.2 A لكان الناتج <span class="ltr">24 V</span>). الحاسبة تستعمل 0.15 A كما في السؤال والحل.'},
+  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> قانون المثال \\(E_a=K_E\\cdot N\\cdot I_f\\) يفترض أن الفيض \\(\\phi\\) يتناسب مع تيار المجال \\(I_f\\)، وأن السرعة N بالدورة في الدقيقة. لذلك تكفي النسبة بين حالتين ولا نحتاج قيمة \\(K_E\\). المختبر يستعمل أرقام هذا المثال نفسه: <span class="ltr">12 V</span> عند <span class="ltr">0.1 A</span> و <span class="ltr">1000 rpm</span>.'}
+ ],
+ lab:(el)=>{
+  let n=1000,If=0.1,Ra=20,RLp=50,sw=1,lastS='';
+  el.innerHTML=`<div class="grid">
+   <div class="panel c7"><h2>دائرة الشكل (٢-١) حيّة <small>مبنية على الشكل (٢-١) ص 30 والمعادلات (٢-٢) إلى (٢-٥)</small></h2>
+    <p class="sub">الخط البرتقالي = عليه جهد، والمتقطع المتحرك = يمر فيه تيار.</p>
+    <div class="svgbox" id="l2c" style="max-width:620px;margin-inline:auto"></div>
+    <div class="tk-row">${swHTML('l2sw','المفتاح','مغلق: الحمل R<sub>L</sub> موصول',1)}</div>
+    <div class="facts">${fact('ω','l2w')}${fact('<bdi dir="ltr">K<sub>E</sub> = Kφ</bdi>','l2ke')}${fact('<bdi dir="ltr">E<sub>a</sub> = K<sub>E</sub>ω</bdi>','l2ea')}${fact('<bdi dir="ltr">I<sub>a</sub> R<sub>a</sub></bdi>','l2drop')}${fact('<bdi dir="ltr">V<sub>a</sub></bdi> على الأطراف','l2va')}${fact('الانخفاض عن <bdi dir="ltr">E<sub>a</sub></bdi>','l2pc')}</div></div>
+   <div class="panel c5"><h2>المتغيرات</h2>
+    ${sl('l2n','السرعة <span class="ltr">n</span>',0,3000,10,n)}
+    ${sl('l2if','تيار المجال <span class="ltr">I<sub>f</sub></span>',0,0.2,0.005,If)}
+    ${sl('l2ra','مقاومة المنتج <span class="ltr">R<sub>a</sub></span> (ملفات + تلامس الفرش)',0,100,1,Ra)}
+    ${sl('l2rl','مقاومة الحمل <span class="ltr">R<sub>L</sub></span>',0,100,1,RLp)}
+    <div class="svgbox tk-svg" id="l2m" style="max-width:260px"></div>
+    <p class="sub">ثابت الآلة مأخوذ من مثال (٢-١): <span class="ltr">E<sub>a</sub> = 12 V</span> عند <span class="ltr">I<sub>f</sub> = 0.1 A</span> و <span class="ltr">1000 rpm</span>. قيم R<sub>a</sub> و R<sub>L</sub> توضيحية.</p></div>
+   <div class="panel c12"><h2><span><bdi dir="ltr">V<sub>a</sub></bdi> مع <bdi dir="ltr">ω</bdi>: عند اللاحمل وتحت الحمل</span></h2><div class="tk-chart"><canvas id="l2p"></canvas></div>
+    ${legend([['--blue','اللاحمل <span class="ltr">R<sub>L</sub> = ∞</span>: <span class="ltr">E<sub>a</sub> = K<sub>E</sub>ω</span> (٢-٢)'],['--live','تحت الحمل: <span class="ltr">V<sub>a</sub> = K<sub>E</sub>ω/(1+R<sub>a</sub>/R<sub>L</sub>)</span> (٢-٥)'],['--stop','الفرق بين الخطين عند السرعة الحالية']])}</div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l2st"></ol></div></div>`;
+  B.math(el);
+  const $=s=>el.querySelector(s);
+  $('#l2n').oninput=e=>{n=+e.target.value};$('#l2if').oninput=e=>{If=+e.target.value};$('#l2ra').oninput=e=>{Ra=+e.target.value};$('#l2rl').oninput=e=>{RLp=+e.target.value};
+  $('#l2sw').onclick=()=>{sw=sw?0:1;const b=$('#l2sw');b.setAttribute('aria-pressed',sw?'true':'false');b.querySelector('small').innerHTML=sw?'مغلق: الحمل R<sub>L</sub> موصول':'مفتوح: لا حمل (R<sub>L</sub> = ∞)'};
+  const calc=()=>{const w=n*N2W,KE=K_EX*If,Ea=KE*w,RL=logR(RLp);const Va=sw?Ea/(1+Ra/RL):Ea,Ia=sw?Va/RL:0;return {w,KE,Ea,RL,Va,Ia}};
+  const steps=stepsUI($('#l2st'),[
+   {t:'اللاحمل',x:'افتح المفتاح. لا يمر تيار في المنتج فيكون <span class="ltr">V<sub>a</sub> = E<sub>a</sub></span> تماماً، والنقطة على الخط الأزرق (٢-٢).',done:()=>!sw},
+   {t:'وصّل حملاً صغير المقاومة',x:'أغلق المفتاح واجعل <span class="ltr">R<sub>L</sub></span> أقل من <span class="ltr">200 Ω</span>. يمر تيار ويهبط جهد على R<sub>a</sub>: الخط البرتقالي ينخفض تحت الأزرق.',done:()=>sw&&logR(RLp)<200},
+   {t:'مقاومة حمل كبيرة',x:'ارفع <span class="ltr">R<sub>L</sub></span> فوق <span class="ltr">20 kΩ</span>: ينطبق الخطان تقريباً، لأن <span class="ltr">R<sub>a</sub>/R<sub>L</sub></span> صغيرة جداً.',done:()=>sw&&logR(RLp)>20000},
+   {t:'مثال (٢-١) (أ)',x:'افتح المفتاح، واضبط <span class="ltr">1000 rpm</span> و <span class="ltr">I<sub>f</sub> = 0.15 A</span>: يصبح <span class="ltr">E<sub>a</sub> = 18 V</span> كما في الكتاب.',done:()=>Math.abs(n-1000)<5&&Math.abs(If-0.15)<0.001},
+   {t:'مثال (٢-١) (ب)',x:'أعد <span class="ltr">I<sub>f</sub> = 0.1 A</span> وارفع السرعة إلى <span class="ltr">1400 rpm</span>: يصبح <span class="ltr">E<sub>a</sub> = 16.8 V</span>.',done:()=>Math.abs(n-1400)<5&&Math.abs(If-0.1)<0.001},
+   {t:'أطفئ المجال',x:'اجعل <span class="ltr">I<sub>f</sub> = 0</span>: لا فيض ولا جهد مهما كانت السرعة. لاحظ أن الجهد يتحكم فيه ω و I<sub>f</sub> معاً.',done:()=>If===0}
+  ],()=>({}));
+  loopOn(el,()=>{const c=calc();
+   $('#l2n-v').textContent=n+' rpm';$('#l2if-v').textContent=fm(If,3)+' A';$('#l2ra-v').textContent=Ra+' Ω';$('#l2rl-v').textContent=sw?fmtR(c.RL):'∞ (مفتوح)';
+   const sg=[n,If,Ra,RLp,sw].join();if(sg!==lastS){lastS=sg;
+    $('#l2c').innerHTML=dcCircuitSVG({live:1,If,sw:!!sw,Va:c.Va,Ia:c.Ia});$('#l2m').innerHTML=meterSVG(c.Va,80,'V',fm(c.Va,2)+' V');
+    $('#l2w').textContent=fm(c.w,2)+' rad/s';$('#l2ke').textContent=fm(c.KE,4)+' V·s';$('#l2ea').textContent=fm(c.Ea,2)+' V';$('#l2drop').textContent=fm(c.Ia*Ra,2)+' V';$('#l2va').textContent=fm(c.Va,2)+' V';
+    $('#l2pc').textContent=c.Ea>0?fm((1-c.Va/c.Ea)*100,1)+' %':'—';
+    const ws=[0,330],kl=sw?c.KE/(1+Ra/c.RL):c.KE;
+    plot($('#l2p'),{xmax:330,ymax:80,xlabel:'ω (rad/s)',ylabel:'Va (V)',series:[{pts:ws.map(x=>[x,c.KE*x]),color:'--blue'}].concat(sw?[{pts:ws.map(x=>[x,kl*x]),color:'--live'}]:[]),
+     arrows:sw?[{x:c.w,y0:c.Ea,y1:c.Va,label:fm(c.Ea-c.Va,2)+' V'}]:[],points:[{x:c.w,y:c.Va,color:sw?'--live':'--blue'}]})}
+   steps.check()});
+ },
+ examples:[
+  {title:'مثال (٢-١)',ref:'ص 34',
+   q:'<p>«مولد تاكو للتيار المستمر ذو التغذية المستقلة يعطي قوة دافعة كهربية للمنتج <span class="ltr">(E<sub>a</sub> = 12 V)</span> عندما يكون تيار المجال <span class="ltr">(I<sub>f</sub> = 0.1 A)</span> وتكون السرعة <span class="ltr">(1000 rpm)</span>. أوجد:<br>(ا) القوة الدافعة الكهربائية E<sub>a</sub> عندما يكون تيار المجال <span class="ltr">(0.15 A)</span> والسرعة <span class="ltr">(1000 rpm)</span>.<br>(ب) القوة الدافعة الكهربائية E<sub>a</sub> عندما يكون تيار المجال <span class="ltr">(0.1 A)</span> والسرعة <span class="ltr">(1400 rpm)</span>.»</p>',
+   given:[{id:'Ea1',label:'القوة الدافعة الأولى',sym:'E_{a1}',unit:'V',value:12},{id:'If1',label:'تيار المجال الأول',sym:'I_{f1}',unit:'A',value:0.1},{id:'n1',label:'السرعة الأولى',sym:'N_1',unit:'rpm',value:1000},
+    {id:'If2',label:'تيار المجال في (ا)',sym:'I_{f2}',unit:'A',value:0.15},{id:'n2',label:'السرعة في (ا)',sym:'N_2',unit:'rpm',value:1000},
+    {id:'If3',label:'تيار المجال في (ب)',sym:'I_{f3}',unit:'A',value:0.1},{id:'n3',label:'السرعة في (ب)',sym:'N_3',unit:'rpm',value:1400}],
+   solve:(g)=>{const E2=B.round(g.Ea1*(g.If2*g.n2)/(g.If1*g.n1),4),E3=B.round(g.Ea1*(g.If3*g.n3)/(g.If1*g.n1),4);return [
+    {t:'العلاقة المستعملة في الحل:',f:'E_a = K_E\\cdot N\\cdot I_f'},
+    {t:'بقسمة حالتين على بعضهما يختفي K<sub>E</sub>:',f:'\\frac{E_{a2}}{E_{a1}} = \\frac{I_{f2}\\cdot N_2}{I_{f1}\\cdot N_1}'},
+    {t:'(ا) تيار المجال الجديد مع السرعة الجديدة:',f:`E_{a2} = E_{a1}\\,\\frac{I_{f2}\\cdot N_2}{I_{f1}\\cdot N_1} = ${g.Ea1}\\,\\frac{${g.If2}\\times ${g.n2}}{${g.If1}\\times ${g.n1}}`,v:E2,unit:'V',final:true},
+    {t:'(ب) بنفس الطريقة:',f:`E_{a3} = E_{a1}\\,\\frac{I_{f3}\\cdot N_3}{I_{f1}\\cdot N_1} = ${g.Ea1}\\,\\frac{${g.If3}\\times ${g.n3}}{${g.If1}\\times ${g.n1}}`,v:E3,unit:'V',final:true}]},
+   note:'<b>ملاحظة على الكتاب:</b> جدول المعطيات في ص 34 يكتب <span class="ltr">I<sub>f2</sub> = 0.2 A</span>، بينما السؤال والحساب يستعملان <span class="ltr">0.15 A</span> والناتج <span class="ltr">18 V</span> صحيح لها. لو أدخلت <span class="ltr">0.2</span> هنا ستحصل على <span class="ltr">24 V</span>.'},
+  {title:'مثال (٢-٢)',ref:'ص 34–35',
+   q:'<p>«مولد تاكو للتيار المستمر ذو التغذية المستقلة <span class="ltr">(40 W, 20 V, R<sub>a</sub> = 0.025 Ω)</span> يعمل على الجهد المعتاد والحمل المعتاد. أوجد تيار المنتج وكذلك القوة الدافعة الكهربائية للمنتج E<sub>a</sub> في هذه الحالة. ثم أوجد القوة الدافعة الكهربائية للمنتج E<sub>a</sub> عندما يثبت جهد الأطراف عند <span class="ltr">20 V</span> ولكن خرج المولد يتغير إلى <span class="ltr">50 W</span>.»</p>',
+   given:[{id:'P1',label:'القدرة الخارجة المعتادة',sym:'P_{out}',unit:'W',value:40},{id:'VT',label:'جهد الأطراف',sym:'V_T',unit:'V',value:20},{id:'Ra',label:'مقاومة المنتج',sym:'R_a',unit:'Ω',value:0.025},{id:'P2',label:'القدرة في الحالة الثانية',sym:'P_{out2}',unit:'W',value:50}],
+   solve:(g)=>{const I1=B.round(g.P1/g.VT,4),E1=B.round(g.VT+I1*g.Ra,4),I2=B.round(g.P2/g.VT,4),E2=B.round(g.VT+I2*g.Ra,4);return [
+    {t:'القدرة الخارجة:',f:'P_{out} = V_T\\,I_L'},
+    {t:'تيار الحمل = تيار المنتج (تغذية مستقلة):',f:`I_L = I_a = \\frac{${g.P1}}{${g.VT}}`,v:I1,unit:'A',final:true},
+    {t:'القوة الدافعة للمنتج:',f:`E_a = V_T + I_a R_a = ${g.VT} + ${fm(I1)}\\times ${g.Ra}`,v:E1,unit:'V',final:true},
+    {t:'<b>في الحالة الثانية</b>:',f:`I_L = I_a = \\frac{${g.P2}}{${g.VT}}`,v:I2,unit:'A'},
+    {t:'',f:`E_a = V_T + I_a R_a = ${g.VT} + ${fm(I2)}\\times ${g.Ra}`,v:E2,unit:'V',final:true}]},
+   note:'كل أرقام الحل في الكتاب صحيحة: <span class="ltr">2 A</span> و <span class="ltr">20.05 V</span>، ثم <span class="ltr">2.5 A</span> و <span class="ltr">20.0625 V</span>. لاحظ أن زيادة الحمل (التيار) تزيد الفرق بين E<sub>a</sub> و V<sub>T</sub> = I<sub>a</sub>R<sub>a</sub>.'}
+ ],
+ quiz:[
+  {q:'أغلب أنواع مولدات التاكو للتيار المستمر انتشاراً هي ذات:',o:['التغذية المستقلة لملفات المجال أو المغناطيس الدائم','التغذية التوالية','التغذية المركبة','بلا مجال'],c:0,e:'ص 30.'},
+  {q:'المعادلة E<sub>a</sub> = K<sub>E</sub>·ω (٢-٢) صحيحة عند:',o:['القصر R<sub>L</sub> = 0','اللاحمل R<sub>L</sub> = ∞','أي حمل','السكون فقط'],c:1,e:'ص 31: تمثل العلاقة عند اللاحمل (R_L = ∞) وهي علاقة خطية.'},
+  {q:'حسب الكتاب، R<sub>a</sub> في المعادلة (٢-٣) تشمل:',o:['مقاومة الحمل فقط','مقاومة ملفات المنتج ومقاومة التلامس بين المبدل والفرش','مقاومة ملف المجال','مقاومة الفولتميتر'],c:1,e:'ص 31.'},
+  {q:'ماذا يحدث للجهد V<sub>a</sub> عند تقليل مقاومة الحمل R<sub>L</sub> والسرعة ثابتة؟',o:['يزيد','يقل','لا يتغير','يصبح صفراً دائماً'],c:1,e:'من (٢-٥): القوس (1 + R<sub>a</sub>/R<sub>L</sub>) يكبر فيقل V<sub>a</sub>.'},
+  {q:'متى يتحكم في الجهد عن طريق السرعة فقط؟',o:['عند ثبات المجال المغناطيسي','عند فتح المفتاح','عند زيادة R_a','دائماً'],c:0,e:'ص 31 و 34: عند ثبات Φ يمكن التحكم في الجهد عن طريق السرعة فقط.'},
+  {q:'مولد تاكو يعطي 12 V عند 1000 rpm. بنفس تيار المجال وعند 1500 rpm يعطي:',o:['12 V','15 V','18 V','24 V'],c:2,e:'بطريقة مثال (٢-١): 12 × 1500 ÷ 1000 = 18 V.'},
+  {q:'E<sub>a</sub> = 20 V و R<sub>a</sub> = 1 Ω و R<sub>L</sub> = 99 Ω. جهد الأطراف تقريباً:',o:['20 V','19.8 V','10 V','0.2 V'],c:1,e:'V_a = 20 ÷ (1 + 1/99) ≈ 19.8 V (المعادلة ٢-٥).'},
+  {q:'في مثال (٢-٢)، تيار المنتج عند 40 W و 20 V:',o:['0.5 A','2 A','20 A','800 A'],c:1,e:'I = P ÷ V_T = 40 ÷ 20 = 2 A.'}
+ ]
+});
+
+/* ============================== Lesson 2.3 ============================== */
+B.lesson({
+ id:'u2-l3',unit:2,order:3,pages:'32–35',
+ title:'أسباب الخطأ في تاكو التيار المستمر: رد فعل المنتج وجهد الفرش والمنطقة الميتة',
+ summary:'لماذا لا يكون منحنى التاكو الحقيقي خطاً مستقيماً: رد فعل المنتج يُضعف الفيض، وجهد التلامس عند الفرش ثابت فيصنع منطقة ميتة Δω؛ المعادلة (٢-٨)، وطريقتا التقليل من الخطأ، والمثال (٢-٣).',
+ theory:[
+  {h:'السبب الأول: رد فعل المنتج',ref:'ص 32',html:`<p>«أولًا: <b>رد فعل المنتج</b>، وهو يضعف من الفيض المغناطيسي للمولد.»</p>
+   $$\\phi_L = \\phi - \\Delta\\phi_r \\qquad (٢-٦)$$ $$\\text{where }\\ \\Delta\\phi_r = K_r\\cdot I_a$$
+   <p>«حيث \\(\\phi\\) هو الفيض المغناطيسي عند اللاحمل، \\(\\Delta\\phi_r\\) هو النقص في الفيض المغناطيسي، بسبب رد فعل المنتج، ويعتمد على قيمة تيار المنتج، \\(K_r\\) هو ثابت التناسب بين \\(I_a\\) و \\(\\Delta\\phi_r\\)، أي أن القوة الدافعة الكهربائية المتولدة عند الحمل ليست ثابتة، بل تعتمد على قيمة الفيض المغناطيسي عند الحمل.»</p>
+   $$E_{aL} = K\\cdot\\omega\\cdot\\phi_L \\qquad (٢-٧)$$`},
+  {h:'السبب الثاني: جهد التلامس عند الفرش',ref:'ص 33',html:`<p>«مقاومة التلامس بين المبدل والفرش الكربونية ليست ثابتة بل تتغير بتغير تيار الحمل، فهي من نوع المقاومات غير الخطية التي تتغير قيمتها بتغير التيار المار بها، وذلك بسبب التلامس بين مادتين مختلفتين هما النحاس والكربون.»</p>
+   <p>«في الواقع أن <b>جهد التلامس \\(V_{brush}\\)</b> هو الذي يظل ثابتًا وليس مقاومة التلامس، مما يستدعي تصحيح المعادلة (٢-٣) لتصبح كالآتي:»</p>
+   $$V_a = E_a - I_a R_a - V_{brush}$$
+   $$V_a = \\frac{K_E\\cdot\\omega - V_{brush}}{\\left(1+\\dfrac{K\\cdot K_r\\cdot\\omega + R_a}{R_L}\\right)} \\qquad (٢-٨)$$`},
+  {note:`<b>توضيح للمتدرب (ليس من نص الكتاب) — من أين جاءت (٢-٨)؟</b> نعوّض \\(E_{aL}=K\\omega(\\phi-K_rI_a)=K_E\\omega-K K_r\\omega\\,I_a\\) و \\(I_a=V_a/R_L\\) في \\(V_a=E_{aL}-I_aR_a-V_{brush}\\) ثم نجمع حدود \\(V_a\\) في طرف واحد. الحد \\(K K_r\\omega\\) في المقام يكبر مع السرعة، لذلك ينحني المنحنى للأسفل عند السرعات العالية.`},
+  {html:`<p>«المعادلة (٢-٨) تبين أن العلاقة بين \\(V_a\\) و \\(\\omega\\) ليست خطية إذا أخذنا في الاعتبار النقص في الفيض المغناطيسي الناشئ عن رد فعل المنتج وقيمة جهد التلامس \\(V_{brush}\\). وتوضح المعادلة أيضًا أن المنحنى بين \\(V_a\\) و \\(\\omega\\) <b>لا يبدأ من نقطة الأصل</b>، لأن الجهد على الأطراف لا يبدأ بالظهور إلا بعد تخطي سرعة معينة، هذا بسبب أن الجهد المتولد يكون أقل من جهد التلامس، فعند ازدياد السرعة وبالتالي ازدياد الجهد المتولد عن جهد التلامس يبدأ بعدها الجهد بالظهور على أطراف المنتج. هذا يعني أن هناك <b>منطقة ميتة (Dead Zone = Δω)</b>، لا يظهر عندها أي جهد على أطراف مولد التاكو. الشكل (٢-٢) يوضح العلاقة بين الجهد المتولد وسرعة الدوران لتاكومترات التيار المستمر حسب المعادلة ٢-٨.»</p>`},
+  {fig:'(٢-٢)',ref:'ص 31',caption:'الخاصية المثالية (\\(R_L=\\infty\\)) والخاصية الفعلية (\\(R_L\\) صغيرة) مع المنطقة الميتة Δω والخطأ ΔV',draw:()=>`<div class="svgbox" style="max-width:560px;margin-inline:auto">${fig22SVG()}</div>`},
+  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> بسط (٢-٨) يصبح صفراً عندما \\(K_E\\,\\omega = V_{brush}\\)، فحافة المنطقة الميتة عند $$\\Delta\\omega = \\frac{V_{brush}}{K_E}$$ مثال: <span class="ltr">K<sub>E</sub> = 0.1 V/(rad/s)</span> و <span class="ltr">V<sub>brush</sub> = 1 V</span> ⇒ <span class="ltr">Δω = 10 rad/s ≈ 95 rpm</span>: تحت هذه السرعة يقرأ الفولتميتر صفراً.'},
+  {h:'٢-٢-١ كيفية التقليل من الخطأ في قراءة تاكومترات التيار المستمر',ref:'ص 33',html:`<ul><li><b>أولًا:</b> تستعمل <b>مقاومة مادية كبيرة</b> بقدر الإمكان لجهاز قياس الجهد المستعمل للقراءة للتقليل من تيار ورد فعل المنتج.</li>
+   <li><b>ثانيًا:</b> تستخدم <b>فرش معدنية مصنوعة من الفضة</b> للتقليل من جهد التلامس وبالتالي تقل المنطقة الميتة.</li></ul>
+   <p>جرّب الطريقتين بزرين في تبويب «المختبر».</p>`},
+  {h:'مثال الكتاب (٢-٣)',ref:'ص 35',html:'<p>في المثال يكون جهد الأطراف مجهولاً في طرفي المعادلة، فنصل إلى <b>معادلة من الدرجة الثانية</b>. الحل كاملاً في تبويب «الأمثلة المحلولة».</p>'},
+  {err:'في مثال (٢-٣) ص 35 كتب الكتاب <span class="ltr">V<sub>T</sub> = 24.93 V</span>، والقيمة الدقيقة <span class="ltr">24.9399 V</span> أي <b><span class="ltr">24.94 V</span></b> بالتقريب الصحيح (الكتاب بتر الرقم). وكتب <span class="ltr">I = 50 ÷ 24.93 = 2 A</span> والدقيق <span class="ltr">2.006 A</span>. الحاسبة تعرض أرقام الكتاب ومعها القيم الدقيقة. والمعادلة لها جذر ثانٍ <span class="ltr">≈ 0.06 V</span> أهمله الكتاب دون ذكر السبب.'}
+ ],
+ lab:(el)=>{
+  const KE=K_EX*0.1;  // 0.1146 V/(rad/s) — مثال (٢-١)
+  const D={n:2000,Vb:2,kk:0.3,RLp:56,Ra:20};let {n,Vb,kk,RLp,Ra}=D,lastS='',usedRL=0,usedAg=0;
+  el.innerHTML=`<div class="grid">
+   <div class="panel c12"><h2>الشكل (٢-٢) تفاعلياً حسب المعادلة (٢-٨) <small>مبنية على الشكل (٢-٢) ص 31 والمعادلة (٢-٨) ص 33</small></h2>
+    <div class="tk-chart"><canvas id="l3p"></canvas></div>
+    ${legend([['--blue','الخاصية المثالية (<span class="ltr">R<sub>L</sub> = ∞</span> وبلا جهد فرش)'],['--live','الخاصية الفعلية حسب (٢-٨)'],['--stop','المنطقة الميتة Δω والخطأ ΔV']])}</div>
+   <div class="panel c5"><h2>المتغيرات</h2>
+    ${sl('l3n','السرعة <span class="ltr">n</span>',0,3000,10,n)}
+    ${sl('l3vb','جهد التلامس عند الفرش <span class="ltr">V<sub>brush</sub></span>',0,5,0.1,Vb)}
+    ${sl('l3kk','رد فعل المنتج <span class="ltr">K·K<sub>r</sub></span>',0,0.8,0.02,kk)}
+    ${sl('l3rl','مقاومة جهاز القياس <span class="ltr">R<sub>L</sub></span>',0,100,1,RLp)}
+    ${sl('l3ra','مقاومة المنتج <span class="ltr">R<sub>a</sub></span>',0,100,1,Ra)}
+    <div class="tk-row"><button class="btn primary" id="l3big">الطريقة الأولى: جهاز قياس بمقاومة كبيرة</button><button class="btn primary" id="l3ag">الطريقة الثانية: فرش من الفضة</button><button class="btn" id="l3c">فرش كربونية</button><button class="btn" id="l3r">القيم الابتدائية</button></div>
+    <p class="sub"><span class="ltr">K<sub>E</sub></span> من مثال (٢-١): <span class="ltr">0.1146 V/(rad/s)</span>. باقي القيم <b>أرقام توضيحية</b> (الكتاب لا يعطي قيماً لـ V<sub>brush</sub> و K<sub>r</sub>).</p></div>
+   <div class="panel c7"><h2>عند السرعة المختارة</h2>
+    <div class="facts">${fact('Δω (حافة المنطقة الميتة)','l3dz')}${fact('الجهد المثالي <bdi dir="ltr">K<sub>E</sub>ω</bdi>','l3vi')}${fact('الجهد الفعلي <bdi dir="ltr">V<sub>a</sub></bdi>','l3va')}${fact('ΔV','l3dv')}${fact('تيار المنتج <bdi dir="ltr">I<sub>a</sub></bdi>','l3ia')}${fact('السرعة التي «يقرؤها» التاكو','l3nr')}</div>
+    <h3 class="sm" style="margin-top:14px">أين يذهب الجهد المتولد؟</h3><div class="svgbox" id="l3bar"></div><div id="l3msg" class="tk-msg"></div></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l3st"></ol></div></div>`;
+  B.math(el);
+  const $=s=>el.querySelector(s);
+  const sync=()=>{$('#l3n').value=n;$('#l3vb').value=Vb;$('#l3kk').value=kk;$('#l3rl').value=RLp;$('#l3ra').value=Ra};
+  $('#l3n').oninput=e=>{n=+e.target.value};$('#l3vb').oninput=e=>{Vb=+e.target.value};$('#l3kk').oninput=e=>{kk=+e.target.value};$('#l3rl').oninput=e=>{RLp=+e.target.value};$('#l3ra').oninput=e=>{Ra=+e.target.value};
+  $('#l3big').onclick=()=>{RLp=100;usedRL=1;sync()};$('#l3ag').onclick=()=>{Vb=0.2;usedAg=1;sync()};$('#l3c').onclick=()=>{Vb=2;sync()};$('#l3r').onclick=()=>{({n,Vb,kk,RLp,Ra}=D);sync()};
+  const Va=(w,RL)=>Math.max(0,(KE*w-Vb)/(1+(kk*w+Ra)/RL));
+  const steps=stepsUI($('#l3st'),[
+   {t:'المنطقة الميتة',x:'اخفض السرعة حتى تدخل المنطقة الحمراء (تحت Δω): الفولتميتر يقرأ صفراً رغم أن العمود يدور، لأن <span class="ltr">E<sub>a</sub></span> أقل من جهد التلامس.',done:()=>Vb>0.3&&n*N2W<Vb/KE&&n>0},
+   {t:'جهد الفرش يكبّر المنطقة الميتة',x:'ارفع <span class="ltr">V<sub>brush</sub></span> إلى <span class="ltr">4 V</span> أو أكثر: تتسع المنطقة الميتة (Δω = V<sub>brush</sub>/K<sub>E</sub>).',done:()=>Vb>=4},
+   {t:'رد فعل المنتج يحني المنحنى',x:'ارفع <span class="ltr">K·K<sub>r</sub></span> إلى <span class="ltr">0.6</span> أو أكثر واترك R<sub>L</sub> صغيرة: المنحنى البرتقالي ينحني للأسفل عند السرعات العالية ويكبر ΔV.',done:()=>kk>=0.6},
+   {t:'الطريقة الأولى',x:'اضغط «جهاز قياس بمقاومة كبيرة»: يقل تيار المنتج جداً فيختفي أثر رد فعل المنتج وهبوط R<sub>a</sub>، ويستقيم المنحنى (لكن المنطقة الميتة تبقى).',done:()=>usedRL},
+   {t:'الطريقة الثانية',x:'اضغط «فرش من الفضة»: يقل جهد التلامس فتصغر المنطقة الميتة كثيراً.',done:()=>usedAg&&Vb<=0.3},
+   {t:'قارن مع فرش الكربون',x:'اضغط «فرش كربونية» ثم «فرش من الفضة» مرة أخرى وراقب حافة المنطقة الميتة Δω في البطاقات.'}
+  ],()=>({}));
+  loopOn(el,()=>{const RL=logR(RLp),w=n*N2W,va=Va(w,RL),vi=KE*w,Ia=va/RL,dz=Vb/KE;
+   $('#l3n-v').textContent=n+' rpm';$('#l3vb-v').textContent=fm(Vb,1)+' V';$('#l3kk-v').textContent=fm(kk,2)+' Ω·s';$('#l3rl-v').textContent=fmtR(RL);$('#l3ra-v').textContent=Ra+' Ω';
+   const sg=[n,Vb,kk,RLp,Ra].join();if(sg===lastS){steps.check();return}lastS=sg;
+   $('#l3dz').textContent=fm(dz,1)+' rad/s ('+fm(dz*W2N,0)+' rpm)';$('#l3vi').textContent=fm(vi,2)+' V';$('#l3va').textContent=fm(va,2)+' V';$('#l3dv').textContent=fm(vi-va,2)+' V';
+   $('#l3ia').textContent=Ia<0.01?fm(Ia*1000,2)+' mA':fm(Ia,3)+' A';$('#l3nr').textContent=fm(va/KE*W2N,0)+' rpm';
+   const ws=[];for(let i=0;i<=120;i++)ws.push(i*340/120);
+   plot($('#l3p'),{xmax:340,ymax:40,xlabel:'ω (rad/s)',ylabel:'Va (V)',shade:[{x0:0,x1:dz,color:'--stop',label:'Dead zone Δω'}],
+    series:[{pts:[[0,0],[340,KE*340]],color:'--blue'},{pts:ws.map(x=>[x,Va(x,RL)]),color:'--live'}],arrows:[{x:w,y0:vi,y1:va,label:'ΔV'}],points:[{x:w,y:va,color:'--live'}]});
+   // drop bar: E = armature-reaction drop + Ia·Ra + Vbrush + Va
+   const E=vi;let parts;if(E<=Vb)parts=[['--stop',E,'Vbrush']];else{const ar=kk*w*Ia,rr=Ia*Ra;parts=[['--blue',va,'Va'],['--live',ar,'K·Kr·ω·Ia'],['--muted',rr,'Ia·Ra'],['--stop',Vb,'Vbrush']]}
+   const tot=Math.max(E,0.001);let x=10,s=`<svg viewBox="0 0 520 74" role="img" aria-label="توزيع الجهد المتولد">`;
+   parts.forEach(([c,v,lab])=>{const wd=Math.max(0,v/tot*500);if(wd<0.5)return;s+=`<rect x="${x.toFixed(1)}" y="8" width="${wd.toFixed(1)}" height="26" fill="var(${c})" opacity=".85"/>`;if(wd>46)s+=`<text class="txt" x="${(x+wd/2).toFixed(1)}" y="52" text-anchor="middle">${lab}</text><text class="txt m" x="${(x+wd/2).toFixed(1)}" y="66" text-anchor="middle">${fm(v,2)} V</text>`;x+=wd});
+   s+=`<rect x="10" y="8" width="500" height="26" fill="none" stroke="var(--fg)"/></svg>`;$('#l3bar').innerHTML=s;
+   $('#l3msg').innerHTML=n===0?'':E<=Vb?`<div class="callout err">الجهد المتولد <span class="ltr">${fm(E,2)} V</span> أقل من جهد التلامس <span class="ltr">${fm(Vb,1)} V</span>: نحن داخل <b>المنطقة الميتة</b>، والقراءة صفر.</div>`:
+    `<div class="callout">من <span class="ltr">E<sub>a</sub> = ${fm(E,2)} V</span>: يضيع <span class="ltr">${fm(kk*w*Ia,2)} V</span> برد فعل المنتج، و <span class="ltr">${fm(Ia*Ra,2)} V</span> على R<sub>a</sub>، و <span class="ltr">${fm(Vb,1)} V</span> عند الفرش، ويصل إلى الأطراف <span class="ltr">${fm(va,2)} V</span>.</div>`;
+   steps.check()});
+ },
+ examples:[
+  {title:'مثال (٢-٣)',ref:'ص 35',
+   q:'<p>«مولد تاكو للتيار المستمر ذو التغذية المستقلة <span class="ltr">(50 W, R<sub>a</sub> = 0.03 Ω)</span> يعمل على القوة الدافعة الكهربية <span class="ltr">(E<sub>a</sub> = 25 V)</span> والخرج المعتاد. أوجد جهد الأطراف وكذلك تيار المنتج.»</p>',
+   given:[{id:'P',label:'القدرة الخارجة',sym:'P_{out}',unit:'W',value:50},{id:'Ra',label:'مقاومة المنتج',sym:'R_a',unit:'Ω',value:0.03},{id:'Ea',label:'القوة الدافعة للمنتج',sym:'E_a',unit:'V',value:25}],
+   solve:(g,B,isBook)=>{const a=1,b=-g.Ea,c=B.round(g.P*g.Ra,6),D=b*b-4*a*c;if(D<0)return [{t:'المميز سالب: لا يوجد جهد أطراف حقيقي بهذه القيم (القدرة المطلوبة أكبر من قدرة المولد).'}];
+    const r1=(-b+Math.sqrt(D))/(2*a),r2=(-b-Math.sqrt(D))/(2*a);const VT=isBook?Math.floor(r1*100+1e-9)/100:B.round(r1,2);const I=g.P/VT;
+    return [
+    {t:'القدرة الخارجة:',f:'P_{out} = V_T\\,I_L'},
+    {t:'',f:`I_L = I_a = \\frac{${g.P}}{V_T}`},
+    {t:'جهد الأطراف:',f:'V_T = E_a - I_a R_a'},
+    {t:'نعوّض التيار بدلالة V<sub>T</sub>:',f:`V_T = ${g.Ea} - \\frac{${g.P}\\times ${g.Ra}}{V_T}`},
+    {t:'نضرب الطرفين في V<sub>T</sub> فنحصل على معادلة من الدرجة الثانية:',f:`V_T^2 - ${g.Ea}\\,V_T + ${fm(c)} = 0`},
+    {t:'معاملات المعادلة:',v:`a = ${a} ,  b = ${fm(b)} ,  c = ${fm(c)}`},
+    {t:'القانون العام:',f:'V_T = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}'},
+    {t:isBook?'جهد الأطراف كما طبعه الكتاب:':'جهد الأطراف (الجذر الكبير):',v:VT,unit:'V',dp:2,final:true},
+    {t:'تيار الحمل = تيار المنتج:',f:`I_L = I_a = \\frac{${g.P}}{${fm(VT,2)}}`,v:isBook?B.round(I,0):B.round(I,2),dp:isBook?0:2,unit:'A',final:true},
+    {t:'للمقارنة (ليس من الكتاب): الجذران الدقيقان للمعادلة',v:`V_T = ${fm(r1,4)} V   أو   V_T = ${fm(r2,4)} V`},
+    {t:`نأخذ الجذر الكبير لأن الجذر الصغير يعني تياراً هائلاً (≈ ${fm(g.P/r2,0)} A) وهبوطاً في R<sub>a</sub> يساوي تقريباً كل E<sub>a</sub>؛ والتيار الدقيق للجذر الكبير ${lt(fm(g.P/r1,3)+' A')}. (توضيح، ليس من الكتاب)`}]},
+   note:'<b>ملاحظة على الكتاب:</b> الكتاب طبع <span class="ltr">V<sub>T</sub> = 24.93 V</span> والدقيق <span class="ltr">24.9399</span> أي <span class="ltr">24.94 V</span> بالتقريب الصحيح؛ وطبع <span class="ltr">I = 2 A</span> والدقيق <span class="ltr">2.006 A</span>. بقيم الكتاب تعرض الحاسبة رقمي الكتاب (24.93 و 2)، وإذا غيّرت المعطيات تعرض التقريب الصحيح لخانتين.'}
+ ],
+ quiz:[
+  {q:'حسب الكتاب، الخطأ في قراءة تاكو التيار المستمر يرجع لسببين هما:',o:['رد فعل المنتج، وجهد التلامس بين المبدل والفرش','الحرارة والرطوبة','التردد والجهد','القصور الذاتي والاحتكاك'],c:0,e:'ص 32–33.'},
+  {q:'رد فعل المنتج:',o:['يقوي الفيض المغناطيسي','يضعف الفيض المغناطيسي','لا يؤثر في الفيض','يعكس اتجاه الدوران'],c:1,e:'ص 32: «وهو يضعف من الفيض المغناطيسي للمولد».'},
+  {q:'النقص في الفيض Δφ<sub>r</sub> يعتمد على:',o:['تيار المنتج I<sub>a</sub>','تيار المجال فقط','مقاومة الفرش','عدد الأقطاب'],c:0,e:'Δφ_r = K_r · I_a (المعادلة ٢-٦).'},
+  {q:'حسب الكتاب، ما الذي يظل ثابتاً عند الفرش؟',o:['مقاومة التلامس','جهد التلامس V<sub>brush</sub>','تيار الفرش','حرارة الفرش'],c:1,e:'ص 33: «في الواقع أن جهد التلامس V_brush هو الذي يظل ثابتًا وليس مقاومة التلامس».'},
+  {q:'لماذا توجد منطقة ميتة Δω لا يظهر فيها جهد؟',o:['لأن الجهد المتولد أقل من جهد التلامس','لأن المجال مفصول','لأن الحمل مفتوح','لأن رد فعل المنتج كبير'],c:0,e:'ص 33: الجهد على الأطراف لا يبدأ بالظهور إلا بعد أن يزيد الجهد المتولد عن جهد التلامس.'},
+  {q:'لتصغير المنطقة الميتة يستخدم الكتاب:',o:['فرشاً من الفضة','فرشاً كربونية أكبر','مقاومة حمل صغيرة','زيادة R_a'],c:0,e:'ص 33: فرش معدنية من الفضة تقلل جهد التلامس.'},
+  {q:'استعمال جهاز قياس بمقاومة كبيرة جداً يقلل:',o:['جهد التلامس','تيار المنتج ورد فعله','سرعة العمود','تردد الجهد'],c:1,e:'ص 33: «للتقليل من تيار ورد فعل المنتج».'},
+  {q:'K<sub>E</sub> = 0.1 V/(rad/s) و V<sub>brush</sub> = 1 V. حافة المنطقة الميتة عند:',o:['0.1 rad/s','1 rad/s','10 rad/s','100 rad/s'],c:2,e:'توضيح من بسط (٢-٨): Δω = V_brush ÷ K_E = 1 ÷ 0.1 = 10 rad/s.'}
+ ]
+});
+
+/* ============================== Lesson 2.4 ============================== */
+B.lesson({
+ id:'u2-l4',unit:2,order:4,pages:'36–39',
+ title:'مولد التاكو الحثي: التركيب ونظرية العمل والحساب',
+ summary:'ملف مجال وملف توليد متعامدان ودوار كأس نحاسي (الشكل ٢-٣): عند السكون يعمل كمحول ولا جهد على ملف التوليد، وعند الدوران يظهر جهد بنفس تردد المصدر يتناسب مع السرعة؛ والحساب بالدائرة المكافئة للمحرك أحادي الوجه والمثال (٢-٤).',
+ theory:[
+  {h:'٢-٣ مولدات التاكو الحثية (Induction Tacho-Generators)',ref:'ص 36',html:`<p>«جميع أنظمة التحكم غالبًا ما تحتوي على مولد حثي لقياس السرعة الزاوية، وتوليد إشارة كهربائية متناسبة مع السرعة، يتكون مولد التاكو الحثي من <b>ملفين</b>، بينهما <b>زاوية مقدارها تسعون درجة كهربائية</b>، على عضوه الثابت، أحد الملفين يُوصل مع مصدر ثابت الجهد والتردد ويسمى <b>ملف الجهد أو ملف المجال <span class="ltr">(Field winding)</span></b> بينما يتولد جهد على الملف الآخر ويسمى <b>ملف التوليد <span class="ltr">(Generating winding)</span></b>.»</p>
+   <p>«العضو الدائر ذو <b>قفص سنجابي</b> ويفضل أن يكون على شكل <b>كأس رفيع من النحاس <span class="ltr">(Drag-Cup Rotor)</span></b> للحفاظ على أصغر قصور ذاتي وأصغر ثابت زمن ميكانيكي للدوار للوصول لسرعة لحالة الاستقرار، وهي من أهم متطلبات نظم التحكم، الشكل (٢-٣) يبين رسمًا توضيحيًا لمولد تاكو حثي.»</p>`},
+  {fig:'(٢-٣)',ref:'ص 36',caption:'رسم توضيحي لمولد تاكو حثي: ملف التوليد a (رأسي) وملف المجال m (أفقي) على العضو الثابت، والدوار',draw:()=>`<div class="svgbox" style="max-width:340px;margin-inline:auto">${indSVG({})}</div>`},
+  {h:'٢-٣-١ نظرية عمل التاكومترات الحثية — عند السكون',ref:'ص 37',html:`<p>«لشرح نظرية عمل مولدات التاكو الحثية، نفترض أن ملف المجال موصل مع مصدر جهد ثابت القيمة والتردد وأن ملف التوليد مفتوح. <b>عند سكون العضو الدوار، يمكن اعتبار مولد التاكو عبارة عن محول</b>، ملفه الابتدائي هو ملف المجال وملفه الثانوي مقصور على نفسه، ممثلًا في أسطوانة العضو الدوار.»</p>
+   <p>«الفيض المغناطيسي الثابت الناتج عن ملف المجال يقطع العضو الدوار فيولد به جهدًا كما في المحولات ويسمى <b>بجهد التحويل</b>. جهد التحويل المتولد في ملفات العضو الدوار يتسبب في توليد تيار وفيض مغناطيسي يعاكس الفيض الأصلي لملف المجال طبقًا لقاعدة لنز، المحصلة الكلية للفيض المغناطيسي (\\(\\phi_f\\)) هي الفرق بين المجالين وفي نفس اتجاه الفيض الأصلي لملف المجال وبنفس التردد. محصلة الفيض المغناطيسي (\\(\\phi_f\\)) <b>لا تولد أي جهد في ملف التوليد لأنها متعامدة معه</b>.»</p>`},
+  {h:'عند الدوران',ref:'ص 37',html:`<p>«عند دوران العضو الدوار بسرعة مقدارها \\(\\omega\\) يتولد <b>جهد دوراني</b> في العضو الدوار (\\(E_{rot}\\))، نتيجة لدوران الدوار في محصلة الفيض (\\(\\phi_f\\)) السابق ذكرها، يتناسب مع سرعة الدوران \\(\\omega\\) وله نفس تردد جهد ملف المجال ويكون متعامدًا مع اتجاه الفيض المغناطيسي (\\(\\phi_f\\)) المسبب له، بينما يبقى جهد التحويل كما هو.»</p>
+   $$E_{rot} = K\\cdot\\omega\\cdot\\phi_f \\qquad (٢-٩)$$
+   <p>«الجهد الدوراني (\\(E_{rot}\\)) المتولد في العضو الدوار، ينتج تيارًا وفيضًا مغناطيسيًا (\\(\\phi_g\\)) في اتجاه محور ملف التوليد، الفيض المغناطيسي الناتج (\\(\\phi_g\\)) يولد جهدًا \\(E_a\\) في ملف التوليد، الجهد المتولد \\(E_a\\) يكون متناسبًا مع سرعة دوران العضو الدوار وله نفس تردد ملف المجال.»</p>
+   $$E_{rot}\\ \\text{directly proportional to}\\ \\omega$$ $$\\phi_g\\ \\text{directly proportional to}\\ E_{rot}$$ $$\\text{therefore}\\ \\phi_g\\ \\text{is directly proportional to}\\ \\omega$$ $$\\phi_g = \\text{const.}\\times\\omega$$ $$E_a = \\text{const.}\\times\\phi_g$$ $$E_a = K_g\\times\\omega$$`},
+  {html:`<p>«حيث إن ملف التوليد موصل مع معاوقة خارجية كبيرة جدًا، فيمكننا اعتباره مفتوح الدائرة ويتولد على أطرافه جهد، في الحالة المثالية لمولد التاكو الحثي يكون الجهد المتولد متناسبًا تناسبًا طرديًا مع سرعة دوران الدوار ويصنع زاوية ثابتة مع جهد المصدر. يجب توخي الدقة عند تصميم وتركيب مولدات التاكو الحثية بحيث يكون ملف المجال وملف التوليد <b>متعامدين في الفراغ بشكل دقيق</b>، حتى لا يتولد أي جهد في ملف التوليد في حالة سكون الدوار نتيجة للمجال المغناطيسي المتسرب من ملف الجهد.» <span class="ref">ص 38</span></p>`},
+  {h:'الحساب بالدائرة المكافئة للمحرك أحادي الوجه',ref:'ص 38',html:`<p>«مما سبق شرحه عن تركيب مولد التاكو الحثي، يتضح أنه يمكن اعتباره <b>مكافئًا لمحرك حثي أحادي الوجه</b> ملفه الرئيسي موصل مع مصدر ثابت الجهد والتردد وملفه المساعد مفتوح، إذًا يمكن استخدام الدائرة المكافئة للمحرك أحادي الوجه لحساب الجهد المتولد على الملف المساعد (أو ملف التوليد في حالة التاكومترات الحثية). حيث إن الجهود على كل من (\\(0.5Z_f,\\ 0.5Z_b\\)) هي الجهود المتولدة في الملف الرئيسي بواسطة المجال الأمامي والمجال الخلفي على الترتيب، نفس هذه المجالات الدوارة ستولد جهودًا أيضًا في الملف المساعد. إذا افترضنا أن (\\(n\\)) تمثل النسبة بين عدد لفات الملف المساعد إلى عدد لفات الملف الرئيسي، فإن الجهد المتولد على الملف المساعد يساوي الجهد المتولد على الملف الرئيسي مضروبًا في المعامل (\\(n\\))، وحيث إن (\\(E_{af}\\)) يسبق (\\(E_{mf}\\)) بتسعين درجة، إذًا:»</p>
+   $$E_{af} = j\\,n\\,E_{mf} = j\\,n\\,I_1\\cdot(0.5Z_f) \\qquad (٢-١٠)$$ $$\\text{where }\\ n=\\frac{N_a}{N_m}$$
+   <p>«وأن (\\(E_{ab}\\)) يتأخر عن (\\(E_{mb}\\)) بتسعين درجة، إذًا:»</p>
+   $$E_{ab} = -j\\,n\\,E_{mb} = -j\\,n\\,I_1\\cdot(0.5Z_b) \\qquad (٢-١١)$$
+   <p>«الجهد الكلي المتولد على الملف المساعد»</p>
+   $$\\bar{E}_a = \\bar{E}_{af} + \\bar{E}_{ab} \\qquad (٢-١٢)$$ $$\\quad = j\\,0.5\\times n\\,I_1\\cdot(Z_f - Z_b) \\qquad (٢-١٣)$$
+   <ul><li>\\(E_{af},\\ E_{ab}\\): الجهد المتولد في الملف المساعد (التوليد) بالمجال الأمامي / الخلفي، و \\(E_{mf},\\ E_{mb}\\): نظيراهما في الملف الرئيسي.</li><li>\\(I_1\\): تيار الدخل (الملف الرئيسي)، و \\(Z_f,\\ Z_b\\): معاوقة المجال الأمامي والخلفي، و \\(N_a,\\ N_m\\): عدد لفات الملف المساعد والرئيسي.</li></ul>
+   <p>«<b>عند بدء الحركة (\\(s=1\\)) فإن (\\(Z_f=Z_b\\)) و (\\(E_a=0\\))</b>»</p>
+   <p>«الجهد المتولد على ملف التوليد (\\(E_a\\)) يعتمد على الفرق بين قيمتي \\(Z_f\\) و \\(Z_b\\) فإذا تساوت القيمتان تلاشى الجهد المتولد، وكلما ازدادت السرعة وقلت قيمة الانزلاق، تزداد قيمة \\(Z_f\\) وتقل قيمة \\(Z_b\\) فيزداد الفرق بين القيمتين، ويزداد الجهد المتولد على ملف التوليد بما يتناسب مع الزيادة في السرعة تناسبًا طرديًا.» <span class="ref">ص 39</span></p>`},
+  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> الانزلاق \\(s=(n_s-n)/n_s\\): عند السكون \\(s=1\\)، وكلما زادت السرعة قل s. و \\(Z_f\\) معاوقة يحسبها الكتاب بالانزلاق s، و \\(Z_b\\) بالانزلاق \\(2-s\\)؛ لذلك يتساويان عند السكون فقط. في المختبر ترى الرقمين يتغيران مع السرعة.'},
+  {h:'مثال الكتاب ٢-٤',ref:'ص 39',html:'<p>محرك أحادي الوجه يُستعمل مولد تاكو حثياً: معطى \\(I_1\\) و \\(Z_f\\) و \\(Z_b\\) و n، والمطلوب الجهد على الملف المساعد وزاوية طوره. الحل بالأعداد المركبة في تبويب «الأمثلة المحلولة».</p>'},
+  {err:'في مثال ٢-٤ ص 39 أعطى الكتاب الانزلاق <span class="ltr">S = 0.05</span> لكنه لا يُستعمل في الحل (لأن Z<sub>f</sub> و Z<sub>b</sub> معطاتان عند هذا الانزلاق). والناتج <span class="ltr">69.65 V</span> جاء من تقريب <span class="ltr">|Z<sub>f</sub> − Z<sub>b</sub>| = 48.507</span> إلى <span class="ltr">48.5</span>؛ بلا تقريب يكون <span class="ltr">69.66 V</span>. والزاوية <span class="ltr">90.22°</span> محسوبة من زاوية I<sub>1</sub> المرجعية، بينما يقول النص «مع جهد الملف الرئيسي».'}
+ ],
+ lab:(el)=>{
+  let nr=0,dir=1,ratio=0.8,mis=0,t=0,ang=0,lastS='',rev=0;
+  el.innerHTML=`<div class="grid">
+   <div class="panel c5"><h2>المولد الحثي <small>مبنية على الشكل (٢-٣) ص 36</small></h2>
+    <div class="svgbox" id="l4s" style="max-width:340px;margin-inline:auto"></div>
+    <p class="sub">السهم الأزرق <span class="ltr">φ<sub>f</sub></span> على محور ملف المجال m، والبرتقالي <span class="ltr">φ<sub>g</sub></span> على محور ملف التوليد a. الأسهم والدوران مبطّأة جداً للرؤية.</p></div>
+   <div class="panel c7"><h2>التحكم والقراءات</h2>
+    ${sl('l4n','سرعة الدوار <span class="ltr">n</span>',0,2700,10,nr)}
+    <div class="tk-row"><span>اتجاه الدوران:</span>${segHTML('dir',[[1,'⟳ أمامي'],[-1,'⟲ عكسي']],1)}</div>
+    ${sl('l4r','نسبة اللفات <span class="ltr">n = N<sub>a</sub>/N<sub>m</sub></span>',0.5,1.2,0.05,ratio)}
+    ${sl('l4m','خطأ في تعامد الملفين <span class="ltr">δ</span> (توضيحي)',0,5,0.1,mis)}
+    <div class="facts">${fact('الانزلاق s','l4s1')}${fact('|Z<sub>f</sub>|','l4zf')}${fact('|Z<sub>b</sub>|','l4zb')}${fact('|Z<sub>f</sub> − Z<sub>b</sub>|','l4dz')}${fact('E<sub>a</sub> (فعّال)','l4ea')}${fact('زاوية E<sub>a</sub> عن جهد المصدر','l4ph')}${fact('تردد E<sub>a</sub>','l4f')}${fact('Δβ (تغيّر الزاوية)','l4db')}</div>
+    <div id="l4msg" class="tk-msg"></div></div>
+   <div class="panel c6"><h2>راسم الإشارة: جهد المصدر وجهد ملف التوليد</h2><div class="tk-chart"><canvas id="l4o"></canvas></div>
+    ${legend([['--muted','جهد ملف المجال (المصدر 115 V، 50 Hz)',1],['--live','الجهد على ملف التوليد a']])}</div>
+   <div class="panel c6"><h2><span><bdi dir="ltr">E<sub>a</sub></bdi> مع السرعة من (٢-١٣)</span></h2><div class="tk-chart"><canvas id="l4p"></canvas></div>
+    ${legend([['--live','<span class="ltr">|E<sub>a</sub>|</span> من الدائرة المكافئة'],['--blue','خط مستقيم مثالي <span class="ltr">E<sub>a</sub> = K<sub>g</sub>ω</span>',1]])}
+    <p class="sub">ثوابت الدائرة المكافئة <b>أرقام توضيحية</b>: <span class="ltr">V = 115 V, 50 Hz, 2 poles (n<sub>s</sub> = 3000 rpm), R<sub>1</sub> = 30, X<sub>1</sub> = 25, X<sub>m</sub> = 250, R<sub>2</sub> = 200, X<sub>2</sub> = 25 Ω</span>.</p></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l4st"></ol></div></div>`;
+  B.math(el);
+  const $=s=>el.querySelector(s);
+  $('#l4n').oninput=e=>{nr=+e.target.value};$('#l4r').oninput=e=>{ratio=+e.target.value};$('#l4m').oninput=e=>{mis=+e.target.value};
+  el.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{dir=+b.dataset.dir;if(dir<0&&nr>200)rev=1;el.querySelectorAll('[data-dir]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+  const ref=indModel(100,1),refPh=cang(ref.Ea);  // reference phase at low speed (forward)
+  const steps=stepsUI($('#l4st'),[
+   {t:'السكون = محول',x:'اجعل السرعة صفراً و δ = 0. يوجد فيض <span class="ltr">φ<sub>f</sub></span> متردد على محور ملف المجال، لكن الجهد على ملف التوليد صفر لأنه متعامد مع الفيض. لاحظ أن <span class="ltr">Z<sub>f</sub> = Z<sub>b</sub></span> عند <span class="ltr">s = 1</span>.',done:()=>nr===0&&mis===0},
+   {t:'ابدأ الدوران',x:'ارفع السرعة إلى نحو <span class="ltr">1000 rpm</span>: يظهر <span class="ltr">φ<sub>g</sub></span> على محور ملف التوليد، ويظهر على راسم الإشارة جهد <b>بنفس تردد المصدر 50 Hz</b>.',done:()=>Math.abs(nr-1000)<40},
+   {t:'ضاعف السرعة',x:'ارفعها إلى نحو <span class="ltr">2000 rpm</span>: تتضاعف سعة الجهد تقريباً، والتردد يبقى 50 Hz. لاحظ أن <span class="ltr">|Z<sub>f</sub>|</span> زاد و <span class="ltr">|Z<sub>b</sub>|</span> نقص.',done:()=>Math.abs(nr-2000)<40},
+   {t:'اعكس الاتجاه',x:'اختر «⟲ عكسي» والسرعة فوق 200 rpm: السعة نفسها لكن الجهد ينقلب <b>180°</b> في الطور (توضيح من المعادلة ٢-١٣، ليس من نص الكتاب).',done:()=>rev},
+   {t:'خطأ التعامد',x:'أوقف الدوار (سرعة صفر) واجعل δ أكبر من <span class="ltr">2°</span>: يظهر جهد على ملف التوليد رغم السكون، وهذا ما يحذر منه الكتاب ص 38.',done:()=>nr===0&&mis>2},
+   {t:'زاوية الطور',x:'أعد δ = 0 وحرّك السرعة من الصغيرة إلى الكبيرة وراقب «Δβ»: في هذا النموذج تتغير زاوية الخرج قليلاً مع السرعة، وهذا هو خطأ زاوية الوجه من متطلبات الدرس 2.1.'}
+  ],()=>({}));
+  loopOn(el,dt=>{t+=dt;const sp=nr*dir,m=indModel(sp,ratio);const res=cmul(Cx(ratio*Math.sin(mis*PI/180)),Cx(IND.V));const Et=cadd(m.Ea,res);
+   const Em=cabs(Et),ph=Em>1e-6?wrap180(cang(Et)):0;
+   ang=(ang+sp/60*360*dt/60)%360;const vis=Math.cos(2*PI*1.0*t);
+   $('#l4n-v').textContent=nr+' rpm';$('#l4r-v').textContent=fm(ratio,2);$('#l4m-v').textContent=fm(mis,1)+'°';
+   const maxE=cabs(indModel(2700,1.2).Ea);
+   $('#l4s').innerHTML=indSVG({ang,arrows:1,pf:0.85*vis,pg:clamp(Em/maxE,0,1)*0.95*Math.cos(2*PI*t+ph*PI/180),mis:mis*4});
+   const sg=[nr,dir,ratio,mis].join();
+   if(sg!==lastS){lastS=sg;
+    $('#l4s1').textContent=fm(m.s,3);$('#l4zf').textContent=fm(cabs(m.Zf),1)+' Ω';$('#l4zb').textContent=fm(cabs(m.Zb),1)+' Ω';$('#l4dz').textContent=fm(cabs(csub(m.Zf,m.Zb)),1)+' Ω';
+    $('#l4ea').textContent=fm(Em,2)+' V';$('#l4ph').textContent=Em>0.005?fm(ph,1)+'°':'—';$('#l4f').textContent=Em>0.005?'50 Hz':'—';
+    $('#l4db').textContent=Em>0.005&&mis===0?fm(wrap180(ph-refPh-(dir<0?180:0)),2)+'°':'—';
+    $('#l4msg').innerHTML=nr===0&&mis===0?'<div class="callout">الدوار ساكن: مولد التاكو «محول» ثانويه مقصور (الكأس)، والفيض المحصل <span class="ltr">φ<sub>f</sub></span> متعامد مع ملف التوليد فلا يتولد عليه جهد: <span class="ltr">E<sub>a</sub> = 0</span>.</div>':
+     nr===0&&mis>0?`<div class="callout err">الملفان غير متعامدين بدقة: يصل جزء من فيض ملف المجال إلى ملف التوليد فيظهر جهد <span class="ltr">${fm(Em,2)} V</span> والدوار ساكن! (الرقم توضيحي)</div>`:'';
+    B.math($('#l4msg'));
+    const ns=[];for(let i=0;i<=54;i++)ns.push(i*50);const kL=cabs(indModel(100,ratio).Ea)/100;
+    plot($('#l4p'),{xmax:2700,ymax:70,xlabel:'n (rpm)',ylabel:'|Ea| (V)',series:[{pts:[[0,0],[2700,kL*2700]],color:'--blue',dash:[6,4],width:2},{pts:ns.map(x=>[x,cabs(indModel(x,ratio).Ea)]),color:'--live'}],points:[{x:nr,y:cabs(m.Ea),color:'--live'}]});
+   }
+   const pts1=[],pts2=[],T=0.04;for(let i=0;i<=160;i++){const tt=i/160*T,w=2*PI*50*tt;pts1.push([tt*1000,IND.V*Math.SQRT2*Math.sin(w)]);pts2.push([tt*1000,Em*Math.SQRT2*Math.sin(w+ph*PI/180)])}
+   plot($('#l4o'),{xmax:40,ymin:-180,ymax:180,ystep:60,xlabel:'t (ms)',ylabel:'v (V)',series:[{pts:pts1,color:'--muted',dash:[5,4],width:2},{pts:pts2,color:'--live'}]});
+   steps.check()});
+ },
+ examples:[
+  {title:'مثال ٢-٤',ref:'ص 39',
+   q:'<p>«إذا استخدم المحرك أحادي الوجه كمولد تاكو حثي لقياس السرعة، حيث إن تيار الدخل ومعاوقة المجال الأمامي والخلفي كالتالي: <span class="ltr">I<sub>1</sub> = 3.59∠−51.7</span> ، <span class="ltr">Z<sub>f</sub> = 31.9 + j40.3</span> ، <span class="ltr">Z<sub>b</sub> = 1.98 + j2.12</span>. احسب الجهد المتولد على الملفات المساعدة وزاوية طوره مع جهد الملف الرئيسي عند انزلاق <span class="ltr">S = 0.05</span>. إذا كانت النسبة بين عدد لفات الملف المساعد إلى عدد لفات الملف الرئيسي <span class="ltr">n = 0.8</span>.»</p>',
+   given:[{id:'I1m',label:'مقدار تيار الدخل',sym:'|I_1|',unit:'A',value:3.59},{id:'I1a',label:'زاوية تيار الدخل',sym:'\\angle I_1',unit:'°',value:-51.7},
+    {id:'Rf',label:'الجزء الحقيقي لـ Z_f',sym:'R_f',unit:'Ω',value:31.9},{id:'Xf',label:'الجزء التخيلي لـ Z_f',sym:'X_f',unit:'Ω',value:40.3},
+    {id:'Rb',label:'الجزء الحقيقي لـ Z_b',sym:'R_b',unit:'Ω',value:1.98},{id:'Xb',label:'الجزء التخيلي لـ Z_b',sym:'X_b',unit:'Ω',value:2.12},
+    {id:'n',label:'نسبة اللفات',sym:'n',unit:'',value:0.8},{id:'s',label:'الانزلاق (لا يدخل في الحل)',sym:'S',unit:'',value:0.05}],
+   solve:(g,B,isBook)=>solveInd(g,isBook,{final:'الجهد المتولد على الملف المساعد:',say:(m,a)=>`«الجهد المتولد في الملف المساعد ${lt(m)} ومتقدم عن جهد الملف الرئيسي بزاوية مقدارها ${lt(a+'°')}»`}),
+   note:'<b>ملاحظة على الكتاب:</b> الانزلاق <span class="ltr">S = 0.05</span> معطى ولا يُستعمل (Z<sub>f</sub> و Z<sub>b</sub> محسوبتان عنده مسبقاً). والناتج <span class="ltr">69.65</span> سببه تقريب <span class="ltr">48.507</span> إلى <span class="ltr">48.5</span>؛ بلا تقريب يكون <span class="ltr">69.66 V</span> (السطر الأخير). الزاوية <span class="ltr">90.22°</span> مقيسة من زاوية I<sub>1</sub> المرجعية.'}
+ ],
+ quiz:[
+  {q:'الزاوية بين ملفي مولد التاكو الحثي:',o:['45 درجة كهربائية','90 درجة كهربائية','120 درجة كهربائية','180 درجة كهربائية'],c:1,e:'ص 36: بينهما زاوية مقدارها تسعون درجة كهربائية.'},
+  {q:'ملف المجال في مولد التاكو الحثي يوصل مع:',o:['مصدر ثابت الجهد والتردد','الفولتميتر','بطارية','لا يوصل بشيء'],c:0,e:'ص 36. والملف الآخر (التوليد) يتولد عليه الجهد.'},
+  {q:'لماذا يفضل أن يكون الدوار كأساً رفيعاً من النحاس (Drag-Cup)؟',o:['لزيادة الجهد','لأصغر قصور ذاتي وأصغر ثابت زمن ميكانيكي','لتقليل التردد','لأنه أرخص'],c:1,e:'ص 36.'},
+  {q:'عند سكون الدوار، الجهد على ملف التوليد يساوي صفراً لأن:',o:['المصدر مفصول','محصلة الفيض φ<sub>f</sub> متعامدة مع ملف التوليد','الدوار مقصور','التردد صفر'],c:1,e:'ص 37: محصلة الفيض لا تولد أي جهد في ملف التوليد لأنها متعامدة معه.'},
+  {q:'تردد الجهد المتولد E<sub>a</sub> على ملف التوليد:',o:['يتناسب مع السرعة','نفس تردد ملف المجال','ضعف تردد المصدر','صفر'],c:1,e:'ص 37: له نفس تردد ملف المجال، وقيمته تتناسب مع السرعة.'},
+  {q:'عند بدء الحركة (s = 1):',o:['Z<sub>f</sub> &gt; Z<sub>b</sub>','Z<sub>f</sub> = Z<sub>b</sub> و E<sub>a</sub> = 0','E<sub>a</sub> أكبر ما يمكن','Z<sub>b</sub> = 0'],c:1,e:'ص 38.'},
+  {q:'لماذا يجب أن يكون الملفان متعامدين في الفراغ بدقة؟',o:['حتى لا يتولد جهد في ملف التوليد عند السكون بسبب الفيض المتسرب','لزيادة السرعة','لتقليل التيار','لعكس الاتجاه'],c:0,e:'ص 38.'},
+  {q:'في مثال ٢-٤ الجهد المتولد على الملف المساعد:',o:['48.5∠51.92° V','1.436∠−51.7° V','69.65∠90.22° V','3.59∠−51.7° V'],c:2,e:'1.436 × 48.5 = 69.65، والزاوية −51.7 + 51.92 + 90 = 90.22°.'}
+ ]
+});
+
+/* ============================== Lesson 2.5 ============================== */
+B.lesson({
+ id:'u2-l5',unit:2,order:5,pages:'40',
+ title:'مولد التاكو التزامني ومعايرة التاكومترات',
+ summary:'المولد التزامني الصغير بمغناطيس دائم على الدوار: الجهد والتردد يزدادان معاً مع السرعة، والقياس بالتردد أدق. ثم معايرة التاكومتر بمقارنته بالإستروبوسكوب وتصحيح ثابت توليد الجهد.',
+ theory:[
+  {h:'٢-٤ مولدات التاكو التزامنية (Synchronous Tacho-generators)',ref:'ص 40',html:`<p>«هي عبارة عن مولدات تزامنية صغيرة الحجم، يتم الحصول على المجال المغناطيسي بواسطة <b>مغناطيسات دائمة على العضو الدوار</b>، العضو الثابت يتكون من <b>ملف أحادي الوجه أو من ملفات ثلاثية متماثلة</b>.»</p>
+   <p>«عند دوران العضو الدوار يتولد جهد متردد في الملف الثابت يتناسب مع سرعة الدوران في القيمة والتردد، يزداد الجهد والتردد معًا بنفس المعدل مع ازدياد سرعة الدوار. فيمكن قياس السرعة، إما بقياس قيمة الجهد المتولد أو بقياس تردد هذا الجهد. <b>قياس السرعة بواسطة قياس التردد يكون عادة أكثر دقة</b>، وسبب ذلك، أن التردد لا يتأثر بتغير ممانعة الدائرة المغناطيسية أو كثافة المجال المغناطيسي، ولا يتأثر أيضًا بتغير الحمل أو تأثيرات درجة الحرارة.»</p>`},
+  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> تردد الجهد في المولد التزامني $$f=\\frac{p\\,n}{60}$$ حيث p عدد أزواج الأقطاب و n بالدورة في الدقيقة. فمغناطيس بزوج أقطاب واحد عند <span class="ltr">3000 rpm</span> يعطي <span class="ltr">50 Hz</span>. من التردد نعرف السرعة مباشرة: \\(n = 60f/p\\)، ولا يدخل في ذلك أي ثابت يتغير مع ضعف المغناطيس أو الحرارة.'},
+  {h:'٢-٥ معايرة التاكومترات',ref:'ص 40',html:`<p>«حيث إن التاكومترات تعتبر من أجهزة القياس، فيجب الحرص على دقة قياس السرعة بواسطتها، ذلك يستلزم <b>معايرتها كل فترة زمنية محددة</b> للتأكد من صحة قراءة السرعة المقاسة بواسطتها. ذلك يتحقق بمقارنة نتائجها مع نتائج وسيلة أخرى دقيقة لقياس السرعة، مثل <b>الإستروبوسكوب</b>، وتصحيح ثابت توليد الجهد كلما لزم الأمر.»</p>`},
+  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب) — كيف يقيس الإستروبوسكوب السرعة؟</b> مصباح يومض بعدد ومضات نختاره في الدقيقة. نضع علامة على العمود. إذا كان عدد الومضات في الدقيقة = عدد الدورات في الدقيقة، تظهر العلامة <b>ثابتة</b> في مكان واحد لأن الضوء يلتقطها في نفس الموضع كل مرة. عندها نقرأ السرعة من الجهاز مباشرة. ثم نصحح ثابت التاكو: $$K_g(\\text{الجديد}) = \\frac{V_a}{\\omega_{\\text{الإستروبوسكوب}}}$$ <b>تنبيه:</b> العلامة تبدو ثابتة أيضاً إذا كانت الومضات نصف السرعة أو ثلثها؛ لذلك نبدأ بعدد ومضات كبير وننزل حتى أول مرة تظهر فيها علامة واحدة ثابتة.'}
+ ],
+ lab:(el)=>{
+  const Ks=0.02;  // V(peak) per rpm — أرقام توضيحية
+  const Knom=0.1,errs=[-0.08,-0.06,0.05,0.07];const Ktrue=Knom*(1+errs[Math.floor(Math.random()*errs.length)]);
+  let n=1500,p=1,ph3=0,fac=1,F=2000,Kuse=Knom,t=0,ang=0,lastS='',fixed=0,fixedOK=0;
+  el.innerHTML=`<div class="grid">
+   <div class="panel c5"><h2>أ) المولد التزامني <small>مبنية على نص ص 40 (لا يوجد شكل في الكتاب)</small></h2>
+    <div class="svgbox" id="l5g" style="max-width:280px;margin-inline:auto"></div>
+    ${sl('l5n','سرعة العمود <span class="ltr">n</span>',0,3000,10,n)}
+    <div class="tk-row"><span>أزواج الأقطاب p:</span>${segHTML('pp',[[1,'1'],[2,'2']],1)}<span>ملفات الثابت:</span>${segHTML('ph',[[0,'أحادي'],[1,'ثلاثي']],0)}</div>
+    ${sl('l5f','تغيّر كثافة المجال أو الحمل أو الحرارة (توضيحي)',70,110,1,100)}</div>
+   <div class="panel c7"><h2>الجهد المتولد على الثابت <small>آخر 100 ms</small></h2><div class="tk-chart"><canvas id="l5o"></canvas></div>
+    <div class="facts">${fact('القيمة العظمى للجهد','l5e')}${fact('التردد f','l5fr')}${fact('السرعة من الجهد','l5nv')}${fact('السرعة من التردد','l5nf')}</div>
+    <p class="sub">«السرعة من الجهد» تفترض الثابت الأصلي للمولد <span class="ltr">0.02 V/rpm</span> (رقم توضيحي)، و«السرعة من التردد» = <span class="ltr">60f/p</span>.</p><div id="l5msg"></div></div>
+   <div class="panel c7"><h2>ب) معايرة تاكو تيار مستمر بالإستروبوسكوب <small>مبنية على البند ٢-٥ ص 40</small></h2>
+    <p class="sub">على نفس العمود تاكو تيار مستمر مكتوب على لوحته <span class="ltr">K<sub>g</sub> = 0.1 V/(rad/s)</span>، لكن ثابته الحقيقي تغيّر مع الزمن (قيمة مخفية، أرقام توضيحية). وُجّه الإستروبوسكوب إلى علامة على العمود.</p>
+    ${sl('l5s','ومضات الإستروبوسكوب في الدقيقة',200,4000,1,F)}
+    <div class="tk-row"><button class="btn" data-fd="-10">−10</button><button class="btn" data-fd="-1">−1</button><button class="btn" data-fd="1">+1</button><button class="btn" data-fd="10">+10</button><button class="btn primary" id="l5fix">صحّح ثابت توليد الجهد</button><button class="btn" id="l5undo">أعد ثابت اللوحة</button></div>
+    <div class="facts">${fact('جهد التاكو V<sub>a</sub>','l5va')}${fact('K<sub>g</sub> المستعمل في القراءة','l5ku')}${fact('قراءة التاكو','l5nt')}${fact('قراءة الإستروبوسكوب','l5ns')}${fact('خطأ التاكو','l5er')}</div><div id="l5cm" class="tk-msg"></div></div>
+   <div class="panel c5"><h2>العلامة تحت ضوء الإستروبوسكوب</h2><div class="svgbox" id="l5d" style="max-width:240px;margin-inline:auto"></div><p class="sub" id="l5ds" style="text-align:center"></p></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l5st"></ol></div></div>`;
+  B.math(el);
+  const $=s=>el.querySelector(s);
+  $('#l5n').oninput=e=>{n=+e.target.value};$('#l5f').oninput=e=>{fac=+e.target.value/100};$('#l5s').oninput=e=>{F=+e.target.value};
+  el.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{p=+b.dataset.pp;el.querySelectorAll('[data-pp]').forEach(x=>x.setAttribute('aria-pressed',x===b));lastS=''});
+  el.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ph3=+b.dataset.ph;el.querySelectorAll('[data-ph]').forEach(x=>x.setAttribute('aria-pressed',x===b));lastS=''});
+  el.querySelectorAll('[data-fd]').forEach(b=>b.onclick=()=>{F=clamp(F+ +b.dataset.fd,200,4000);$('#l5s').value=F});
+  $('#l5fix').onclick=()=>{const w=n*N2W,V=Ktrue*w;if(F>0&&n>0){Kuse=V/(F*N2W);fixed=1;fixedOK=Math.abs(F-n)<=Math.max(2,n*0.002)}};
+  $('#l5undo').onclick=()=>{Kuse=Knom;fixed=0;fixedOK=0};
+  const steps=stepsUI($('#l5st'),[
+   {t:'الجهد والتردد معاً',x:'في الجزء (أ) غيّر السرعة: تزداد قيمة الجهد وتردده معاً بنفس المعدل. عند <span class="ltr">3000 rpm</span> وزوج أقطاب واحد يكون التردد <span class="ltr">50 Hz</span>.',done:()=>n>=2990&&p===1},
+   {t:'ما الذي يخدع قياس الجهد؟',x:'حرّك منزلق «تغيّر كثافة المجال أو الحمل أو الحرارة» إلى أقل من <span class="ltr">90 %</span>: السرعة المحسوبة من الجهد تصبح خطأ، أما المحسوبة من التردد فتبقى صحيحة.',done:()=>fac<0.9},
+   {t:'جهّز المعايرة',x:'أعد المنزلق إلى <span class="ltr">100 %</span> واضبط سرعة العمود على <span class="ltr">1500 rpm</span>. لاحظ أن قراءة التاكو (ب) لا تساوي 1500 تماماً.',done:()=>Math.abs(n-1500)<5&&fac===1},
+   {t:'جمّد العلامة',x:'ابدأ بومضات كثيرة ثم أنقصها (المنزلق ثم أزرار ±1) حتى ترى <b>علامة واحدة ثابتة</b>. هذه هي السرعة الحقيقية.',done:()=>Math.abs(F-n)<=Math.max(2,n*0.002)},
+   {t:'صحّح الثابت',x:'اضغط «صحّح ثابت توليد الجهد»: يحسب <span class="ltr">K<sub>g</sub> = V<sub>a</sub>/ω</span> من قراءة الإستروبوسكوب، فتصبح قراءة التاكو صحيحة.',done:()=>fixed&&fixedOK},
+   {t:'تحقق',x:'غيّر سرعة العمود إلى أي قيمة أخرى: قراءة التاكو الآن صحيحة عند كل السرعات (جمّد العلامة من جديد لتتأكد).'},
+   {t:'فخ نصف السرعة',x:'اضبط الومضات على نصف سرعة العمود: تبدو العلامة ثابتة أيضاً! إذا صححت الثابت هنا ستضاعف الخطأ. لذلك نبدأ من الومضات الكثيرة (توضيح).'}
+  ],()=>({}));
+  function genSVG(a){const cx=140,cy=140;let s=`<svg viewBox="0 0 280 280" role="img" aria-label="مولد تزامني بمغناطيس دائم"><circle cx="${cx}" cy="${cy}" r="120" fill="none" stroke="var(--line)" stroke-width="16"/>`;
+   const coils=ph3?[0,120,240]:[0];coils.forEach((d,i)=>{const t=(d-90)*PI/180,x=cx+104*Math.cos(t),y=cy+104*Math.sin(t);s+=`<g transform="rotate(${d} ${x.toFixed(1)} ${y.toFixed(1)})"><rect x="${(x-22).toFixed(1)}" y="${(y-12).toFixed(1)}" width="44" height="24" rx="5" fill="var(--surface)" stroke="var(--live)" stroke-width="2"/></g><text class="txt" x="${(cx+78*Math.cos(t)).toFixed(1)}" y="${(cy+78*Math.sin(t)+4).toFixed(1)}" text-anchor="middle" style="fill:var(--live)">${ph3?['A','B','C'][i]:'coil'}</text>`});
+   s+=`<g transform="rotate(${a.toFixed(1)} ${cx} ${cy})">`;const k=2*p;for(let i=0;i<k;i++){const a0=i*360/k-90-180/k,a1=a0+360/k,r=60;const P=d=>[cx+r*Math.cos(d*PI/180),cy+r*Math.sin(d*PI/180)];const A=P(a0),Bp=P(a1),m=P((a0+a1)/2);
+    s+=`<path d="M${cx} ${cy}L${A[0].toFixed(1)} ${A[1].toFixed(1)}A${r} ${r} 0 0 1 ${Bp[0].toFixed(1)} ${Bp[1].toFixed(1)}Z" fill="var(${i%2?'--blue-soft':'--stop-soft'})" stroke="var(--fg)" stroke-width="1.2"/><text class="txt" x="${(cx+(m[0]-cx)*.62).toFixed(1)}" y="${(cy+(m[1]-cy)*.62+4).toFixed(1)}" text-anchor="middle">${i%2?'S':'N'}</text>`}
+   s+=`<circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/></g></svg>`;return s}
+  function diskSVG(imgs){const cx=110,cy=110;let s=`<svg viewBox="0 0 220 220" role="img" aria-label="العلامة على العمود"><circle cx="${cx}" cy="${cy}" r="96" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="8" fill="var(--fg)"/>`;
+   imgs.forEach(([a,op])=>{const t=(a-90)*PI/180;s+=`<path d="M${cx} ${cy}L${(cx+86*Math.cos(t)).toFixed(1)} ${(cy+86*Math.sin(t)).toFixed(1)}" stroke="var(--live)" stroke-width="7" stroke-linecap="round" opacity="${op}"/>`});
+   return s+'</svg>'}
+  loopOn(el,dt=>{t+=dt;const f=p*n/60,Epk=Ks*n*fac;ang=(ang+n/60*360*dt/50)%360;
+   $('#l5g').innerHTML=genSVG(ang);
+   $('#l5n-v').textContent=n+' rpm';$('#l5f-v').textContent=Math.round(fac*100)+' %';$('#l5s-v').textContent=F+' /min';
+   // strobe: images at the last three flashes (true shaft angle at each flash)
+   const k=Math.floor(t*F/60),imgs=[];for(let j=0;j<3;j++){const kk=k-j;imgs.push([((360*kk*n/F)%360+360)%360,[1,.45,.2][j]])}
+   $('#l5d').innerHTML=diskSVG(imgs);
+   const rr=n/F,near=Math.round(rr),dev=Math.abs(rr-near);let txt;
+   if(n===0)txt='العمود متوقف.';else if(near>=1&&dev<0.002)txt=near===1?'<b>علامة واحدة ثابتة</b>: الومضات = سرعة العمود.':`العلامة ثابتة، لكن السرعة = ${near} × الومضات! (فخ)`;
+   else{const inv=F/n,ni=Math.round(inv);txt=ni>=2&&Math.abs(inv-ni)<0.004?`تظهر ${ni} علامات ثابتة: الومضات ${ni} أضعاف السرعة.`:'العلامة تتحرك: الومضات لا تطابق السرعة.'}
+   $('#l5ds').innerHTML=txt;
+   const w=n*N2W,Va=Ktrue*w,nt=Kuse>0?Va/Kuse*W2N:0;
+   $('#l5va').textContent=fm(Va,2)+' V';$('#l5ku').textContent=fm(Kuse,4);$('#l5nt').textContent=fm(nt,0)+' rpm';$('#l5ns').textContent=F+' rpm';$('#l5er').textContent=n>0?fm((nt-n)/n*100,1)+' %':'—';
+   $('#l5cm').innerHTML=fixed?(fixedOK?'<div class="callout">تم تصحيح ثابت توليد الجهد بمقارنة التاكو بالإستروبوسكوب: القراءة صحيحة الآن.</div>':'<div class="callout err">صححت الثابت والعلامة غير مجمّدة على السرعة الحقيقية، فصار الثابت خطأً. أعد ثابت اللوحة وجمّد العلامة أولاً.</div>'):'';
+   const sg=[n,p,ph3,fac].join();if(sg!==lastS){lastS=sg;
+    $('#l5e').textContent=fm(Epk,1)+' V';$('#l5fr').textContent=fm(f,1)+' Hz';$('#l5nv').textContent=fm(Epk/Ks,0)+' rpm';$('#l5nf').textContent=fm(60*f/p,0)+' rpm';
+    $('#l5msg').innerHTML=Math.abs(fac-1)>0.005&&n>0?`<div class="callout err">${fac<1?'ضعف':'زاد'} المجال بنسبة <span class="ltr">${fm(Math.abs(fac-1)*100,0)} %</span>: القراءة من الجهد خاطئة بنفس النسبة، والقراءة من التردد صحيحة. لهذا «قياس السرعة بواسطة قياس التردد يكون عادة أكثر دقة» (ص 40).</div>`:'';
+    const ser=[],ph=ph3?[0,120,240]:[0],cols=['--live','--blue','--muted'];ph.forEach((d,i)=>{const pts=[];for(let j=0;j<=300;j++){const tt=j/300*0.1;pts.push([tt*1000,Epk*Math.sin(2*PI*f*tt-d*PI/180)])}ser.push({pts,color:cols[i],width:2})});
+    plot($('#l5o'),{xmax:100,ymin:-70,ymax:70,ystep:35,xlabel:'t (ms)',ylabel:'e (V)',series:ser})}
+   steps.check()});
+ },
+ quiz:[
+  {q:'المجال المغناطيسي في مولد التاكو التزامني يأتي من:',o:['ملف مجال على الثابت','مغناطيسات دائمة على العضو الدوار','تيار الحمل','الفرش'],c:1,e:'ص 40.'},
+  {q:'العضو الثابت للمولد التزامني يتكون من:',o:['ملف أحادي الوجه أو ملفات ثلاثية متماثلة','مغناطيس دائم','قفص سنجابي','مبدل وفرش'],c:0,e:'ص 40.'},
+  {q:'عند زيادة سرعة الدوار في المولد التزامني:',o:['يزيد الجهد ويبقى التردد ثابتاً','يزيد التردد ويبقى الجهد ثابتاً','يزداد الجهد والتردد معاً بنفس المعدل','يقل الجهد'],c:2,e:'ص 40.'},
+  {q:'أي طريقة لقياس السرعة بالمولد التزامني أدق عادة؟',o:['قياس قيمة الجهد','قياس التردد','قياس التيار','قياس المقاومة'],c:1,e:'ص 40: قياس السرعة بواسطة قياس التردد يكون عادة أكثر دقة.'},
+  {q:'لماذا القياس بالتردد أدق؟',o:['لأن التردد لا يتأثر بتغير ممانعة الدائرة المغناطيسية وكثافة المجال والحمل والحرارة','لأن التردد أكبر من الجهد','لأن أجهزة التردد أرخص','لأن الجهد صفر دائماً'],c:0,e:'ص 40.'},
+  {q:'كيف تتم معايرة التاكومتر حسب الكتاب؟',o:['بمقارنة قراءته بوسيلة دقيقة مثل الإستروبوسكوب وتصحيح ثابت توليد الجهد','بتغيير الفرش','بعكس اتجاه الدوران','بزيادة مقاومة الحمل'],c:0,e:'ص 40.'},
+  {q:'متى تعاير التاكومترات؟',o:['مرة واحدة فقط','كل فترة زمنية محددة','عند تعطلها فقط','لا تحتاج معايرة'],c:1,e:'ص 40: معايرتها كل فترة زمنية محددة.'},
+  {q:'مولد تزامني بزوج أقطاب واحد يعطي جهداً تردده 25 Hz. سرعته:',o:['25 rpm','750 rpm','1500 rpm','3000 rpm'],c:2,e:'توضيح: n = 60 f / p = 60 × 25 ÷ 1 = 1500 rpm.'}
+ ]
+});
+
+/* ============================== Lesson 2.6 — questions ============================== */
+const Q=(n,q,opts,ans)=>`<details class="tk-q"><summary>${n}: ${q}</summary>${opts?`<ol style="list-style:none;padding-inline-start:6px">${opts.map((o,i)=>`<li>${'أبجد'[i]}. ${o}</li>`).join('')}</ol>`:''}<div class="tk-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> ${ans}</div></details>`;
+B.lesson({
+ id:'u2-l6',unit:2,order:6,pages:'41–42',
+ title:'أسئلة الوحدة واختبارها الذاتي',
+ summary:'الاختبار الذاتي (اختر الإجابة أو الإجابات الصحيحة) والأسئلة المتنوعة للوحدة الثانية كما في الكتاب، تحت كل سؤال إجابة مقترحة من نص الكتاب، وحاسبة للسؤال الحسابي س٢-٣.',
+ theory:[
+  {h:'اختبار ذاتي — اختر الإجابة أو الإجابات الصحيحة',ref:'ص 41–42',html:`<p class="sub">الكتاب لا يعطي إجابات. اضغط على السؤال لترى إجابة مقترحة مكتوبة من نص الكتاب.</p>
+   ${Q('س١','من أهم خصائص مولد التاكو ………',['كبير الحجم.','القصور الذاتي قوي.','ثابت الزمن الميكانيكي صغير.','جميع ما سبق.'],'<b>ج</b>. من المتطلبات (ص 29): «أقل قصور ذاتي» و«أقل ثابت زمني»، ومولدات التاكو «صغيرة القدرة» (ص 29) و«صغيرة الحجم» (ص 30، 40)؛ لذلك أ و ب خطأ، فلا تصح د.')}
+   ${Q('س٢','من أهم أنواع مولدات التاكو ………',['مولدات التاكو للتيار المستمر.','مولدات التاكو الحثية.','مولدات التاكو التزامنية.','جميع ما سبق.'],'<b>د</b>. ص 29: «تصنف مولدات التاكو … من حيث إنها مولدات للتيار المستمر أو مولدات حثية أو تزامنية».')}
+   ${Q('س٣','علاقة السرعة والجهد المتولد في مولدات التاكو للتيار المستمر ……',['خطية.','غير خطية.','شبه خطية.','لا توجد أي علاقة.'],'السؤال يحتمل أكثر من إجابة: <b>أ</b> إذا قُصدت العلاقة المثالية (المعادلتان ٢-٢ و ٢-٥: خطية طالما R<sub>a</sub> و φ ثابتان و R<sub>L</sub> كبيرة)، و<b>ب</b> إذا قُصد الواقع (المعادلة ٢-٨: «العلاقة بين V<sub>a</sub> و ω ليست خطية» بسبب رد فعل المنتج وجهد التلامس). يحدد المدرب الإجابة المعتمدة.')}
+   ${Q('س٤','للتقليل من الخطأ في قراءة تاكومترات التيار المستمر……',['تستعمل مقاومة مادية كبيرة.','تستخدم فرش معدنية مصنوعة من الفضة.','تستخدم مولدات تاكو حثية.','جميع ما سبق.'],'<b>أ و ب</b> (البند ٢-٢-١ ص 33). البند ج ليس من طرق الكتاب لتقليل خطأ تاكو التيار المستمر، فلا تصح د.')}
+   ${Q('س٥','يتم معايرة مولدات التاكو ……',['كل فترة زمنية معينة.','عند الاستخدام.','كل عام.','مرة واحدة فقط.'],'<b>أ</b>. ص 40: «يستلزم معايرتها كل فترة زمنية محددة».')}`},
+  {h:'أسئلة متنوعة',ref:'ص 42',html:`
+   ${Q('س ٢-١','ما هي المتطلبات الواجب مراعاتها في تصميم مولدات التاكو؟',null,'(ص 29) أ. أقل خطأ ممكن في القيمة العددية للجهد المتولد ΔV (أقل انحراف عن العلاقة الخطية). ب. أقل خطأ ممكن في زاوية الوجه Δβ. ج. أكبر معامل تكبير ممكن K<sub>g</sub>. د. أقل قصور ذاتي. هـ. أقل ثابت زمني للنظام الكهروميكانيكي.')}
+   ${Q('س ٢-٢','ما هي أسباب الخطأ الذي يمكن أن يحدث في قراءة السرعة المقاسة بواسطة تاكومترات التيار المستمر؟ وما هي الإجراءات المتخذة عند التصميم للتقليل من هذا الخطأ؟',null,'<b>الأسباب</b> (ص 32–33): أولاً رد فعل المنتج الذي يضعف الفيض (φ<sub>L</sub> = φ − K<sub>r</sub>I<sub>a</sub>)؛ ثانياً جهد التلامس بين المبدل والفرش الكربونية V<sub>brush</sub> الذي يظل ثابتاً فيسبب منطقة ميتة Δω. <b>الإجراءات</b> (ص 33): جهاز قياس جهد بمقاومة كبيرة لتقليل تيار المنتج ورد فعله، وفرش معدنية من الفضة لتقليل جهد التلامس والمنطقة الميتة.')}
+   ${Q('س ٢-٣','كيف تتم معايرة التاكومترات؟',null,'(ص 40) بمقارنة نتائجها مع نتائج وسيلة أخرى دقيقة لقياس السرعة مثل الإستروبوسكوب، وتصحيح ثابت توليد الجهد كلما لزم الأمر، وذلك كل فترة زمنية محددة.')}
+   ${Q('س ٢-٤','اشرح مع الرسم تركيب ونظرية عمل مولد التاكو للتيار المستمر.',null,'(ص 30–33) مولد تيار مستمر صغير بتغذية مستقلة لملفات المجال (الشكل ٢-١) أو بمغناطيس دائم. عند ثبات الفيض: E<sub>a</sub> = K<sub>E</sub>ω (٢-٢)، وتحت الحمل V<sub>a</sub> = E<sub>a</sub> − I<sub>a</sub>R<sub>a</sub> فيكون V<sub>a</sub> = K<sub>E</sub>ω/(1 + R<sub>a</sub>/R<sub>L</sub>) (٢-٥). ارسم الشكل (٢-١) والشكل (٢-٢) واذكر سببي الخطأ والمنطقة الميتة.')}
+   ${Q('س ٢-٤','اشرح مع الرسم تركيب ونظرية عمل مولد التاكو الحثي.',null,'(ص 36–39) ملفان متعامدان 90° كهربائية على الثابت: ملف مجال على مصدر ثابت الجهد والتردد وملف توليد، ودوار قفص سنجابي أو كأس نحاسي رفيع (الشكل ٢-٣). عند السكون كالمحول والفيض φ<sub>f</sub> متعامد مع ملف التوليد فلا جهد. عند الدوران يتولد E<sub>rot</sub> = Kωφ<sub>f</sub> (٢-٩) فيظهر فيض φ<sub>g</sub> على محور ملف التوليد يولد E<sub>a</sub> = K<sub>g</sub>ω بنفس تردد المصدر.')}
+   ${Q('س ٢-٤','اشرح تركيب ونظرية عمل مولد التاكو التزامني.',null,'(ص 40) مولد تزامني صغير بمغناطيسات دائمة على الدوار، وثابت بملف أحادي الوجه أو ثلاثي. عند الدوران يتولد جهد متردد تتناسب قيمته وتردده مع السرعة؛ تقاس السرعة بقيمة الجهد أو بتردده، والتردد أدق لأنه لا يتأثر بالدائرة المغناطيسية وكثافة المجال والحمل والحرارة.')}
+   <p class="sub" style="margin-top:14px">(مجموعة ثانية يعيد الكتاب ترقيمها من ١:)</p>
+   ${Q('س٢-١','أثبت العلاقة الرياضية التي تربط بين الجهد المتولد على أطراف مولدات التاكو للتيار المستمر وسرعة الدوران المراد قياسها (المعادلة ٢-٨). ارسم هذه العلاقة ووضح أنها غير خطية.',null,'نبدأ من V<sub>a</sub> = E<sub>aL</sub> − I<sub>a</sub>R<sub>a</sub> − V<sub>brush</sub> مع E<sub>aL</sub> = Kω(φ − K<sub>r</sub>I<sub>a</sub>) = K<sub>E</sub>ω − KK<sub>r</sub>ωI<sub>a</sub> و I<sub>a</sub> = V<sub>a</sub>/R<sub>L</sub>، فنجمع حدود V<sub>a</sub>: V<sub>a</sub>(1 + (KK<sub>r</sub>ω + R<sub>a</sub>)/R<sub>L</sub>) = K<sub>E</sub>ω − V<sub>brush</sub>، ومنها (٢-٨). العلاقة غير خطية لأن ω موجودة في المقام، والمنحنى لا يبدأ من الأصل (منطقة ميتة). الرسم: الشكل (٢-٢). جرّبه في مختبر الدرس 2.3.')}
+   ${Q('س٢-٢','أثبت أن الجهد المتولد على ملف التوليد في مولدات التاكو الحثية يتناسب طرديا مع سرعة الدوار وبنفس تردد جهد ملف المجال.',null,'(ص 37) E<sub>rot</sub> = Kωφ<sub>f</sub> يتناسب مع ω وله نفس تردد ملف المجال؛ φ<sub>g</sub> يتناسب مع E<sub>rot</sub> فهو يتناسب مع ω؛ و E<sub>a</sub> = const × φ<sub>g</sub>، إذن E<sub>a</sub> = K<sub>g</sub>ω وبنفس التردد. ويمكن الاستدلال أيضاً بـ (٢-١٣): E<sub>a</sub> = j0.5nI<sub>1</sub>(Z<sub>f</sub> − Z<sub>b</sub>)، صفر عند s = 1 ويزداد مع السرعة.')}
+   ${Q('س٢-٣','إذا استخدم المحرك أحادي الوجه كمولد تاكو حثي لقياس السرعة، حيث إن تيار الدخل ومعاوقة المجال الأمامي والخلفي كالتالي: <span class="ltr">I<sub>1</sub> = 2.5∠−50.4</span> ، <span class="ltr">Z<sub>f</sub> = 64 + j80.3</span> ، <span class="ltr">Z<sub>b</sub> = 4 + j4.2</span>. احسب الجهد المتولد على الملفات المساعدة وزاوية الطور مع جهد الملف الرئيسي عند انزلاق <span class="ltr">s = 0.04</span>. إذا كانت النسبة بين عدد لفات الملف المساعد إلى عدد لفات الملف الرئيسي <span class="ltr">n = 0.9</span>.',null,'بطريقة مثال ٢-٤ وتقريبه: <span class="ltr">0.5 × 0.9 × 2.5 = 1.125∠−50.4°</span>، <span class="ltr">Z<sub>f</sub> − Z<sub>b</sub> = 60 + j76.1 = 96.9∠51.75°</span>، إذن <span class="ltr">E<sub>a</sub> ≈ 109.01∠91.35° V</span> (بلا تقريب الخطوات <span class="ltr">109.02 V</span>). الحل خطوة بخطوة في تبويب «الأمثلة المحلولة».')}`},
+  {err:'ترقيم الأسئلة في ص 42 مضطرب: «س ٢-٤» مكرر ثلاث مرات (للتاكو المستمر والحثي والتزامني)، ثم يبدأ الكتاب مجموعة ثانية بالأرقام س٢-١ و س٢-٢ و س٢-٣ فتتكرر أرقام المجموعة الأولى. نقلنا الأرقام كما طُبعت.'}
+ ],
+ examples:[
+  {title:'س٢-٣ (حل مقترح بطريقة مثال ٢-٤ — ليس من الكتاب)',ref:'ص 42',
+   q:'<p>«إذا استخدم المحرك أحادي الوجه كمولد تاكو حثي لقياس السرعة، حيث إن تيار الدخل ومعاوقة المجال الأمامي والخلفي كالتالي: <span class="ltr">I<sub>1</sub> = 2.5∠−50.4</span> ، <span class="ltr">Z<sub>f</sub> = 64 + j80.3</span> ، <span class="ltr">Z<sub>b</sub> = 4 + j4.2</span>. احسب الجهد المتولد على الملفات المساعدة وزاوية الطور مع جهد الملف الرئيسي عند انزلاق <span class="ltr">s = 0.04</span>. إذا كانت النسبة بين عدد لفات الملف المساعد إلى عدد لفات الملف الرئيسي <span class="ltr">n = 0.9</span>.»</p>',
+   given:[{id:'I1m',label:'مقدار تيار الدخل',sym:'|I_1|',unit:'A',value:2.5},{id:'I1a',label:'زاوية تيار الدخل',sym:'\\angle I_1',unit:'°',value:-50.4},
+    {id:'Rf',label:'الجزء الحقيقي لـ Z_f',sym:'R_f',unit:'Ω',value:64},{id:'Xf',label:'الجزء التخيلي لـ Z_f',sym:'X_f',unit:'Ω',value:80.3},
+    {id:'Rb',label:'الجزء الحقيقي لـ Z_b',sym:'R_b',unit:'Ω',value:4},{id:'Xb',label:'الجزء التخيلي لـ Z_b',sym:'X_b',unit:'Ω',value:4.2},
+    {id:'n',label:'نسبة اللفات',sym:'n',unit:'',value:0.9},{id:'s',label:'الانزلاق (لا يدخل في الحل)',sym:'s',unit:'',value:0.04}],
+   solve:(g,B,isBook)=>solveInd(g,isBook,{final:'الجهد المتولد على الملف المساعد (حل مقترح):',say:(m,a)=>`الجهد على الملف المساعد ${lt(m+' V')} ومتقدم بزاوية ${lt(a+'°')} (مقيسة من زاوية I<sub>1</sub> المرجعية كما في مثال ٢-٤).`}),
+   note:'الكتاب لا يعطي ناتج هذا السؤال. الحاسبة تتبع خطوات مثال ٢-٤ وتقريبه نفسه (المقدار 3 خانات، |Z<sub>f</sub> − Z<sub>b</sub>| خانة واحدة، النتيجة خانتان).'}
+ ],
+ quiz:[
+  {q:'أي مولدات التاكو يعطي جهداً مستمراً؟',o:['مولد التاكو للتيار المستمر','مولد التاكو الحثي','مولد التاكو التزامني','لا شيء منها'],c:0,e:'الحثي والتزامني يعطيان جهداً متردداً (ص 37 و 40).'},
+  {q:'في أي نوع يتساوى Z<sub>f</sub> و Z<sub>b</sub> عند السكون فيكون الخرج صفراً؟',o:['التاكو الحثي','التاكو المستمر','التاكو التزامني','كل الأنواع'],c:0,e:'ص 38: عند s = 1 فإن Z_f = Z_b و E_a = 0.'},
+  {q:'المنطقة الميتة Δω تظهر في:',o:['تاكو التيار المستمر بسبب جهد الفرش','التاكو الحثي بسبب الكأس','التاكو التزامني بسبب المغناطيس','لا تظهر أبداً'],c:0,e:'ص 33.'},
+  {q:'التردد يتغير مع السرعة في:',o:['التاكو التزامني','التاكو الحثي','تاكو التيار المستمر','لا شيء'],c:0,e:'التزامني: الجهد والتردد يزدادان معاً (ص 40). أما الحثي فتردده نفس تردد ملف المجال (ص 37).'},
+  {q:'جهاز يستعمل لمعايرة التاكومترات حسب الكتاب:',o:['الإستروبوسكوب','الأوميتر','الواطميتر','المحول'],c:0,e:'ص 40.'},
+  {q:'من متطلبات التاكو «أكبر معامل تكبير»، والمقصود:',o:['أكبر K<sub>g</sub>','أكبر حجم','أكبر قصور ذاتي','أكبر ثابت زمني'],c:0,e:'ص 29: أكبر معامل تكبير ممكن K_g.'},
+  {q:'في المعادلة (٢-٥) تكون العلاقة خطية تقريباً عندما تكون:',o:['R<sub>L</sub> كبيرة القيمة','R<sub>L</sub> صغيرة جداً','R<sub>a</sub> متغيرة','φ متغيرة'],c:0,e:'ص 32.'}
+ ]
+});
+
+})(PLCBOOK);
