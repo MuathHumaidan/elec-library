@@ -146,7 +146,79 @@ function figHTML(L,b){
   else if(b.html) inner=b.html;
   return `<figure class="fig">${inner}<figcaption>${b.fig?`<b>الشكل ${b.fig}</b> `:''}${b.caption||''}${b.ref?` <span class="ref">${b.ref}</span>`:''}</figcaption></figure>`;
 }
+/* ---------------- THEORY: أسلوب المحطات ----------------
+ L.stations = true و L.theory = [{intro:true}, {st:1,title,q,ref,art,cap,side:[blocks],body:[blocks]}, {recap:[...]}]
+ الكتل: {book,ref} نص الكتاب · {tip,title} توضيح للمتدرب · {add,title} إضافة من خارج الكتاب
+        {watch} انتبه · {predict:{q,opts:[[نص,صح؟,سبب]]}} جرّب · {widget(el,B),title} جرّب · {html} */
+const TG={book:['نص الكتاب','t-book'],tip:['توضيح للمتدرب','t-tip'],add:['إضافة من خارج الكتاب','t-add'],try:['جرّب','t-try'],watch:['انتبه','t-watch']};
+const tagH=k=>`<span class="tg ${TG[k][1]}">${TG[k][0]}</span>`;
+const ORDW=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
+function renderStations(L,body){
+  const W=[];
+  const blk=b=>B.ltrU(blk0(b));
+  const blk0=b=>{
+    if(b.book!=null) return `<div class="sb sb-book"><div class="sb-h">${tagH('book')}${b.ref?`<span class="ref">${b.ref}</span>`:''}</div><div class="prose">${b.book}</div></div>`;
+    if(b.tip!=null) return `<div class="sb sb-tip"><div class="sb-h">${tagH('tip')}${b.title?`<b>${b.title}</b>`:''}</div><div class="prose">${b.tip}</div></div>`;
+    if(b.add!=null) return `<div class="sb sb-add"><div class="sb-h">${tagH('add')}${b.title?`<b>${b.title}</b>`:''}</div><div class="prose">${b.add}</div></div>`;
+    if(b.watch!=null) return `<div class="sb sb-watch"><div class="sb-h">${tagH('watch')}</div><div class="prose">${b.watch}</div></div>`;
+    if(b.predict){const p=b.predict;return `<div class="sb sb-try pd"><div class="sb-h">${tagH('try')}<b>توقّع قبل أن تكمل</b></div><div class="pd-q">${p.q}</div><div class="pd-o">${p.opts.map((o,j)=>`<button type="button" data-j="${j}" data-ok="${o[1]?1:0}">${o[0]}</button>`).join('')}</div><div class="pd-fb" hidden></div></div>`}
+    if(b.widget){W.push(b.widget);return `<div class="sb sb-try"><div class="sb-h">${tagH('try')}${b.title?`<b>${b.title}</b>`:''}</div><div class="sw-host" data-w="${W.length-1}"></div></div>`}
+    if(b.html) return `<div class="prose">${b.html}</div>`;
+    return '';
+  };
+  const sts=(L.theory||[]).filter(b=>b.st);
+  let h='<article class="theory stations">';
+  (L.theory||[]).forEach(b=>{
+    if(b.intro){
+      h+=`<div class="legend"><b>كيف تقرأ هذا الدرس؟</b><div class="lg">
+        <div>${tagH('book')}<br>منقول من المذكرة كما هو، مع رقم الصفحة.</div>
+        <div>${tagH('tip')}<br>شرح مبسّط منا لتقريب الفكرة، وليس من الكتاب.</div>
+        <div>${tagH('add')}<br>مثال من الواقع أو معلومة تساعد على الفهم.</div>
+        <div>${tagH('try')}<br>سؤال أو تجربة قصيرة قبل أن تكمل القراءة.</div></div></div>`;
+      h+=`<nav class="stmap" aria-label="محطات الدرس">${sts.map(s=>`<button type="button" data-go="${s.st}"><i>${s.st}</i>${s.short||s.title}</button>`).join('')}</nav>`;
+    } else if(b.st){
+      h+=`<section class="st" id="st-${b.st}"><header class="st-h"><span class="st-n">${b.st}</span><div><small>المحطة ${ORDW[b.st]||b.st}${b.ref?` · ${b.ref}`:''}</small><h2>${b.title}</h2>${b.q?`<p class="st-q">${B.ltrU(b.q)}</p>`:''}</div></header>`;
+      if(b.art) h+=`<div class="st-hero"><div>${(b.side||[]).map(blk).join('')}</div><figure class="st-art">${b.art}${b.cap?`<figcaption>${b.cap}</figcaption>`:''}</figure></div>`;
+      else h+=(b.side||[]).map(blk).join('');
+      h+=(b.body||[]).map(blk).join('')+'</section>';
+    } else if(b.recap){
+      h+=`<section class="st"><div class="sb sb-tip recap"><div class="sb-h">${tagH('tip')}<b>خلاصة الدرس في ${b.recap.length} أسطر</b></div><ol>${b.recap.map(x=>`<li>${B.ltrU(x)}</li>`).join('')}</ol></div></section>`;
+    } else h+=blk(b);
+  });
+  h+='</article>';
+  body.innerHTML=h;
+  $$('.st-art',body).forEach(fig=>{
+    if(!fig.querySelector('[data-tip]'))return;
+    const tp=document.createElement('div');tp.className='art-tip';tp.hidden=true;fig.appendChild(tp);let cur=null;
+    const place=e=>{const R=fig.getBoundingClientRect(),x=e.clientX-R.left,y=e.clientY-R.top,w=tp.offsetWidth,h=tp.offsetHeight;
+      tp.style.left=Math.max(8,Math.min(R.width-w-8,x-w/2))+'px';tp.style.top=(y-h-12<0?y+18:y-h-12)+'px'};
+    const show=(el,e)=>{if(cur&&cur!==el)cur.classList.remove('tip-on');cur=el;el.classList.add('tip-on');tp.innerHTML=B.ltrU(el.dataset.tip.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])).replace(/⟦(.*?)⟧/g,'<span class="ltr">$1</span>');tp.hidden=false;place(e)};
+    const hide=()=>{if(cur)cur.classList.remove('tip-on');cur=null;tp.hidden=true};
+    fig.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const el=e.target.closest('[data-tip]');if(el)show(el,e);else hide()});
+    fig.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hide()});
+    fig.addEventListener('click',e=>{const el=e.target.closest('[data-tip]');if(el&&el!==cur)show(el,e);else hide()});
+  });
+  $$('.sw-host',body).forEach(el=>{try{W[+el.dataset.w](el,B)}catch(e){console.error(e)}});
+  $$('.stmap button',body).forEach(bt=>bt.addEventListener('click',()=>{const t=document.getElementById('st-'+bt.dataset.go);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})}));
+  $$('.pd',body).forEach(pd=>{
+    const fb=$('.pd-fb',pd),bs=$$('.pd-o button',pd),blkI=(L.theory||[]).flatMap(s=>[...(s.side||[]),...(s.body||[]),s]).filter(x=>x.predict);
+    const P=blkI[$$('.pd',body).indexOf(pd)].predict;
+    bs.forEach(bt=>bt.addEventListener('click',()=>{const j=+bt.dataset.j,ok=bt.dataset.ok==='1';
+      bs.forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('ok');else if(x===bt)x.classList.add('no');else x.classList.add('dim')});
+      fb.innerHTML=B.ltrU(`<b>${ok?'إجابة صحيحة.':'ليست هذه.'}</b> ${P.opts[j][2]||''}${!ok?` <br>${P.opts.find(o=>o[1])[2]||''}`:''} <button class="btn" type="button" data-r>حاول مرة أخرى</button>`);
+      fb.hidden=false;B.math(fb);
+      $('[data-r]',fb).addEventListener('click',()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true});
+    }));
+  });
+}
+
 function renderTheory(L,body){
+  /* أسلوب الشرح يختاره المستخدم من الزر في الأعلى: «رسمي» أو «المحطات». L.stations = مصفوفة محتوى المحطات */
+  if(B.styleMode()==='stations'){
+    if(Array.isArray(L.stations)&&L.stations.length)return renderStations(Object.assign({},L,{theory:L.stations}),body);
+    body.innerHTML='<div class="st-missing">هذا الدرس لم يُجهَّز بأسلوب «المحطات» بعد، فيظهر بالأسلوب الرسمي.</div>';
+    const host=document.createElement('div');body.appendChild(host);body=host;
+  }
   let h='<article class="theory">';
   (L.theory||[]).forEach(b=>{
     if(b.h) h+=`<h2 class="th">${b.h}${b.ref?` <span class="ref">${b.ref}</span>`:''}</h2>`;
@@ -349,6 +421,9 @@ B.params=function(host,id,defs,onChange){
  compute();render();
  return P;
 };
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي حتى لا تنقلب: 1500 rpm لا rpm 1500 */
+B.ltrU=t=>String(t).replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>');
+B.styleMode=()=>{try{return localStorage.getItem('elib-style')==='stations'?'stations':'formal'}catch(e){return 'formal'}};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
 const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
 B.fmtN=fmtN;
@@ -375,8 +450,8 @@ function renderQuiz(L,body){
   let ans={};
   const draw=()=>{const sc=Object.entries(ans).filter(([i,a])=>L.quiz[i].c===a).length;
     body.innerHTML=`<div class="viewseg"><h2 class="qtitle">اختبر فهمك للدرس</h2><div><span class="score">${sc} / ${L.quiz.length}</span> <button class="btn" id="qreset">إعادة</button></div></div><div class="quiz">`+
-    L.quiz.map((q,i)=>{const a=ans[i];return `<div class="qq"><h3>${i+1}. ${q.q}</h3><div class="opts">`+q.o.map((o,j)=>{let c='';if(a!=null){if(j===q.c)c='right';else if(j===a)c='wrong'}
-      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${o}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>';
+    L.quiz.map((q,i)=>{const a=ans[i];return `<div class="qq"><h3>${i+1}. ${B.ltrU(q.q)}</h3><div class="opts">`+q.o.map((o,j)=>{let c='';if(a!=null){if(j===q.c)c='right';else if(j===a)c='wrong'}
+      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${B.ltrU(o)}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>';
     $$('.opt',body).forEach(b=>b.addEventListener('click',()=>{ans[b.dataset.q]=+b.dataset.o;draw()}));
     $('#qreset',body).addEventListener('click',()=>{ans={};draw()});B.math(body);};
   draw();
