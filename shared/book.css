@@ -505,7 +505,7 @@ body::before{background:var(--hero1)}
 
 .eq{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin:12px 0;padding:4px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
 .eq .katex-display{margin:.5em 0}
-.eqno{font-family:var(--mono);font-size:13px;color:var(--blue-ink);background:var(--blue-soft);padding:2px 9px;border-radius:999px;direction:ltr}
+.eqno{font-family:var(--mono);font-size:13px;color:var(--blue-ink);background:var(--blue-soft);padding:2px 9px;border-radius:999px;direction:ltr;unicode-bidi:isolate}
 
 .pd-q{font-weight:600;font-size:16px;margin-bottom:10px}
 .pd-o{display:grid;gap:8px}

@@ -98,7 +98,7 @@ function renderLesson(L,tab){
    </aside>
    <div class="lmain">
    <div class="crumbs"><a href="#home">الفهرس</a> › <a href="#home" data-unit="${L.unit}">الوحدة ${AR[L.unit]}</a></div>
-   <header class="lesson-head"><div class="eyebrow">الدرس ${L.unit}.${L.order} · ص ${L.pages}</div><h1>${L.title}</h1>${L.summary?`<p class="lead">${L.summary}</p>`:''}</header>
+   <header class="lesson-head"><div class="eyebrow">الدرس ${L.unit}.${L.order} · ص ${L.pages}</div><h1>${L.title}</h1>${L.summary?`<p class="lead">${B.ltrU(L.summary)}</p>`:''}</header>
    <nav class="ltabs" role="tablist">${tabs.map((t,k)=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}">${t[1]}</button>`).join('')}</nav>
    <div id="strip-host"></div>
    <div id="tab-body"></div>
