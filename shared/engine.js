@@ -64,6 +64,8 @@ function compileNet(lines){
   toks.forEach((t,i)=>{
     const op=t.op;
     if(LOGIC[op]&&t.addr){const base=op[0];const neg=op.length===2;let leaf=E.c(t.addr,neg);
+      /* S7: «و قبل أو» — O/ON بعنوان تبدأ مجموعة «و» جديدة: A a / O b / A c = a + (b·c) */
+      if(base==='O'&&!fc&&ex){fin();orAcc=ex;ex=leaf;fc=false;t.kind='logic';t.orNew=1;return}
       ex=fc||!ex?leaf:combine(base,ex,leaf);fc=false;t.kind='logic';}
     else if(/^(A|AN|O|ON|X|XN)\($/.test(op)){st.push({ex,fc,op:op.replace('(',''),orAcc});ex=null;fc=true;orAcc=null;t.kind='open'}
     else if(op===')'){fin();let inner=ex||E.one();const f=st.pop()||{fc:true,op:'A'};
@@ -114,7 +116,8 @@ function createPLC(program){
     const fin=()=>{if(orAcc!==null){rlo=orAcc|rlo;orAcc=null}};
     net.toks.forEach((t,li)=>{const op=t.op;
       if(t.kind==='logic'){let v=P.get(t.addr);if(op.length===2)v=1-v;const b=op[0];
-        rlo=fc?v:(b==='A'?rlo&v:b==='O'?rlo|v:rlo^v);fc=false;tr.push(rlo)}
+        if(t.orNew&&!fc){fin();orAcc=rlo;rlo=v}else rlo=fc?v:(b==='A'?rlo&v:b==='O'?rlo|v:rlo^v);
+        fc=false;tr.push(orAcc!==null?(orAcc|rlo):rlo)}
       else if(t.kind==='open'){st.push({rlo,fc,op:op.replace('(',''),orAcc});fc=true;orAcc=null;tr.push(null)}
       else if(t.kind==='close'){fin();let inner=rlo;const f=st.pop()||{fc:true,op:'A',orAcc:null};if(f.op.length===2)inner=1-inner;
         rlo=f.fc?inner:(f.op[0]==='A'?f.rlo&inner:f.op[0]==='O'?f.rlo|inner:f.rlo^inner);orAcc=f.orAcc;fc=false;tr.push(rlo)}
