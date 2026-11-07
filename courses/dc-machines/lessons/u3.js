@@ -686,7 +686,7 @@ B.lesson({
    <div class="panel c7"><h2>قراءات الأجهزة</h2><div class="tu-meters" id="e11m"></div><div id="e11bars"></div></div>
    <div class="panel c5"><h2>الحالة</h2><div id="e11w"></div></div>
    <div class="panel c12"><h2>جدول القراءات <small>إضافة من خارج الكتاب — الكتاب لا يضع جدولاً لهذه التجربة</small></h2><div class="tu-tbl" id="e11t"></div></div>
-   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="e11st"></ol></div></div>`;
+   <div class="panel c12"><h2>جرّب</h2><div class="callout" style="margin-bottom:10px">في هذا المختبر يتغير توصيل المحول الثاني عشوائياً كل مرة تفتح فيها التجربة، مثل المعمل الحقيقي: لا تعرف القطبية مسبقاً، فقِسها دائماً قبل غلق S<sub>1</sub>.</div><ol class="steps" id="e11st"></ol></div></div>`;
   const $=s=>el.querySelector(s);let steps=null;
   const TP=B.params($('#e11tp'),'u3-tr',TRDEF,()=>{ui();upd();if(steps)steps.redraw()});
   const TP2=B.params($('#e11tp2'),'u3-l4',PARDEF,()=>{ui();upd();if(steps)steps.redraw()});
