@@ -162,7 +162,7 @@ B.lesson({
    if(st.closed){const e=st.set/5-st.T/5;if(e>0.1)st.H=1;else if(e<-0.1)st.H=0;st.duty=st.H}
    else{st.duty=clamp((st.set-25)/G,0,1);st.H=0}
    const P=st.closed?st.H:st.duty;st.T+=dt*(G*P-(st.T-st.Ta))/tau;
-   const tn=$('#l1tpn'),mx=st.Ta+G,lim=TP.trainer&&mx<st.set;if(tn){tn.hidden=!lim;if(lim)tn.innerHTML=`بقيم المدرب أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي أقل من القيمة المطلوبة، فلن تصل الحرارة إليها.`}
+   const tn=$('#l1tpn'),mx=st.Ta+G,lim=mx<st.set;if(tn){tn.hidden=!lim;if(lim)tn.innerHTML=`بهذه القيم أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي أقل من القيمة المطلوبة، فلن تصل الحرارة إليها.`}
    ht+=dt;if(ht>0.1){ht=0;hist.push({t:st.t,v:st.T,sv:st.set});while(hist.length&&st.t-hist[0].t>60.3)hist.shift()}
    rd+=dt;if(rd>0.1){rd=0;draw()}
    const c=$('#ch');if(c)W.chart(c,hist,{now:st.t,span:60,ymax:ymx,ticks:tks,unit:'°',series:[{key:'v',color:'--blue'},{key:'sv',color:'--muted'}]});chk()});
@@ -258,7 +258,7 @@ const ROOM_DEFS=()=>[
   {k:'G',label:'أقصى ارتفاع لحرارة الغرفة فوق حرارة الجو عندما يعمل السخان باستمرار',unit:'°C',value:60,min:5,max:500,step:1},
   {k:'tau',label:'ثابت زمن الغرفة (كلما كبر تسخن الغرفة وتبرد أبطأ)',unit:'s',value:10,min:1,max:600,step:0.5}];
 const roomTop=G=>G<=60?100:Math.ceil((40+G)/25)*25;  // أعلى المحور: 100 بالقيم التوضيحية
-const roomNote=(TP,Ta,L120)=>{const mx=Ta+TP.v.G;return TP.trainer&&mx<=L120?`بقيم المدرب أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(TP.v.G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي لا تتجاوز حد الإيقاف (120٪)، فلن يفصل السخان وحده.`:''};
+const roomNote=(TP,Ta,L120)=>{const mx=Ta+TP.v.G;return mx<=L120?`بهذه القيم أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(TP.v.G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي لا تتجاوز حد الإيقاف (120٪)، فلن يفصل السخان وحده.`:''};
 function heatPlant(){let TP=null;const tpv=()=>TP?TP.v:{G:60,tau:10};
  const tpU=el=>{const top=roomTop(TP.v.G),ch=this_.chart;ch.ymax=top;ch.ticks=[0,1,2,3,4].map(i=>top*i/4);
    const pn=el.closest('.panel');if(pn){const lb=pn.querySelector('#plantLabel');if(lb&&el._p)lb.textContent=this_.label(el._p);const h=pn.querySelector('h3.sm');if(h)h.textContent=ch.label.replace('نموذج توضيحي',TP.trainer?'قيم المدرب':'نموذج توضيحي')}};
