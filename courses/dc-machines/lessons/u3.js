@@ -228,7 +228,7 @@ function parSVG(o){o=o||{};const on=!!o.on,r=o.rd||{},rev=!!o.rev;
   s+=`<path class="${c1}" d="M228 50H285M315 50H400"/>`+meterC(300,50,'A1')+(r.A1!=null?S.t(300,26,r.A1,'b'):'');
   s+=hopH(228,530,130,[400],c1)+`<path class="${pw}" d="M345 50V75M345 105V130"/>`+meterC(345,90,'V1')+(r.V1!=null?S.t(326,94,r.V1,'b','end'):'')+dot(345,50)+dot(345,130);
   // T2 secondary (normal or reversed leads)
-  if(!rev)s+=`<path class="${c2}" d="M228 220H400M228 300H750"/>`;
+  if(!rev||o.hide)s+=`<path class="${c2}" d="M228 220H400M228 300H750"/>`+(o.hide?arT(262,346,'القطبية غير معروفة — قِسها بالفولتميتر V',{fs:12,col:'--muted'}):'');
   else s+=`<path class="${c2}" d="M228 220H248L274 300H750M228 300H248L274 220H400"/>`+arT(262,346,'أطراف الثانوي معكوسة',{fs:12,col:'--stop'});
   s+=`<path class="${pw}" d="M345 220V245M345 275V300"/>`+meterC(345,260,'V2')+(r.V2!=null?S.t(326,264,r.V2,'b','end'):'')+dot(345,220)+dot(345,300);
   // A2 between a and a'
@@ -674,7 +674,7 @@ B.lesson({
   {err:'<ol style="margin:4px 0 0;padding-inline-start:20px"><li>«الرسم التخطيطي الموضح بشكل (١٣)» ص 49 و«صل الدائرة كما في شكل (١٣)» في الخطوة 2 — والرسم الفعلي معنون الشكل (11) (صُحح في النص).</li><li>لا جدول قراءات ولا منحنيات ولا أسئلة ختامية لهذه التجربة في الكتاب (السؤال الوحيد ضمن الخطوة 8)؛ ولا قيم مقننة للمحولين.</li><li>«محولان أحاديي الوجه متماثلان» — صوابها «أحاديا الوجه» (صُحح في النص).</li></ol>'}
  ],
  lab:(el)=>{
-  let on=false,S1=false,S2=false,rev=true,big=false,Rv=null,msg='';const rows=[],did={};
+  let on=false,S1=false,S2=false,rev=Math.random()<0.5,big=false,Rv=null,msg='';const rows=[],did={};
   el.innerHTML=`<div id="e11tp"></div><div id="e11tp2"></div><div class="grid tu-lab">
    <div class="panel c12"><h2>محولان على التوازي <small>مبنية على الشكل (11) ص 49</small></h2>
     <div class="svgbox tu-wide" id="e11c" style="max-width:820px;margin-inline:auto"></div>
@@ -711,7 +711,7 @@ B.lesson({
   const upd=()=>{const P=TP.v;let c=calc();const In2=I2n(P),lim=P.kTrip*In2;
    if(on&&Math.max(c.I1,c.I2,c.IL)>lim){const big1=Math.max(c.I1,c.I2,c.IL);on=false;sw('e11on',false);did.trip=1;msg=`<div class="callout err"><b>القاطع فصل المصدر!</b> ${rev&&S1?'أغلقت S<sub>1</sub> والتوصيل معكوس: الجهدان يتجمعان في الحلقة على معاوقتين صغيرتين':'التيار تجاوز حد القاطع'}، والتيار كان سيصل إلى <span class="ltr">${fm(big1,0)} A</span> = <span class="ltr">${fm(big1/In2,0)}</span> ضعف التيار المقنن لكل محول (<span class="ltr">${fm(In2,2)} A</span>). لذلك نتحقق من قراءة V قبل غلق S<sub>1</sub> (الخطوات 5–7).</div>`;c=calc()}
    const r=rd(c);$('#e11r-v').textContent=fm(rv(),1)+' Ω  (R = '+fm(TP2.v.Rf+rv(),1)+' Ω)';
-   $('#e11c').innerHTML=parSVG({on,S1,S2,rev,i1:c.I1>0.005,i2:c.I2>0.005,iL:c.IL>0.005,rv:fm(rv(),0)+' Ω',rd:on?{A1:fm(r.A1,2)+' A',A2:fm(r.A2,2)+' A',A:fm(r.A,2)+' A',V1:fm(r.V1,1)+' V',V2:fm(r.V2,1)+' V',V:fm(r.V,1)+' V'}:{}});
+   $('#e11c').innerHTML=parSVG({on,S1,S2,rev,hide:!rows.some(r=>!r.S1)&&!did.trip&&!did.swap,i1:c.I1>0.005,i2:c.I2>0.005,iL:c.IL>0.005,rv:fm(rv(),0)+' Ω',rd:on?{A1:fm(r.A1,2)+' A',A2:fm(r.A2,2)+' A',A:fm(r.A,2)+' A',V1:fm(r.V1,1)+' V',V2:fm(r.V2,1)+' V',V:fm(r.V,1)+' V'}:{}});
    $('#e11m').innerHTML=meters([['V<sub>1</sub>',fm(r.V1,1)+' V'],['V<sub>2</sub>',fm(r.V2,1)+' V'],['V (على S<sub>1</sub>)',fm(r.V,1)+' V',r.V>0.25*V2n(P)],['A<sub>1</sub>',fm(r.A1,2)+' A',r.A1>1.05*In2],['A<sub>2</sub>',fm(r.A2,2)+' A',r.A2>1.05*In2],['A (الحمل)',fm(r.A,2)+' A'],['A<sub>1</sub> + A<sub>2</sub>',fm(R(r.A1+r.A2,2),2)+' A']]);
    const bar=(l,i)=>{const p=i/In2*100;return `<span>${l}</span><div class="tu-bar"><i class="${p>105?'over':''}" style="width:${fx(Math.min(100,p/1.5))}%"></i></div><b>${fm(p,0)}%</b>`};
    $('#e11bars').innerHTML=`<div class="tu-bars">${bar('المحول 1',c.I1)}${bar('المحول 2',c.I2)}</div><p class="sub">النسبة من التيار المقنن لثانوي كل محول (<span class="ltr">${fm(In2,2)} A</span>)؛ العمود الكامل = 150%.</p>`;
@@ -729,7 +729,7 @@ B.lesson({
   steps=stepsUI($('#e11st'),[
    {t:'المصدر والمفتاحان',get x(){return `جهد المنبع = الجهد المقنن للابتدائي <span class="ltr">${fm(TP.v.V1n)} V</span> (الخطوة 1)، و S<sub>1</sub> و S<sub>2</sub> مفتوحان (الخطوة 2). شغّل «مصدر الجهد».`},done:()=>on&&!S1&&!S2},
    {t:'سجّل V<sub>1</sub> و V<sub>2</sub> و V',x:'اضغط «سجّل القراءات» (الخطوة 3). هل V<sub>1</sub> = V<sub>2</sub> (الخطوة 4)؟ وهل V يساوي الفرق أم المجموع؟',done:()=>rows.some(r=>!r.S1)},
-   {t:'V = المجموع: بدّل الأطراف',x:'في هذا المختبر وُصل ثانوي المحول 2 <b>معكوساً عمداً</b> لتتدرب على الخطوة 6: V ≈ V<sub>1</sub> + V<sub>2</sub>. افصل المصدر ثم اضغط «بدّل أطراف ثانوي المحول 2».',done:()=>!rev},
+   {t:'افحص القطبية',x:'قارن V بالقراءتين: إذا كان <b>V ≈ V<sub>1</sub> + V<sub>2</sub></b> (المجموع) فالتوصيل معكوس: افصل المصدر ثم اضغط «بدّل أطراف ثانوي المحول 2» (الخطوة 6). وإذا كان <b>V صفراً أو صغيراً جداً</b> فالتوصيل صحيح ولا تبدّل شيئاً.',done:()=>rows.some(r=>!r.S1)&&!rev},
    {t:'أعد المصدر وتحقق',get x(){const [E1,E2]=emf();return `شغّل المصدر من جديد: V الآن ≈ <span class="ltr">${fm(Math.abs(E1-Math.abs(E2)),2)} V</span> — صفر أو قيمة صغيرة جداً (الخطوة 7).`},done:()=>on&&!rev},
    {t:'أغلق S<sub>1</sub>',get x(){return `أغلق S<sub>1</sub>: المحولان على التوازي. بلا حمل يمر بينهما تيار دائر صغير ≈ <span class="ltr">${fm(circNL(),2)} A</span> بسبب الفرق الصغير في نسبة التحويل.`},done:()=>on&&!rev&&S1},
    {t:'أغلق S<sub>2</sub> وسجّل',x:'أغلق S<sub>2</sub> وسجّل A<sub>1</sub> و A<sub>2</sub> و A (الخطوة 8). ما العلاقة بينها؟',done:()=>loadRows().length>=1},
