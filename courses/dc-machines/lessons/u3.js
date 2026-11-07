@@ -1,0 +1,841 @@
+/* Unit 3 — تجارب المحولات الكهربائية (ص 35–54)
+   Lessons u3-l1 … u3-l5 = experiments 8–12.
+   ONE transformer equivalent-circuit model (TRDEF + trSolve) drives every lab, so the numbers agree between
+   experiments (Rc/Xm from exp 8 and Req/Xeq from exp 9 come back close to the model values, exp 10 losses
+   match exps 8–9, exp 11 = two units of it, exp 12 = a bank of three units of it).
+   Its parameters are ONE B.params panel with the shared id 'u3-tr' in all five labs (the trainer types them once). */
+(function(B){
+const {S}=B;
+const PI=Math.PI,D=PI/180,SQ3=Math.sqrt(3);
+const fm=(x,d)=>B.fmtN(x,d);
+const fx=v=>(+v).toFixed(1);
+const R=(x,d)=>B.round(x,d);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lt=s=>`<span class="ltr">${s}</span>`;
+
+/* ---------- styles used only by this file (CSS variables only) ---------- */
+(function css(){if(typeof document==='undefined'||document.getElementById('dcu3-css'))return;const s=document.createElement('style');s.id='dcu3-css';s.textContent=`
+.tu-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
+.tu-sl .tu-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tu-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:14px}
+.tu-sl input[type=range]{width:100%;accent-color:var(--blue);direction:ltr;margin:4px 0}
+.tu-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.tu-row .sub{margin:0}
+.tu-fine{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.tu-fine .btn{padding:4px 10px;font-family:var(--mono);direction:ltr}
+.tu-chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--surface-2);color:var(--muted);direction:ltr;unicode-bidi:isolate}
+.tu-chip.ok{background:var(--on-soft);color:var(--on)}
+.tu-meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-top:10px}
+.tu-meter{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;text-align:center}
+.tu-meter span{display:block;font-size:12px;color:var(--muted)}
+.tu-meter b{font:700 19px var(--mono);direction:ltr;unicode-bidi:isolate;display:inline-block}
+.tu-meter.bad{border-color:var(--stop)}.tu-meter.bad b{color:var(--stop)}
+.tu-tbl{overflow-x:auto;margin-top:8px}
+table.tu-bt{border-collapse:collapse;font-size:13.5px;min-width:100%}
+table.tu-bt th,table.tu-bt td{border:1px solid var(--line);padding:5px 8px;text-align:center;white-space:nowrap}
+table.tu-bt th{background:var(--surface-2);font-weight:600}
+table.tu-bt td{font-family:var(--mono);direction:ltr;min-width:52px}
+table.tu-bt td.bad{color:var(--stop);font-weight:700}
+table.tu-bt th.cur{background:var(--live-soft)}
+.tu-q{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0;background:var(--surface)}
+.tu-q summary{cursor:pointer;font-weight:600;line-height:1.7}
+.tu-ans{margin-top:8px;border-inline-start:3px solid var(--blue);padding:6px 12px;background:var(--blue-soft);border-radius:0 10px 10px 0}
+.tu-plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
+.tu-plots figure{margin:0}.tu-plots figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:2px}
+.tu-lab .seg{flex-wrap:wrap;max-width:100%}
+.tu-lab .seg button{white-space:nowrap}
+@media (max-width:700px){.svgbox.tu-wide svg{min-width:620px}}
+.tu-bars{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;margin-top:10px}
+.tu-bar{height:14px;border-radius:7px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.tu-bar i{display:block;height:100%;background:var(--blue)}
+.tu-bar i.over{background:var(--stop)}
+.tu-bars b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
+.tu-try{margin:6px 0 0;padding-inline-start:20px}
+.tu-defs{margin:6px 0 0;padding-inline-start:20px;line-height:1.9}
+`;document.head.appendChild(s)})();
+
+/* ---------- small lab helpers (local copies, as in the other courses) ---------- */
+function stepsUI(host,steps){let i=0;
+  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
+    (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
+  host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
+  return {check(){let m=0;while(m++<steps.length){const s=steps[i];if(s&&s.done&&s.done()){i++}else break}draw()},redraw:draw};}
+const sl=(id,label,min,max,step,val)=>`<label class="tu-sl"><span class="tu-h"><span>${label}</span><b id="${id}-v"></b></span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label.replace(/<[^>]+>/g,'')}"></label>`;
+const segHTML=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
+const segSet=(el,attr,v)=>el.querySelectorAll(`[data-${attr}]`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset[attr])===String(v))));
+const segBind=(el,attr,fn)=>el.querySelectorAll(`[data-${attr}]`).forEach(b=>b.addEventListener('click',()=>{segSet(el,attr,b.dataset[attr]);fn(b.dataset[attr])}));
+const swHTML=(id,b,label,on)=>`<button class="sw" id="${id}" aria-pressed="${on?'true':'false'}"><span class="knob"></span><b>${b}</b><small>${label}</small></button>`;
+const meters=list=>list.map(([a,b,bad])=>`<div class="tu-meter${bad?' bad':''}"><span>${a}</span><b>${b}</b></div>`).join('');
+const arT=(x,y,s,o)=>{o=o||{};return `<text class="txt ar" x="${x}" y="${y}" text-anchor="${o.a||'middle'}"${o.fs?` font-size="${o.fs}"`:''}${o.col?` style="fill:var(${o.col})"`:''}>${s}</text>`};
+const sb=(b,x)=>`${b}<tspan font-size="9" dy="4">${x}</tspan><tspan dy="-4"> </tspan>`;
+const box=(svg,max,wide)=>`<div class="svgbox${wide?' tu-wide':''}" style="margin-inline:auto;${max?`max-width:${max}px`:''}">${svg}</div>`;
+const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="3.4" fill="var(--fg)"/>`;
+function arrow(x1,y1,x2,y2,col,w){w=w||2.4;const a=Math.atan2(y2-y1,x2-x1),L=Math.hypot(x2-x1,y2-y1);if(L<3)return '';const h=Math.min(11,L*0.7)+w;
+  const bx=x2-h*Math.cos(a),by=y2-h*Math.sin(a),px=-Math.sin(a)*h*0.45,py=Math.cos(a)*h*0.45;
+  return `<path d="M${fx(x1)} ${fx(y1)}L${fx(bx)} ${fx(by)}" stroke="var(${col})" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="M${fx(x2)} ${fx(y2)}L${fx(bx+px)} ${fx(by+py)}L${fx(bx-px)} ${fx(by-py)}Z" fill="var(${col})"/>`}
+function zig(x1,y1,x2,y2,n,cls){n=n||6;const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,nx=-uy,ny=ux,lead=len*0.16,seg=(len-2*lead)/n;let p=`M${fx(x1)} ${fx(y1)}L${fx(x1+ux*lead)} ${fx(y1+uy*lead)}`;
+  for(let i=0;i<n;i++){const s=(i%2?-1:1)*7,m=lead+seg*(i+0.5);p+=`L${fx(x1+ux*m+nx*s)} ${fx(y1+uy*m+ny*s)}`}
+  return `<path class="w ${cls||''}" d="${p}L${fx(x2-ux*lead)} ${fx(y2-uy*lead)}L${fx(x2)} ${fx(y2)}"/>`}
+function ind(x1,y1,x2,y2,n,cls){n=n||4;const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;const lead=len*0.12,seg=(len-2*lead)/n,r=seg/2;
+  let p=`M${fx(x1)} ${fx(y1)}L${fx(x1+ux*lead)} ${fx(y1+uy*lead)}`;for(let i=1;i<=n;i++){p+=`A${fx(r)} ${fx(r)} 0 0 1 ${fx(x1+ux*(lead+seg*i))} ${fx(y1+uy*(lead+seg*i))}`}
+  return `<path class="w ${cls||''}" d="${p}L${fx(x2)} ${fx(y2)}"/>`}
+const meterC=(x,y,l)=>`<circle cx="${x}" cy="${y}" r="15" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+S.t(x,y+5,l,'');
+/* horizontal wire from x1 to x2 at y that hops over vertical wires at xs */
+const hopH=(x1,x2,y,xs,cls)=>{let d=`M${x1} ${y}`;xs.slice().sort((a,b)=>a-b).forEach(x=>{d+=`H${x-6}A6 6 0 0 1 ${x+6} ${y}`});return `<path class="${cls||'w'}" d="${d}H${x2}"/>`};
+/* vertical wire from y1 to y2 at x that hops over horizontal wires at ys */
+const hopV=(x,y1,y2,ys,cls)=>{const up=y2<y1;let d=`M${x} ${y1}`;ys.slice().sort((a,b)=>up?b-a:a-b).forEach(y=>{d+=up?`V${y+6}A6 6 0 0 1 ${x} ${y-6}`:`V${y-6}A6 6 0 0 1 ${x} ${y+6}`});return `<path class="${cls||'w'}" d="${d}V${y2}"/>`};
+/* simple SVG x-y plot */
+function plotSVG(o){const W=o.w||520,H=o.h||260,L=o.left||46,Rr=20,T=16,Bm=38;
+  const X=x=>L+(x-o.x0)/(o.x1-o.x0)*(W-L-Rr),Y=y=>H-Bm-(y-o.y0)/(o.y1-o.y0)*(H-T-Bm);
+  let s='';(o.yt||[]).forEach(v=>{s+=`<path d="M${L} ${fx(Y(v))}H${W-Rr}" stroke="var(--line)"/>`+S.t(L-6,fx(Y(v)+4),o.yf?o.yf(v):v,'m','end')});
+  (o.xt||[]).forEach(v=>{s+=`<path d="M${fx(X(v))} ${T}V${H-Bm}" stroke="var(--line)" stroke-dasharray="3 3"/>`+S.t(fx(X(v)),H-Bm+15,o.xf?o.xf(v):v,'m')});
+  s+=`<path d="M${L} ${T}V${H-Bm}H${W-Rr}" stroke="var(--fg)" fill="none" stroke-width="1.4"/>`;
+  if(o.xl)s+=S.t(W-Rr,H-4,o.xl,'','end');if(o.yl)s+=S.t(L+4,T-4,o.yl,'','start');
+  (o.series||[]).forEach(se=>{if(!se.pts.length)return;s+=`<path d="${se.pts.map((p,i)=>(i?'L':'M')+fx(X(p[0]))+' '+fx(Y(p[1]))).join('')}" fill="none" stroke="var(${se.col})" stroke-width="${se.w||2.4}" ${se.dash?`stroke-dasharray="${se.dash}"`:''} stroke-linejoin="round"/>`});
+  if(o.extra)s+=o.extra(X,Y);
+  return `<svg viewBox="0 -4 ${W} ${H+4}" role="img" aria-label="${o.aria||'منحنى'}">${s}</svg>`}
+function niceMax(v){if(!(v>0)||!isFinite(v))return 1;const e=Math.pow(10,Math.floor(Math.log10(v)));for(const k of [1,1.2,1.5,2,2.5,3,4,5,6,8,10])if(k*e>=v*0.99999)return k*e;return 10*e}
+const nTicks=m=>{const e=Math.pow(10,Math.floor(Math.log10(m)+1e-9)),k=Math.round(m/e*10)/10;const n={1:5,1.2:4,1.5:3,2:4,2.5:5,3:3,4:4,5:5,6:3,8:4}[k]||4;return Array.from({length:n+1},(_,i)=>m*i/n)};
+const tickF=()=>v=>fm(+(+v).toPrecision(4));
+/* plot of recorded points. o:{xl,yl,pts,cap,xmin,ymin,sortY} — axes always start at 0 */
+function ptsPlot(o){const pts=o.pts.filter(p=>isFinite(p[0])&&isFinite(p[1]));
+  const xm=niceMax(Math.max(o.xmin||0,...pts.map(p=>p[0]))*1.04),ym=niceMax(Math.max(o.ymin||0,...pts.map(p=>p[1]))*1.04);
+  const so=pts.slice().sort((a,b)=>o.sortY?a[1]-b[1]:a[0]-b[0]);
+  const svg=plotSVG({w:340,h:240,left:50,x0:0,x1:xm,y0:0,y1:ym,xt:nTicks(xm),yt:nTicks(ym),xf:tickF(xm),yf:tickF(ym),xl:o.xl,yl:o.yl,
+    series:[{pts:so,col:'--blue',w:2}],extra:(X,Y)=>pts.map(p=>`<circle cx="${fx(X(p[0]))}" cy="${fx(Y(p[1]))}" r="4" fill="var(--live)"/>`).join(''),aria:o.cap.replace(/<[^>]+>/g,'')});
+  return `<figure><div class="svgbox">${svg}</div><figcaption>${o.cap}${pts.length?'':' — سجّل قراءات لتظهر النقاط'}</figcaption></figure>`}
+function stepsHTML(steps){return `<ol class="ex-steps">${steps.map(st=>`<li class="${st.final?'final':''}">${st.t?`<div class="ex-t">${st.t}</div>`:''}${st.f?`<div class="ex-f">${B.tex(st.f,true)}</div>`:''}${st.v!=null?`<div class="ex-v"><span class="ltr">${typeof st.v==='number'?fm(st.v,st.dp):st.v} ${st.unit||''}</span></div>`:''}</li>`).join('')}</ol>`}
+const Q=(n,q,ans)=>`<details class="tu-q"><summary>${n}: ${q}</summary><div class="tu-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> ${ans}</div></details>`;
+const ADD='<b>توضيح للمتدرب — ليس من الكتاب:</b> ';
+/* printed (empty) table as in the book */
+const ptable=(head,cols,rows,fill)=>`<div class="tu-tbl"><table class="tu-bt"><thead><tr><th>${head}</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><th>${lt(r)}</th>${cols.map(()=>`<td>${fill&&fill[i]!=null?fill[i]:''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+/* «كما في الكتاب / المصحح» toggle used in the theory tab */
+const bookFixW=(bookH,fixH)=>(el)=>{let v='book';const draw=()=>{el.innerHTML=`<div class="tu-row" style="margin-top:0">${segHTML('bf',[['book','كما في الكتاب'],['fixed','المصحح']],v)}</div><div class="callout${v==='book'?' err':''}" style="margin-top:8px">${typeof (v==='book'?bookH:fixH)==='function'?(v==='book'?bookH:fixH)():(v==='book'?bookH:fixH)}</div>`;B.math(el);segBind(el,'bf',x=>{v=x;draw()})};draw()};
+
+/* ---------- complex numbers ---------- */
+const Cx=(re,im)=>({re,im:im||0}),cadd=(a,b)=>Cx(a.re+b.re,a.im+b.im),csub=(a,b)=>Cx(a.re-b.re,a.im-b.im),cmul=(a,b)=>Cx(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re),
+  cdiv=(a,b)=>{const d=b.re*b.re+b.im*b.im;return Cx((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d)},cabs=a=>Math.hypot(a.re,a.im),cpar=(a,b)=>cdiv(cmul(a,b),cadd(a,b)),csc=(a,k)=>Cx(a.re*k,a.im*k);
+
+/* ======================================================================
+   THE transformer model (all values referred to the PRIMARY = the 220 V winding of the figures)
+   ====================================================================== */
+const TRDEF=[
+ {k:'V1n',label:'الجهد المقنن للملف الابتدائي V<sub>1</sub>',unit:'V',value:220,min:20,max:1000},
+ {k:'a',label:'نسبة التحويل a = N<sub>1</sub>/N<sub>2</sub>',unit:'',value:2,min:0.1,max:20,step:0.01},
+ {k:'Sn',label:'القدرة المقننة للمحول',unit:'VA',value:500,min:50,max:10000},
+ {k:'Rc',label:'مقاومة فقد الحديد R<sub>c</sub> (منسوبة للابتدائي)',unit:'Ω',value:4800,min:10,max:1000000},
+ {k:'Xm',label:'ممانعة المغنطة X<sub>m</sub> عند الجهد المقنن (منسوبة للابتدائي)',unit:'Ω',value:2200,min:5,max:1000000},
+ {k:'ks',label:'جزء تيار المغنطة الناتج عن تشبع القلب عند الجهد المقنن (0 = بلا تشبع)',unit:'%',value:30,min:0,max:80},
+ {k:'R1',label:'مقاومة الملف الابتدائي R<sub>1</sub>',unit:'Ω',value:1.6,min:0.001,max:1000,step:0.001},
+ {k:'X1',label:'ممانعة التسرب للملف الابتدائي X<sub>1</sub>',unit:'Ω',value:1.8,min:0.001,max:1000,step:0.001},
+ {k:'R2',label:"مقاومة الملف الثانوي منسوبة للابتدائي R<sub>2</sub>'",unit:'Ω',value:1.6,min:0.001,max:1000,step:0.001},
+ {k:'X2',label:"ممانعة التسرب للثانوي منسوبة للابتدائي X<sub>2</sub>'",unit:'Ω',value:1.8,min:0.001,max:1000,step:0.001},
+ {k:'kTrip',label:'القاطع يفصل المصدر عند (مضاعف التيار المقنن)',unit:'×',value:3,min:1.2,max:30,step:0.1}];
+const DEF=Object.fromEntries(TRDEF.map(d=>[d.k,d.value]));
+const I1n=P=>P.Sn/P.V1n,V2n=P=>P.V1n/P.a,I2n=P=>P.Sn*P.a/P.V1n;
+const ZeqP=P=>Cx(P.R1+P.R2,P.X1+P.X2);
+/* magnetising: Im = (E/Xm)·[(1−s) + s·u⁴], u = E/V1n  →  Xm at rated voltage = the trainer's Xm; s = ks/100 */
+const satF=(P,u)=>(1-P.ks/100)+P.ks/100*Math.pow(u,4);
+/* exact T circuit. V1 = primary voltage (reference phasor). ZLp: load referred to primary (complex), null = secondary open */
+function trSolve(P,V1,ZLp){const Z1=Cx(P.R1,P.X1),Z2=Cx(P.R2,P.X2);let u=V1/P.V1n,I1=Cx(0),E=Cx(0);
+  for(let it=0;it<6;it++){const Ym=Cx(1/P.Rc,-satF(P,u)/P.Xm),Zm=cdiv(Cx(1),Ym);
+    const Zsh=ZLp==null?Zm:cpar(Zm,cadd(Z2,ZLp));I1=cdiv(Cx(V1),cadd(Z1,Zsh));E=csub(Cx(V1),cmul(I1,Z1));u=cabs(E)/P.V1n}
+  const I2p=ZLp==null?Cx(0):cdiv(E,cadd(Z2,ZLp)),V2p=ZLp==null?E:cmul(I2p,ZLp);
+  const e=cabs(E),i2=cabs(I2p);
+  return {I1:cabs(I1),P1:V1*I1.re,E:e,V2:cabs(V2p)/P.a,I2:i2*P.a,P2:V2p.re*I2p.re+V2p.im*I2p.im,Pfe:e*e/P.Rc,Pcu:cabs(I1)*cabs(I1)*P.R1+i2*i2*P.R2}}
+/* meter readings (rounded like a lab meter) */
+const rdOC=(P,V)=>{const s=trSolve(P,V,null);return {V10:R(V,1),I10:R(s.I1,3),P10:R(s.P1,1),V20:R(s.E/P.a,1)}};
+const rdSC=(P,V)=>{const s=trSolve(P,V,Cx(0));return {Vsc:R(V,2),Isc:R(s.I1,2),Psc:R(s.P1,1),I2:R(s.I2,2),raw:s.I1}};
+const ZLsec=(P,x,pf)=>x>0?csc(Cx(pf,Math.sqrt(Math.max(0,1-pf*pf))),V2n(P)/(x*I2n(P))):null;
+const rdLD=(P,on,x,pf)=>{if(!on)return {V1:0,I1:0,P1:0,V2:0,I2:0,x,pf};const Z=ZLsec(P,x/100,pf);const s=trSolve(P,P.V1n,Z?csc(Z,P.a*P.a):null);
+  return {V1:R(P.V1n,1),I1:R(s.I1,2),P1:R(s.P1,1),V2:R(s.V2,1),I2:R(s.I2,2),x,pf}};
+/* derived quantities of each table */
+const dOC=r=>{const c=r.P10/(r.V10*r.I10),sn=Math.sqrt(Math.max(0,1-c*c)),Ic=r.I10*c,Im=r.I10*sn;return {c,Ic,Im,R0:r.V10/Ic,X0:r.V10/Im,a:r.V10/r.V20}};
+const dSC=r=>{const Req=r.Psc/(r.Isc*r.Isc),Zeq=r.Vsc/r.Isc;return {Req,Zeq,Xeq:Math.sqrt(Math.max(0,Zeq*Zeq-Req*Req)),c:r.Psc/(r.Vsc*r.Isc)}};
+const dLD=r=>{const P2=r.V2*r.I2*r.pf;return {P2,cb:r.P1/(P2/r.P1),c:r.P1/(r.V1*r.I1),eta:P2/r.P1*100}};
+/* the rated short-circuit voltage of the model (for hints) */
+const vscRated=P=>{let lo=0,hi=P.V1n;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(trSolve(P,m,Cx(0)).I1<I1n(P))lo=m;else hi=m}return (lo+hi)/2};
+const modelHTML=P=>`<table class="tu-bt" style="margin-top:6px"><tbody>${[
+  ['V<sub>1</sub> / V<sub>2</sub> المقنن',`${fm(P.V1n)} / ${fm(V2n(P),1)} V`],['I<sub>1</sub> / I<sub>2</sub> المقنن',`${fm(I1n(P),3)} / ${fm(I2n(P),3)} A`],['a = N<sub>1</sub>/N<sub>2</sub>',fm(P.a)],
+  ['R<sub>c</sub>',fm(P.Rc)+' Ω'],['X<sub>m</sub> (عند الجهد المقنن)',fm(P.Xm)+' Ω'],["R<sub>eq</sub> = R<sub>1</sub> + R<sub>2</sub>'",fm(P.R1+P.R2,3)+' Ω'],["X<sub>eq</sub> = X<sub>1</sub> + X<sub>2</sub>'",fm(P.X1+P.X2,3)+' Ω'],['Z<sub>eq</sub>',fm(cabs(ZeqP(P)),3)+' Ω']
+ ].map(([a,b])=>`<tr><th>${a}</th><td>${b}</td></tr>`).join('')}</tbody></table><p class="sub">القيم التي تحسبها من قراءاتك يجب أن تقترب من هذه (الفرق الصغير من تقريب الأجهزة ومن أن كل اختبار يهمل جزءاً من الدائرة).</p>`;
+
+/* ======================================================================
+   Drawings
+   ====================================================================== */
+/* الأشكال (8) (9) (10) + الدائرتان المكافئتان ص 39 و ص 42. mode: oc | sc | load | eqoc | eqsc */
+function benchSVG(mode,o){o=o||{};const on=!!o.on,r=o.rd||{},T=70,Bt=240;
+  const cw=on?'w flow':'w',vw=on?'w live':'w',eq=mode==='eqoc'||mode==='eqsc';
+  const lab={oc:['I10','V10','P10'],eqoc:['I10','V10','P10'],sc:['Isc','Vsc','Psc'],eqsc:['Isc','Vsc','Psc'],load:['I1','V1','P1']}[mode];
+  const xe=eq?(mode==='eqoc'?430:610):380;
+  let s=`<svg viewBox="0 0 760 290" role="img" aria-label="دائرة الاختبار">`;
+  // source + primary wires
+  s+=`<path class="${cw}" d="M50 109V${T}H105M135 ${T}H246M324 ${T}H${xe}"/><path class="${cw}" d="M50 161V${Bt}H${xe}"/>`;
+  s+=`<circle cx="50" cy="135" r="26" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.8"/><path d="M36 135q7 -13 14 0t14 0" fill="none" stroke="var(--fg)" stroke-width="2"/>`;
+  s+=o.src!=null?o.src:S.t(50,280,mode==='sc'||mode==='eqsc'?'':'V1 = 220 V','');
+  // ammeter
+  s+=meterC(120,T,'A')+arrow(66,T-16,96,T-16,'--blue',1.8)+S.t(81,T-24,lab[0],'b')+(r.A!=null?S.t(120,T+36,r.A,'b'):'');
+  // voltmeter
+  s+=`<path class="${vw}" d="M185 ${T}V120M185 150V${Bt}"/>`+meterC(185,135,'V')+S.t(206,128,lab[1],'','start')+(r.V!=null?S.t(206,146,r.V,'b','start'):'')+dot(185,T)+dot(185,Bt);
+  // wattmeter (terminals 3, 1\2, 5 as drawn in the book)
+  s+=`<rect x="246" y="${T-14}" width="78" height="28" rx="4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+S.t(285,T+5,'W','')+S.t(285,T-34,lab[2],'b')+(r.W!=null?S.t(285,T-20,r.W,'b'):'');
+  s+=S.t(242,T+28,'3','m','start')+S.t(330,T+28,'1\\2','m','start')+`<path d="M324 ${T}Q332 ${T+8} 312 ${T+14}" fill="none" stroke="var(--fg)" stroke-width="1.2"/><path class="${vw}" d="M312 ${T+14}V${Bt}" stroke-dasharray="5 4"/>`+S.t(318,T+48,'5','m','start')+dot(312,Bt);
+  if(mode==='eqoc'){// Xm // Rc
+    s+=`<path class="${cw}" d="M430 ${T}V100M400 100H460M400 210H460M430 210V${Bt}"/>`+arrow(442,T+4,442,T+26,'--blue',1.6)+S.t(448,T+20,'I10','b','start');
+    s+=ind(400,100,400,210,4,on?'live':'')+zig(460,100,460,210,6,on?'live':'')+S.t(386,160,'Xm','','end')+S.t(474,160,'Rc','','start');
+    s+=arrow(372,128,372,150,'--blue',1.4)+S.t(366,144,'Im','b','end')+arrow(490,128,490,150,'--blue',1.4)+S.t(496,144,'Ic','b','start');
+  }else if(mode==='eqsc'){
+    s=s.replace(`H${xe}"/><path class="${cw}" d="M50 161`,`H400"/><path class="${cw}" d="M50 161`);
+    s+=zig(400,T,470,T,6,on?'flow':'')+`<path class="${cw}" d="M470 ${T}H490"/>`+ind(490,T,570,T,4,on?'flow':'')+`<path class="${cw}" d="M570 ${T}H610V${Bt}"/>`;
+    s+=S.t(435,T-18,'R1e','')+S.t(530,T-20,'X1e','')+arrow(450,T+22,520,T+22,'--blue',1.6)+S.t(485,T+40,'Isc','b');
+  }else{
+    // transformer
+    s+=`<circle cx="380" cy="${T}" r="4.5" fill="var(--stop)"/><circle cx="380" cy="${Bt}" r="4.5" fill="var(--blue)"/>`+S.t(380,T-12,'A','')+S.t(380,Bt+22,'B','');
+    s+=`<path class="${cw}" d="M380 ${T}H400V96M400 214V${Bt}H380"/>`+ind(400,96,400,214,5,on?'live':'');
+    s+=`<path d="M419 90V220M427 90V220" stroke="var(--fg)" stroke-width="2.4"/>`;
+    const sc=mode==='oc'?vw:cw;
+    s+=ind(446,214,446,96,5,on?'live':'')+`<path class="${sc}" d="M446 96V${T}H466M446 214V${Bt}H466"/>`;
+    s+=`<circle cx="410" cy="100" r="3.4" fill="var(--fg)"/><circle cx="436" cy="100" r="3.4" fill="var(--fg)"/>`+S.t(388,160,'N1','','end')+S.t(458,160,'N2','','start');
+    s+=`<circle cx="466" cy="${T}" r="4.5" fill="var(--stop)"/><circle cx="466" cy="${Bt}" r="4.5" fill="var(--blue)"/>`+S.t(466,T-12,'a','')+S.t(466,Bt+22,'b','');
+    if(mode==='oc'){s+=`<path class="${on?'w live':'w'}" d="M466 ${T}H620V120M620 150V${Bt}H466"/>`+meterC(620,135,'V')+S.t(641,128,'V20','','start')+(r.V2!=null?S.t(641,146,r.V2,'b','start'):'')+arrow(492,T-16,530,T-16,'--blue',1.6)+S.t(540,T-12,'I2 = 0','m','start')}
+    else if(mode==='sc'){s+=`<path class="${cw}" d="M466 ${T}H580V120M580 150V${Bt}H466"/>`+meterC(580,135,'A')+S.t(601,128,'I2','','start')+(r.A2!=null?S.t(601,146,r.A2,'b','start'):'')+arT(660,200,'الثانوي مقصور',{fs:12,col:'--muted'})+arT(660,216,'عبر الأميتر فقط',{fs:12,col:'--muted'})}
+    else{s+=`<path class="${cw}" d="M466 ${T}H515M545 ${T}H690V120M690 200V${Bt}H466"/>`+meterC(530,T,'A')+arrow(474,T-16,504,T-16,'--blue',1.6)+S.t(489,T-24,'I2','b')+(r.A2!=null?S.t(530,T+36,r.A2,'b'):'');
+      s+=`<path class="${on?'w live':'w'}" d="M610 ${T}V120M610 150V${Bt}"/>`+meterC(610,135,'V')+S.t(631,128,'V2','','start')+(r.V2!=null?S.t(631,146,r.V2,'b','start'):'')+dot(610,T)+dot(610,Bt);
+      s+=`<rect x="678" y="120" width="24" height="80" rx="3" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+arrow(666,196,714,126,'--fg',1.5)+S.t(716,170,'RL','','start')+(o.x!=null?S.t(690,262,o.x,'m'):'');}
+  }
+  return s+'</svg>'}
+/* full (approximate-T) equivalent circuit referred to the primary, with values */
+function eqFullSVG(v){v=v||{};const T=50,Bt=190;let s=`<svg viewBox="0 0 620 230" role="img" aria-label="الدائرة المكافئة للمحول منسوبة للابتدائي">`;
+  s+=`<circle cx="30" cy="${T}" r="5" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/><circle cx="30" cy="${Bt}" r="5" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>`+arrow(20,Bt-24,20,T+24,'--fg',1.5)+S.t(14,(T+Bt)/2+4,'V1','','end');
+  s+=`<path class="w" d="M35 ${T}H70"/>`+zig(70,T,140,T,6)+`<path class="w" d="M140 ${T}H155"/>`+ind(155,T,225,T,4)+`<path class="w" d="M225 ${T}H380"/>`;
+  s+=S.t(105,T-16,'R1','')+S.t(190,T-18,'X1','')+(v.R1?S.t(105,T+26,v.R1,'b'):'')+(v.X1?S.t(190,T+26,v.X1,'b'):'');
+  s+=`<path class="w" d="M265 ${T}V80M240 80H290M240 160H290M265 160V${Bt}"/>`+zig(240,80,240,160,6)+ind(290,80,290,160,4)+dot(265,T)+dot(265,Bt);
+  s+=S.t(226,124,'Rc','','end')+S.t(306,124,'Xm','','start')+(v.Rc?S.t(226,140,v.Rc,'b','end'):'')+(v.Xm?S.t(306,140,v.Xm,'b','start'):'');
+  s+=zig(380,T,450,T,6)+`<path class="w" d="M450 ${T}H465"/>`+ind(465,T,535,T,4)+`<path class="w" d="M535 ${T}H580"/><path class="w" d="M35 ${Bt}H580"/>`;
+  s+=S.t(415,T-16,"R2'",'')+S.t(500,T-18,"X2'",'')+(v.R2?S.t(415,T+26,v.R2,'b'):'')+(v.X2?S.t(500,T+26,v.X2,'b'):'');
+  s+=`<circle cx="585" cy="${T}" r="5" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/><circle cx="585" cy="${Bt}" r="5" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>`+arrow(600,Bt-24,600,T+24,'--fg',1.5)+S.t(596,Bt+30,"V2' = a·V2",'','end');
+  s+=arT(265,222,'الفرع الموازي: من اختبار اللاحمل (التجربة 8)',{fs:12,col:'--muted'})+arT(330,14,'عناصر التوالي: من اختبار القصر (التجربة 9)',{fs:12,col:'--muted'});
+  return s+'</svg>'}
+/* الشكل (11) ص 49: two single-phase transformers in parallel. o={on,S1,S2,rev,rd,i1,i2,iL,rv} */
+function parSVG(o){o=o||{};const on=!!o.on,r=o.rd||{},rev=!!o.rev;
+  const pw=on?'w live':'w',c1=on&&o.i1?'w flow':pw,c2=on&&o.i2?'w flow':pw,cl=on&&o.iL?'w flow':pw;
+  let s=`<svg viewBox="0 0 800 350" role="img" aria-label="توصيل محولين على التوازي">`;
+  s+=`<circle cx="40" cy="175" r="24" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.8"/>`+S.t(40,168,'AC','m')+`<path d="M28 182q6 -10 12 0t12 0" fill="none" stroke="var(--fg)" stroke-width="1.8"/>`;
+  s+=`<path class="${pw}" d="M40 151V30H90V220M90 50H170M110 130H170M110 300H170M40 199V330H110V130"/>`+hopH(90,170,220,[110],pw)+dot(90,50)+dot(110,130)+dot(110,300);
+  [[0,'محول 1'],[170,'محول 2']].forEach(([dy,l])=>{s+=`<rect x="145" y="${38+dy}" width="110" height="104" rx="6" fill="none" stroke="var(--line)" stroke-width="1.6"/>`+arT(200,30+dy,l,{fs:12.5});
+    s+=ind(170,50+dy,170,130+dy,4,on?'live':'')+`<path d="M195 ${46+dy}V${134+dy}M203 ${46+dy}V${134+dy}" stroke="var(--fg)" stroke-width="2.2"/>`+ind(228,130+dy,228,50+dy,4,on?'live':'')+`<circle cx="179" cy="${60+dy}" r="3" fill="var(--fg)"/><circle cx="219" cy="${60+dy}" r="3" fill="var(--fg)"/>`});
+  // T1 secondary
+  s+=`<path class="${c1}" d="M228 50H285M315 50H400"/>`+meterC(300,50,'A1')+(r.A1!=null?S.t(300,26,r.A1,'b'):'');
+  s+=hopH(228,530,130,[400],c1)+`<path class="${pw}" d="M345 50V75M345 105V130"/>`+meterC(345,90,'V1')+(r.V1!=null?S.t(326,94,r.V1,'b','end'):'')+dot(345,50)+dot(345,130);
+  // T2 secondary (normal or reversed leads)
+  if(!rev)s+=`<path class="${c2}" d="M228 220H400M228 300H750"/>`;
+  else s+=`<path class="${c2}" d="M228 220H248L274 300H750M228 300H248L274 220H400"/>`+arT(262,346,'أطراف الثانوي معكوسة',{fs:12,col:'--stop'});
+  s+=`<path class="${pw}" d="M345 220V245M345 275V300"/>`+meterC(345,260,'V2')+(r.V2!=null?S.t(326,264,r.V2,'b','end'):'')+dot(345,220)+dot(345,300);
+  // A2 between a and a'
+  s+=`<path class="${c2}" d="M400 50V163M400 193V220"/>`+meterC(400,178,'A2')+(r.A2!=null?S.t(382,182,r.A2,'b','end'):'')+dot(400,50)+dot(400,220);
+  s+=S.t(410,44,'a','','start')+S.t(410,236,"a'",'','start')+S.t(478,124,'b','','start')+S.t(478,318,"b'",'','start');
+  // S1 between b and b'
+  s+=`<path class="${c1}" d="M470 130V195M470 235V300"/><circle cx="470" cy="195" r="3.4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/><circle cx="470" cy="235" r="3.4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+(o.S1?`<path d="M470 232V198" stroke="var(--fg)" stroke-width="2.6"/>`:`<path d="M470 232L452 202" stroke="var(--fg)" stroke-width="2.6"/>`)+S.t(484,219,'S1','','start')+dot(470,130)+dot(470,300);
+  s+=`<path class="${pw}" d="M530 130V200M530 230V300"/>`+meterC(530,215,'V')+(r.V!=null?S.t(551,219,r.V,'b','start'):'')+dot(530,300);
+  // load: S2, A, fixed R, variable R
+  s+=`<path class="${cl}" d="M400 50H590M630 50H665M695 50H750V66M750 144V160M750 230V300"/><circle cx="590" cy="50" r="3.4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/><circle cx="630" cy="50" r="3.4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+(o.S2?`<path d="M593 50H627" stroke="var(--fg)" stroke-width="2.6"/>`:`<path d="M593 50L624 33" stroke="var(--fg)" stroke-width="2.6"/>`)+S.t(610,74,'S2','');
+  s+=meterC(680,50,'A')+(r.A!=null?S.t(680,26,r.A,'b'):'')+zig(750,66,750,144,6,o.iL&&on?'flow':'')+`<rect x="738" y="160" width="24" height="70" rx="3" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+arrow(728,226,772,164,'--fg',1.4);
+  s+=S.t(736,108,'R','','end')+S.t(734,200,'Rv','','end')+(o.rv?S.t(734,216,o.rv,'m','end'):'')+dot(750,300);
+  return s+'</svg>'}
+/* الشكل (12) ص 52: three-phase bank. o={pc:'Y'|'D',scn:'D'|'Y',on,two(bool: corrected two-wattmeter),rd} */
+function bankSVG(o){o=o||{};const on=!!o.on,r=o.rd||{},pc=o.pc||'Y',scn=o.scn||'D';const yT=[70,190,310],yB=[150,270,390];
+  const pw=on?'w flow':'w',vw=on?'w live':'w';
+  let s=`<svg viewBox="0 0 760 420" role="img" aria-label="محول ثلاثي الأوجه ${pc==='Y'?'نجمة':'دلتا'} - ${scn==='D'?'دلتا':'نجمة'}">`;
+  s+=arT(150,22,'مصدر ثلاثي الأوجه متغير',{fs:12.5})+S.t(28,74,'A','')+S.t(28,194,'B','')+S.t(28,314,'C','');
+  s+=`<path class="${pw}" d="M40 70H100M160 70H360M40 190H360"/>`;
+  // wattmeters / ammeter / voltmeter on the supply side
+  s+=`<rect x="100" y="56" width="60" height="28" rx="4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+S.t(130,75,o.two?'W1':'W','')+`<path class="${vw}" d="M150 84V190" stroke-dasharray="5 4"/>`+dot(150,190)+(r.W!=null?S.t(130,46,r.W,'b'):'');
+  if(o.two){s+=`<path class="${pw}" d="M40 310H100M160 310H265M295 310H360"/><rect x="100" y="296" width="60" height="28" rx="4" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.6"/>`+S.t(130,315,'W2','')+`<path class="${vw}" d="M150 296V190" stroke-dasharray="5 4"/>`+(r.W2!=null?S.t(130,346,r.W2,'b'):'')+meterC(280,310,'A')+(r.A!=null?S.t(280,346,r.A,'b'):'')}
+  else s+=`<path class="${pw}" d="M40 310H115M145 310H360"/>`+meterC(130,310,'A')+(r.A!=null?S.t(130,346,r.A,'b'):'');
+  s+=`<path class="${vw}" d="M215 190V235M215 265V310"/>`+meterC(215,250,'V')+(r.V1!=null?S.t(236,254,r.V1,'b','start'):'')+dot(215,190)+dot(215,310);
+  // the three units
+  for(let k=0;k<3;k++){const t=yT[k],b=yB[k];
+    s+=`<rect x="352" y="${t-12}" width="102" height="${b-t+24}" rx="6" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>`;
+    s+=`<path class="${pw}" d="M360 ${t}H380V${t+6}M380 ${b-6}V${b}H360"/>`+ind(380,t+6,380,b-6,4,on?'live':'')+`<path d="M399 ${t}V${b}M407 ${t}V${b}" stroke="var(--fg)" stroke-width="2.2"/>`;
+    s+=ind(426,b-6,426,t+6,4,on?'live':'')+`<path class="${vw}" d="M426 ${t+6}V${t}H446M426 ${b-6}V${b}H446"/><circle cx="389" cy="${t+12}" r="3" fill="var(--fg)"/><circle cx="417" cy="${t+12}" r="3" fill="var(--fg)"/>`;
+    s+=S.t(366,t-4,'H1','m','start')+S.t(366,b+12,'H2','m','start')+S.t(452,t-4,'X1','m','start')+S.t(452,b+12,'X3','m','start');}
+  // primary connection
+  if(pc==='Y'){s+=`<path class="${pw}" d="M360 150H345M360 270H345M360 390H345"/>`+hopV(345,150,390,[190,310],pw)+dot(345,270)+arT(320,404,'نقطة النجمة',{fs:11.5,col:'--muted'})}
+  else{s+=`<path class="${pw}" d="M360 150V190M360 270V310M360 390H330"/>`+hopV(330,390,70,[310,190],pw)+dot(330,70)+dot(360,190)+dot(360,310)}
+  // secondary connection
+  let ya,yb,yc;
+  if(scn==='D'){ya=70;yb=170;yc=290;s+=`<path class="${vw}" d="M446 150V190M446 270V310M446 390H480M446 70H700"/>`+hopH(446,700,170,[480],vw)+hopH(446,700,290,[480],vw)+hopV(480,390,70,[290,170],vw)+dot(480,70)+dot(446,170)+dot(446,290)}
+  else{ya=70;yb=190;yc=310;s+=`<path class="${vw}" d="M446 150H466M446 270H466M446 390H466M446 70H700M446 190H700M446 310H700"/>`+hopV(466,150,390,[190,310],vw)+dot(466,270)+arT(500,404,'نقطة النجمة',{fs:11.5,col:'--muted'})}
+  s+=S.t(712,ya+4,'a','','start')+S.t(712,yb+4,'b','','start')+S.t(712,yc+4,'c','','start');
+  const ym=(ya+yb)/2;s+=`<path class="${vw}" d="M640 ${ya}V${ym-15}M640 ${ym+15}V${yb}"/>`+meterC(640,ym,'V')+(r.V2!=null?S.t(661,ym+4,r.V2,'b','start'):'')+dot(640,ya)+dot(640,yb);
+  return s+'</svg>'}
+/* phasor diagrams for the bank (توضيح). returns {svg,shift} */
+function bankPhasor(pc,scn,lbl){lbl=lbl||{};const P=(m,a)=>Cx(m*Math.cos(a*D),m*Math.sin(a*D)),side=110;
+  const A=P(side/SQ3,90),Bp=P(side/SQ3,-30),C=P(side/SQ3,210);
+  const w=pc==='Y'?[A,Bp,C]:[csub(A,Bp),csub(Bp,C),csub(C,A)];
+  const nodes=(conn,ws)=>conn==='Y'?ws:[csc(csub(ws[0],ws[2]),1/3),csc(csub(ws[1],ws[0]),1/3),csc(csub(ws[2],ws[1]),1/3)];
+  const n1=nodes(pc,w);let n2=nodes(scn,w);const k2=side/cabs(csub(n2[0],n2[1]));n2=n2.map(z=>csc(z,k2));const w2=w.map(z=>csc(z,k2));
+  const ang=z=>Math.atan2(z.im,z.re)/D;let sh=ang(csub(n2[0],n2[1]))-ang(csub(n1[0],n1[1]));while(sh>180)sh-=360;while(sh<=-180)sh+=360;
+  const draw=(cx,cy,conn,nd,ws,names,hl)=>{const X=z=>fx(cx+z.re),Y=z=>fx(cy-z.im);let s=`<path d="M${X(nd[0])} ${Y(nd[0])}L${X(nd[1])} ${Y(nd[1])}L${X(nd[2])} ${Y(nd[2])}Z" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>`;
+    const cols=['--blue','--live','--stop'];
+    if(conn==='Y')ws.forEach((z,i)=>{s+=arrow(cx,cy,+X(z),+Y(z),cols[i],2.2)});
+    else ws.forEach((z,i)=>{const from=nd[(i+1)%3],to=nd[i];s+=arrow(+X(from),+Y(from),+X(to),+Y(to),cols[i],2.2)});
+    s+=arrow(+X(nd[1]),+Y(nd[1]),+X(nd[0]),+Y(nd[0]),'--fg',1.2);
+    nd.forEach((z,i)=>{const u=cabs(z)||1;s+=S.t(fx(cx+z.re*(1+16/u)),fx(cy-z.im*(1+16/u)+4),names[i],'')});
+    const mid=csc(cadd(nd[0],nd[1]),0.5),u=cabs(mid)||1;s+=S.t(fx(cx+mid.re*(1+30/u)),fx(cy-mid.im*(1+30/u)+4),hl,'b');return s};
+  let s=`<svg viewBox="0 0 540 250" role="img" aria-label="المخطط الاتجاهي للجهود">`;
+  s+=draw(130,130,pc,n1,w,['A','B','C'],'VAB')+draw(410,130,scn,n2,w2,['a','b','c'],'Vab');
+  s+=arT(130,244,pc==='Y'?'الابتدائي نجمة':'الابتدائي دلتا',{fs:12.5})+arT(410,244,scn==='D'?'الثانوي دلتا':'الثانوي نجمة',{fs:12.5});
+  return {svg:s+'</svg>',shift:R(sh,0)}}
+
+/* ======================================================================
+   Generic single-phase test bench (experiments 8, 9, 10)
+   ====================================================================== */
+function bench(el,cfg){
+  const k=cfg.k;let c=cfg.c0||0,mode='book',on=!cfg.sw,msg='';const rows={},free=[],did={},st=cfg.state||{};
+  el.innerHTML=`<div id="${k}tp"></div><div class="grid tu-lab">
+   <div class="panel c7"><h2>${cfg.title}</h2>${cfg.top||''}
+    <div class="svgbox tu-wide" id="${k}c" style="max-width:720px;margin-inline:auto"></div>
+    ${cfg.sw?`<div class="tu-row">${swHTML(k+'sw','V<sub>1</sub>','مصدر الجهد',false)}<span class="sub" id="${k}swt"></span></div>`:''}
+    <div id="${k}sl"></div><div class="tu-fine" id="${k}fine"></div>
+    <div class="tu-row"><span class="sub">${cfg.spLabel}</span><span class="tu-fine" id="${k}sp" style="margin:0"></span></div>
+    <div class="tu-row"><button class="btn primary" id="${k}rec">سجّل القراءة</button><button class="btn" id="${k}zero">${cfg.zeroLabel}</button>${cfg.extraBtns||''}<button class="btn" id="${k}clr">امسح الجدول</button></div><div id="${k}msg"></div></div>
+   <div class="panel c5"><h2>قراءات الأجهزة</h2><div class="tu-meters" id="${k}m"></div><div id="${k}w"></div>
+    <details class="tu-q"><summary>قيم النموذج داخل المحاكاة (للمقارنة)</summary><div id="${k}mod"></div></details></div>
+   <div class="panel c12"><h2>${cfg.tblTitle}</h2><div class="tu-row"><span class="sub">${cfg.modeLabel}</span>${segHTML(k+'md',[['book','كما في الكتاب'],['fixed','المصحح']],mode)}</div><div id="${k}mdn"></div>
+    <div class="tu-tbl" id="${k}t"></div><div id="${k}res"></div></div>
+   <div class="panel c12"><h2>المنحنيات المطلوبة <small>${cfg.plotRef}</small></h2><div class="tu-plots" id="${k}p"></div></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="${k}st"></ol></div></div>`;
+  B.math(el);const $=s=>el.querySelector(s);let steps=null;
+  const TP=B.params($('#'+k+'tp'),'u3-tr',TRDEF,()=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0;c=Math.min(c,cfg.cmax(TP.v));msg='<div class="callout">تغيرت أرقام المحول، فمسحنا الجدول: سجّل القراءات من جديد.</div>';ui();upd();if(steps)steps.redraw()});
+  const P=()=>TP.v;
+  const ctx={get P(){return TP.v},rows,free,did,st,get c(){return c},get mode(){return mode},get on(){return on}};
+  const setC=(v,force)=>{c=force?v:clamp(R(v,cfg.cdp),0,cfg.cmax(P()));const r=$('#'+k+'v');if(r)r.value=c;upd()};
+  const ui=()=>{const p=P();$('#'+k+'sl').innerHTML=sl(k+'v',cfg.clabel,0,fx(cfg.cmax(p)),cfg.cstep(p),c);$('#'+k+'v').oninput=e=>{c=+e.target.value;upd()};
+    $('#'+k+'fine').innerHTML=cfg.fine(p).map(d=>`<button class="btn" data-fv="${d}">${d>0?'+':'−'}${fm(Math.abs(d))}</button>`).join('');
+    $('#'+k+'mod').innerHTML=modelHTML(p)};
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-fv]');if(b){msg='';setC(c+ +b.dataset.fv)}const q=e.target.closest('[data-sp]');if(q){msg='';setC(cfg.spValue(P(),+q.dataset.sp))}});
+  if(cfg.sw)$('#'+k+'sw').onclick=()=>{on=!on;$('#'+k+'sw').setAttribute('aria-pressed',String(on));if(on)did.on=1;msg='';upd()};
+  $('#'+k+'zero').onclick=()=>{msg='';setC(0)};
+  $('#'+k+'clr').onclick=()=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0;msg='';upd()};
+  segBind(el,k+'md',v=>{mode=v;did['md'+v]=1;upd()});
+  $('#'+k+'rec').onclick=()=>{const r=cfg.read(P(),c,ctx);if(!cfg.valid(r,ctx)){msg=`<div class="callout err">${cfg.noRead}</div>`;upd();return}
+    const sp=cfg.sp.find(p=>cfg.match(P(),r,p,ctx));if(sp!=null){rows[sp]=r;did['sp'+sp]=1}else{free.push(r);if(free.length>6)free.shift();did.free=1}
+    msg=`<div class="callout">سُجّلت القراءة ${sp!=null?`في عمود <b>${sp}%</b>`:'في عمود «حرة» (ليست عند نقطة من نقاط الجدول)'}.</div>`;if(cfg.onRec)cfg.onRec(P(),sp,r,ctx);upd()};
+  if(cfg.bind)cfg.bind(el,{setC,upd:()=>upd(),clear:()=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0},msg:m=>{msg=m}},ctx);
+  const upd=()=>{const p=P();let r=cfg.read(p,c,ctx);
+    if(cfg.trip){const t=cfg.trip(p,r,ctx);if(t){did.trip=1;msg=`<div class="callout err">${t}</div>`;c=0;const s=$('#'+k+'v');if(s)s.value=0;r=cfg.read(p,c,ctx)}}
+    $('#'+k+'v-v').textContent=fm(c,cfg.cdp)+' '+cfg.cunit;
+    $('#'+k+'c').innerHTML=cfg.svg(p,r,ctx);
+    $('#'+k+'m').innerHTML=meters(cfg.meters(p,r,ctx));
+    $('#'+k+'w').innerHTML=cfg.warn(p,r,ctx)||'';$('#'+k+'msg').innerHTML=msg;
+    if(cfg.sw)$('#'+k+'swt').textContent=on?`المصدر موصل: V1 = ${fm(p.V1n)} V ثابت`:'المصدر مفصول';
+    $('#'+k+'sp').innerHTML=cfg.sp.map(q=>cfg.spBtn?`<button class="btn" data-sp="${q}" style="${rows[q]?'border-color:var(--on)':''}">${q}%${rows[q]?' ✓':''}</button>`:`<span class="tu-chip${rows[q]?' ok':''}">${cfg.spText(p,q)}${rows[q]?' ✓':''}</span>`).join('');
+    $('#'+k+'mdn').innerHTML=cfg.modeNote(mode,p);
+    const cols=cfg.sp.map(q=>({h:`${q}%`,r:rows[q],cur:false})).concat(free.map((r,i)=>({h:`حرة ${i+1}`,r})));
+    const rl=cfg.rows(mode,p);
+    $('#'+k+'t').innerHTML=`<table class="tu-bt"><thead><tr><th>${cfg.head}</th>${cols.map(x=>`<th>${x.h}</th>`).join('')}</tr></thead><tbody>${rl.map(rw=>`<tr><th>${lt(rw.l)}</th>${cols.map(x=>{if(!x.r)return '<td></td>';const v=rw.f(x.r,mode);const bad=rw.bad&&rw.bad(v);return `<td class="${bad?'bad':''}">${typeof v==='number'?(isFinite(v)?fm(v,rw.dp):'—'):v}</td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+    const list=cfg.sp.map(q=>rows[q]).filter(Boolean).concat(free);
+    $('#'+k+'p').innerHTML=cfg.plots(list,mode,p).map(ptsPlot).join('');
+    $('#'+k+'res').innerHTML=cfg.results(p,rows,free,mode,ctx)||'';B.math($('#'+k+'res'));
+    if(steps)steps.check()};
+  ui();
+  steps=stepsUI($('#'+k+'st'),cfg.steps(ctx));
+  upd();
+  return {TP,ctx}}
+
+/* ======================================================================
+   Worked-example calculators — defaults = the lab's readings at rated values with the illustrative model;
+   replaced by the trainee's own readings when he records the 100 % column in the lab (same session).
+   ====================================================================== */
+const LAST={oc:null,sc:null,ld:null,ld0:null};
+const G8=[{id:'V',label:'جهد الملف الابتدائي عند اللاحمل',sym:'V_{10}',unit:'V'},{id:'I',label:'تيار الملف الابتدائي عند اللاحمل',sym:'I_{10}',unit:'A'},{id:'P',label:'قدرة الملف الابتدائي عند اللاحمل',sym:'P_{10}',unit:'W'},{id:'V2',label:'جهد الملف المفتوح',sym:'V_{20}',unit:'V'}];
+const G9=[{id:'V',label:'جهد القصر',sym:'V_{sc}',unit:'V'},{id:'I',label:'تيار القصر',sym:'I_{sc}',unit:'A'},{id:'P',label:'قدرة القصر',sym:'P_{sc}',unit:'W'},{id:'In',label:'التيار المقنن للملف الابتدائي',sym:'I_{1n}',unit:'A'}];
+const G10a=[{id:'V1',label:'جهد الابتدائي',sym:'V_1',unit:'V'},{id:'I1',label:'تيار الابتدائي',sym:'I_1',unit:'A'},{id:'P1',label:'القدرة الداخلة',sym:'P_1',unit:'W'},{id:'V2',label:'جهد الحمل',sym:'V_2',unit:'V'},{id:'I2',label:'تيار الحمل',sym:'I_2',unit:'A'},{id:'pf',label:'معامل قدرة الحمل (1 لمقاومة)',sym:'\\cos\\theta_2',unit:''},{id:'V20',label:'جهد الثانوي بلا حمل',sym:'V_{20}',unit:'V'}];
+const g10b=()=>[{id:'Sn',label:'القدرة المقننة',sym:'S',unit:'VA'},{id:'V1n',label:'الجهد المقنن للابتدائي',sym:'V_{1n}',unit:'V'},{id:'Pfe',label:'الفقد الحديدي (من التجربة 8)',sym:'P_{fe}',unit:'W'},{id:'Pcu',label:'الفقد النحاسي عند التيار المقنن (من التجربة 9)',sym:'P_{cu,fl}',unit:'W'},{id:'Req',label:'المقاومة المكافئة (منسوبة للابتدائي)',sym:'R_{eq}',unit:'Ω'},{id:'Xeq',label:'الممانعة المكافئة (منسوبة للابتدائي)',sym:'X_{eq}',unit:'Ω'},{id:'x',label:'نسبة الحمل (1 = كامل، 0.5 = منتصف)',sym:'x',unit:'',min:0,max:2},{id:'pf',label:'معامل قدرة الحمل (متأخر)',sym:'\\cos\\theta_2',unit:'',min:0,max:1}];
+const G10b=g10b(),G10c=g10b();
+const setG=(G,o)=>G.forEach(g=>{if(o[g.id]!=null&&isFinite(o[g.id]))g.value=+o[g.id]});
+function syncGiven(P){const oc=LAST.oc||rdOC(P,P.V1n),sc=LAST.sc||rdSC(P,vscRated(P)),ld=LAST.ld||rdLD(P,1,100,1),ld0=LAST.ld0||rdLD(P,1,0,1);
+  setG(G8,{V:oc.V10,I:oc.I10,P:oc.P10,V2:oc.V20});setG(G9,{V:sc.Vsc,I:sc.Isc,P:sc.Psc,In:R(I1n(P),3)});
+  setG(G10a,{V1:ld.V1,I1:ld.I1,P1:ld.P1,V2:ld.V2,I2:ld.I2,pf:ld.pf,V20:ld0.V2});
+  const d=dSC(sc),pcu=R(sc.Psc*Math.pow(I1n(P)/sc.Isc,2),1);
+  [G10b,G10c].forEach((G,i)=>setG(G,{Sn:P.Sn,V1n:P.V1n,Pfe:oc.P10,Pcu:pcu,Req:R(d.Req,3),Xeq:R(d.Xeq,3),x:i?0.5:1,pf:0.8}))}
+syncGiven(DEF);
+const bad=t=>[{t:`<span style="color:var(--stop)">${t}</span>`}];
+function solve8(g){const c=g.P/(g.V*g.I);if(!(c>0&&c<1)||!(g.V2>0))return bad('قراءات غير ممكنة: يجب أن تكون P<sub>10</sub> أصغر من V<sub>10</sub>×I<sub>10</sub> وكل القيم موجبة.');
+  const th=Math.acos(c)/D,sn=Math.sin(th*D),Ic=g.I*c,Im=g.I*sn;
+  return [{t:'معامل القدرة عند اللاحمل:',f:`\\cos\\theta_{10}=\\frac{P_{10}}{V_{10}\\times I_{10}}=\\frac{${g.P}}{${g.V}\\times ${g.I}}`,v:c,dp:4},
+   {t:'الزاوية بين الجهد والتيار:',f:`\\theta_{10}=\\cos^{-1}(${fm(c,4)})`,v:th,unit:'°',dp:2},
+   {t:'مركّبة تيار فقد الحديد (في طور الجهد):',f:`I_c=I_{10}\\cos\\theta_{10}=${g.I}\\times ${fm(c,4)}`,v:Ic,unit:'A',dp:4},
+   {t:'تيار المغنطة (متأخر 90°):',f:`I_m=I_{10}\\sin\\theta_{10}=${g.I}\\times ${fm(sn,4)}`,v:Im,unit:'A',dp:4},
+   {t:'مقاومة فقد الحديد:',f:`R_c=\\frac{V_{10}}{I_c}=\\frac{${g.V}}{${fm(Ic,4)}}`,v:g.V/Ic,unit:'Ω',dp:1},
+   {t:'ممانعة المغنطة:',f:`X_m=\\frac{V_{10}}{I_m}=\\frac{${g.V}}{${fm(Im,4)}}`,v:g.V/Im,unit:'Ω',dp:1},
+   {t:'نسبة التحويل (الخطوة 4):',f:`a=\\frac{V_{10}}{V_{20}}=\\frac{${g.V}}{${g.V2}}`,v:g.V/g.V2,dp:3},
+   {t:'الفقد الحديدي (الخطوة 8): قدرة اللاحمل تقريباً كلها فقد حديد لأن تيار اللاحمل صغير جداً:',f:'P_{fe}\\approx P_{10}',v:g.P,unit:'W',dp:1,final:true}]}
+function solve9(g){const Z=g.V/g.I,Rq=g.P/(g.I*g.I);if(!(Z>0&&Rq>0))return bad('اكتب قراءات موجبة.');if(Rq>Z)return bad('قراءات غير ممكنة: P<sub>sc</sub> أكبر من V<sub>sc</sub>×I<sub>sc</sub>.');
+  const X=Math.sqrt(Z*Z-Rq*Rq),c=g.P/(g.V*g.I),pcu=g.P*Math.pow(g.In/g.I,2);
+  return [{t:'المعاوقة المكافئة:',f:`Z_{eq}=\\frac{V_{sc}}{I_{sc}}=\\frac{${g.V}}{${g.I}}`,v:Z,unit:'Ω',dp:3},
+   {t:'المقاومة المكافئة:',f:`R_{eq}=\\frac{P_{sc}}{(I_{sc})^2}=\\frac{${g.P}}{${g.I}^2}`,v:Rq,unit:'Ω',dp:3},
+   {t:'الممانعة المكافئة:',f:`X_{eq}=\\sqrt{Z_{eq}^2-R_{eq}^2}=\\sqrt{${fm(Z,3)}^2-${fm(Rq,3)}^2}`,v:X,unit:'Ω',dp:3},
+   {t:'معامل القدرة عند القصر:',f:`\\cos\\varphi_{sc}=\\frac{P_{sc}}{V_{sc}\\,I_{sc}}`,v:c,dp:3},
+   {t:'الفقد النحاسي عند التيار المقنن (الخطوة 7) — يتناسب مع مربع التيار (إضافة من خارج الكتاب: التحويل إلى التيار المقنن):',f:`P_{cu}=P_{sc}\\left(\\frac{I_{1n}}{I_{sc}}\\right)^2=${g.P}\\times\\left(\\frac{${g.In}}{${g.I}}\\right)^2`,v:pcu,unit:'W',dp:1},
+   {t:'لرسم الدائرة المكافئة (الخطوة 8) نفرض عادةً أن المقاومة تتوزع بالتساوي على الملفين (منسوبة للابتدائي) — فرض من خارج الكتاب:',f:`R_1\\approx R_2'\\approx\\frac{R_{eq}}{2},\\quad X_1\\approx X_2'\\approx\\frac{X_{eq}}{2}`,v:`${fm(Rq/2,3)} Ω ، ${fm(X/2,3)}`,unit:'Ω',final:true}]}
+function solve10a(g){const P2=g.V2*g.I2*g.pf;if(!(P2>0&&g.P1>0&&g.I1>0))return bad('اكتب قراءات موجبة (والحمل موصل).');
+  const cb=g.P1/(P2/g.P1),c=g.P1/(g.V1*g.I1),eta=P2/g.P1*100,vr=(g.V20-g.V2)/g.V2*100;
+  return [{t:'القدرة الخارجة:',f:`P_2=V_2\\,I_2\\cos\\theta_2=${g.V2}\\times ${g.I2}\\times ${g.pf}`,v:P2,unit:'W',dp:1},
+   {t:'<b>كما في الكتاب</b> (صف الجدول ١٠-١): الناتج ليس معامل قدرة — له وحدة الواط وقيمته أكبر من 1:',f:`\\cos\\varphi_1=\\frac{P_1}{P_2/P_1}=\\frac{P_1^2}{P_2}=\\frac{${g.P1}^2}{${fm(P2,1)}}`,v:cb,unit:'W ✗',dp:1},
+   {t:'<b>المصحح</b>: معامل قدرة الدخل = القدرة ÷ (الجهد × التيار):',f:`\\cos\\varphi_1=\\frac{P_1}{V_1\\,I_1}=\\frac{${g.P1}}{${g.V1}\\times ${g.I1}}`,v:c,dp:3},
+   {t:'الكفاءة:',f:`\\eta=\\frac{P_2}{P_1}\\times 100=\\frac{${fm(P2,1)}}{${g.P1}}\\times 100`,v:eta,unit:'%',dp:1},
+   {t:'المفقودات الكلية (حديد + نحاس):',f:'P_1-P_2',v:g.P1-P2,unit:'W',dp:1},
+   {t:'معامل تنظيم الجهد بقانون الكتاب في ص 51 (V<sub>20</sub> قراءة الثانوي بلا حمل):',f:`V_R\\%=\\frac{|V_{20}-V_2|}{V_2}\\times 100=\\frac{|${g.V20}-${g.V2}|}{${g.V2}}\\times 100`,v:Math.abs(vr),unit:'%',dp:2,final:true}]}
+function solve10b(g){const In=g.Sn/g.V1n;if(!(In>0&&g.pf>=0&&g.pf<=1&&g.x>=0))return bad('اكتب قيماً صحيحة (0 ≤ cos θ ≤ 1).');
+  const sn=Math.sqrt(1-g.pf*g.pf),Po=g.x*g.Sn*g.pf,Pc=g.x*g.x*g.Pcu,eta=Po/(Po+g.Pfe+Pc)*100,vr=g.x*In*(g.Req*g.pf+g.Xeq*sn)/g.V1n*100,xm=Math.sqrt(g.Pfe/g.Pcu);
+  return [{t:'القدرة الخارجة:',f:`P_2=x\\,S\\cos\\theta_2=${g.x}\\times ${g.Sn}\\times ${g.pf}`,v:Po,unit:'W',dp:1},
+   {t:'الفقد النحاسي يتناسب مع مربع الحمل، والفقد الحديدي ثابت (P<sub>cor</sub> = P<sub>o</sub> و P<sub>cu</sub> = P<sub>s.c</sub>، ص 46):',f:`P_{cu}=x^2\\,P_{cu,fl}=${g.x}^2\\times ${g.Pcu}`,v:Pc,unit:'W',dp:2},
+   {t:'القدرة الداخلة (ص 46):',f:`P_1=P_2+P_{cor}+P_{cu}=${fm(Po,1)}+${g.Pfe}+${fm(Pc,2)}`,v:Po+g.Pfe+Pc,unit:'W',dp:1},
+   {t:'الكفاءة:',f:'\\eta=\\frac{P_2}{P_1}\\times 100',v:eta,unit:'%',dp:2},
+   {t:'معامل تنظيم الجهد — صيغة تقريبية من الدائرة المكافئة (إضافة من خارج الكتاب):',f:`V_R\\%\\approx\\frac{x\\,I_{1n}(R_{eq}\\cos\\theta_2+X_{eq}\\sin\\theta_2)}{V_{1n}}\\times 100,\\quad I_{1n}=\\frac{S}{V_{1n}}=${fm(In,3)}\\ A`,v:vr,unit:'%',dp:2},
+   {t:'أعلى كفاءة عندما يتساوى الفقد النحاسي والحديدي (سؤال ج، ص 48 — إضافة من خارج الكتاب):',f:`x_{\\eta\\,max}=\\sqrt{\\frac{P_{fe}}{P_{cu,fl}}}=\\sqrt{\\frac{${g.Pfe}}{${g.Pcu}}}`,v:xm,dp:3,final:true}]}
+
+/* ======================================================================
+   Lesson 1 — تمهيد الوحدة + التجربة الثامنة: اختبار اللاحمل
+   ====================================================================== */
+const DEF8B=`<ul class="tu-defs"><li>\\(P_{10}\\): قدرة الملف الابتدائي في حالة اللاحمل.</li><li>\\(V_{10}\\): جهد الملف الابتدائي في حالة اللاحمل.</li><li>\\(I_{10}\\): <b>جهد</b> الملف الابتدائي في حالة اللاحمل.</li><li>\\(\\theta_{10}\\): الزاوية بين جهد وتيار الملف في حالة اللاحمل.</li><li>\\(I_c\\): تيار المقاومة المغناطيسية.</li><li>\\(I_m\\): تيار الممانعة المغناطيسية.</li><li>\\(R_c\\): <b>المقاومة المغناطيسية</b>.</li><li>\\(X_m\\): <b>الممانعة الحديدية</b>.</li></ul><p>وفي الجدول (٨-١) تُكتب الرموز \\(I_a\\) و \\(R_o\\) و \\(X_o\\) و \\(\\varphi_o\\) بدل \\(I_c\\) و \\(R_c\\) و \\(X_m\\) و \\(\\theta_{10}\\).</p>`;
+const DEF8F=`<ul class="tu-defs"><li>\\(I_{10}\\): <b>تيار</b> الملف الابتدائي في حالة اللاحمل (تيار اللاحمل).</li><li>\\(I_c\\): مركّبة تيار <b>فقد الحديد</b> — في طور الجهد، وتسبب المفقودات الحديدية.</li><li>\\(I_m\\): <b>تيار المغنطة</b> — متأخر عن الجهد 90°، وهو الذي يكوّن الفيض في القلب.</li><li>\\(R_c\\): <b>مقاومة فقد الحديد</b> — تمثل المفقودات الحديدية.</li><li>\\(X_m\\): <b>ممانعة المغنطة</b> — تمثل مغنطة القلب.</li></ul><p>وهذا يتفق مع جملة الكتاب نفسه: «\\(R_c\\) و \\(X_m\\) يمثلان المفاقيد الحديدية والمغناطيسية للمحول». الرموز في الجدول: \\(I_a = I_c\\) و \\(R_o = R_c\\) و \\(X_o = X_m\\) و \\(\\varphi_o = \\theta_{10}\\) — المعنى واحد.</p>`;
+B.lesson({
+ id:'u3-l1',unit:3,order:1,pages:'35–41',
+ title:'تمهيد الوحدة — التجربة الثامنة: اختبار اللاحمل للمحول أحادي الوجه',
+ summary:'أهداف وحدة المحولات، ثم اختبار اللاحمل: نترك الثانوي مفتوحاً ونرفع جهد الابتدائي تدريجياً حتى المقنن، فنقيس الجهد والتيار والقدرة ونحسب نسبة التحويل وعناصر الفرع الموازي R<sub>c</sub> و X<sub>m</sub> والفقد الحديدي.',
+ theory:[
+  {h:'الوحدة الثالثة: تجارب المحولات الكهربائية',ref:'ص 35–36',html:`<p><b>الهدف العام للوحدة:</b> تعيين ثوابت الدائرة المكافئة للمحول من اختبار اللاحمل واختبار القصر، كذلك دراسة أداء المحول عند التحميل. وتوصيل المحولات على التوازي.</p>
+   <p><b>الأهداف التفصيلية:</b></p><ol><li>أن يتمكن المتدرب من تعيين ثوابت الدائرة المكافئة للمحول أحادي الوجه.</li><li>أن يتمكن المتدرب من حساب المفقودات في المحول.</li><li>أن يتمكن المتدرب من تعيين معامل التنظيم للمحول.</li><li>أن يتمكن المتدرب من حساب الكفاءة ومعامل القدرة.</li><li>أن يتمكن المتدرب من توصيل المحولات على التوازي.</li><li>أن يتمكن المتدرب من توصيل المحولات ثلاثية الأوجه نجمة – دلتا.</li></ol>`},
+  {h:'تجارب المحولات الكهربائية — Testing of Transformers',ref:'ص 37',html:`<p>تتكون الدائرة الكهربائية في المحول الكهربي من ملفين رئيسين يطلق على أحدهما <b>الملف الابتدائي</b> وهو الملف الذي يوصل إلى المنبع الكهربي، وعلى الثاني <b>الملف الثانوي</b> وهو الملف الذي يوصل إليه الحمل. ونظراً لأن المحول يمكن أن يستخدم بالطريقة المعكوسة، بحيث يصبح الملف الابتدائي ثانوياً، ويصبح الملف الثانوي ابتدائياً، فإن مثل هذه التسمية للملفين هي تسمية نسبية. لذلك يفضل في أغلب الأحيان تسمية كل من الملفين بالنسبة لقيمة الجهد الذي يتناسب مع كل منهما. فالمحول إما رافع للجهد (Step-up) أو خافض للجهد (Step-down)، والملف الذي يستخدم معه الجهد المرتفع يمكن أن يسمى <b>ملف الجهد العالي</b>، والملف الذي يستخدم معه الجهد المنخفض يسمى باسم <b>ملف الجهد المنخفض</b>.</p>
+   <p>تتميز المحولات بقيمة عالية جداً لمعامل الكفاءة، كما أنها تتميز أيضاً بقيمة منخفضة جداً لمعامل تنظيم الجهد. وتكون المفاضلة بين المحولات التي تنتجها الشركات عند شراء محول ذي مواصفات فنية معينة على أساس اقتصادي باعتبار الثمن الأساسي للمحول إلى جانب تكاليف التشغيل السنوية. وهذا يستلزم معرفة معامل الكفاءة للمحول إلى جانب معرفة معامل التنظيم الذي يحدد مدى ملاءمة المحول للمهمة المطلوبة منه. ومن هنا فإن التجارب المعملية التي يتم إجراؤها على المحول تستهدف الحصول أساساً على هذين المعاملين للتأكيد على صحة المعلومات التي يعطيها المنتج في هذا الشأن. وللحصول على هذين المعاملين يستلزم أولاً معرفة عناصر الدائرة المكافئة للمحول. وهذا ما سوف نقوم به خلال التجارب على المحول.</p>`},
+  {fig:'',caption:'الدائرة المكافئة للمحول أحادي الوجه منسوبة إلى الملف الابتدائي (توضيح للمتدرب — ليس من الكتاب). الفرع الموازي يعيّنه اختبار اللاحمل (هذا الدرس)، وعناصر التوالي يعيّنها اختبار القصر (الدرس التالي).',draw:()=>box(eqFullSVG({}),620)},
+  {note:ADD+'المحول يُمثَّل بدائرة فيها: \\(R_1\\) و \\(R_2\'\\) مقاومتا الملفين (سبب <b>الفقد النحاسي</b>)، و \\(X_1\\) و \\(X_2\'\\) ممانعتا التسرب، و \\(R_c\\) يمثل <b>الفقد الحديدي</b> في القلب، و \\(X_m\\) يمثل مغنطة القلب. العلامة \\(\'\\) تعني أن القيمة «منسوبة» للابتدائي: \\(R_2\'=a^2R_2\\) حيث \\(a=N_1/N_2\\). من التجارب 8 و 9 نعرف هذه العناصر، ثم نستعملها في التجربة 10 لحساب الكفاءة والتنظيم.'},
+  {h:'التجربة الثامنة: اختبار اللاحمل للمحول أحادي الوجه',ref:'ص 38',html:`<p class="ltr" style="text-align:left">Open-circuit test of single-phase transformer</p><p><b>الغرض من التجربة:</b></p><ul><li>تعيين ثوابت الدائرة المكافئة للمحول \\((R_0, X_0)\\) ودراسة خصائص المحول عند اللاحمل، مثل المفقودات الحديدية، وتيار اللاحمل.</li><li>رسم منحنيات الخواص للمحول عند اللاحمل.</li></ul>
+   <p><b>الأجهزة المستخدمة:</b></p><ol><li>مصدر قدرة.</li><li>محول أحادي الوجه.</li><li>جهاز قياس القدرة الكهربائية (wattmeter).</li><li>جهاز الفرملة.</li><li>جهاز الفولتميتر.</li><li>جهاز قياس السرعة.</li></ol>`},
+  {note:ADD+'«جهاز الفرملة» و«جهاز قياس السرعة» لا يُستعملان مع المحول (لا شيء يدور)، والأميتر مرسوم في الشكل (8) لكنه غير مذكور في القائمة. ما تحتاجه فعلاً: منبع جهد متردد متغير، محول، أميتر، فولتميتران، واتميتر. والكتاب لا يعطي القيم المقننة للمحول؛ الرسم يكتب على المصدر \\(V_1 = 220\\ V\\) فقط.'},
+  {h:'القوانين الخاصة بالتجربة',ref:'ص 38',html:`$$\\theta_{10}=\\cos^{-1}\\left(\\frac{P_{10}}{V_{10}\\times I_{10}}\\right)$$ $$I_c=I_{10}\\times\\cos\\theta_{10} \\qquad I_m=I_{10}\\times\\sin\\theta_{10}$$ $$R_c=\\frac{V_{10}}{I_c} \\qquad X_m=\\frac{V_{10}}{I_m}$$<p>مع العلم أنه: \\(R_c\\) و \\(X_m\\) يمثلان المفاقيد الحديدية والمغناطيسية للمحول. <b>معاني الرموز</b> — اختر النسخة:</p>`},
+  {widget:bookFixW(DEF8B,DEF8F)},
+  {fig:'',ref:'ص 39',caption:'الدائرة المكافئة في حالة اللاحمل: الثانوي مفتوح، فيمر تيار اللاحمل I<sub>10</sub> في الفرع الموازي فقط (X<sub>m</sub> و R<sub>c</sub>).',draw:()=>box(benchSVG('eqoc',{}),720,1)},
+  {fig:'(8)',ref:'ص 39',caption:'مخطط توصيل اختبار اللاحمل: الابتدائي N<sub>1</sub> (الطرفان A و B) على المصدر عبر الأميتر والفولتميتر والواتميتر (أطرافه 3 و 1\\2 و 5)، والثانوي N<sub>2</sub> (الطرفان a و b) مفتوح وعليه فولتميتر V<sub>20</sub>.',draw:()=>box(benchSVG('oc',{}),720,1)},
+  {note:ADD+'لماذا يعطي هذا الاختبار \\(R_c\\) و \\(X_m\\)؟ لأن الثانوي مفتوح \\((I_2=0)\\) فالتيار الوحيد هو تيار اللاحمل، وهو صغير جداً (عادة 2–10% من التيار المقنن)، فالفقد النحاسي \\(I_{10}^2R_1\\) مهمل، و<b>قراءة الواتميتر ≈ الفقد الحديدي</b>. ولأن معظم تيار اللاحمل تيار مغنطة متأخر، يكون معامل القدرة عند اللاحمل منخفضاً. وكلما اقترب الجهد من المقنن وتجاوزه «يتشبع» القلب فيزيد تيار المغنطة أسرع من الجهد، فيقل \\(\\cos\\varphi_0\\).'},
+  {h:'خطوات التجربة',ref:'ص 39–40',html:`<ol><li>يترك أحد ملفي المحول مفتوحاً ويوصل عليه جهاز فولتميتر.</li><li>يوصل الملف الآخر من خلال أجهزة القياس المناسبة لقياس الجهد والتيار والقدرة إلى منبع جهد متردد متغير القيمة ويعطي الجهد المقنن لهذا الملف.</li><li>غير قيم الجهد تدريجياً وسجل قراءات الأجهزة في الجدول (٨-١).</li><li>احسب نسبة التحويل.</li><li>احسب \\(R_0, X_0\\) عند الجهد المقنن للمحول.</li><li>من النتائج المسجلة ارسم منحنيات القدرة \\(P_{10}\\)، التيار \\(I_{10}\\)، جهد الملف المفتوح \\(V_{20}\\)، ومعامل القدرة \\(\\cos\\varphi_0\\) مع الجهد المسلط على المحول \\(V_{10}\\).</li><li>ناقش النتائج ومنحنيات الخواص.</li><li>احسب الفقد الحديدي للمحول.</li></ol>`},
+  {h:'الجدول (٨-١)',ref:'ص 40',html:ptable('V<sub>10</sub> rated (V)',['20%','40%','60%','80%','100%'],['P<sub>1o</sub>(W)','I<sub>1o</sub>(A)','V<sub>2o</sub>(V)','cosφ<sub>o</sub>=P<sub>1o</sub>/V<sub>10</sub>I<sub>1o</sub>','I<sub>a</sub>=I<sub>1o</sub> cosφ<sub>o</sub>','I<sub>m</sub>=I<sub>1o</sub> sinφ<sub>o</sub>','R<sub>o</sub>=V<sub>10</sub>/I<sub>a</sub>','X<sub>o</sub>=V<sub>10</sub>/I<sub>m</sub>','a=V<sub>10</sub>/V<sub>20</sub>'])+'<p class="sub">الأعمدة نسب من الجهد المقنن. املأ الجدول من المختبر الافتراضي.</p>'},
+  {h:'المنحنيات المطلوبة',ref:'ص 40–41',html:`<p>شبكات الرسم في الكتاب:</p><ul><li>\\(V_{10}\\) (رأسي) مع \\(I_{10}\\) (أفقي) — ص 40.</li><li>\\(V_{10}\\) (رأسي) مع \\(P_{10}\\) (أفقي) — ص 40.</li><li>\\(\\cos\\Phi_0\\) (رأسي) مع \\(I_{L10}\\) (أفقي) — ص 41.</li></ul><p>والخطوة 6 تطلب أيضاً \\(V_{20}\\) مع \\(V_{10}\\)، وهو مرسوم في المختبر.</p>`},
+  {h:'الأسئلة',ref:'ص 41',html:'<p>بعد الانتهاء من التجربة يمكنك الإجابة على الأسئلة التالية:</p>'+
+   Q('أ','ما هو تأثير زيادة الجهد على أطراف الملف الابتدائي على كل من: (1) المفقودات الحديدية (2) معامل القدرة (3) تيار اللاحمل','(1) <b>المفقودات الحديدية تزيد</b> تقريباً مع مربع الجهد \\((P_{fe}\\approx V^2/R_c)\\): ضعف الجهد ≈ أربعة أضعاف الفقد. (2) <b>معامل القدرة يقل</b>: لأن تيار المغنطة يزيد أسرع من مركبة الفقد عندما يقترب القلب من التشبع. (3) <b>تيار اللاحمل يزيد</b>، ببطء في البداية ثم بسرعة قرب الجهد المقنن وما فوقه (التشبع). جرّب ذلك في المختبر وقارن الأعمدة.')+
+   Q('ب','لماذا يفضل تشغيل محولات القدرة الكهربائية عند حملها الكامل؟','لأن المفقودات الحديدية ثابتة تقريباً مهما كان الحمل (تعتمد على الجهد فقط). عند حمل صغير تكون هذه المفقودات نسبة كبيرة من القدرة الخارجة فتكون الكفاءة منخفضة، ويكون معامل القدرة المسحوب منخفضاً أيضاً (تيار المغنطة هو الغالب). قرب الحمل الكامل تصبح المفقودات نسبة صغيرة فتكون الكفاءة عالية (أعلى كفاءة عندما يتساوى الفقد النحاسي مع الفقد الحديدي، والمحولات تُصمم ليحدث ذلك قريباً من الحمل الكامل).')},
+  {err:`<ol style="margin:4px 0 0;padding-inline-start:20px"><li>الهدف العام ص 36: «اختيار القصر» — والصحيح «اختبار القصر».</li><li>مقدمة الوحدة ص 37 معنونة «الجزء الثاني» مع أنها الوحدة الثالثة.</li><li>تعريف \\(I_{10}\\) ص 38: «جهد الملف الابتدائي» — والصحيح «تيار الملف الابتدائي». وتعريفا \\(R_c\\) «المقاومة المغناطيسية» و \\(X_m\\) «الممانعة الحديدية» معكوسا الوصف (انظر مفتاح «كما في الكتاب / المصحح» أعلاه)، و«أنة» صوابها «أنه».</li><li>الرموز غير موحدة: الغرض \\(R_0, X_0\\)، والقوانين \\(R_c, X_m\\)، والجدول \\(R_o, X_o\\) مع \\(I_a\\) بدل \\(I_c\\)، و\\(\\theta_{10}\\) في القوانين و\\(\\varphi_0\\) في الجدول.</li><li>قائمة الأجهزة فيها «جهاز الفرملة» و«جهاز قياس السرعة» (لا علاقة لهما بالمحول)، وينقصها الأميتر.</li><li>الشكل (8) يكتب على المصدر \\(V_1=220\\ V\\) ثابتاً، والخطوات تطلب منبعاً متغيراً.</li><li>الخطوة 6 تطلب أربعة منحنيات مع \\(V_{10}\\)، والشبكات ثلاث فقط ومحاورها مختلفة (\\(V_{10}\\) رأسي، وشبكة \\(\\cos\\Phi_0\\) محورها \\(I_{L10}\\))، ولا شبكة لـ \\(V_{20}\\). المختبر يرسم شبكات الكتاب كما طُبعت ويضيف \\(V_{20}\\) مع \\(V_{10}\\).</li></ol>`}
+ ],
+ lab:(el)=>{const sat=P=>P.ks>0;
+  bench(el,{k:'e8',title:'منضدة اختبار اللاحمل <small>مبنية على الشكل (8) ص 39</small>',
+   clabel:'جهد المنبع المتغير V<sub>10</sub>',cunit:'V',cdp:1,cmax:P=>R(P.V1n*1.15,1),cstep:()=>0.1,fine:()=>[-10,-1,-0.1,0.1,1,10],
+   spLabel:'نقاط الجدول (% من الجهد المقنن):',sp:[20,40,60,80,100],spBtn:true,spValue:(P,q)=>R(q/100*P.V1n,1),
+   match:(P,r,q)=>Math.abs(r.V10-q/100*P.V1n)<=0.006*P.V1n,zeroLabel:'أعد الجهد إلى الصفر',noRead:'لا توجد قراءة: ارفع الجهد أولاً.',
+   read:(P,c)=>rdOC(P,c),valid:r=>r.V10>0&&r.I10>0&&r.P10>0,
+   svg:(P,r,x)=>benchSVG('oc',{on:x.c>0,rd:{A:fm(r.I10,3)+' A',V:fm(r.V10,1)+' V',W:fm(r.P10,1)+' W',V2:fm(r.V20,1)+' V'},src:S.t(50,280,'V1 = '+fm(x.c,1)+' V','')}),
+   meters:(P,r)=>[['V<sub>10</sub>',fm(r.V10,1)+' V'],['I<sub>10</sub>',fm(r.I10,3)+' A'],['P<sub>10</sub>',fm(r.P10,1)+' W'],['V<sub>20</sub>',fm(r.V20,1)+' V']],
+   warn:(P,r,x)=>{const c=x.c;if(c<=0)return '<div class="callout">المنبع على الصفر. ارفع الجهد <b>تدريجياً</b> (الخطوة 3)، أو اضغط زر نقطة من نقاط الجدول.</div>';
+    let h='';const cu=r.I10*r.I10*P.R1;
+    if(c>1.05*P.V1n)h+=`<div class="callout err">الجهد أعلى من المقنن (<span class="ltr">${fm(P.V1n)} V</span>): تيار اللاحمل يقفز ${sat(P)?'لأن القلب يتشبع':''}، والفقد الحديدي يزيد. لا يُشغَّل المحول طويلاً هكذا.</div>`;
+    else if(Math.abs(c-P.V1n)<=0.006*P.V1n)h+='<div class="callout">هذا هو <b>الجهد المقنن</b>: من عمود 100% تحسب R<sub>0</sub> و X<sub>0</sub> (الخطوة 5) والفقد الحديدي (الخطوة 8).</div>';
+    return h+`<p class="sub">الفقد النحاسي في الابتدائي الآن I<sub>10</sub><sup>2</sup>R<sub>1</sub> = <span class="ltr">${fm(cu,3)} W</span> فقط من <span class="ltr">${fm(r.P10,1)} W</span>: لذلك قراءة الواتميتر ≈ الفقد الحديدي.</p>`},
+   tblTitle:'الجدول (٨-١) ص 40 — يمتلئ بقراءاتك',modeLabel:'أسماء الرموز:',
+   modeNote:m=>m==='book'?'<p class="sub">الرموز كما طُبعت في الجدول: I<sub>a</sub> و R<sub>o</sub> و X<sub>o</sub>.</p>':'<p class="sub">المصحح: I<sub>c</sub> (مركبة فقد الحديد) و R<sub>c</sub> (مقاومة فقد الحديد) و X<sub>m</sub> (ممانعة المغنطة) — الأرقام نفسها، والتغيير في الأسماء فقط.</p>',
+   head:'V<sub>10</sub> rated',
+   rows:m=>{const b=m==='book';return [{l:'V<sub>10</sub>(V)',f:r=>r.V10,dp:1},{l:'P<sub>1o</sub>(W)',f:r=>r.P10,dp:1},{l:'I<sub>1o</sub>(A)',f:r=>r.I10,dp:3},{l:'V<sub>2o</sub>(V)',f:r=>r.V20,dp:1},{l:'cosφ<sub>o</sub>=P<sub>1o</sub>/V<sub>10</sub>I<sub>1o</sub>',f:r=>dOC(r).c,dp:3},
+     {l:b?'I<sub>a</sub>=I<sub>1o</sub> cosφ<sub>o</sub>':'I<sub>c</sub>=I<sub>10</sub> cosθ<sub>10</sub>',f:r=>dOC(r).Ic,dp:4},{l:'I<sub>m</sub>=I<sub>1o</sub> sinφ<sub>o</sub>',f:r=>dOC(r).Im,dp:4},{l:b?'R<sub>o</sub>=V<sub>10</sub>/I<sub>a</sub> (Ω)':'R<sub>c</sub>=V<sub>10</sub>/I<sub>c</sub> (Ω)',f:r=>dOC(r).R0,dp:0},{l:b?'X<sub>o</sub>=V<sub>10</sub>/I<sub>m</sub> (Ω)':'X<sub>m</sub>=V<sub>10</sub>/I<sub>m</sub> (Ω)',f:r=>dOC(r).X0,dp:0},{l:'a=V<sub>10</sub>/V<sub>20</sub>',f:r=>dOC(r).a,dp:3}]},
+   plotRef:'شبكات ص 40–41 بمحاورها كما طُبعت',
+   plots:(L,m,P)=>{const s=rdOC(P,P.V1n);return [
+    {xl:'I10 (A)',yl:'V10 (v)',pts:L.map(r=>[r.I10,r.V10]),sortY:true,xmin:s.I10,ymin:P.V1n,cap:'V<sub>10</sub> مع I<sub>10</sub> — ص 40'},
+    {xl:'P10 (w)',yl:'V10 (v)',pts:L.map(r=>[r.P10,r.V10]),sortY:true,xmin:s.P10,ymin:P.V1n,cap:'V<sub>10</sub> مع P<sub>10</sub> — ص 40'},
+    {xl:'IL10 (A)',yl:'CosΦ0',pts:L.map(r=>[r.I10,dOC(r).c]),xmin:s.I10,ymin:0.5,cap:'cosΦ<sub>0</sub> مع تيار اللاحمل — ص 41'},
+    {xl:'V10 (v)',yl:'V20 (v)',pts:L.map(r=>[r.V10,r.V20]),xmin:P.V1n,ymin:V2n(P),cap:'V<sub>20</sub> مع V<sub>10</sub> — تطلبه الخطوة 6 ولا شبكة له في الكتاب'}]},
+   results:(P,rows,free,m)=>{const r=rows[100];if(!r)return '<div class="callout">سجّل عمود <b>100%</b> (الجهد المقنن) لتظهر هنا نسبة التحويل و R<sub>0</sub> و X<sub>0</sub> والفقد الحديدي (الخطوات 4 و5 و8). الحساب خطوة بخطوة في تبويب «الأمثلة المحلولة».</div>';
+    const d=dOC(r),pc=(x,y)=>fm((x-y)/y*100,1);
+    return `<h3 class="sm">النتائج عند الجهد المقنن (الخطوات 4 و5 و8)</h3><div class="tu-meters">${meters([['a = V<sub>10</sub>/V<sub>20</sub>',fm(d.a,3)],[m==='book'?'R<sub>0</sub>':'R<sub>c</sub>',fm(d.R0,0)+' Ω'],[m==='book'?'X<sub>0</sub>':'X<sub>m</sub>',fm(d.X0,0)+' Ω'],['الفقد الحديدي ≈ P<sub>10</sub>',fm(r.P10,1)+' W']])}</div>
+     <p class="sub">مقارنة بنموذج المحاكاة: R<sub>c</sub> = ${fm(P.Rc)} Ω (الفرق ${pc(d.R0,P.Rc)}%)، X<sub>m</sub> = ${fm(P.Xm)} Ω (الفرق ${pc(d.X0,P.Xm)}%)، a = ${fm(P.a)}. الفرق الصغير سببه تقريب قراءات الأجهزة وهبوط الجهد الصغير على R<sub>1</sub> و X<sub>1</sub>.${P.ks>0?' ولاحظ في الجدول أن X<sub>0</sub> المحسوب عند الجهود الصغيرة أكبر: القلب لم يتشبع بعد.':''}</p>`},
+   onRec:(P,sp,r)=>{if(sp===100){LAST.oc=r;syncGiven(P)}},
+   steps:x=>[
+    {t:'جهّز الدائرة',get x(){return `الثانوي مفتوح وعليه فولتميتر V<sub>20</sub>، والابتدائي موصل بالمنبع المتغير عبر الأميتر والفولتميتر والواتميتر (الخطوتان 1 و2، الشكل 8). الجهد المقنن للابتدائي في هذه المحاكاة <span class="ltr">${fm(x.P.V1n)} V</span>.`}},
+    {t:'20% من الجهد المقنن',get x(){return `اضغط «20%» (أو حرك المنزلق) حتى <span class="ltr">V<sub>10</sub> = ${fm(0.2*x.P.V1n,1)} V</span> ثم «سجّل القراءة» (الخطوة 3).`},done:()=>!!x.rows[20]},
+    {t:'أكمل 40% و60% و80%',get x(){return `ارفع الجهد تدريجياً: <span class="ltr">${[40,60,80].map(q=>fm(q/100*x.P.V1n,1)).join(' ، ')} V</span> وسجّل كل مرة. لاحظ أن I<sub>10</sub> صغير جداً.`},done:()=>x.rows[40]&&x.rows[60]&&x.rows[80]},
+    {t:'الجهد المقنن 100%',get x(){return `سجّل عند <span class="ltr">${fm(x.P.V1n)} V</span>. من هذا العمود تحسب R<sub>0</sub> و X<sub>0</sub> (الخطوة 5)، ويجب أن تقترب من قيمتي النموذج <span class="ltr">R<sub>c</sub> = ${fm(x.P.Rc)} Ω</span> و <span class="ltr">X<sub>m</sub> = ${fm(x.P.Xm)} Ω</span>، ونسبة التحويل من <span class="ltr">${fm(x.P.a)}</span>.`},done:()=>!!x.rows[100]},
+    {t:'اقرأ المنحنيات',get x(){return x.P.ks>0?'cosφ<sub>0</sub> يقل كلما زاد الجهد، و I<sub>10</sub> يزيد أسرع من الجهد قرب المقنن (تشبع القلب)، و V<sub>20</sub> يتناسب مع V<sub>10</sub> (خط مستقيم ميله 1/a). هذه إجابة السؤال (أ).':'التشبع صفر في قيم المدرب: يبقى cosφ<sub>0</sub> ثابتاً و I<sub>10</sub> خطاً مستقيماً مع الجهد. و V<sub>20</sub> يتناسب مع V<sub>10</sub>.'}},
+    {t:'فوق المقنن (للملاحظة فقط)',get x(){return `ارفع الجهد إلى <span class="ltr">110%</span> (<span class="ltr">${fm(1.1*x.P.V1n,1)} V</span>) أو أكثر: تيار اللاحمل يقفز والفقد الحديدي يزيد. لذلك لا يُرفع الجهد فوق المقنن.`},done:()=>x.c>=1.1*x.P.V1n-0.05},
+    {t:'كما في الكتاب / المصحح',x:'في الجدول اختر «المصحح»: تتغير أسماء الرموز إلى I<sub>c</sub> و R<sub>c</sub> و X<sub>m</sub> والأرقام كما هي. ثم افتح تبويب «الأمثلة المحلولة»: الحاسبة تأخذ قراءة عمود 100% التي سجلتها.',done:()=>!!x.did.mdfixed}]});
+  syncGiven(DEF)},
+ examples:[{title:'حساب نسبة التحويل و R<sub>c</sub> و X<sub>m</sub> والفقد الحديدي من قراءات اللاحمل',ref:'ص 38–40',
+  q:'<p>من قراءات عمود 100% في الجدول (٨-١) احسب نسبة التحويل (الخطوة 4) و \\(R_c, X_m\\) (الخطوة 5) والفقد الحديدي (الخطوة 8). <b>الكتاب لا يعطي أرقاماً</b>: المعطيات هنا قراءات المختبر الافتراضي عند الجهد المقنن بالقيم التوضيحية، وإذا سجلت عمود 100% في المختبر تظهر هنا قراءاتك أنت. زر «قيم الكتاب» يرجع هذه المعطيات.</p>',
+  given:G8,solve:g=>solve8(g),note:'الحساب بالرموز المصححة \\(I_c\\) و \\(R_c\\) و \\(X_m\\)؛ في جدول الكتاب تسمى \\(I_a\\) و \\(R_o\\) و \\(X_o\\).'}],
+ quiz:[
+  {q:'في اختبار اللاحمل يكون الملف الثانوي:',o:['مقصوراً عبر أميتر','مفتوحاً وعليه فولتميتر','موصلاً بحمل كامل','موصلاً بالمصدر'],c:1,e:'الخطوة 1 ص 39: يترك أحد ملفي المحول مفتوحاً ويوصل عليه جهاز فولتميتر.'},
+  {q:'قراءة الواتميتر في اختبار اللاحمل تمثل تقريباً:',o:['الفقد النحاسي','الفقد الحديدي','القدرة الخارجة','لا شيء'],c:1,e:'تيار اللاحمل صغير جداً فالفقد النحاسي مهمل، والقدرة المقاسة ≈ الفقد الحديدي (الخطوة 8).'},
+  {q:'إذا كانت \\(V_{10}=220\\ V\\) و \\(V_{20}=110\\ V\\) فنسبة التحويل:',o:['0.5','2','110','220'],c:1,e:'\\(a=V_{10}/V_{20}=2\\) (الجدول ٨-١).'},
+  {q:'\\(\\cos\\theta_{10}\\) يُحسب من:',o:['\\(V_{10}/I_{10}\\)','\\(P_{10}/(V_{10}I_{10})\\)','\\(P_{10}/I_{10}^2\\)','\\(V_{20}/V_{10}\\)'],c:1,e:'القوانين ص 38.'},
+  {q:'مركّبة التيار التي في طور الجهد وتسبب الفقد الحديدي هي:',o:['\\(I_m=I_{10}\\sin\\theta\\)','\\(I_c=I_{10}\\cos\\theta\\)','\\(I_2\\)','\\(I_{sc}\\)'],c:1,e:'\\(I_c\\) تمر في \\(R_c\\) التي تمثل الفقد الحديدي.'},
+  {q:'عند زيادة الجهد المسلط حتى المقنن وما فوقه فإن معامل القدرة عند اللاحمل:',o:['يزيد','يقل','يبقى ثابتاً دائماً','يصبح 1'],c:1,e:'تيار المغنطة يزيد أسرع (تشبع القلب) — السؤال (أ) ص 41.'},
+  {q:'عند أي جهد تُحسب \\(R_0, X_0\\) حسب الخطوة 5؟',o:['20% من المقنن','عند الجهد المقنن','5% من المقنن','أي جهد'],c:1,e:'الخطوة 5: احسب R0, X0 عند الجهد المقنن للمحول.'},
+  {q:'في الكتاب عُرّف \\(I_{10}\\) بأنه «جهد الملف الابتدائي». الصحيح:',o:['جهد الثانوي','تيار الملف الابتدائي في حالة اللاحمل','قدرة اللاحمل','تيار القصر'],c:1,e:'خطأ مطبعي في ص 38.'}
+ ]
+});
+
+/* ======================================================================
+   Lesson 2 — التجربة التاسعة: اختبار القصر
+   ====================================================================== */
+const SRC5=S.t(50,272,'V1 = 5%','')+arT(50,287,'من الجهد المقنن',{fs:11});
+B.lesson({
+ id:'u3-l2',unit:3,order:2,pages:'42–45',
+ title:'التجربة التاسعة: اختبار القصر للمحول أحادي الوجه',
+ summary:'نقصر الثانوي بأميتر ونرفع جهد الابتدائي من الصفر بحذر حتى يصل التيار إلى المقنن (يكفي جهد صغير نحو 5% من المقنن)، فنحسب Z<sub>eq</sub> و R<sub>eq</sub> و X<sub>eq</sub> والفقد النحاسي، ونرسم الدائرة المكافئة كاملة.',
+ theory:[
+  {h:'التجربة التاسعة: اختبار القصر للمحول أحادي الوجه',ref:'ص 42',html:`<p class="ltr" style="text-align:left">Short-circuit test of single-phase transformer</p><p><b>الغرض من التجربة:</b></p><ul><li>تعيين ثوابت الدائرة المكافئة للمحول \\((R_{eq}, X_{eq})\\) ودراسة خصائص المحول عند القصر، مثل المفقودات النحاسية، وتيار القصر.</li><li>رسم منحنيات الخواص للمحول عند القصر. والحصول على المعلومات التي تساعد في الحصول على معامل الكفاءة والتنظيم وبعض المواصفات الخاصة بالمحول، مثل المفقودات النحاسية، المقاومة والممانعة لملفات الجهد العالي والمنخفض.</li></ul>
+   <p><b>الأجهزة المطلوبة:</b> يتم توصيف الأجهزة على حسب ما هو مبين في الرسم التخطيطي في الشكل (9)، ويراعى عند توصيل الأجهزة أننا نتعامل مع <b>جهد صغير نسبياً وتيار كبير نسبياً</b>، لذلك من المهم اختيار التدريج المناسب لأجهزة القياس في هذه الحالة.</p>`},
+  {h:'المعادلات الخاصة بالتجربة',ref:'ص 42',html:`$$Z_{eq}=\\frac{V_{s.c}}{I_{s.c}} \\qquad R_{eq}=\\frac{P_{s.c}}{(I_{s.c})^2} \\qquad X_{eq}=\\sqrt{Z_{eq}^2-R_{eq}^2}$$<p>حيث إن: \\(Z_{eq}\\): المعاوقة المكافئة للملفات النحاسية. \\(R_{eq}\\): المقاومة المكافئة للملفات النحاسية. \\(X_{eq}\\): الممانعة المكافئة للملفات النحاسية.</p><p>وصيغة \\(X_{eq}\\) في صف الجدول (٩-١) — اختر النسخة:</p>`},
+  {widget:bookFixW('صف الجدول (٩-١): \\(X_{eq}=\\sqrt{Z^2_{sc}-R^2_{sc}}\\ (\\Omega)\\) — رموز \\(Z_{sc}, R_{sc}\\) لم تُعرّف في التجربة.','\\(X_{eq}=\\sqrt{Z_{eq}^2-R_{eq}^2}\\ (\\Omega)\\) — نفس معادلة ص 42؛ \\(Z_{eq}\\) و \\(R_{eq}\\) هما المحسوبتان في الصفين السابقين من الجدول. الأرقام لا تتغير، فالخطأ في الكتابة فقط.')},
+  {fig:'',ref:'ص 42',caption:'الدائرة المكافئة في حالة القصر: المصدر V<sub>1</sub> = 5% من الجهد المقنن، والتيار I<sub>sc</sub> يمر في R<sub>1e</sub> و X<sub>1e</sub> (أي R<sub>eq</sub> و X<sub>eq</sub> منسوبتين للابتدائي) فقط.',draw:()=>box(benchSVG('eqsc',{src:SRC5}),720,1)},
+  {fig:'(9)',ref:'ص 43',caption:'مخطط توصيل اختبار القصر: الابتدائي كما في الشكل (8)، والثانوي (a و b) مقصور عبر أميتر فقط.',draw:()=>box(benchSVG('sc',{src:SRC5}),720,1)},
+  {note:ADD+'الثانوي مقصور، فالشيء الوحيد الذي يحد التيار هو معاوقة الملفين الصغيرة \\(Z_{eq}\\). لذلك يكفي جهد صغير (نحو 3–10% من المقنن، والكتاب يكتب 5%) ليمر التيار المقنن. ولأن الجهد صغير يكون الفيض في القلب صغيراً، فيكون <b>الفقد الحديدي مهملاً</b> وتيار المغنطة مهملاً، و<b>قراءة الواتميتر ≈ الفقد النحاسي</b> في الملفين. أما لو وُصل الجهد المقنن والثانوي مقصور فسيمر تيار يساوي عشرات أضعاف المقنن ويحترق الملف — جرّب ذلك بأمان في المختبر.'},
+  {h:'خطوات التجربة',ref:'ص 43',html:`<ol><li>يتم قصر أحد ملفي المحول بتوصيله على أمبير متر.</li><li>يوصل الملف الآخر من خلال أجهزة القياس المناسبة لقياس الجهد والتيار والقدرة إلى منبع جهد ذي جهد متردد منخفض ومتغير.</li><li>تأكد من أن الجهد المسلط على الملف الابتدائي مساوٍ للصفر، ثم ابدأ بزيادة الجهد تدريجياً وبحذر وسجل القراءات في الجدول (٩-١)، <b>ولاحظ أن لا يزيد تيار القصر عن تيار الحمل الكامل</b>.</li><li>تحسب ثوابت الدائرة المكافئة عند التيار المقنن للمحول.</li><li>ارسم القدرة الداخلة، التيار ومعامل القدرة مع الجهد المسلط على أطراف المحول.</li><li>ناقش النتائج في ضوء دراستك النظرية.</li><li>احسب الفقد النحاسي للمحول.</li><li>ارسم الدائرة المكافئة للمحول مبيناً عليها الثوابت المختلفة.</li></ol>`},
+  {h:'الجدول (٩-١)',ref:'ص 44',html:ptable('I<sub>sc</sub>(A)',['20%','40%','60%','80%','100%'],['V<sub>sc</sub>(V)','P<sub>sc</sub>(W)','R<sub>eq</sub>=P<sub>sc</sub>/I<sup>2</sup><sub>sc</sub>(Ω)','Z<sub>eq</sub>=V<sub>sc</sub>/I<sub>sc</sub>(Ω)','X<sub>eq</sub>=√Z<sup>2</sup><sub>sc</sub>−R<sup>2</sup><sub>sc</sub>(Ω)','cosφ<sub>sc</sub>=P<sub>sc</sub>/(V<sub>sc</sub>I<sub>sc</sub>)'])+'<p class="sub">الأعمدة نسب من التيار المقنن.</p>'},
+  {h:'المنحنيات المطلوبة',ref:'ص 44',html:'<ul><li>\\(V_{sc}\\) (رأسي) مع \\(I_{sc}\\) (أفقي).</li><li>\\(V_{sc}\\) (رأسي) مع \\(P_{sc}\\) (أفقي).</li><li>\\(\\cos\\Phi_{sc}\\) (رأسي) مع \\(V_{sc}\\) (أفقي).</li></ul>'},
+  {h:'الأسئلة',ref:'ص 45',html:'<p>بعد الانتهاء من التجربة يمكنك الإجابة على الأسئلة التالية:</p>'+
+   Q('أ','لماذا يتم اختبار القصر عند جهد أقل من الجهد المقنن؟','لأن الثانوي مقصور فلا يحد التيار إلا معاوقة الملفات \\(Z_{eq}\\) وهي صغيرة جداً. عند الجهد المقنن سيمر تيار يساوي عشرات أضعاف التيار المقنن فتحترق الملفات. لذلك نرفع الجهد من الصفر حتى يصل التيار إلى المقنن فقط، وهذا يحدث عند جهد صغير (نحو 5% من المقنن).')+
+   Q('ب','أيهما أكبر: معامل القدرة عند القصر أم عند اللاحمل؟ ولماذا؟','<b>عند القصر أكبر</b> عادةً في المحولات الصغيرة. عند اللاحمل معظم التيار تيار مغنطة متأخر قرابة 90° فيكون معامل القدرة منخفضاً. عند القصر يمر التيار في \\(R_{eq}\\) و \\(X_{eq}\\) على التوالي، و\\(R_{eq}\\) ليست صغيرة بالنسبة إلى \\(X_{eq}\\)، فيكون \\(\\cos\\varphi_{sc}=R_{eq}/Z_{eq}\\) أكبر. قارن قيمتي المختبر في التجربتين 8 و 9.')+
+   Q('ج','أي نوع من المفاقيد تكون القدرة المسحوبة من المصدر في حالة القصر؟','<b>مفاقيد نحاسية</b> في الملفين الابتدائي والثانوي \\((I^2R_{eq})\\). المفاقيد الحديدية مهملة لأن الجهد صغير فالفيض في القلب صغير.')},
+  {err:`<ol style="margin:4px 0 0;padding-inline-start:20px"><li>الغرض ص 42 منسوخ من التجربة 8: «ودراسة خصائص المحول عند <b>اللاحمل</b>، مثل المفقودات <b>الحديدية</b>، وتيار <b>اللاحمل</b>» — والصحيح «عند القصر، مثل المفقودات النحاسية، وتيار القصر» (صُحح في النص أعلاه).</li><li>«الرسم التخطيطي في شكل (١١)» ص 42 — والرسم الفعلي لهذه التجربة هو الشكل (9) (صُحح في النص).</li><li>صف \\(X_{eq}\\) في الجدول مكتوب \\(\\sqrt{Z^2_{sc}-R^2_{sc}}\\) — والمقصود \\(\\sqrt{Z^2_{eq}-R^2_{eq}}\\) (انظر المفتاح أعلاه).</li><li>الخطوة 5 تطلب الكميات مع الجهد على المحور الأفقي، بينما شبكتان من الثلاث تضعان \\(V_{sc}\\) رأسياً. المختبر يرسم الشبكات كما طُبعت.</li><li>السؤال (ب) ص 45: «أيهما أكبر معامل القدرة عند القصر أكبر أم عند اللاحمل» — كلمة «أكبر» مكررة (صُحح في نص السؤال).</li><li>الكتاب لا يذكر الأجهزة بالتفصيل ولا القيم المقننة للمحول.</li></ol>`}
+ ],
+ lab:(el)=>{
+  bench(el,{k:'e9',title:'منضدة اختبار القصر <small>مبنية على الشكل (9) ص 43</small>',
+   clabel:'جهد المنبع المنخفض المتغير V<sub>sc</sub>',cunit:'V',cdp:2,cmax:P=>R(Math.min(P.V1n,Math.max(0.15*P.V1n,1.6*vscRated(P))),2),cstep:()=>0.01,fine:()=>[-1,-0.1,-0.01,0.01,0.1,1],
+   spLabel:'نقاط الجدول (% من التيار المقنن):',sp:[20,40,60,80,100],spBtn:false,spText:(P,q)=>`${q}% = ${fm(q/100*I1n(P),2)} A`,
+   match:(P,r,q)=>Math.abs(r.Isc-q/100*I1n(P))<=0.02*I1n(P),zeroLabel:'أعد الجهد إلى الصفر',noRead:'لا توجد قراءة: ارفع الجهد أولاً.',
+   extraBtns:'<button class="btn" id="e9full">طبّق الجهد المقنن مباشرة (خطأ شائع)</button>',
+   bind:(el,api,x)=>{el.querySelector('#e9full').onclick=()=>api.setC(x.P.V1n,true)},
+   read:(P,c)=>rdSC(P,c),valid:r=>r.Vsc>0&&r.Isc>0&&r.Psc>0,
+   trip:(P,r,x)=>r.raw>P.kTrip*I1n(P)?`<b>القاطع فصل المصدر!</b> الثانوي مقصور، والجهد <span class="ltr">${fm(x.c,1)} V</span> كان سيمرر <span class="ltr">${fm(r.raw,1)} A</span> = <span class="ltr">${fm(r.raw/I1n(P),0)}</span> ضعف التيار المقنن، فتحترق الملفات. لذلك نبدأ من الصفر ونرفع الجهد تدريجياً وبحذر (الخطوة 3). أعدنا الجهد إلى الصفر.`:null,
+   svg:(P,r,x)=>benchSVG('sc',{on:x.c>0,rd:{A:fm(r.Isc,2)+' A',V:fm(r.Vsc,2)+' V',W:fm(r.Psc,1)+' W',A2:fm(r.I2,2)+' A'},src:S.t(50,280,'Vsc = '+fm(x.c,2)+' V','')}),
+   meters:(P,r)=>[['V<sub>sc</sub>',fm(r.Vsc,2)+' V'],['I<sub>sc</sub> (الابتدائي)',fm(r.Isc,2)+' A',r.raw>1.05*I1n(P)],['P<sub>sc</sub>',fm(r.Psc,1)+' W'],['I<sub>2</sub> (أميتر الثانوي)',fm(r.I2,2)+' A',r.raw>1.05*I1n(P)]],
+   warn:(P,r,x)=>{if(x.c<=0)return '<div class="callout">الجهد على الصفر ✓ (الخطوة 3). ارفعه الآن <b>تدريجياً وبحذر</b> بالأزرار الصغيرة أو المنزلق، وراقب الأميتر.</div>';
+    const pct=`<p class="sub">الجهد الآن <span class="ltr">${fm(x.c/P.V1n*100,1)}%</span> من الجهد المقنن، والتيار <span class="ltr">${fm(r.raw/I1n(P)*100,0)}%</span> من التيار المقنن <span class="ltr">${fm(I1n(P),3)} A</span>.</p>`;
+    if(r.raw>1.05*I1n(P))return `<div class="callout err"><b>انتبه:</b> تيار القصر تجاوز تيار الحمل الكامل — «لاحظ أن لا يزيد تيار القصر عن تيار الحمل الكامل» (الخطوة 3). اخفض الجهد.</div>`+pct;
+    if(Math.abs(r.Isc-I1n(P))<=0.02*I1n(P))return '<div class="callout">وصل التيار إلى <b>المقنن</b>: سجّل عمود 100% — منه تحسب ثوابت الدائرة المكافئة (الخطوة 4) والفقد النحاسي (الخطوة 7).</div>'+pct;
+    return pct},
+   tblTitle:'الجدول (٩-١) ص 44 — يمتلئ بقراءاتك',modeLabel:'صيغة صف X<sub>eq</sub>:',
+   modeNote:m=>m==='book'?'<p class="sub">صف X<sub>eq</sub> مكتوب كما طُبع: √Z²<sub>sc</sub>−R²<sub>sc</sub>.</p>':'<p class="sub">المصحح: X<sub>eq</sub> = √(Z²<sub>eq</sub> − R²<sub>eq</sub>) — الأرقام نفسها.</p>',
+   head:'I<sub>sc</sub> rated',
+   rows:m=>[{l:'I<sub>sc</sub>(A)',f:r=>r.Isc,dp:2},{l:'V<sub>sc</sub>(V)',f:r=>r.Vsc,dp:2},{l:'P<sub>sc</sub>(W)',f:r=>r.Psc,dp:1},{l:'R<sub>eq</sub>=P<sub>sc</sub>/I<sup>2</sup><sub>sc</sub>(Ω)',f:r=>dSC(r).Req,dp:3},{l:'Z<sub>eq</sub>=V<sub>sc</sub>/I<sub>sc</sub>(Ω)',f:r=>dSC(r).Zeq,dp:3},
+     {l:m==='book'?'X<sub>eq</sub>=√Z<sup>2</sup><sub>sc</sub>−R<sup>2</sup><sub>sc</sub>(Ω)':'X<sub>eq</sub>=√(Z<sup>2</sup><sub>eq</sub>−R<sup>2</sup><sub>eq</sub>)(Ω)',f:r=>dSC(r).Xeq,dp:3},{l:'cosφ<sub>sc</sub>=P<sub>sc</sub>/(V<sub>sc</sub>I<sub>sc</sub>)',f:r=>dSC(r).c,dp:3},{l:'I<sub>2</sub>(A) — أميتر الثانوي',f:r=>r.I2,dp:2}],
+   plotRef:'شبكات ص 44 بمحاورها كما طُبعت',
+   plots:(L,m,P)=>{const v=vscRated(P),s=rdSC(P,v);return [
+    {xl:'Isc (A)',yl:'Vsc (v)',pts:L.map(r=>[r.Isc,r.Vsc]),sortY:true,xmin:I1n(P),ymin:v,cap:'V<sub>sc</sub> مع I<sub>sc</sub>'},
+    {xl:'Psc (w)',yl:'Vsc (v)',pts:L.map(r=>[r.Psc,r.Vsc]),sortY:true,xmin:s.Psc,ymin:v,cap:'V<sub>sc</sub> مع P<sub>sc</sub>'},
+    {xl:'Vsc (v)',yl:'Cos Φsc',pts:L.map(r=>[r.Vsc,dSC(r).c]),xmin:v,ymin:1,cap:'cosΦ<sub>sc</sub> مع V<sub>sc</sub>'}]},
+   results:(P,rows)=>{const r=rows[100];if(!r)return '<div class="callout">سجّل عمود <b>100%</b> (التيار المقنن) لتظهر هنا ثوابت الدائرة المكافئة (الخطوة 4) والفقد النحاسي (الخطوة 7) ورسم الدائرة المكافئة (الخطوة 8).</div>';
+    const d=dSC(r),pc=(x,y)=>fm((x-y)/y*100,1),oc=LAST.oc?dOC(LAST.oc):null;
+    return `<h3 class="sm">النتائج عند التيار المقنن</h3><div class="tu-meters">${meters([['Z<sub>eq</sub>',fm(d.Zeq,3)+' Ω'],['R<sub>eq</sub>',fm(d.Req,3)+' Ω'],['X<sub>eq</sub>',fm(d.Xeq,3)+' Ω'],['الفقد النحاسي = P<sub>sc</sub>',fm(r.Psc,1)+' W'],['V<sub>sc</sub> % من المقنن',fm(r.Vsc/P.V1n*100,1)+' %']])}</div>
+     <p class="sub">مقارنة بنموذج المحاكاة: R<sub>1</sub> + R<sub>2</sub>' = ${fm(P.R1+P.R2,3)} Ω (الفرق ${pc(d.Req,P.R1+P.R2)}%)، X<sub>1</sub> + X<sub>2</sub>' = ${fm(P.X1+P.X2,3)} Ω (الفرق ${pc(d.Xeq,P.X1+P.X2)}%).</p>
+     <h3 class="sm">الدائرة المكافئة بالقيم المحسوبة (الخطوة 8)</h3>${box(eqFullSVG({R1:fm(d.Req/2,3)+' Ω',R2:fm(d.Req/2,3)+' Ω',X1:fm(d.Xeq/2,3)+' Ω',X2:fm(d.Xeq/2,3)+' Ω',Rc:oc?fm(oc.R0,0)+' Ω':'?',Xm:oc?fm(oc.X0,0)+' Ω':'?'}),620)}
+     <p class="sub">فرض من خارج الكتاب: قسمنا R<sub>eq</sub> و X<sub>eq</sub> بالتساوي بين الملفين (منسوبين للابتدائي). ${oc?'R<sub>c</sub> و X<sub>m</sub> من قراءتك في التجربة 8.':'R<sub>c</sub> و X<sub>m</sub> تأتي من التجربة 8: سجّل عمود 100% في مختبرها لتظهر هنا.'}</p>`},
+   onRec:(P,sp,r)=>{if(sp===100){LAST.sc=r;syncGiven(P)}},
+   steps:x=>[
+    {t:'جهّز الدائرة',x:'الثانوي مقصور عبر أميتر فقط (الخطوة 1)، والابتدائي على منبع منخفض متغير عبر الأجهزة (الخطوة 2، الشكل 9).'},
+    {t:'من الصفر وبحذر حتى 20%',get x(){return `تأكد أن الجهد صفر ثم ارفعه بالأزرار الصغيرة حتى <span class="ltr">I<sub>sc</sub> ≈ ${fm(0.2*I1n(x.P),2)} A</span> ثم «سجّل القراءة» (الخطوة 3).`},done:()=>!!x.rows[20]},
+    {t:'أكمل 40% و60% و80%',get x(){return `التيارات المطلوبة: <span class="ltr">${[40,60,80].map(q=>fm(q/100*I1n(x.P),2)).join(' ، ')} A</span>. السماح ±2% من التيار المقنن.`},done:()=>x.rows[40]&&x.rows[60]&&x.rows[80]},
+    {t:'التيار المقنن 100%',get x(){const v=vscRated(x.P);return `ارفع حتى <span class="ltr">${fm(I1n(x.P),2)} A</span> — يحدث ذلك عند نحو <span class="ltr">${fm(v,2)} V</span> فقط (<span class="ltr">${fm(v/x.P.V1n*100,1)}%</span> من المقنن). سجّل: R<sub>eq</sub> و X<sub>eq</sub> يجب أن تقتربا من <span class="ltr">${fm(x.P.R1+x.P.R2,3)} Ω</span> و <span class="ltr">${fm(x.P.X1+x.P.X2,3)} Ω</span>.`},done:()=>!!x.rows[100]},
+    {t:'اقرأ المنحنيات',x:'V<sub>sc</sub> مع I<sub>sc</sub> خط مستقيم (المعاوقة ثابتة)، و P<sub>sc</sub> تزيد مع مربع التيار، و cosφ<sub>sc</sub> ثابت تقريباً = R<sub>eq</sub>/Z<sub>eq</sub>. قارنه بـ cosφ<sub>0</sub> في التجربة 8 (السؤال ب).'},
+    {t:'خطأ شائع: الجهد المقنن مع ثانوي مقصور',x:'اضغط «طبّق الجهد المقنن مباشرة»: التيار عشرات أضعاف المقنن فيفصل القاطع. هذا سبب الخطوة 3 والسؤال (أ).',done:()=>!!x.did.trip},
+    {t:'كما في الكتاب / المصحح',x:'في الجدول اختر «المصحح» لترى صيغة X<sub>eq</sub> الصحيحة، ثم افتح «الأمثلة المحلولة» لترى الحساب خطوة بخطوة بقراءتك.',done:()=>!!x.did.mdfixed}]});
+  syncGiven(DEF)},
+ examples:[{title:'حساب Z<sub>eq</sub> و R<sub>eq</sub> و X<sub>eq</sub> والفقد النحاسي من قراءات القصر',ref:'ص 42–44',
+  q:'<p>من قراءات عمود 100% في الجدول (٩-١) احسب ثوابت الدائرة المكافئة (الخطوة 4) والفقد النحاسي (الخطوة 7). <b>الكتاب لا يعطي أرقاماً</b>: المعطيات قراءات المختبر الافتراضي عند التيار المقنن بالقيم التوضيحية، وإذا سجلت عمود 100% في المختبر تظهر هنا قراءاتك. زر «قيم الكتاب» يرجع هذه المعطيات. إذا كانت قراءتك عند تيار غير المقنن فالحاسبة تحوّل الفقد النحاسي إلى التيار المقنن.</p>',
+  given:G9,solve:g=>solve9(g)}],
+ quiz:[
+  {q:'في اختبار القصر يكون الثانوي:',o:['مفتوحاً','مقصوراً عبر أميتر','على حمل كامل','على فولتميتر فقط'],c:1,e:'الخطوة 1 ص 43.'},
+  {q:'الجهد اللازم ليمر التيار المقنن في اختبار القصر:',o:['الجهد المقنن','ضعف الجهد المقنن','جهد صغير (نحو 5% من المقنن)','صفر'],c:2,e:'الدائرة المكافئة ص 42: V1 = 5% من الجهد المقنن.'},
+  {q:'قراءة الواتميتر في اختبار القصر تمثل تقريباً:',o:['الفقد الحديدي','الفقد النحاسي','القدرة الخارجة','الفقد الميكانيكي'],c:1,e:'السؤال (ج) ص 45.'},
+  {q:'\\(R_{eq}\\) تحسب من:',o:['\\(V_{sc}/I_{sc}\\)','\\(P_{sc}/I_{sc}^2\\)','\\(P_{sc}/V_{sc}\\)','\\(V_{sc}^2/P_{sc}\\)'],c:1,e:'المعادلات ص 42.'},
+  {q:'إذا كانت \\(Z_{eq}=5\\ \\Omega\\) و \\(R_{eq}=3\\ \\Omega\\) فإن \\(X_{eq}\\) =',o:['2 Ω','4 Ω','8 Ω','1.67 Ω'],c:1,e:'\\(\\sqrt{25-9}=4\\ \\Omega\\).'},
+  {q:'لماذا يجب البدء من جهد صفر في اختبار القصر؟',o:['لتوفير الكهرباء','لأن أي جهد كبير مع ثانوي مقصور يمرر تياراً أكبر بكثير من المقنن','لأن الفولتميتر صغير','لتسخين المحول'],c:1,e:'الخطوة 3 ص 43.'},
+  {q:'لماذا يهمل الفقد الحديدي في اختبار القصر؟',o:['لأن القلب مفصول','لأن الجهد المسلط صغير فالفيض صغير','لأن التيار صفر','لأنه سالب'],c:1,e:'الفقد الحديدي يعتمد على الجهد (الفيض)، والجهد هنا نحو 5% فقط.'},
+  {q:'في الكتاب الغرض من التجربة 9 يذكر «المفقودات الحديدية وتيار اللاحمل». الصحيح:',o:['هذا صحيح','المفقودات النحاسية وتيار القصر','المفقودات الميكانيكية','الكفاءة فقط'],c:1,e:'الجملة منسوخة من التجربة 8.'}
+ ]
+});
+
+/* ======================================================================
+   Lesson 3 — التجربة العاشرة: اختبار التحميل
+   ====================================================================== */
+const P2of=(r,m)=>m==='book'?r.V2*r.I2:r.V2*r.I2*r.pf;
+const cos10=()=>{const r=rdLD(DEF,1,100,1),P2=r.V2*r.I2;return {r,P2,cb:r.P1*r.P1/P2,c:r.P1/(r.V1*r.I1)}};
+B.lesson({
+ id:'u3-l3',unit:3,order:3,pages:'46–48',
+ title:'التجربة العاشرة: اختبار التحميل للمحول أحادي الوجه',
+ summary:'نثبت جهد الابتدائي عند المقنن ونغيّر مقاومة الحمل على الثانوي، فنقيس القدرة الداخلة والخارجة ونحسب الكفاءة ومعامل القدرة ونرسمها مع تيار الحمل، ونحسب معامل تنظيم الجهد والكفاءة عند الحمل الكامل ومنتصفه.',
+ theory:[
+  {h:'التجربة العاشرة: اختبار التحميل للمحول أحادي الوجه',ref:'ص 46',html:`<p class="ltr" style="text-align:left">Load test of single-phase transformer</p><p><b>الغرض من التجربة:</b> دراسة أداء المحول عند التحميل بأحمال مختلفة، ورسم منحنيات الخواص للمحول مثل معامل الكفاءة ومعامل القدرة.</p>
+   <p><b>الأجهزة المطلوبة:</b> يتم توصيل الأجهزة على حسب ما هو مبين في الرسم التخطيطي في الشكل (10)، ويراعى عند توصيل الأجهزة أننا نتعامل مع جهد وتيار للجهد المنخفض وكذلك للجهد المرتفع، لذلك من المهم اختيار التدريج المناسب لأجهزة القياس في هذه الحالة.</p>`},
+  {h:'القوانين الخاصة بالتجربة',ref:'ص 46',html:`$$P_2=V_2\\times I_2\\times\\cos\\theta_2$$ $$P_{cor}=P_o \\qquad P_{cu}=P_{s.c}$$ $$P_1=P_2+P_{cor}+P_{cu}$$ $$\\eta=\\frac{P_2}{P_1}\\times 100$$`},
+  {note:ADD+'معاني الرموز (الكتاب لا يشرحها): \\(P_2\\) القدرة الخارجة إلى الحمل، و \\(\\cos\\theta_2\\) معامل قدرة الحمل (= 1 لمقاومة)، و \\(P_{cor}\\) مفقودات القلب (core) وتساوي قدرة اللاحمل \\(P_o\\) من التجربة 8، و \\(P_{cu}\\) المفقودات النحاسية وتساوي قدرة القصر \\(P_{s.c}\\) من التجربة 9 <b>عند نفس التيار</b> (عند حمل أقل تقل مع مربع التيار: \\(P_{cu}=x^2P_{s.c}\\) حيث \\(x\\) نسبة الحمل)، و \\(P_1\\) القدرة الداخلة.'},
+  {h:'صف معامل القدرة في الجدول (١٠-١)',ref:'ص 47',html:'<p>اختر النسخة (الأرقام من المختبر الافتراضي عند الحمل الكامل بالقيم التوضيحية):</p>'},
+  {widget:bookFixW(()=>{const k=cos10();return `$$\\cos\\varphi_1=\\frac{P_1}{P_2/P_1}=\\frac{P_1^2}{P_2}=\\frac{${fm(k.r.P1,1)}^2}{${fm(k.P2,1)}}=${fm(k.cb,1)}\\ W$$<p>الناتج <b>ليس معامل قدرة</b>: له وحدة الواط وقيمته أكبر من 1 بكثير، ومعامل القدرة لا يزيد عن 1 ولا وحدة له.</p>`},()=>{const k=cos10();return `$$\\cos\\varphi_1=\\frac{P_1}{V_1\\,I_1}=\\frac{${fm(k.r.P1,1)}}{${fm(k.r.V1,1)}\\times ${fm(k.r.I1,2)}}=${fm(k.c,3)}$$<p>معامل قدرة الدخل = القدرة الحقيقية ÷ (الجهد × التيار)، كما في التجربتين 8 و 9. ومع حمل مقاومي يكون قريباً من 1 عند الحمل الكامل ويقل عند الأحمال الصغيرة (يغلب تيار المغنطة).</p>`})},
+  {fig:'(10)',ref:'ص 46',caption:'مخطط توصيل اختبار التحميل: الابتدائي على المصدر V<sub>1</sub> = 220 V عبر الأجهزة كما في الشكل (8)، والثانوي (a و b) على مقاومة حمل متغيرة R<sub>L</sub> عبر أميتر، وفولتميتر V<sub>2</sub> على أطراف الحمل. (في الكتاب كُتب على الثانوي «I<sub>2</sub>=0» — صُحح هنا إلى I<sub>2</sub>.)',draw:()=>box(benchSVG('load',{}),720,1)},
+  {note:ADD+'<b>الكفاءة</b> \\(\\eta=P_2/P_1\\): المحول يفقد جزءاً صغيراً من القدرة في القلب (ثابت) وفي الملفات (يزيد مع مربع التيار)، فتكون الكفاءة صغيرة عند الأحمال الصغيرة ثم ترتفع إلى أعلى قيمة عندما يتساوى الفقدان ثم تقل قليلاً. <b>تنظيم الجهد</b>: عند التحميل يهبط جهد الثانوي قليلاً بسبب \\(R_{eq}\\) و \\(X_{eq}\\)؛ قانونه في الكتاب مذكور في التجربة 12 (ص 51): $$V_R\\%=\\frac{|V_{20}-V_2|}{V_2}\\times 100$$ حيث \\(V_{20}\\) جهد الثانوي بلا حمل و \\(V_2\\) جهده عند الحمل. لذلك يسجل المختبر قراءة إضافية عند فصل الحمل (0%). والخطوة 4 تطلب الحساب «من الدراسة النظرية» عند معامل قدرة 0.8 متأخر: في «الأمثلة المحلولة» حاسبة تستعمل الفقد الحديدي والنحاسي و R<sub>eq</sub> و X<sub>eq</sub> من التجربتين 8 و 9.'},
+  {h:'خطوات التجربة',ref:'ص 47',html:`<ol><li>صل أحد الملفات بالحمل من خلال أجهزة لقياس الجهد والتيار للحمل.</li><li>صل الملف الآخر بمنبع جهد ثابت عند الجهد المقنن للمحول وذلك من خلال أجهزة قياس الجهد والتيار والقدرة.</li><li>عند ثبوت جهد الداخل، يتم تغيير مقاومة الحمل وتسجل النتائج في الجدول المبين.</li><li>من خلال دراستك النظرية، احسب معامل تنظيم الجهد ومعامل الكفاءة عند الحمل الكامل وعند منتصف الحمل ومعامل قدرة 0.8 متأخر.</li><li>ارسم الكفاءة ومعامل القدرة وجهد الحمل مع تيار الحمل.</li><li>ناقش النتائج وسجل ملاحظاتك.</li></ol>`},
+  {h:'الجدول (١٠-١)',ref:'ص 47',html:ptable('R<sub>L</sub> %',['100%','80%','60%','50%','40%'],['V<sub>1</sub>(V)','I<sub>1</sub>(A)','P<sub>1</sub>(W)','V<sub>2</sub>(V)','I<sub>2</sub>(A)','P<sub>2</sub>=V<sub>2</sub>I<sub>2</sub>(W)','Cosφ<sub>1</sub>=P<sub>1</sub>/(P<sub>2</sub>/P<sub>1</sub>)','η=P<sub>2</sub>/P<sub>1</sub>'],['220'])+'<p class="sub">القيمة المطبوعة الوحيدة: V<sub>1</sub> = 220 في كل الأعمدة. «R<sub>L</sub> %» لم يشرحه الكتاب؛ في المختبر هو <b>نسبة الحمل</b>: 100% = الحمل المقنن (مقاومة تسحب التيار المقنن عند الجهد المقنن)، و 50% = نصفه (مقاومة ضعفها).</p>'},
+  {h:'المنحنيات المطلوبة',ref:'ص 47–48',html:'<ul><li>\\(V_L\\) (رأسي) مع \\(I_L\\) (أفقي) — ص 47.</li><li>\\(\\cos\\Phi_1\\) (رأسي) مع \\(\\eta\\) (أفقي) — ص 47.</li><li>\\(\\eta\\) (رأسي) مع \\(I_L\\) (أفقي) — ص 48.</li></ul>'},
+  {h:'الأسئلة',ref:'ص 48',html:'<p>بعد الانتهاء من التجربة يمكنك الإجابة على الأسئلة التالية:</p>'+
+   Q('أ','ما تأثير زيادة الحمل على المفقودات النحاسية؟','<b>تزيد مع مربع تيار الحمل</b>: \\(P_{cu}=I^2R_{eq}\\). ضعف التيار ← أربعة أضعاف الفقد النحاسي. (أما المفقودات الحديدية فثابتة تقريباً لأن الجهد ثابت.)')+
+   Q('ب','ما تأثير زيادة الحمل على كفاءة المحول؟','تزيد الكفاءة بسرعة من الصفر مع زيادة الحمل لأن الفقد الحديدي الثابت يصبح نسبة أصغر من القدرة الخارجة، ثم تصل إلى أعلى قيمة، وبعدها تقل قليلاً لأن الفقد النحاسي يزيد مع مربع التيار. ارسم منحنى η مع I<sub>L</sub> في المختبر.')+
+   Q('ج','أوجد قيمة تيار الحمل عندما تكون كفاءة المحول أكبر ما يمكن؟','أعلى كفاءة عندما <b>يتساوى الفقد النحاسي مع الفقد الحديدي</b>: \\(x^2P_{cu,fl}=P_{fe}\\) أي \\(I_{\\eta max}=I_{fl}\\sqrt{P_{fe}/P_{cu,fl}}\\). الحاسبة الثانية في «الأمثلة المحلولة» تحسبها من قراءات التجربتين 8 و 9.')},
+  {err:`<ol style="margin:4px 0 0;padding-inline-start:20px"><li>«الرسم التخطيطي في شكل (١٢)» ص 46 — والرسم الفعلي هو الشكل (10) (صُحح في النص).</li><li>على ثانوي الشكل (10) كُتب «I<sub>2</sub>=0» — منسوخ من رسم اللاحمل؛ في اختبار التحميل يمر تيار في الحمل (صُحح في الرسم).</li><li>صف الجدول «Cosφ<sub>1</sub>=P<sub>1</sub>/(P<sub>2</sub>/P<sub>1</sub>)» خطأ — والصحيح \\(\\cos\\varphi_1=P_1/(V_1I_1)\\) (انظر المفتاح أعلاه، وفي المختبر).</li><li>صف «P<sub>2</sub>=V<sub>2</sub>I<sub>2</sub>» يفترض حملاً مقاومياً (\\(\\cos\\theta_2=1\\))، والقانون العام في الصفحة نفسها \\(P_2=V_2I_2\\cos\\theta_2\\). في المختبر خيار حمل حثي 0.8 للخطوة 4: نسخة «كما في الكتاب» تحسب V<sub>2</sub>I<sub>2</sub> و«المصحح» V<sub>2</sub>I<sub>2</sub>cosθ<sub>2</sub>.</li><li>معنى «R<sub>L</sub> %» غير موضح (فُهم أنه نسبة التحميل).</li><li>شبكة ص 47: \\(\\cos\\Phi_1\\) مع \\(\\eta\\)، والخطوة 5 تطلب معامل القدرة مع تيار الحمل. المختبر يرسمها كما طُبعت في نسخة «كما في الكتاب»، ومع \\(I_L\\) في «المصحح».</li><li>«P<sub>cor</sub>» المقصود core (القلب)، ولا شرح للرموز، ولا قانون لتنظيم الجهد في هذه التجربة مع أن الخطوة 4 تطلبه (القانون في ص 51).</li><li>السؤال (ج): «كفاء» صوابها «كفاءة» (صُحح في نص السؤال).</li></ol>`}
+ ],
+ lab:(el)=>{
+  bench(el,{k:'e10',sw:true,title:'منضدة اختبار التحميل <small>مبنية على الشكل (10) ص 46</small>',
+   top:`<div class="tu-row"><span class="sub">نوع الحمل:</span>${segHTML('e10pf',[['1','مقاومة R<sub>L</sub> (كما في الشكل)'],['0.8','حمل حثي cos θ<sub>2</sub> = 0.8 متأخر (إضافة للخطوة 4)']],'1')}</div>`,
+   state:{pf:1},
+   clabel:'الحمل R<sub>L</sub> % (نسبة من الحمل المقنن)',cunit:'%',cdp:0,cmax:()=>120,cstep:()=>1,fine:()=>[-10,-1,1,10],
+   spLabel:'نقاط الجدول:',sp:[100,80,60,50,40],spBtn:true,spValue:(P,q)=>q,
+   match:(P,r,q)=>r.x===q&&r.I2>0,zeroLabel:'افصل الحمل (0%)',noRead:'لا توجد قراءة: شغّل مصدر الجهد أولاً.',
+   bind:(el,api,x)=>{segBind(el,'e10pf',v=>{x.st.pf=+v;api.clear();api.msg('<div class="callout">تغير نوع الحمل، فمسحنا الجدول. سجّل من جديد.</div>');api.upd()})},
+   read:(P,c,x)=>rdLD(P,x.on,c,x.st.pf),valid:(r,x)=>x.on&&r.V1>0,
+   svg:(P,r,x)=>benchSVG('load',{on:x.on,rd:{A:fm(r.I1,2)+' A',V:fm(r.V1,1)+' V',W:fm(r.P1,1)+' W',A2:fm(r.I2,2)+' A',V2:fm(r.V2,1)+' V'},x:x.c>0?'RL = '+fm(V2n(P)/(x.c/100*I2n(P)),1)+' Ω'+(x.st.pf<1?' (cos 0.8)':''):'RL = ∞',src:S.t(50,280,'V1 = '+fm(x.on?P.V1n:0)+' V','')}),
+   meters:(P,r,x)=>[['V<sub>1</sub>',fm(r.V1,1)+' V'],['I<sub>1</sub>',fm(r.I1,2)+' A'],['P<sub>1</sub>',fm(r.P1,1)+' W'],['V<sub>2</sub>',fm(r.V2,1)+' V'],['I<sub>2</sub>',fm(r.I2,2)+' A',r.I2>1.05*I2n(P)],['P<sub>2</sub> = V<sub>2</sub>I<sub>2</sub>cosθ<sub>2</sub>',fm(r.V2*r.I2*r.pf,1)+' W']],
+   warn:(P,r,x)=>{if(!x.on)return `<div class="callout">شغّل <b>مصدر الجهد</b>: الجهد ثابت عند المقنن <span class="ltr">${fm(P.V1n)} V</span> (الخطوة 2)، ثم غيّر الحمل (الخطوة 3).</div>`;
+    if(x.c===0)return `<div class="callout">الحمل مفصول: قراءة V<sub>2</sub> الآن هي <b>V<sub>20</sub></b> (جهد الثانوي بلا حمل). سجّلها لحساب معامل تنظيم الجهد (إضافة — الكتاب يطلب التنظيم في الخطوة 4 ولا يضع لها عموداً).</div>`;
+    if(r.I2>1.05*I2n(P))return `<div class="callout err">تيار الحمل <span class="ltr">${fm(r.I2,2)} A</span> أكبر من المقنن <span class="ltr">${fm(I2n(P),2)} A</span>: المحول محمّل فوق طاقته ويسخن. ارجع إلى 100% أو أقل.</div>`;
+    const d=r.V2*r.I2*r.pf;return `<p class="sub">المفقودات الآن P<sub>1</sub> − P<sub>2</sub> = <span class="ltr">${fm(r.P1-d,1)} W</span>، والكفاءة <span class="ltr">${fm(d/r.P1*100,1)}%</span>.</p>`},
+   tblTitle:'الجدول (١٠-١) ص 47 — يمتلئ بقراءاتك',modeLabel:'صيغتا P<sub>2</sub> و cosφ<sub>1</sub> ومحور منحنى معامل القدرة:',
+   modeNote:m=>m==='book'?'<p class="sub">كما طُبع: P<sub>2</sub> = V<sub>2</sub>I<sub>2</sub> و Cosφ<sub>1</sub> = P<sub>1</sub>/(P<sub>2</sub>/P<sub>1</sub>) — الناتج بالواط وأكبر من 1 (باللون الأحمر)، ومنحنى cosΦ<sub>1</sub> مع η.</p>':'<p class="sub">المصحح: P<sub>2</sub> = V<sub>2</sub>I<sub>2</sub>cosθ<sub>2</sub> و cosφ<sub>1</sub> = P<sub>1</sub>/(V<sub>1</sub>I<sub>1</sub>)، ومنحنى cosφ<sub>1</sub> مع تيار الحمل I<sub>L</sub> كما تطلب الخطوة 5.</p>',
+   head:'R<sub>L</sub> %',
+   rows:m=>{const b=m==='book';return [{l:'R<sub>L</sub> %',f:r=>r.x,dp:0},{l:'V<sub>1</sub>(V)',f:r=>r.V1,dp:1},{l:'I<sub>1</sub>(A)',f:r=>r.I1,dp:2},{l:'P<sub>1</sub>(W)',f:r=>r.P1,dp:1},{l:'V<sub>2</sub>(V)',f:r=>r.V2,dp:1},{l:'I<sub>2</sub>(A)',f:r=>r.I2,dp:2},
+     {l:b?'P<sub>2</sub>=V<sub>2</sub>I<sub>2</sub>(W)':'P<sub>2</sub>=V<sub>2</sub>I<sub>2</sub>cosθ<sub>2</sub>(W)',f:r=>P2of(r,m),dp:1},
+     {l:b?'Cosφ<sub>1</sub>=P<sub>1</sub>/(P<sub>2</sub>/P<sub>1</sub>)':'cosφ<sub>1</sub>=P<sub>1</sub>/(V<sub>1</sub>I<sub>1</sub>)',f:r=>r.I2>0?(b?r.P1*r.P1/P2of(r,m):r.P1/(r.V1*r.I1)):(b?'—':r.P1/(r.V1*r.I1)),dp:b?1:3,bad:v=>typeof v==='number'&&v>1},
+     {l:'η=P<sub>2</sub>/P<sub>1</sub> (%)',f:r=>r.I2>0?P2of(r,m)/r.P1*100:'—',dp:1,bad:v=>typeof v==='number'&&v>100}]},
+   plotRef:'شبكات ص 47–48',
+   plots:(L,m,P)=>{const s=rdLD(P,1,100,1),A=L.filter(r=>r.I2>0);const b=m==='book';return [
+    {xl:'IL (A)',yl:'VL (v)',pts:L.map(r=>[r.I2,r.V2]),xmin:I2n(P),ymin:V2n(P),cap:'V<sub>L</sub> مع I<sub>L</sub> — ص 47'},
+    b?{xl:'η (%)',yl:'CosΦ1',pts:A.map(r=>[P2of(r,m)/r.P1*100,r.P1/(r.V1*r.I1)]),xmin:100,ymin:1,cap:'cosΦ<sub>1</sub> مع η — كما طُبعت الشبكة ص 47 (القيم الصحيحة لـ cosφ<sub>1</sub>)'}
+     :{xl:'IL (A)',yl:'CosΦ1',pts:L.map(r=>[r.I2,r.P1/(r.V1*r.I1)]),xmin:I2n(P),ymin:1,cap:'cosφ<sub>1</sub> مع I<sub>L</sub> — المصحح (الخطوة 5)'},
+    {xl:'IL (A)',yl:'η (%)',pts:A.map(r=>[r.I2,P2of(r,m)/r.P1*100]),xmin:I2n(P),ymin:100,cap:'η مع I<sub>L</sub> — ص 48'}]},
+   results:(P,rows,free,m,x)=>{const v0=free.find(r=>r.x===0),f=rows[100],h=rows[50];let o='<h3 class="sm">الخطوة 4 من قراءاتك</h3>';
+    if(!f)return o+'<div class="callout">سجّل عمود 100% (الحمل الكامل) وعمود 50% (منتصف الحمل)، وقراءة عند فصل الحمل 0% (لـ V<sub>20</sub>).</div>';
+    const eta=r=>r.V2*r.I2*r.pf/r.P1*100;const L=[['η عند الحمل الكامل',fm(eta(f),1)+' %']];if(h)L.push(['η عند منتصف الحمل',fm(eta(h),1)+' %']);
+    if(v0){L.push(['V<sub>20</sub>',fm(v0.V2,1)+' V']);L.push(['V<sub>R</sub>% عند الحمل الكامل',fm(Math.abs(v0.V2-f.V2)/f.V2*100,2)+' %'])}
+    o+=`<div class="tu-meters">${meters(L)}</div><p class="sub">${x.st.pf<1?'الحمل الآن حثي (cos θ<sub>2</sub> = 0.8 متأخر) كما تطلب الخطوة 4.':'الحمل الآن مقاومي (cos θ<sub>2</sub> = 1). الخطوة 4 تطلب معامل قدرة 0.8 متأخر: اختر «حمل حثي» أعلاه وأعد التسجيل، أو استعمل الحاسبة في «الأمثلة المحلولة».'} ${v0?'التنظيم بقانون الكتاب ص 51.':'سجّل قراءة عند 0% لحساب التنظيم.'} الكفاءة هنا بالصيغة الصحيحة P<sub>2</sub> = V<sub>2</sub>I<sub>2</sub>cosθ<sub>2</sub>.</p>`;
+    if(LAST.oc&&LAST.sc){const pfe=LAST.oc.P10,pcu=LAST.sc.Psc*Math.pow(f.I1/LAST.sc.Isc,2);o+=`<p class="sub">تحقق من التجربتين 8 و 9: P<sub>cor</sub> + P<sub>cu</sub> = ${fm(pfe,1)} + ${fm(pcu,1)} = <b>${fm(pfe+pcu,1)} W</b>، والمقاسة هنا P<sub>1</sub> − P<sub>2</sub> = <b>${fm(f.P1-f.V2*f.I2*f.pf,1)} W</b>.</p>`}
+    return o},
+   onRec:(P,sp,r,x)=>{if(sp===100&&r.pf===1){LAST.ld=r;syncGiven(P)}if(r.x===0){LAST.ld0=r;syncGiven(P)}},
+   steps:x=>[
+    {t:'شغّل المصدر',get x(){return `اضغط مفتاح «مصدر الجهد»: V<sub>1</sub> ثابت عند المقنن <span class="ltr">${fm(x.P.V1n)} V</span> (الخطوة 2).`},done:()=>x.on},
+    {t:'بلا حمل: V<sub>20</sub>',get x(){return `اجعل الحمل 0% (زر «افصل الحمل») وسجّل: V<sub>2</sub> ≈ <span class="ltr">${fm(rdLD(x.P,1,0,1).V2,1)} V</span>. هذه V<sub>20</sub> لحساب التنظيم (إضافة).`},done:()=>x.free.some(r=>r.x===0)},
+    {t:'الحمل الكامل 100%',get x(){return `اضغط «100%» وسجّل: I<sub>2</sub> ≈ <span class="ltr">${fm(rdLD(x.P,1,100,x.st.pf).I2,2)} A</span> وجهد الحمل يهبط قليلاً.`},done:()=>!!x.rows[100]},
+    {t:'أكمل 80% و60% و50% و40%',x:'سجّل باقي أعمدة الجدول بترتيب الكتاب، وراقب المنحنيات: الكفاءة تبقى عالية، وجهد الحمل يرتفع كلما قل الحمل.',done:()=>x.rows[80]&&x.rows[60]&&x.rows[50]&&x.rows[40]},
+    {t:'كما في الكتاب / المصحح',x:'في الجدول بدّل إلى «المصحح»: صف cosφ<sub>1</sub> يصبح P<sub>1</sub>/(V<sub>1</sub>I<sub>1</sub>) (أقل من 1)، ومنحنى معامل القدرة يُرسم مع I<sub>L</sub>.',done:()=>!!x.did.mdfixed},
+    {t:'الخطوة 4: معامل قدرة 0.8 متأخر',x:'اختر «حمل حثي cos θ<sub>2</sub> = 0.8» ثم سجّل 0% و 100% و 50%: الكفاءة أقل قليلاً والتنظيم أكبر من الحمل المقاومي. قارن بالحاسبة في «الأمثلة المحلولة».',done:()=>x.st.pf<1&&x.rows[100]&&x.rows[50]}]});
+  syncGiven(DEF)},
+ examples:[
+  {title:'الكفاءة ومعامل القدرة والتنظيم من قراءات التحميل',ref:'ص 46–47، 51',q:'<p>من قراءات عمود 100% في الجدول (١٠-١) وقراءة V<sub>2</sub> عند فصل الحمل، احسب القدرة الخارجة ومعامل قدرة الدخل والكفاءة ومعامل تنظيم الجهد. <b>الكتاب لا يعطي أرقاماً</b>: المعطيات قراءات المختبر الافتراضي (حمل مقاومي) بالقيم التوضيحية، وتُستبدل بقراءاتك عندما تسجل عمود 100% وقراءة 0% في المختبر. زر «قيم الكتاب» يرجع هذه المعطيات.</p>',
+   given:G10a,solve:g=>solve10a(g),note:'سطر «كما في الكتاب» يعرض نتيجة صف الجدول المطبوع خطأً، وسطر «المصحح» هو الصحيح.'},
+  {title:'الخطوة 4: الكفاءة والتنظيم عند الحمل الكامل ومعامل قدرة 0.8 متأخر',ref:'ص 46–47',q:'<p>«من خلال دراستك النظرية، احسب معامل تنظيم الجهد ومعامل الكفاءة عند الحمل الكامل … ومعامل قدرة 0.8 متأخر.» المعطيات: الفقد الحديدي من التجربة 8، والفقد النحاسي و R<sub>eq</sub> و X<sub>eq</sub> من التجربة 9 — قراءات المختبر الافتراضي (أو قراءاتك إذا سجلت عمود 100% في التجربتين).</p>',given:G10b,solve:g=>solve10b(g)},
+  {title:'الخطوة 4: عند منتصف الحمل ومعامل قدرة 0.8 متأخر',ref:'ص 46–47',q:'<p>نفس الحساب عند منتصف الحمل (x = 0.5). لاحظ أن الكفاءة عند منتصف الحمل قد تكون أعلى منها عند الحمل الكامل إذا كان الفقد النحاسي الكامل أكبر من الحديدي.</p>',given:G10c,solve:g=>solve10b(g)}],
+ quiz:[
+  {q:'في اختبار التحميل يكون جهد الابتدائي:',o:['يرفع تدريجياً من الصفر','ثابتاً عند الجهد المقنن','5% من المقنن','يساوي جهد الثانوي'],c:1,e:'الخطوة 2 ص 47 والجدول: V1 = 220 في كل الأعمدة.'},
+  {q:'الكفاءة تحسب من:',o:['\\(P_1/P_2\\)','\\(P_2/P_1\\times100\\)','\\(V_2/V_1\\)','\\(I_2/I_1\\)'],c:1,e:'القوانين ص 46.'},
+  {q:'معامل قدرة الدخل الصحيح:',o:['\\(P_1/(P_2/P_1)\\)','\\(P_1/(V_1I_1)\\)','\\(P_2/P_1\\)','\\(V_1I_1/P_1\\)'],c:1,e:'صف الجدول المطبوع خطأ؛ الصحيح القدرة ÷ (الجهد × التيار).'},
+  {q:'عند مضاعفة تيار الحمل فإن الفقد النحاسي:',o:['يبقى ثابتاً','يتضاعف','يصبح أربعة أضعاف','يقل'],c:2,e:'\\(P_{cu}=I^2R_{eq}\\) — السؤال (أ).'},
+  {q:'الفقد الذي يبقى ثابتاً تقريباً مهما تغير الحمل:',o:['الفقد النحاسي','الفقد الحديدي','كلاهما','لا شيء'],c:1,e:'\\(P_{cor}=P_o\\) يعتمد على الجهد الثابت.'},
+  {q:'أعلى كفاءة للمحول تحدث عندما:',o:['يكون الحمل صفراً','يتساوى الفقد النحاسي والحديدي','يكون الحمل ضعف المقنن','يكون معامل القدرة صفراً'],c:1,e:'السؤال (ج) ص 48.'},
+  {q:'محول: \\(V_{20}=110\\ V\\) و \\(V_2=106\\ V\\) عند الحمل الكامل. تنظيم الجهد بقانون ص 51 ≈',o:['3.77%','3.64%','4%','96%'],c:0,e:'\\(|110-106|/106\\times100=3.77\\%\\).'},
+  {q:'عند الحمل الحثي (cos θ<sub>2</sub> = 0.8 متأخر) مقارنة بالحمل المقاومي بنفس التيار:',o:['يهبط جهد الثانوي أكثر (تنظيم أكبر)','لا يتغير شيء','يرتفع جهد الثانوي','تصبح الكفاءة 100%'],c:0,e:'الهبوط على X<sub>eq</sub> يضاف إلى الهبوط على R<sub>eq</sub> عند الحمل المتأخر.'}
+ ]
+});
+
+/* ======================================================================
+   Lesson 4 — التجربة الحادية عشرة: محولان على التوازي
+   ====================================================================== */
+const PARDEF=[
+ {k:'dA',label:'فرق نسبة تحويل المحول 2 عن المحول 1 (0 = متطابقان تماماً)',unit:'%',value:0.5,min:-10,max:10,step:0.1},
+ {k:'kZ',label:'معاوقة المحول 2 ÷ معاوقة المحول 1',unit:'×',value:1,min:0.2,max:5,step:0.01},
+ {k:'Rf',label:'المقاومة الثابتة في دائرة الحمل',unit:'Ω',value:13,min:0.5,max:10000},
+ {k:'Rvm',label:'أكبر قيمة للمقاومة المتغيرة',unit:'Ω',value:120,min:1,max:100000}];
+B.lesson({
+ id:'u3-l4',unit:3,order:4,pages:'49–50',
+ title:'التجربة الحادية عشرة: توصيل المحولات أحادية الوجه على التوازي',
+ summary:'محولان متماثلان يغذيان حملاً أكبر من قدرة أي منهما. قبل غلق المفتاح S<sub>1</sub> نقيس الجهد V بين طرفيه: إذا كان صفراً تقريباً فالقطبية صحيحة، وإذا كان مجموع الجهدين فيجب تبديل أطراف أحد الثانويين. بعد التوصيل يتقاسم المحولان الحمل: A = A<sub>1</sub> + A<sub>2</sub>.',
+ theory:[
+  {h:'التجربة الحادية عشرة: توصيل المحولات أحادية الوجه على التوازي',ref:'ص 49',html:`<p class="ltr" style="text-align:left">Parallel operation of single-phase transformers</p><p><b>الغرض من التجربة:</b> توصيل محولين أحاديي الوجه على التوازي بهدف تغذية حمل أكبر من القدرة المقننة لأي منهما.</p><p><b>الأجهزة المطلوبة:</b> محولان أحاديا الوجه متماثلان لهما نفس نسبة التحويل بالإضافة إلى الأجهزة المستخدمة في الرسم التخطيطي الموضح بالشكل (11).</p>`},
+  {fig:'(11)',ref:'ص 49',caption:'توصيل محولين على التوازي: الابتدائيان على نفس المصدر AC، والطرفان a و a\' متصلان عبر الأميتر A<sub>2</sub>، والمفتاح S<sub>1</sub> بين b و b\' وعليه الفولتميتر V، والحمل (مقاومة ثابتة + متغيرة) عبر المفتاح S<sub>2</sub> والأميتر A.',draw:()=>box(parSVG({}),760,1)},
+  {note:ADD+'<b>لماذا نقيس V قبل غلق S<sub>1</sub>؟</b> الثانويان والفولتميتر V يكوّنون حلقة واحدة. إذا كانت القطبية صحيحة فإن جهدي الثانويين متعاكسان في الحلقة فيقرأ V <b>الفرق</b> \\(|V_1-V_2|\\) ≈ صفر، ويمكن غلق S<sub>1</sub>. أما إذا كان أحد الثانويين معكوساً فالجهدان يتجمعان فيقرأ V <b>المجموع</b> \\(V_1+V_2\\)، ولو أغلقنا S<sub>1</sub> عندها لصار كأننا نقصر جهداً قدره \\(2V_2\\) على معاوقتي الملفين الصغيرتين فقط — تيار دائر هائل (عشرات أضعاف المقنن) يحرق المحولين أو يفصل القاطع. <b>شروط التوازي</b> (من الدراسة النظرية): نفس الجهد ونسبة التحويل، والقطبية الصحيحة، ومعاوقتان متقاربتان (نسبةً إلى القدرة) حتى يتقاسما الحمل بالتساوي. وأي فرق صغير في نسبة التحويل يسبب تياراً دائراً صغيراً حتى بلا حمل.'},
+  {h:'خطوات التجربة',ref:'ص 49–50',html:`<ol><li>تأكد من أن جهد المنبع المتردد مساوٍ للجهد المقنن للملف الابتدائي لكلا المحولين.</li><li>صل الدائرة كما في الشكل (11) مع الأخذ في الاعتبار أن كلاً من المفتاح S<sub>1</sub> والمفتاح S<sub>2</sub> مفتوحان (غير مغلقين).</li><li>سجل قراءات أجهزة الفولتميتر الثلاثة V<sub>1</sub>, V<sub>2</sub>, V.</li><li>تأكد من الجهد على الملف الثانوي لكلا المحولين متساوٍ أي أن قراءة V<sub>1</sub> مساوية لقراءة V<sub>2</sub>.</li><li>إذا كانت قراءة V مساوية للفرق بين قراءة الفولتميتر V<sub>1</sub> وقراءة الفولتميتر V<sub>2</sub> وتكون مساوية للصفر أو قيمة صغيرة جداً فهذا يعني أنه يمكن غلق المفتاح S<sub>1</sub> ويكون المحولان جاهزين للتوصيل على التوازي ويمكن توصيل الحمل عليها وذلك بغلق المفتاح S<sub>2</sub>.</li><li>أما إذا كانت قراءة V مساوية لمجموع قراءة الفولتميتر V<sub>1</sub> وقراءة الفولتميتر V<sub>2</sub> فهذا يعني أنه يجب تبديل أطراف الملف الثانوي لأحد المحولين حيث يتم فصل مصدر الجهد ثم توصيل النقطة a بالنقطة b' وتوصيل النقطة b بالنقطة a'.</li><li>وصل مصدر الجهد مرة أخرى وتأكد أن قراءة V مساوية للفرق بين قراءة الفولتميتر V<sub>1</sub> وقراءة الفولتميتر V<sub>2</sub> وتكون مساوية للصفر أو قيمة صغيرة جداً ويمكن غلق المفتاح S<sub>1</sub> ويكون المحولان جاهزين للتوصيل على التوازي ويمكن توصيل الحمل عليها وذلك بغلق المفتاح S<sub>2</sub>.</li><li>بعد توصيل الحمل سجل قراءة التيارات المقاسة باستخدام الأميترات A<sub>1</sub>, A<sub>2</sub>, A. ما هي العلاقة بين قراءات الأميترات الثلاثة؟</li><li>قم بتغيير تيار الحمل وذلك بتغيير قيمة المقاومة المتغيرة وسجل قراءات الأميترات.</li><li>كرر الخطوة 9 عدة مرات وتأكد أن قيمة تيار الحمل مساوية لمجموع التيار الناتج من المحولين.</li><li>ناقش النتائج.</li></ol>`},
+  {note:'<b>جدول القراءات — إضافة من خارج الكتاب:</b> الكتاب لا يضع جدولاً لهذه التجربة. في المختبر جدول بسيط: S<sub>1</sub> و S<sub>2</sub> و V<sub>1</sub> و V<sub>2</sub> و V و A<sub>1</sub> و A<sub>2</sub> و A و A<sub>1</sub> + A<sub>2</sub>.'},
+  {h:'سؤال الخطوة 8',ref:'ص 50',html:Q('الخطوة 8','ما هي العلاقة بين قراءات الأميترات الثلاثة؟','<b>تيار الحمل يساوي مجموع تياري المحولين: A = A<sub>1</sub> + A<sub>2</sub></b> (الخطوة 10). وإذا كان المحولان متماثلين تماماً يأخذ كل منهما نصف الحمل: A<sub>1</sub> = A<sub>2</sub> = A/2. وإذا كانت معاوقة أحدهما أكبر يأخذ نصيباً أصغر. (بدقة: الجمع اتجاهي، لكنه عملياً جمع عادي لأن التيارين في طور واحد تقريباً؛ والفرق الصغير الذي تراه في المختبر سببه التيار الدائر الناتج عن فرق صغير في نسبة التحويل.)')},
+  {err:'<ol style="margin:4px 0 0;padding-inline-start:20px"><li>«الرسم التخطيطي الموضح بشكل (١٣)» ص 49 و«صل الدائرة كما في شكل (١٣)» في الخطوة 2 — والرسم الفعلي معنون الشكل (11) (صُحح في النص).</li><li>لا جدول قراءات ولا منحنيات ولا أسئلة ختامية لهذه التجربة في الكتاب (السؤال الوحيد ضمن الخطوة 8)؛ ولا قيم مقننة للمحولين.</li><li>«محولان أحاديي الوجه متماثلان» — صوابها «أحاديا الوجه» (صُحح في النص).</li></ol>'}
+ ],
+ lab:(el)=>{
+  let on=false,S1=false,S2=false,rev=true,big=false,Rv=null,msg='';const rows=[],did={};
+  el.innerHTML=`<div id="e11tp"></div><div id="e11tp2"></div><div class="grid tu-lab">
+   <div class="panel c12"><h2>محولان على التوازي <small>مبنية على الشكل (11) ص 49</small></h2>
+    <div class="svgbox tu-wide" id="e11c" style="max-width:820px;margin-inline:auto"></div>
+    <div class="tu-row">${swHTML('e11on','AC','مصدر الجهد',false)}${swHTML('e11s1','S1','بين b و b\'',false)}${swHTML('e11s2','S2','الحمل',false)}
+     <button class="btn" id="e11swap">بدّل أطراف ثانوي المحول 2 (a ↔ b')</button></div>
+    <div id="e11sl"></div>
+    <div class="tu-row"><span class="sub">المحول 2 (إضافة للمقارنة):</span>${segHTML('e11z',[['1','مماثل للمحول 1 (كما في الكتاب)'],['2','معاوقته ضعف المحول 1']],'1')}</div>
+    <div class="tu-row"><button class="btn primary" id="e11rec">سجّل القراءات</button><button class="btn" id="e11clr">امسح الجدول</button></div><div id="e11msg"></div></div>
+   <div class="panel c7"><h2>قراءات الأجهزة</h2><div class="tu-meters" id="e11m"></div><div id="e11bars"></div></div>
+   <div class="panel c5"><h2>الحالة</h2><div id="e11w"></div></div>
+   <div class="panel c12"><h2>جدول القراءات <small>إضافة من خارج الكتاب — الكتاب لا يضع جدولاً لهذه التجربة</small></h2><div class="tu-tbl" id="e11t"></div></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="e11st"></ol></div></div>`;
+  const $=s=>el.querySelector(s);let steps=null;
+  const TP=B.params($('#e11tp'),'u3-tr',TRDEF,()=>{ui();upd();if(steps)steps.redraw()});
+  const TP2=B.params($('#e11tp2'),'u3-l4',PARDEF,()=>{ui();upd();if(steps)steps.redraw()});
+  const rv=()=>Rv==null?TP2.v.Rvm:Math.min(Rv,TP2.v.Rvm);
+  const ui=()=>{const Q=TP2.v;$('#e11sl').innerHTML=sl('e11r','المقاومة المتغيرة R<sub>v</sub> (أصغر قيمة = أكبر حمل)',0,Q.Rvm,Q.Rvm/240,rv());$('#e11r').oninput=e=>{Rv=+e.target.value;upd()}};
+  const Zs=()=>{const P=TP.v,Q=TP2.v,Z1=csc(ZeqP(P),1/(P.a*P.a));return [Z1,csc(Z1,Q.kZ*(big?2:1))]};
+  const emf=()=>{const P=TP.v,Q=TP2.v;return [V2n(P),V2n(P)/(1+Q.dA/100)*(rev?-1:1)]};
+  const circNL=()=>{const [Z1,Z2]=Zs(),[E1,E2]=emf();return Math.abs(E1-Math.abs(E2))/cabs(cadd(Z1,Z2))};
+  const calc=()=>{const z={I1:0,I2:0,IL:0,V1:0,V2:0,V:0};if(!on)return z;const [Z1,Z2]=Zs(),[E1,E2]=emf(),RL=TP2.v.Rf+rv();let I1,I2,IL,Vt,Vb;
+   if(S1){const Y1=cdiv(Cx(1),Z1),Y2=cdiv(Cx(1),Z2),GL=S2?1/RL:0;Vt=cdiv(cadd(csc(Y1,E1),csc(Y2,E2)),cadd(cadd(Y1,Y2),Cx(GL)));I1=cmul(csub(Cx(E1),Vt),Y1);I2=cmul(csub(Cx(E2),Vt),Y2);IL=csc(Vt,GL);Vb=Cx(0)}
+   else{I1=Cx(0);I2=S2?cdiv(Cx(E2),cadd(Z2,Cx(RL))):Cx(0);IL=I2;Vt=csub(Cx(E2),cmul(Z2,I2));Vb=csub(Vt,Cx(E1))}
+   return {I1:cabs(I1),I2:cabs(I2),IL:cabs(IL),V1:cabs(csub(Cx(E1),cmul(Z1,I1))),V2:cabs(Vt),V:cabs(Vb)}};
+  const rd=c=>({V1:R(c.V1,1),V2:R(c.V2,1),V:R(c.V,1),A1:R(c.I1,2),A2:R(c.I2,2),A:R(c.IL,2)});
+  const sw=(id,v)=>$('#'+id).setAttribute('aria-pressed',String(v));
+  $('#e11on').onclick=()=>{on=!on;sw('e11on',on);msg='';upd()};
+  $('#e11s1').onclick=()=>{S1=!S1;sw('e11s1',S1);msg='';upd()};
+  $('#e11s2').onclick=()=>{S2=!S2;sw('e11s2',S2);msg='';upd()};
+  $('#e11swap').onclick=()=>{if(on){msg='<div class="callout err">افصل مصدر الجهد أولاً، ثم بدّل الأطراف (الخطوة 6).</div>';upd();return}rev=!rev;did.swap=1;msg=`<div class="callout">بدّلت أطراف ثانوي المحول 2: ${rev?'التوصيل الآن معكوس (a مع b\')':'a\' مع a و b\' مع b — التوصيل الآن صحيح'}.</div>`;upd()};
+  segBind(el,'e11z',v=>{big=v==='2';upd()});
+  $('#e11rec').onclick=()=>{if(!on){msg='<div class="callout err">لا توجد قراءة: شغّل مصدر الجهد أولاً.</div>';upd();return}const r=rd(calc());rows.push(Object.assign({S1,S2},r));if(rows.length>12)rows.shift();did.rec=1;msg='<div class="callout">سُجّلت القراءات في الجدول.</div>';upd()};
+  $('#e11clr').onclick=()=>{rows.length=0;msg='';upd()};
+  const upd=()=>{const P=TP.v;let c=calc();const In2=I2n(P),lim=P.kTrip*In2;
+   if(on&&Math.max(c.I1,c.I2,c.IL)>lim){const big1=Math.max(c.I1,c.I2,c.IL);on=false;sw('e11on',false);did.trip=1;msg=`<div class="callout err"><b>القاطع فصل المصدر!</b> ${rev&&S1?'أغلقت S<sub>1</sub> والتوصيل معكوس: الجهدان يتجمعان في الحلقة على معاوقتين صغيرتين':'التيار تجاوز حد القاطع'}، والتيار كان سيصل إلى <span class="ltr">${fm(big1,0)} A</span> = <span class="ltr">${fm(big1/In2,0)}</span> ضعف التيار المقنن لكل محول (<span class="ltr">${fm(In2,2)} A</span>). لذلك نتحقق من قراءة V قبل غلق S<sub>1</sub> (الخطوات 5–7).</div>`;c=calc()}
+   const r=rd(c);$('#e11r-v').textContent=fm(rv(),1)+' Ω  (R = '+fm(TP2.v.Rf+rv(),1)+' Ω)';
+   $('#e11c').innerHTML=parSVG({on,S1,S2,rev,i1:c.I1>0.005,i2:c.I2>0.005,iL:c.IL>0.005,rv:fm(rv(),0)+' Ω',rd:on?{A1:fm(r.A1,2)+' A',A2:fm(r.A2,2)+' A',A:fm(r.A,2)+' A',V1:fm(r.V1,1)+' V',V2:fm(r.V2,1)+' V',V:fm(r.V,1)+' V'}:{}});
+   $('#e11m').innerHTML=meters([['V<sub>1</sub>',fm(r.V1,1)+' V'],['V<sub>2</sub>',fm(r.V2,1)+' V'],['V (على S<sub>1</sub>)',fm(r.V,1)+' V',r.V>0.25*V2n(P)],['A<sub>1</sub>',fm(r.A1,2)+' A',r.A1>1.05*In2],['A<sub>2</sub>',fm(r.A2,2)+' A',r.A2>1.05*In2],['A (الحمل)',fm(r.A,2)+' A'],['A<sub>1</sub> + A<sub>2</sub>',fm(R(r.A1+r.A2,2),2)+' A']]);
+   const bar=(l,i)=>{const p=i/In2*100;return `<span>${l}</span><div class="tu-bar"><i class="${p>105?'over':''}" style="width:${fx(Math.min(100,p/1.5))}%"></i></div><b>${fm(p,0)}%</b>`};
+   $('#e11bars').innerHTML=`<div class="tu-bars">${bar('المحول 1',c.I1)}${bar('المحول 2',c.I2)}</div><p class="sub">النسبة من التيار المقنن لثانوي كل محول (<span class="ltr">${fm(In2,2)} A</span>)؛ العمود الكامل = 150%.</p>`;
+   let w='';
+   if(!on)w=`<div class="callout">المصدر مفصول. جهد المنبع = الجهد المقنن للابتدائي <span class="ltr">${fm(P.V1n)} V</span> (الخطوة 1). ${S1||S2?'افتح S<sub>1</sub> و S<sub>2</sub> قبل التشغيل (الخطوة 2).':'S<sub>1</sub> و S<sub>2</sub> مفتوحان ✓ — شغّل المصدر.'}</div>`;
+   else if(!S1){const sum=r.V1+r.V2;if(r.V>0.5*sum)w=`<div class="callout err"><b>V = ${fm(r.V,1)} V ≈ V<sub>1</sub> + V<sub>2</sub></b> (المجموع): التوصيل معكوس. <b>لا تغلق S<sub>1</sub>!</b> افصل المصدر وبدّل أطراف ثانوي أحد المحولين (الخطوة 6).</div>`;
+    else w=`<div class="callout">V = |V<sub>1</sub> − V<sub>2</sub>| = <span class="ltr">${fm(r.V,1)} V</span> — صفر أو قيمة صغيرة جداً: يمكن غلق S<sub>1</sub> (الخطوة 5).</div>`;
+    if(S2)w+='<div class="callout err">S<sub>2</sub> مغلق و S<sub>1</sub> مفتوح: المحول 2 وحده يغذي الحمل عبر A<sub>2</sub>، والمحول 1 لا يحمل شيئاً. أغلق S<sub>1</sub> أولاً.</div>'}
+   else{if(!S2)w=`<div class="callout">المحولان على التوازي بلا حمل. التيار الدائر بينهما <span class="ltr">${fm(r.A1,2)} A</span> فقط${Math.abs(TP2.v.dA)>0?` (سببه الفرق ${fm(TP2.v.dA,1)}% في نسبة التحويل)`:''}. أغلق S<sub>2</sub> لتوصيل الحمل.</div>`;
+    else w=`<div class="callout">A = <span class="ltr">${fm(r.A,2)} A</span> و A<sub>1</sub> + A<sub>2</sub> = <span class="ltr">${fm(R(r.A1+r.A2,2),2)} A</span>: تيار الحمل يساوي مجموع تياري المحولين (الخطوة 10).${Math.abs(r.A-(r.A1+r.A2))>0.02?' الفرق الصغير سببه التيار الدائر.':''}${big?' المحول ذو المعاوقة الأصغر يأخذ نصيباً أكبر.':''}</div>`+(c.I1>1.05*In2||c.I2>1.05*In2?'<div class="callout err">أحد المحولين فوق تياره المقنن: قلل الحمل (زد المقاومة المتغيرة).</div>':c.IL>1.05*In2?`<div class="callout">تيار الحمل <span class="ltr">${fm(r.A,2)} A</span> أكبر من التيار المقنن لمحول واحد، ومع ذلك لا يتجاوزه أي محول: هذا هو الغرض من التوصيل على التوازي.</div>`:'')}
+   $('#e11w').innerHTML=w;$('#e11msg').innerHTML=msg;
+   $('#e11t').innerHTML=rows.length?`<table class="tu-bt"><thead><tr><th>#</th><th>S<sub>1</sub></th><th>S<sub>2</sub></th><th>V<sub>1</sub> (V)</th><th>V<sub>2</sub> (V)</th><th>V (V)</th><th>A<sub>1</sub> (A)</th><th>A<sub>2</sub> (A)</th><th>A (A)</th><th>A<sub>1</sub>+A<sub>2</sub> (A)</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><th>${i+1}</th><td>${x.S1?'مغلق':'مفتوح'}</td><td>${x.S2?'مغلق':'مفتوح'}</td><td>${fm(x.V1,1)}</td><td>${fm(x.V2,1)}</td><td class="${!x.S1&&x.V>0.5*(x.V1+x.V2)?'bad':''}">${fm(x.V,1)}</td><td>${fm(x.A1,2)}</td><td>${fm(x.A2,2)}</td><td>${fm(x.A,2)}</td><td>${fm(R(x.A1+x.A2,2),2)}</td></tr>`).join('')}</tbody></table>`:'<p class="sub">لم تسجل قراءات بعد.</p>';
+   if(steps)steps.check()};
+  const loadRows=()=>rows.filter(r=>r.S1&&r.S2&&r.A>0);
+  steps=stepsUI($('#e11st'),[
+   {t:'المصدر والمفتاحان',get x(){return `جهد المنبع = الجهد المقنن للابتدائي <span class="ltr">${fm(TP.v.V1n)} V</span> (الخطوة 1)، و S<sub>1</sub> و S<sub>2</sub> مفتوحان (الخطوة 2). شغّل «مصدر الجهد».`},done:()=>on&&!S1&&!S2},
+   {t:'سجّل V<sub>1</sub> و V<sub>2</sub> و V',x:'اضغط «سجّل القراءات» (الخطوة 3). هل V<sub>1</sub> = V<sub>2</sub> (الخطوة 4)؟ وهل V يساوي الفرق أم المجموع؟',done:()=>rows.some(r=>!r.S1)},
+   {t:'V = المجموع: بدّل الأطراف',x:'في هذا المختبر وُصل ثانوي المحول 2 <b>معكوساً عمداً</b> لتتدرب على الخطوة 6: V ≈ V<sub>1</sub> + V<sub>2</sub>. افصل المصدر ثم اضغط «بدّل أطراف ثانوي المحول 2».',done:()=>!rev},
+   {t:'أعد المصدر وتحقق',get x(){const [E1,E2]=emf();return `شغّل المصدر من جديد: V الآن ≈ <span class="ltr">${fm(Math.abs(E1-Math.abs(E2)),2)} V</span> — صفر أو قيمة صغيرة جداً (الخطوة 7).`},done:()=>on&&!rev},
+   {t:'أغلق S<sub>1</sub>',get x(){return `أغلق S<sub>1</sub>: المحولان على التوازي. بلا حمل يمر بينهما تيار دائر صغير ≈ <span class="ltr">${fm(circNL(),2)} A</span> بسبب الفرق الصغير في نسبة التحويل.`},done:()=>on&&!rev&&S1},
+   {t:'أغلق S<sub>2</sub> وسجّل',x:'أغلق S<sub>2</sub> وسجّل A<sub>1</sub> و A<sub>2</sub> و A (الخطوة 8). ما العلاقة بينها؟',done:()=>loadRows().length>=1},
+   {t:'غيّر الحمل',x:'غيّر المقاومة المتغيرة وسجّل ثلاث قراءات على الأقل (الخطوتان 9 و10): A = A<sub>1</sub> + A<sub>2</sub> دائماً، وكل محول يأخذ نصف الحمل لأنهما متماثلان. عند أصغر مقاومة يزيد الحمل عن المقنن لمحول واحد ويحمله المحولان معاً.',done:()=>loadRows().length>=3},
+   {t:'للمقارنة (إضافة)',x:'اختر «معاوقته ضعف المحول 1»: المحول ذو المعاوقة الأصغر يأخذ نصيباً أكبر من الحمل (لذلك يشترط أن تتقارب المعاوقتان).',done:()=>big&&on&&S1&&S2},
+   {t:'لماذا نتحقق من V؟',x:'افصل المصدر، وبدّل الأطراف لتعود معكوسة، ثم شغّل المصدر وأغلق S<sub>1</sub>: تيار دائر هائل فيفصل القاطع.',done:()=>!!did.trip}]);
+  ui();upd()},
+ quiz:[
+  {q:'الغرض من توصيل محولين على التوازي:',o:['رفع الجهد','تغذية حمل أكبر من القدرة المقننة لأي منهما','تقليل التردد','قياس المفقودات'],c:1,e:'الغرض ص 49.'},
+  {q:'قبل غلق S<sub>1</sub> قرأ الفولتميتر V قيمة تساوي صفراً تقريباً. هذا يعني:',o:['التوصيل معكوس','القطبية صحيحة ويمكن غلق S<sub>1</sub>','المصدر مفصول دائماً','يجب تبديل الأطراف'],c:1,e:'الخطوة 5 ص 49–50.'},
+  {q:'إذا قرأ V مجموع V<sub>1</sub> و V<sub>2</sub> فيجب:',o:['غلق S<sub>1</sub> فوراً','فصل المصدر وتبديل أطراف ثانوي أحد المحولين','رفع الجهد','غلق S<sub>2</sub>'],c:1,e:'الخطوة 6.'},
+  {q:'ماذا يحدث لو أُغلق S<sub>1</sub> والقطبية معكوسة؟',o:['لا شيء','يمر تيار دائر كبير جداً قد يحرق المحولين','ينخفض الجهد قليلاً','يتوقف المحول'],c:1,e:'الجهدان يتجمعان على معاوقتين صغيرتين (توضيح).'},
+  {q:'بعد توصيل الحمل: A<sub>1</sub> = 4.5 A و A<sub>2</sub> = 4.5 A. قراءة A ≈',o:['0 A','4.5 A','9 A','20 A'],c:2,e:'A = A1 + A2 (الخطوة 10).'},
+  {q:'محولان متماثلان على التوازي يغذيان حملاً تياره 8 A. تيار كل محول:',o:['8 A','4 A','16 A','2 A'],c:1,e:'يتقاسمان الحمل بالتساوي.'},
+  {q:'سبب مرور تيار دائر صغير بين محولين على التوازي بلا حمل:',o:['فرق صغير في نسبة التحويل','الحمل الكبير','المقاومة المتغيرة','الأميتر'],c:0,e:'فرق الجهدين يدفع تياراً عبر معاوقتي الملفين (توضيح).'}
+ ]
+});
+
+/* ======================================================================
+   Lesson 5 — التجربة الثانية عشرة: محول ثلاثي الأوجه نجمة – دلتا (لاحمل)
+   ====================================================================== */
+const rd3=(P,VL,pc,scn)=>{const Vp=pc==='Y'?VL/SQ3:VL,s=trSolve(P,Vp,null),IL=(pc==='Y'?1:SQ3)*s.I1,Pt=3*s.P1,V2p=s.E/P.a,VL2=scn==='D'?V2p:SQ3*V2p;
+  const phi=IL>0?Math.acos(clamp(Pt/(SQ3*VL*IL),0,1)):0;return {VL:R(VL,1),Vph:R(Vp,1),IL:R(IL,3),Pt:R(Pt,1),W:R(VL*IL*Math.cos(PI/6+phi),1),W1:R(VL*IL*Math.cos(PI/6+phi),1),W2:R(VL*IL*Math.cos(PI/6-phi),1),VL2:R(VL2,1),V2p:R(V2p,1),phi:phi/D}};
+const w12=()=>{const r=rd3(DEF,SQ3*DEF.V1n,'Y','D');return r};
+B.lesson({
+ id:'u3-l5',unit:3,order:5,pages:'51–53',
+ title:'التجربة الثانية عشرة: اختبار اللاحمل لمحول ثلاثي الأوجه نجمة – دلتا',
+ summary:'نوصل ابتدائي المحول ثلاثي الأوجه نجمة وثانويه دلتا، ونرفع الجهد 60% و80% و100% من المقنن ونقرأ القدرة وتيار الخط وجهدي الخط في الجانبين، ثم نحسب جهد الوجه ونسبة التحويل. في النجمة جهد الخط = √3 × جهد الوجه، وفي الدلتا جهد الخط = جهد الوجه.',
+ theory:[
+  {h:'التجربة الثانية عشرة: توصيل اللاحمل لمحول ثلاثي الأوجه نجمة – دلتا',ref:'ص 51',html:`<p class="ltr" style="text-align:left">Open-circuit test of Three-phase transformer connection Y-Δ</p><p><b>الغرض من التجربة:</b> معرفة كيفية توصيل المحول ثلاثي الأوجه نجمة – دلتا ودراسة أداء المحول عند اللاحمل والتعرف على جهد الوجه وتيار الوجه وحساب نسبة التحويل.</p>
+   <p><b>الأجهزة المطلوبة:</b></p><ol><li>محول ثلاثي الأوجه.</li><li>جهازا قياس للفولت (Voltmeter).</li><li>جهاز قياس القدرة (Wattmeter).</li><li>جهاز قياس التيار الأميتر (Ammeter).</li></ol>`},
+  {h:'القوانين الخاصة بالتجربة',ref:'ص 51',html:`$$P_t=3V_{ph}I_{ph}\\cos(\\theta_{ph}) \\quad \\text{OR} \\quad P_t=\\sqrt3\\,V_LI_L\\cos(\\theta_{ph})$$ $$\\cos\\varphi_2=P_2/\\sqrt3\\,V_{L2}I_{L2}$$ $$\\eta=\\frac{P_{out}}{P_{in}} \\qquad V_R\\%=\\frac{|V_{20}-V_2|}{V_2}\\times 100$$
+   <ul><li>Δ Connection: \\(V_L=V_{ph}\\) and \\(I_L=\\sqrt3\\,I_{ph}\\).</li><li>Y Connection: \\(V_L=\\sqrt3\\,V_{ph}\\) and \\(I_L=I_{ph}\\).</li></ul>
+   <p>الرموز: \\(P_{10}\\): قدرة الملف الابتدائي في حالة اللاحمل للخط \\(P_L\\). \\(V_{10}\\): جهد الملف الابتدائي في حالة اللاحمل للخط \\(V_L\\). \\(I_{10}\\): تيار الملف الابتدائي في حالة اللاحمل. \\(I_{20}\\): تيار الملف الثانوي في حالة اللاحمل. \\(a\\): نسبة التحويل. \\(I_{ph}\\): تيار الوجه — \\(I_L\\): تيار الخط — \\(V_L\\): جهد الخط — \\(V_{ph}\\): جهد الوجه. \\(\\eta\\): كفاءة المحول — \\(V_R\\): معامل تنظيم الجهد — \\(\\cos\\varphi_2\\): معامل القدرة للملف الثانوي.</p>`},
+  {note:ADD+'قوانين \\(\\eta\\) و \\(\\cos\\varphi_2\\) و \\(V_R\\) تخص <b>التحميل</b>، ولا يمكن حسابها من اختبار لاحمل وحده: لا قدرة خارجة \\((P_{out}=0)\\) ولا قراءة لجهد الثانوي تحت الحمل \\(V_2\\). لذلك يبقى صف \\(V_R\\%\\) في الجدول (١٢-١) فارغاً في المختبر مع هذا التوضيح.'},
+  {h:'توصيل الواتميتر في الشكل (12)',ref:'ص 52',html:'<p>في الشكل واتميتر واحد: ملف تياره في الخط A وملف جهده بين الخطين A و B. اختر النسخة (الأرقام من المختبر الافتراضي عند الجهد المقنن بالقيم التوضيحية):</p>'},
+  {widget:bookFixW(()=>{const r=w12();return `<p>واتميتر واحد (A ، A–B) يقرأ \\(W=V_LI_L\\cos(30^\\circ+\\varphi)\\) وليس القدرة الكلية.</p>$$W=${fm(r.VL,1)}\\times ${fm(r.IL,3)}\\times\\cos(30^\\circ+${fm(r.phi,1)}^\\circ)=${fm(r.W,1)}\\ W$$<p>القدرة الحقيقية المسحوبة \\(P_t=\\sqrt3V_LI_L\\cos\\varphi=${fm(r.Pt,1)}\\ W\\). عند اللاحمل معامل القدرة صغير (\\(\\varphi>60^\\circ\\)) فتكون القراءة <b>سالبة أو صغيرة جداً</b>.</p>`},()=>{const r=w12();return `<p>لقياس القدرة الكلية بلا خط محايد نستعمل <b>طريقة الواتميترين</b>: W<sub>1</sub> ملف تياره في A وملف جهده بين A و B (كما في الشكل)، و W<sub>2</sub> ملف تياره في C وملف جهده بين C و B. القدرة الكلية = مجموعهما (بالإشارة):</p>$$P_{10}=W_1+W_2=${fm(r.W1,1)}+${fm(r.W2,1)}=${fm(R(r.W1+r.W2,1),1)}\\ W$$<p>(ونقطة نجمة الابتدائي غير مخرجة في الشكل، فلا يمكن توصيل ملف الجهد بين A والمحايد وضرب القراءة في 3.)</p>`})},
+  {fig:'(12)',ref:'ص 52',caption:'Y-Δ Connection: الخطوط A و B و C من المصدر إلى أطراف H<sub>1</sub>، وأطراف H<sub>2</sub> الثلاثة معاً (نجمة)؛ والثانوي دلتا: X<sub>3</sub> لكل ملف مع X<sub>1</sub> للملف التالي، وتخرج الخطوط a و b و c. الواتميتر في الخط A (ملف جهده إلى B)، والفولتميتر بين B و C، والأميتر في الخط C، وفولتميتر الثانوي بين a و b.',draw:()=>box(bankSVG({pc:'Y',scn:'D'}),720,1)},
+  {note:ADD+'<b>لماذا جهد الخط في النجمة أكبر؟</b> في النجمة كل ملف بين خط ونقطة النجمة، فيأخذ جهد الوجه \\(V_{ph}=V_L/\\sqrt3\\). فإذا كان كل ملف مصمماً لـ 220 V، يكون جهد خط الابتدائي المقنن \\(\\sqrt3\\times220\\approx381\\ V\\) (شبكة 380 V). وفي الدلتا كل ملف بين خطين فيأخذ جهد الخط كاملاً \\(V_L=V_{ph}\\). لذلك في توصيلة Y-Δ: \\(V_{L1}/V_{L2}=\\sqrt3\\,a\\) حيث \\(a=N_1/N_2=V_{ph1}/V_{ph2}\\). وتوجد أيضاً إزاحة طور 30° بين جهدي الخط في الجانبين (المخطط الاتجاهي في المختبر).'},
+  {h:'خطوات التجربة',ref:'ص 52',html:'<ol><li>يترك أحد ملفي المحول مفتوحاً ويوصل عليه جهاز فولتميتر.</li><li>يوصل الملف الآخر من خلال أجهزة القياس المناسبة لقياس الجهد والتيار والقدرة إلى منبع جهد متردد ثلاثي الأوجه متغير القيمة ويعطي الجهد المقنن لهذا المحول.</li><li>غير الجهد تدريجياً وسجل قراءات الأجهزة في الجدول (١٢-١).</li><li>احسب جهد الوجه وجهد الخط.</li><li>احسب نسبة التحويل.</li></ol>'},
+  {h:'الجدول (١٢-١)',ref:'ص 53',html:ptable('V<sub>1</sub>rated (V)',['60%','80%','100%'],['P<sub>10</sub> (W)','I<sub>10</sub> (A)','VL<sub>10</sub> (V)','Vph<sub>10</sub> (V)','VL<sub>20</sub> (V)','a=V<sub>1</sub>/V<sub>2</sub>','VR%'])+'<p class="sub">لا توجد منحنيات مطلوبة ولا أسئلة ختامية لهذه التجربة في الكتاب.</p>'},
+  {err:'<ol style="margin:4px 0 0;padding-inline-start:20px"><li>«جهاز قياس التيار الاوميتر (Ammeter)» — المقصود «الأميتر» (صُحح في النص)، و«جهازي» صوابها «جهازا».</li><li>\\(\\eta=P_{out}/P_{int}\\) — المقصود \\(P_{in}\\) (صُحح في النص).</li><li>الغرض يكرر «دراسة أداء المحول» مرتين (حُذف التكرار في النص).</li><li>قوانين الكفاءة و \\(\\cos\\varphi_2\\) وتنظيم الجهد تخص التحميل، ولا تُحسب من اختبار لاحمل، ومع ذلك يطلب الجدول \\(V_R\\%\\).</li><li>واتميتر واحد ملف جهده بين A و B لا يقيس القدرة الكلية لثلاثة أوجه (انظر المفتاح أعلاه). ويستعمل المختبر طريقة الواتميترين في نسخة «المصحح».</li><li>«a=V<sub>1</sub>/V<sub>2</sub>» لا يحدد هل هما جهدا خط أم وجه: نسبة جهدي الوجه = نسبة اللفات، ونسبة جهدي الخط في Y-Δ = √3 × نسبة اللفات. المختبر يعرض الاثنتين.</li><li>لا قيم مقننة للمحول في الكتاب.</li></ol>'}
+ ],
+ lab:(el)=>{
+  let VL=0,pc='Y',scn='D',mode='book',msg='';const rows={},free=[],did={};
+  el.innerHTML=`<div id="e12tp"></div><div class="grid tu-lab">
+   <div class="panel c7"><h2>محول ثلاثي الأوجه — اختبار اللاحمل <small>مبنية على الشكل (12) ص 52</small></h2>
+    <div class="tu-row"><div><div class="sub">الابتدائي</div>${segHTML('e12p',[['Y','نجمة Y (كما في الكتاب)'],['D','دلتا Δ (إضافة)']],pc)}</div><div><div class="sub">الثانوي</div>${segHTML('e12s',[['D','دلتا Δ (كما في الكتاب)'],['Y','نجمة Y (إضافة)']],scn)}</div></div>
+    <div class="svgbox tu-wide" id="e12c" style="max-width:720px;margin-inline:auto"></div>
+    <div id="e12sl"></div><div class="tu-fine">${[-10,-1,-0.1,0.1,1,10].map(d=>`<button class="btn" data-f12="${d}">${d>0?'+':'−'}${fm(Math.abs(d))}</button>`).join('')}</div>
+    <div class="tu-row"><span class="sub">نقاط الجدول (% من جهد الخط المقنن):</span><span class="tu-fine" id="e12sp" style="margin:0"></span></div>
+    <div class="tu-row"><button class="btn primary" id="e12rec">سجّل القراءة</button><button class="btn" id="e12zero">أعد الجهد إلى الصفر</button><button class="btn" id="e12clr">امسح الجدول</button></div><div id="e12msg"></div></div>
+   <div class="panel c5"><h2>قراءات الأجهزة</h2><div class="tu-row" style="margin-top:0"><span class="sub">توصيل الواتميتر:</span>${segHTML('e12md',[['book','كما في الكتاب'],['fixed','المصحح']],mode)}</div><div class="tu-meters" id="e12m"></div><div id="e12w"></div>
+    <h3 class="sm">المخطط الاتجاهي للجهود <small class="sub">(توضيح — ليس من الكتاب)</small></h3><div class="svgbox" id="e12ph" style="max-width:460px;margin-inline:auto"></div><p class="sub" id="e12sh"></p></div>
+   <div class="panel c12"><h2>الجدول (١٢-١) ص 53 — يمتلئ بقراءاتك</h2><div class="tu-tbl" id="e12t"></div><div id="e12res"></div></div>
+   <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="e12st"></ol></div></div>`;
+  const $=s=>el.querySelector(s);let steps=null;
+  const TP=B.params($('#e12tp'),'u3-tr',TRDEF,()=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0;VL=Math.min(VL,vmax());msg='<div class="callout">تغيرت أرقام المحول، فمسحنا الجدول.</div>';ui();upd();if(steps)steps.redraw()});
+  const VLr=()=>(pc==='Y'?SQ3:1)*TP.v.V1n,vmax=()=>R(1.15*SQ3*TP.v.V1n,1);
+  const ui=()=>{$('#e12sl').innerHTML=sl('e12v','جهد خط المصدر ثلاثي الأوجه VL<sub>10</sub>',0,vmax(),0.1,VL);$('#e12v').oninput=e=>{VL=+e.target.value;msg='';upd()}};
+  const setV=v=>{VL=clamp(R(v,1),0,vmax());$('#e12v').value=VL;msg='';upd()};
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-f12]');if(b)setV(VL+ +b.dataset.f12);const q=e.target.closest('[data-sp12]');if(q)setV(+q.dataset.sp12/100*VLr())});
+  const clear=m=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0;msg=m||''};
+  segBind(el,'e12p',v=>{pc=v;did['p'+v]=1;clear('<div class="callout">تغير التوصيل، فمسحنا الجدول.</div>');upd()});segBind(el,'e12s',v=>{scn=v;did['s'+v]=1;clear('<div class="callout">تغير التوصيل، فمسحنا الجدول.</div>');upd()});
+  segBind(el,'e12md',v=>{mode=v;did['md'+v]=1;upd()});
+  $('#e12zero').onclick=()=>setV(0);$('#e12clr').onclick=()=>{clear();upd()};
+  $('#e12rec').onclick=()=>{const r=rd3(TP.v,VL,pc,scn);if(!(r.VL>0)){msg='<div class="callout err">لا توجد قراءة: ارفع الجهد أولاً.</div>';upd();return}
+   const sp=[60,80,100].find(q=>Math.abs(r.VL-q/100*VLr())<=0.006*VLr());if(sp!=null){rows[sp]=r;did['sp'+sp]=1}else{free.push(r);if(free.length>4)free.shift()}
+   msg=`<div class="callout">سُجّلت القراءة ${sp!=null?`في عمود <b>${sp}%</b>`:'في عمود «حرة»'}.</div>`;upd()};
+  const Pm=r=>mode==='book'?r.W:R(r.W1+r.W2,1);
+  const upd=()=>{const P=TP.v,r=rd3(P,VL,pc,scn),on=VL>0,two=mode==='fixed';
+   $('#e12v-v').textContent=fm(VL,1)+' V';
+   $('#e12c').innerHTML=bankSVG({pc,scn,on,two,rd:on?{W:fm(two?r.W1:r.W,1)+' W',W2:fm(r.W2,1)+' W',A:fm(r.IL,3)+' A',V1:fm(r.VL,1)+' V',V2:fm(r.VL2,1)+' V'}:{}});
+   $('#e12m').innerHTML=meters([['VL<sub>10</sub> (V بين B و C)',fm(r.VL,1)+' V'],['I<sub>10</sub> (A في الخط C)',fm(r.IL,3)+' A']].concat(two?[['W<sub>1</sub>',fm(r.W1,1)+' W'],['W<sub>2</sub>',fm(r.W2,1)+' W'],['P<sub>10</sub> = W<sub>1</sub> + W<sub>2</sub>',fm(R(r.W1+r.W2,1),1)+' W']]:[['W',fm(r.W,1)+' W',on&&r.W<0]]).concat([['VL<sub>20</sub> (V بين a و b)',fm(r.VL2,1)+' V'],['Vph<sub>10</sub> جهد ملف الابتدائي (محسوب)',fm(r.Vph,1)+' V',r.Vph>1.05*P.V1n],['Vph<sub>20</sub> جهد ملف الثانوي (محسوب)',fm(r.V2p,1)+' V']]));
+   let w='';if(!on)w='<div class="callout">ارفع جهد المصدر تدريجياً (الخطوة 3)، أو اضغط زر نقطة من نقاط الجدول.</div>';
+   else{if(r.Vph>1.05*P.V1n)w+=`<div class="callout err"><b>جهد كل ملف ابتدائي <span class="ltr">${fm(r.Vph,1)} V</span> أعلى من المقنن <span class="ltr">${fm(P.V1n)} V</span>!</b> ${pc==='D'?`في الدلتا يأخذ كل ملف جهد الخط كاملاً، فجهد الخط المقنن للدلتا <span class="ltr">${fm(P.V1n)} V</span> فقط (وللنجمة <span class="ltr">${fm(SQ3*P.V1n,1)} V</span>).`:'الجهد فوق المقنن.'} تيار اللاحمل يقفز (تشبع القلب).</div>`;
+    if(!two&&r.W<=0.2*r.Pt)w+=`<div class="callout err">قراءة W = <span class="ltr">${fm(r.W,1)} W</span> ${r.W<0?'سالبة':'صغيرة جداً'}، والقدرة الحقيقية <span class="ltr">${fm(r.Pt,1)} W</span>: واتميتر واحد ملف جهده بين A و B لا يقيس القدرة الكلية. اختر «المصحح» (طريقة الواتميترين).</div>`;
+    w+=`<p class="sub">${pc==='Y'?`الابتدائي نجمة: Vph = VL/√3 = ${fm(r.VL,1)}/1.732 = ${fm(r.Vph,1)} V`:`الابتدائي دلتا: Vph = VL = ${fm(r.Vph,1)} V`}. ${scn==='D'?`الثانوي دلتا: VL<sub>20</sub> = Vph<sub>20</sub> = ${fm(r.VL2,1)} V`:`الثانوي نجمة: VL<sub>20</sub> = √3 × ${fm(r.V2p,1)} = ${fm(r.VL2,1)} V`}.</p>`}
+   $('#e12w').innerHTML=w;$('#e12msg').innerHTML=msg;
+   const ph=bankPhasor(pc,scn);$('#e12ph').innerHTML=ph.svg;$('#e12sh').innerHTML=`زاوية الإزاحة بين جهد خط الابتدائي V<sub>AB</sub> وجهد خط الثانوي V<sub>ab</sub>: <span class="ltr">${ph.shift===0?'0°':(ph.shift>0?'+':'−')+Math.abs(ph.shift)+'°'}</span>${ph.shift<0?' (V<sub>ab</sub> متأخر)':ph.shift>0?' (V<sub>ab</sub> متقدم)':''}. أطوال الأسهم ليست بمقياس واحد في الجانبين.`;
+   $('#e12sp').innerHTML=[60,80,100].map(q=>`<button class="btn" data-sp12="${q}" style="${rows[q]?'border-color:var(--on)':''}">${q}% = ${fm(q/100*VLr(),1)} V${rows[q]?' ✓':''}</button>`).join('');
+   const cols=[60,80,100].map(q=>({h:q+'%',r:rows[q]})).concat(free.map((x,i)=>({h:'حرة '+(i+1),r:x})));
+   const RW=[['VL<sub>10</sub> (V)',x=>fm(x.VL,1)],[mode==='book'?'P<sub>10</sub> (W) — قراءة W':'P<sub>10</sub> (W) = W<sub>1</sub> + W<sub>2</sub>',x=>fm(Pm(x),1),x=>Pm(x)<0],['I<sub>10</sub> (A)',x=>fm(x.IL,3)],['Vph<sub>10</sub> (V)',x=>fm(x.Vph,1)],['VL<sub>20</sub> (V)',x=>fm(x.VL2,1)],['a = Vph<sub>10</sub>/Vph<sub>20</sub> (نسبة اللفات)',x=>fm(x.Vph/x.V2p,3)],['VL<sub>10</sub>/VL<sub>20</sub> (نسبة جهود الخط)',x=>fm(x.VL/x.VL2,3)],['VR%',()=>'—']];
+   $('#e12t').innerHTML=`<table class="tu-bt"><thead><tr><th>V<sub>1</sub>rated</th>${cols.map(x=>`<th>${x.h}</th>`).join('')}</tr></thead><tbody>${RW.map(([l,f,b])=>`<tr><th>${lt(l)}</th>${cols.map(x=>x.r?`<td class="${b&&b(x.r)?'bad':''}">${f(x.r)}</td>`:'<td></td>').join('')}</tr>`).join('')}</tbody></table>`;
+   const f=rows[100];$('#e12res').innerHTML=(f?`<h3 class="sm">النتائج عند الجهد المقنن (الخطوتان 4 و5)</h3><div class="tu-meters">${meters([['Vph<sub>10</sub>',fm(f.Vph,1)+' V'],['VL<sub>20</sub>',fm(f.VL2,1)+' V'],['a = N<sub>1</sub>/N<sub>2</sub>',fm(f.Vph/f.V2p,3)],['VL<sub>10</sub>/VL<sub>20</sub>',fm(f.VL/f.VL2,3)],['القدرة الحقيقية P<sub>10</sub>',fm(R(f.W1+f.W2,1),1)+' W'],['cosφ<sub>0</sub>',fm(Math.cos(f.phi*D),3)]])}</div><p class="sub">نسبة اللفات في النموذج a = ${fm(P.a)}. ${pc==='Y'&&scn==='D'?`في Y-Δ: نسبة جهود الخط = √3 × a = ${fm(SQ3*P.a,3)}.`:''} القدرة هنا = 3 × الفقد الحديدي لملف واحد من التجربة 8 تقريباً.</p>`:'<div class="callout">سجّل عمود 100% لتظهر نتائج الخطوتين 4 و5.</div>')+'<p class="sub">صف VR% يبقى فارغاً: تنظيم الجهد يحتاج قراءة V<sub>2</sub> تحت الحمل، واختبار اللاحمل لا يعطيها (وكذلك الكفاءة و cosφ<sub>2</sub>).</p>';
+   if(steps)steps.check()};
+  steps=stepsUI($('#e12st'),[
+   {t:'التوصيل نجمة – دلتا',get x(){return `الابتدائي نجمة (أطراف H<sub>2</sub> الثلاثة معاً) والثانوي دلتا كما في الشكل (12). كل ملف مصمم لـ <span class="ltr">${fm(TP.v.V1n)} V</span>، فجهد خط الابتدائي المقنن = √3 × ${fm(TP.v.V1n)} = <span class="ltr">${fm(SQ3*TP.v.V1n,1)} V</span>.`}},
+   {t:'60% من الجهد المقنن',get x(){return `اضغط «60%» (<span class="ltr">${fm(0.6*SQ3*TP.v.V1n,1)} V</span>) وسجّل (الخطوة 3).`},done:()=>pc==='Y'&&scn==='D'&&!!rows[60]},
+   {t:'80% و100%',x:'سجّل العمودين الباقيين. لاحظ أن تيار اللاحمل صغير، وأن جهد خط الثانوي يتناسب مع جهد خط الابتدائي.',done:()=>pc==='Y'&&scn==='D'&&rows[80]&&rows[100]},
+   {t:'جهد الوجه وجهد الخط',get x(){return `الخطوة 4: في نجمة الابتدائي Vph<sub>10</sub> = VL<sub>10</sub>/√3، وفي دلتا الثانوي VL<sub>20</sub> = Vph<sub>20</sub>. عند 100%: Vph<sub>10</sub> = <span class="ltr">${fm(TP.v.V1n,1)} V</span> تقريباً.`}},
+   {t:'نسبة التحويل',get x(){return `الخطوة 5: نسبة اللفات a = Vph<sub>10</sub>/Vph<sub>20</sub> ≈ <span class="ltr">${fm(TP.v.a)}</span>، أما نسبة جهدي الخط VL<sub>10</sub>/VL<sub>20</sub> ≈ <span class="ltr">${fm(SQ3*TP.v.a,3)}</span> = √3 × a بسبب التوصيلة Y-Δ.`}},
+   {t:'قراءة الواتميتر',x:'قارن قراءة W (كما في الكتاب) بالقدرة الحقيقية، ثم اختر «المصحح»: W<sub>1</sub> + W<sub>2</sub> = القدرة الكلية.',done:()=>!!did.mdfixed},
+   {t:'نجمة – نجمة (إضافة)',x:'اختر الثانوي «نجمة»: جهد خط الثانوي يصبح √3 × جهد ملفه، ولا إزاحة طور بين الجانبين (المخطط الاتجاهي).',done:()=>scn==='Y'},
+   {t:'خطأ شائع: دلتا على جهد النجمة',get x(){return `اختر الابتدائي «دلتا» وارفع جهد الخط إلى <span class="ltr">${fm(SQ3*TP.v.V1n,1)} V</span> (الجهد المقنن للنجمة): كل ملف يأخذ الجهد كاملاً، أي √3 مرة أكثر من المقنن، فيتشبع القلب ويقفز التيار.`},done:()=>pc==='D'&&VL/TP.v.V1n>1.1}]);
+  ui();upd()},
+ quiz:[
+  {q:'في توصيلة النجمة Y:',o:['\\(V_L=V_{ph}\\)','\\(V_L=\\sqrt3\\,V_{ph}\\) و \\(I_L=I_{ph}\\)','\\(I_L=\\sqrt3\\,I_{ph}\\)','\\(V_L=3V_{ph}\\)'],c:1,e:'القوانين ص 51.'},
+  {q:'في توصيلة الدلتا Δ:',o:['\\(V_L=V_{ph}\\) و \\(I_L=\\sqrt3\\,I_{ph}\\)','\\(V_L=\\sqrt3\\,V_{ph}\\)','\\(I_L=I_{ph}\\)','\\(V_L=V_{ph}/\\sqrt3\\)'],c:0,e:'القوانين ص 51.'},
+  {q:'ابتدائي نجمة على جهد خط 380 V. جهد كل ملف ≈',o:['380 V','220 V','660 V','127 V'],c:1,e:'\\(380/\\sqrt3\\approx 220\\ V\\).'},
+  {q:'ثانوي دلتا كل ملف فيه 110 V. جهد الخط في الثانوي:',o:['110 V','190 V','63.5 V','330 V'],c:0,e:'في الدلتا \\(V_L=V_{ph}\\).'},
+  {q:'القدرة الكلية لثلاثة أوجه بدلالة قيم الخط:',o:['\\(V_LI_L\\cos\\theta\\)','\\(\\sqrt3\\,V_LI_L\\cos\\theta\\)','\\(3V_LI_L\\cos\\theta\\)','\\(V_LI_L/\\sqrt3\\)'],c:1,e:'\\(P_t=\\sqrt3V_LI_L\\cos\\theta_{ph}\\) ص 51.'},
+  {q:'لماذا لا يمكن حساب معامل تنظيم الجهد من اختبار اللاحمل وحده؟',o:['لأن الجهد صغير','لأنه يحتاج جهد الثانوي تحت الحمل V<sub>2</sub>','لأن المحول ثلاثي الأوجه','لأن التيار كبير'],c:1,e:'\\(V_R\\%=|V_{20}-V_2|/V_2\\) يحتاج قراءة تحت الحمل.'},
+  {q:'لقياس القدرة الكلية لثلاثة أوجه بلا محايد نستعمل:',o:['واتميتراً واحداً بين A و B','طريقة الواتميترين W<sub>1</sub> + W<sub>2</sub>','أميتراً فقط','فولتميتراً فقط'],c:1,e:'واتميتر واحد بين خطين يقرأ \\(V_LI_L\\cos(30^\\circ+\\varphi)\\) فقط (توضيح).'},
+  {q:'محول Y-Δ نسبة لفاته a = 2. نسبة جهدي الخط \\(V_{L1}/V_{L2}\\) ≈',o:['2','3.46','1.15','6'],c:1,e:'\\(\\sqrt3\\times2\\approx3.46\\).'}
+ ]
+});
+
+})(PLCBOOK);
