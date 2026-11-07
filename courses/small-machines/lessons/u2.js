@@ -208,6 +208,118 @@ B.lesson({
  id:'u2-l1',unit:2,order:1,pages:'28–29',
  title:'مولدات التاكو: التعريف والمتطلبات الرئيسية',
  summary:'مولد التاكو مولد صغير يحوّل سرعة الدوران إلى جهد يتناسب معها (Va = Kg·ω)، وأنواعه الثلاثة، والمتطلبات الخمس التي تراعى عند تصميمه (ΔV و Δβ و Kg والقصور الذاتي والثابت الزمني).',
+ stations:[
+  {intro:true},
+
+  {st:1,short:'أهداف الوحدة',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 28',
+   q:'كيف تعرف سرعة عمود يدور بآلاف اللفات في الدقيقة، وأنت لا تستطيع أن تعدّها بعينك؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="لوحة أهداف الوحدة الثانية: التمييز بين أنواع التاكومترات، وأسباب الخطأ في قراءتها، ومعايرتها" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><text x="180" y="52" text-anchor="middle" font-size="14" fill="#2C4A40" font-weight="700">الهدف العام: معرفة تركيب وأنواع مولدات التاكو</text><rect x="52" y="74" width="256" height="56" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="282" cy="102" r="15" fill="#4FB3A9"/><text x="282" y="107" text-anchor="middle" font-size="15" fill="#FBF6EE" font-weight="700">1</text><text x="256" y="107" text-anchor="end" font-size="14" fill="#2C4A40" font-weight="600">يميّز بين أنواع التاكومترات</text><rect x="52" y="142" width="256" height="56" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="282" cy="170" r="15" fill="#E8735A"/><text x="282" y="175" text-anchor="middle" font-size="15" fill="#FBF6EE" font-weight="700">2</text><text x="256" y="166" text-anchor="end" font-size="14" fill="#2C4A40" font-weight="600">يحدد أسباب الخطأ في القراءة</text><text x="256" y="186" text-anchor="end" font-size="13" fill="#2C4A40">وطرق تلافيها</text><rect x="52" y="210" width="256" height="56" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="282" cy="238" r="15" fill="#F2C14E"/><text x="282" y="243" text-anchor="middle" font-size="15" fill="#2C4A40" font-weight="700">3</text><text x="256" y="243" text-anchor="end" font-size="14" fill="#2C4A40" font-weight="600">يتمكن من معايرة التاكومترات</text><text x="180" y="295" text-anchor="middle" font-size="13" fill="#2C4A40">الأهداف التفصيلية للوحدة</text></svg>`,
+   cap:'الهدف العام للوحدة وأهدافها التفصيلية الثلاثة كما في ص 28.',
+   side:[
+    {add:String.raw`<p>في المصانع تجد محركات تدير سيوراً ناقلة ومضخات وآلات تغليف، ويجب أن تبقى سرعتها ثابتة مهما تغير الحمل. دائرة التحكم لا «ترى» العمود، فتحتاج جهازاً صغيراً على العمود يحوّل سرعته إلى إشارة كهربائية تقرؤها. هذا الجهاز هو <b>مولد التاكو</b>، موضوع هذه الوحدة.</p>`,title:'لماذا هذه الوحدة؟'},
+    {predict:{q:'أي هدف من أهداف الوحدة يتعلق بالتأكد من أن قراءة التاكومتر ما زالت صحيحة بعد مدة من الاستعمال؟',opts:[
+     ['التمييز بين أنواع التاكومترات',false,'هذا عن معرفة الأنواع (مستمر، حثي، تزامني)، لا عن صحة القراءة مع الزمن.'],
+     ['تحديد أسباب الخطأ في القراءة وطرق تلافيها',false,'هذا عن أخطاء تأتي من تصميم المولد نفسه وطريقة توصيله، وهو قريب، لكن التأكد الدوري من القراءة له اسم آخر.'],
+     ['معايرة التاكومترات',true,'المعايرة تعني مقارنة قراءة التاكومتر بجهاز أدق وتصحيحها، وسيأتي في الكتاب أنها تتم كل فترة زمنية محددة (ص 40).']]}}
+   ],
+   body:[
+    {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة تركيب وأنواع مولدات التاكو.</p>
+     <p><b>الأهداف التفصيلية:</b></p><ol><li>أن يميز المتدرب بين أنواع التاكومترات.</li><li>أن يحدد المتدرب أسباب الخطأ في قراءة التاكومترات وطرق تلافيها.</li><li>أن يتمكن المتدرب من معايرة التاكومترات.</li></ol>`,ref:'ص 28'},
+    {tip:String.raw`<p>الكلمتان بمعنى واحد في هذه الوحدة: <b>مولد التاكو</b> و<b>التاكومتر</b>. الهدف الأول تجده في الدروس 2.1 و2.2 و2.4 و2.5، والثاني في الدرس 2.3، والثالث في الدرس 2.5.</p>`,title:'خريطة الوحدة'}
+   ]},
+
+  {st:2,short:'ما مولد التاكو؟',title:'ما هو مولد التاكو؟',ref:'ص 29',
+   q:'لو ربطنا مولداً صغيراً على عمود المحرك، ماذا يحدث لجهده عندما تزيد سرعة العمود؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="محرك يدير عموداً مركّباً عليه مولد تاكو، وأطراف المولد موصولة بفولتميتر يقيس جهد الخرج" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><g data-tip="الآلة التي نريد قياس سرعتها (محرك مثلاً). مولد التاكو يُركّب على عمودها نفسه."><rect x="34" y="132" width="78" height="76" rx="12" fill="#2C4A40"/><text x="73" y="178" text-anchor="middle" font-size="22" fill="#FBF6EE" font-weight="700">M</text></g><rect x="112" y="164" width="128" height="12" rx="3" fill="#8A9A94"/><g data-tip="سرعة دوران العمود ⟦ω⟧. في المعادلة (٢-١) تُكتب بالراديان في الثانية ⟦rad/s⟧."><path d="M160 140 A26 32 0 1 1 160 200" fill="none" stroke="#E8735A" stroke-width="4" stroke-linecap="round"/><polygon points="160,206 150,196 166,192" fill="#E8735A"/><text x="200" y="134" text-anchor="middle" font-size="20" fill="#E8735A" font-weight="700" font-family="var(--mono)">ω</text></g><g data-tip="مولد التاكو ⟦(Tacho-Generator)⟧: مولد صغير القدرة يحوّل سرعة الدوران إلى جهد يتناسب معها."><rect x="240" y="138" width="82" height="64" rx="12" fill="#4FB3A9" stroke="#2C4A40" stroke-width="3"/><text x="281" y="177" text-anchor="middle" font-size="18" fill="#2C4A40" font-weight="700" font-family="var(--mono)">TG</text></g><path d="M262 138 V106 M300 138 V106" stroke="#2C4A40" stroke-width="3"/><g data-tip="الفولتميتر يقيس جهد الخرج ⟦Va⟧. كلما زادت السرعة زادت قراءته، فنعرف السرعة من الجهد."><circle cx="281" cy="76" r="34" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><path d="M257 82 A26 26 0 0 1 305 82" fill="none" stroke="#2C4A40" stroke-width="2"/><line x1="281" y1="86" x2="296" y2="62" stroke="#E8735A" stroke-width="3" stroke-linecap="round"/><circle cx="281" cy="86" r="4" fill="#2C4A40"/><text x="281" y="104" text-anchor="middle" font-size="12" fill="#2C4A40" font-family="var(--mono)">V</text></g><text x="228" y="80" text-anchor="end" font-size="18" fill="#2C4A40" font-weight="700" direction="ltr" font-family="var(--mono)">V<tspan font-size="12" dy="4">a</tspan></text><text x="180" y="262" text-anchor="middle" font-size="15" fill="#2C4A40" font-weight="700">سرعة الدوران ← جهد يتناسب معها</text></svg>`,
+   cap:'المحرك يدير العمود، ومولد التاكو على العمود نفسه، والفولتميتر يقرأ جهد خرجه.<br><b>مرّر المؤشر على أجزاء الرسمة (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {book:String.raw`<p>مولدات التاكو أو <b>التاكومترات</b> هي أجهزة لقياس السرعة الدورانية، وهي عبارة عن مولدات صغيرة القدرة تعمل على تحويل السرعة الدورانية إلى إشارة كهربائية متناسبة معها يمكن قياسها. تعتمد علاقة التحويل على العلاقة بين سرعة الدوران والقوة الدافعة الكهربائية المتولدة حيث أن العلاقة العامة لخرج مولد التاكو هي:</p>
+     <div class="eq">$$V_a = K_g\cdot\omega$$<span class="eqno" style="direction:rtl">(٢-١)</span></div>
+     <div class="eq">$$\omega=\frac{d\theta}{dt}$$<span></span></div>
+     <p>حيث <b>\(\omega\)</b> هي سرعة الدوران <b>بالراديان في الثانية</b> و <b>\(K_g\)</b> هو <b>ثابت توليد الجهد أو ميل الخط</b> الذي يمثل العلاقة بين \(\omega\) و \(V_a\).</p>`,ref:'ص 29'}
+   ],
+   body:[
+    {tip:String.raw`<p>المعادلة (٢-١) تقول: الجهد = ثابت × السرعة. فإذا عرفنا \(K_g\) وقسنا الجهد، عرفنا السرعة: \(\omega = V_a / K_g\). هذا هو كل عمل التاكومتر.</p>
+     <p>و \(\omega=\dfrac{d\theta}{dt}\) معناها: السرعة الزاوية = الزاوية التي يقطعها العمود في كل ثانية. والدورة الكاملة = \(2\pi\) راديان، لذلك نحوّل السرعة من الدورة في الدقيقة إلى الراديان في الثانية هكذا: \(\omega=\dfrac{2\pi\,n}{60}\).</p>`,title:'المعادلة بكلمات بسيطة'},
+    {title:'حوّل السرعة من rpm إلى rad/s',widget:(el,B)=>{
+      const f=(x,d)=>{let s=(+x).toFixed(d);if(s.indexOf('.')>=0)s=s.replace(/0+$/,'').replace(/\.$/,'');return s};
+      el.innerHTML=`<p class="sub" style="margin:0 0 6px">حرّك المنزلق وتابع خطوات التحويل. السرعة الابتدائية <span class="ltr">1000 rpm</span> من أمثلة الكتاب (ص 34).</p>
+       <label class="w-sl"><span>سرعة العمود <span class="ltr">n = <b data-o="n"></b> rpm</span></span><input type="range" min="0" max="3000" step="10" value="1000" dir="ltr" aria-label="سرعة العمود"></label>
+       <div class="w-facts"><div><span>دورات في الثانية <span class="ltr">n ÷ 60</span></span><b data-o="rps"></b></div><div><span>راديان في الدورة</span><b>2π ≈ 6.283</b></div><div><span>السرعة <span class="ltr">ω</span></span><b data-o="w"></b></div><div><span>لو ضاعفت السرعة</span><b data-o="w2"></b></div></div>
+       <p class="sub" style="margin-top:8px">لاحظ: ضعف السرعة يعطي ضعف <span class="ltr">ω</span>، فيتضاعف الجهد <span class="ltr">V<sub>a</sub></span> في المعادلة (٢-١) لأن العلاقة خطية.</p>`;
+      const o=k=>el.querySelector(`[data-o="${k}"]`),rg=el.querySelector('input');
+      const draw=()=>{const n=+rg.value,w=2*Math.PI*n/60;o('n').textContent=n;o('rps').textContent=f(n/60,2)+' rev/s';o('w').textContent=f(w,2)+' rad/s';o('w2').textContent=f(2*w,2)+' rad/s'};
+      rg.oninput=draw;draw();
+    }},
+    {predict:{q:String.raw`في مولد تاكو مثالي يتبع المعادلة (٢-١)، تضاعفت سرعة العمود. ماذا يحدث لجهد الخرج \(V_a\)؟`,opts:[
+     ['يبقى كما هو، لأن \\(K_g\\) ثابت',false,'ثبات \\(K_g\\) يعني أن الجهد يتغير مع السرعة بالنسبة نفسها، لا أنه يبقى ثابتاً.'],
+     ['يزيد إلى أربعة أمثاله',false,'هذا يحدث لو كان الجهد يتناسب مع مربع السرعة، والمعادلة (٢-١) ليس فيها مربع.'],
+     ['يتضاعف',true,'\\(V_a = K_g\\cdot\\omega\\): ضعف \\(\\omega\\) يعطي ضعف \\(V_a\\)، والعلاقة خط مستقيم ميله \\(K_g\\).']]}},
+    {watch:String.raw`<p>لا تعوّض السرعة بالدورة في الدقيقة <span class="ltr">(rpm)</span> مكان \(\omega\) في المعادلة (٢-١): الكتاب ينص على أن \(\omega\) بالراديان في الثانية. حوّل أولاً.</p>`}
+   ]},
+
+  {st:3,short:'الأنواع',title:'أنواع مولدات التاكو',ref:'ص 29',
+   q:'كلها تحوّل السرعة إلى جهد… فما الذي يجعلها ثلاثة أنواع مختلفة؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="أنواع مولدات التاكو الثلاثة: للتيار المستمر، والحثية، والتزامنية" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#E6E2F8"/><text x="180" y="58" text-anchor="middle" font-size="16" fill="#2C4A40" font-weight="700">مولدات التاكو</text><path d="M180 66 V84 M64 84 H296 M64 84 V102 M180 84 V102 M296 84 V102" stroke="#2C4A40" stroke-width="2.5" fill="none"/><g data-tip="مولد التاكو للتيار المستمر: مولد تيار مستمر صغير، فيه مبدل وفرش كربونية (المستطيلان)، ومجاله من ملف بتغذية مستقلة أو من مغناطيس دائم. خرجه جهد مستمر."><rect x="20" y="106" width="88" height="110" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="64" cy="150" r="24" fill="#CFE6DB" stroke="#2C4A40" stroke-width="2.5"/><rect x="56" y="118" width="16" height="10" rx="2" fill="#2C4A40"/><rect x="56" y="172" width="16" height="10" rx="2" fill="#2C4A40"/><line x1="40" y1="150" x2="88" y2="150" stroke="#2C4A40" stroke-width="1.5"/><line x1="64" y1="126" x2="64" y2="174" stroke="#2C4A40" stroke-width="1.5"/></g><g data-tip="مولد التاكو الحثي: ملفان متعامدان على العضو الثابت، ودوار على شكل قفص أو كأس نحاسي. خرجه جهد متردد."><rect x="136" y="106" width="88" height="110" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="180" cy="150" r="16" fill="#F2C14E" stroke="#2C4A40" stroke-width="2"/><rect x="146" y="141" width="12" height="18" rx="3" fill="#4FB3A9" stroke="#2C4A40" stroke-width="1.5"/><rect x="202" y="141" width="12" height="18" rx="3" fill="#4FB3A9" stroke="#2C4A40" stroke-width="1.5"/><rect x="171" y="118" width="18" height="12" rx="3" fill="#E8735A" stroke="#2C4A40" stroke-width="1.5"/><rect x="171" y="170" width="18" height="12" rx="3" fill="#E8735A" stroke="#2C4A40" stroke-width="1.5"/></g><g data-tip="مولد التاكو التزامني: مولد تزامني صغير مجاله من مغناطيسات دائمة على العضو الدوار. خرجه جهد متردد يتغير تردده مع السرعة."><rect x="252" y="106" width="88" height="110" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><circle cx="296" cy="150" r="26" fill="none" stroke="#2C4A40" stroke-width="2.5"/><rect x="284" y="130" width="24" height="20" fill="#E8735A"/><rect x="284" y="150" width="24" height="20" fill="#4FB3A9"/><text x="296" y="145" text-anchor="middle" font-size="12" fill="#FBF6EE" font-weight="700">N</text><text x="296" y="165" text-anchor="middle" font-size="12" fill="#2C4A40" font-weight="700">S</text></g><text x="64" y="200" text-anchor="middle" font-size="12.5" fill="#2C4A40" font-weight="700">للتيار المستمر</text><text x="180" y="200" text-anchor="middle" font-size="12.5" fill="#2C4A40" font-weight="700">حثية</text><text x="296" y="200" text-anchor="middle" font-size="12.5" fill="#2C4A40" font-weight="700">تزامنية</text><text x="180" y="262" text-anchor="middle" font-size="14" fill="#2C4A40" font-weight="600">التصنيف حسب التصميم ونظرية العمل</text></svg>`,
+   cap:'الأنواع الثلاثة التي يذكرها الكتاب، ولكل منها درس في هذه الوحدة.<br><b>مرّر المؤشر على كل بطاقة (أو المسها في الجوال) لتعرف شيئاً عن تركيبها.</b>',
+   side:[
+    {book:String.raw`<p>تصنف مولدات التاكو حسب تصميمها ونظرية عملها من حيث إنها <b>مولدات للتيار المستمر</b> أو <b>مولدات حثيه</b> أو <b>تزامنية</b>.</p>`,ref:'ص 29'},
+    {predict:{q:'على أي أساس صنّف الكتاب مولدات التاكو إلى ثلاثة أنواع؟',opts:[
+     ['حسب قدرتها: صغيرة ومتوسطة وكبيرة',false,'كلها «مولدات صغيرة القدرة» كما في تعريف ص 29، فالقدرة ليست أساس التصنيف.'],
+     ['حسب تصميمها ونظرية عملها',true,'هذا نص الكتاب: مستمر وحثي وتزامني يختلف كل منها في تركيبه وفي طريقة توليد الجهد.'],
+     ['حسب السرعة التي تقيسها',false,'كل نوع يستطيع قياس مدى من السرعات؛ الفرق في التركيب ونظرية العمل.']]}}
+   ],
+   body:[
+    {tip:String.raw`<table class="tt"><thead><tr><th>النوع</th><th>البند في الكتاب</th><th>الدرس هنا</th></tr></thead><tbody>
+     <tr><td>مولدات التاكو للتيار المستمر</td><td>٢-٢ (ص 30–35)</td><td>2.2 و 2.3</td></tr>
+     <tr><td>مولدات التاكو الحثية</td><td>٢-٣ (ص 36–39)</td><td>2.4</td></tr>
+     <tr><td>مولدات التاكو التزامنية</td><td>٢-٤ (ص 40)</td><td>2.5</td></tr></tbody></table>`,title:'أين تدرس كل نوع؟'}
+   ]},
+
+  {st:4,short:'المتطلبات الرئيسية',title:'٢-١ المتطلبات الرئيسية لمولدات التاكو',ref:'ص 29',
+   q:'التاكومتر جهاز قياس… فما الذي يجعله جهاز قياس «جيداً»؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="في الأعلى: الخط المثالي والمنحنى الفعلي للجهد مع السرعة والفرق بينهما خطأ القيمة. في الأسفل: متجه جهد الخرج المثالي والفعلي والفرق بين زاويتيهما خطأ زاوية الوجه" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><path d="M60 170 H322 M60 170 V34" stroke="#2C4A40" stroke-width="2.5" fill="none"/><polygon points="330,170 320,165 320,175" fill="#2C4A40"/><polygon points="60,26 55,36 65,36" fill="#2C4A40"/><text x="336" y="188" text-anchor="end" font-size="16" fill="#2C4A40" font-family="var(--mono)">ω</text><text x="50" y="42" text-anchor="end" font-size="15" fill="#2C4A40" direction="ltr" font-family="var(--mono)">V<tspan font-size="10" dy="4">a</tspan></text><g data-tip="الخط المثالي ⟦Va = Kg·ω⟧: خط مستقيم من نقطة الأصل، ميله ⟦Kg⟧."><path d="M60 170 L300 50" stroke="transparent" stroke-width="16"/><path d="M60 170 L300 50" stroke="#12855A" stroke-width="3.5"/></g><text x="300" y="44" text-anchor="middle" font-size="13" fill="#12855A" font-weight="700">مثالي</text><g data-tip="المنحنى الفعلي: جهد المولد الحقيقي، ينحرف قليلاً عن الخط المستقيم."><path d="M60 170 Q200 110 300 78" fill="none" stroke="transparent" stroke-width="16"/><path d="M60 170 Q200 110 300 78" fill="none" stroke="#E8735A" stroke-width="3.5"/></g><text x="312" y="96" text-anchor="middle" font-size="13" fill="#E8735A" font-weight="700">فعلي</text><g data-tip="الخطأ في القيمة العددية للجهد ⟦ΔV⟧: الفرق بين الجهد الفعلي والجهد من العلاقة المثالية عند السرعة نفسها. المطلوب أن يكون أقل ما يمكن."><rect x="248" y="66" width="22" height="32" fill="transparent"/><path d="M258 72 V91" stroke="#2C4A40" stroke-width="2" stroke-dasharray="4 3"/><polygon points="258,70 254,77 262,77" fill="#2C4A40"/><polygon points="258,93 254,86 262,86" fill="#2C4A40"/><text x="240" y="88" text-anchor="end" font-size="14" fill="#2C4A40" font-weight="700" font-family="var(--mono)">ΔV</text></g><g data-tip="اتجاه المجال: المحور الذي تُقاس منه زاوية متجه جهد الخرج."><line x1="70" y1="292" x2="318" y2="292" stroke="#2C4A40" stroke-width="2.5" stroke-dasharray="7 5"/></g><text x="318" y="284" text-anchor="end" font-size="12" fill="#2C4A40">اتجاه المجال</text><g data-tip="متجه جهد الخرج في العلاقة المثالية، يصنع الزاوية ⟦β⟧ مع اتجاه المجال."><line x1="70" y1="292" x2="186" y2="238" stroke="#12855A" stroke-width="4" stroke-linecap="round"/></g><g data-tip="متجه جهد الخرج الفعلي: ينحرف عن الاتجاه المثالي بزاوية صغيرة."><line x1="70" y1="292" x2="178" y2="222" stroke="#E8735A" stroke-width="4" stroke-linecap="round"/></g><path d="M110 292 A40 40 0 0 0 106.3 275.1" fill="none" stroke="#2C4A40" stroke-width="2"/><text x="122" y="287" text-anchor="middle" font-size="14" fill="#2C4A40" font-family="var(--mono)">β</text><g data-tip="الخطأ في زاوية الوجه ⟦Δβ⟧: الفرق بين زاوية متجه الجهد الفعلي وزاويته في العلاقة المثالية. المطلوب أن يكون أقل ما يمكن."><path d="M151.6 254.1 A90 90 0 0 0 145.5 243" fill="none" stroke="#2C4A40" stroke-width="3"/><rect x="146" y="226" width="40" height="26" fill="transparent"/><text x="166" y="246" text-anchor="start" font-size="14" fill="#2C4A40" font-weight="700" font-family="var(--mono)">Δβ</text></g></svg>`,
+   cap:'في الأعلى خطأ القيمة <span class="ltr">ΔV</span>، وفي الأسفل خطأ زاوية الوجه <span class="ltr">Δβ</span> (الانحرافات مكبّرة للتوضيح).<br><b>مرّر المؤشر على الخطوط والرموز (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {book:String.raw`<p>هناك متطلبات تجب مراعاتها عند تصميم التاكومترات وهي:</p>
+     <ol style="list-style:none;padding-inline-start:6px"><li>أ. أقل خطأ ممكن في القيمة العددية للجهد المتولد (<span class="ltr">ΔV</span>). ويقصد به أقل انحراف لخصائص المولد عن العلاقة الخطية.</li>
+     <li>ب. أقل خطأ ممكن في زاوية الوجه (<span class="ltr">Δβ</span>).</li>
+     <li>ج. أكبر معامل تكبير ممكن \(K_g\).</li>
+     <li>د. أقل قصور ذاتي للمحرك.</li>
+     <li>هـ. أقل ثابت زمني للنظام الكهروميكانيكي.</li></ol>`,ref:'ص 29'}
+   ],
+   body:[
+    {book:String.raw`<p>يعرف <b>الخطأ في القيمة العددية للجهد (<span class="ltr">ΔV</span>)</b>، بأنه الفرق بين الجهد المتولد بالفعل عند سرعة معينة والجهد المعطى من العلاقة المثالية لجهد الخرج عند نفس السرعة.</p>
+     <p>يعرف <b>الخطأ في زاوية الوجه لجهد الخرج (<span class="ltr">Δβ</span>)</b>، بأنه الفرق بين الزاوية β التي ينحرف بها متجه جهد الخرج عن اتجاه المجال عن نفس الزاوية في العلاقة المثالية.</p>`,ref:'ص 29'},
+    {tip:String.raw`<ul>
+     <li><b><span class="ltr">ΔV</span> صغير:</b> الجهد الحقيقي يكاد ينطبق على الخط المستقيم \(V_a=K_g\omega\)، فتكون السرعة المحسوبة من الجهد صحيحة.</li>
+     <li><b><span class="ltr">Δβ</span> صغير:</b> يهم في التاكو الذي يعطي جهداً متردداً (مثل الحثي في الدرس 2.4): زاوية الخرج يجب أن تبقى ثابتة مهما تغيرت السرعة.</li>
+     <li><b>\(K_g\) كبير:</b> فولتات أكثر لكل وحدة سرعة، فتظهر التغيرات الصغيرة في السرعة بوضوح على جهاز القياس.</li>
+     <li><b>قصور ذاتي صغير:</b> الجزء الدوار خفيف فلا يُثقل العمود الذي نقيس سرعته، ويتبع تغيراتها بسرعة.</li>
+     <li><b>ثابت زمني صغير:</b> القراءة تلحق بالسرعة الحقيقية بسرعة عندما تتغير.</li></ul>`,title:'المتطلبات الخمسة بكلمات بسيطة'},
+    {title:'صنّف المتطلبات: أقل ما يمكن أم أكبر ما يمكن؟',widget:(el,B)=>{
+      const R=[['الخطأ في القيمة العددية للجهد <span class="ltr">ΔV</span>',0],['الخطأ في زاوية الوجه <span class="ltr">Δβ</span>',0],['معامل التكبير <span class="ltr">K<sub>g</sub></span>',1],['القصور الذاتي',0],['الثابت الزمني للنظام الكهروميكانيكي',0]];
+      const ch=R.map(()=>-1);
+      el.innerHTML=`<p class="sub" style="margin:0 0 8px">اختر لكل بند ما يطلبه الكتاب، ثم اضغط «تحقّق».</p>`+R.map((r,i)=>`<div class="w-row" style="margin-top:8px;justify-content:space-between" data-r="${i}"><span>${r[0]} <b data-m="${i}"></b></span><span class="mseg"><button type="button" data-v="0" style="font-family:inherit">أقل ما يمكن</button><button type="button" data-v="1" style="font-family:inherit">أكبر ما يمكن</button></span></div>`).join('')+`<div class="w-row"><button class="btn pri" type="button" data-ck>تحقّق</button><button class="btn" type="button" data-rs>إعادة</button><span data-msg></span></div>`;
+      const paint=(chk)=>{R.forEach((r,i)=>{el.querySelectorAll(`[data-r="${i}"] button`).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===ch[i]));const m=el.querySelector(`[data-m="${i}"]`);m.textContent=chk&&ch[i]>=0?(ch[i]===r[1]?'✓':'✗'):'';m.style.color=ch[i]===r[1]?'var(--on)':'var(--stop)'})};
+      el.querySelectorAll('[data-r] button').forEach(b=>b.onclick=()=>{ch[+b.closest('[data-r]').dataset.r]=+b.dataset.v;paint(false);el.querySelector('[data-msg]').textContent=''});
+      el.querySelector('[data-ck]').onclick=()=>{paint(true);const ok=R.filter((r,i)=>ch[i]===r[1]).length;el.querySelector('[data-msg]').textContent=ok===R.length?'أحسنت: كل البنود «أقل ما يمكن» إلا معامل التكبير.':`صحيح ${ok} من ${R.length}. راجع نص الكتاب في الأعلى.`};
+      el.querySelector('[data-rs]').onclick=()=>{ch.fill(-1);paint(false);el.querySelector('[data-msg]').textContent=''};
+      paint(false);
+    }},
+    {predict:{q:'تاكومتر قراءته تتأخر كثيراً عن السرعة الحقيقية كلما تغيرت سرعة العمود فجأة. أي متطلب من المتطلبات لم يتحقق جيداً؟',opts:[
+     ['أقل ثابت زمني للنظام الكهروميكانيكي',true,'الثابت الزمني الصغير يعني أن القراءة تلحق بالتغير بسرعة؛ والتأخر الكبير علامة على ثابت زمني كبير (ومعه غالباً قصور ذاتي كبير).'],
+     ['أكبر معامل تكبير \\(K_g\\)',false,'\\(K_g\\) يحدد كم فولتاً لكل وحدة سرعة، أي حجم القراءة، لا سرعة لحاقها بالتغير.'],
+     ['أقل خطأ في زاوية الوجه \\(\\Delta\\beta\\)',false,'\\(\\Delta\\beta\\) يخص زاوية متجه الجهد، لا زمن الاستجابة.']]}},
+    {watch:String.raw`<p>كل المتطلبات «أقل» إلا واحداً: <b>أكبر</b> معامل تكبير \(K_g\). سؤال «أي مما يلي ليس من المتطلبات؟» يأتي كثيراً بخيار «أكبر قصور ذاتي».</p>`}
+   ]},
+
+  {recap:[
+   String.raw`مولد التاكو مولد صغير القدرة يحوّل سرعة الدوران إلى جهد يتناسب معها، المعادلة (٢-١): \(V_a=K_g\cdot\omega\)، و \(\omega\) بالراديان في الثانية.`,
+   String.raw`\(K_g\) هو ثابت توليد الجهد أو ميل الخط بين \(\omega\) و \(V_a\).`,
+   String.raw`تصنف مولدات التاكو حسب تصميمها ونظرية عملها: للتيار المستمر، وحثية، وتزامنية.`,
+   String.raw`المتطلبات الرئيسية: أقل <span class="ltr">ΔV</span>، وأقل <span class="ltr">Δβ</span>، وأكبر \(K_g\)، وأقل قصور ذاتي، وأقل ثابت زمني.`]}
+],
  theory:[
   {h:'الهدف العام والأهداف التفصيلية',ref:'ص 28',html:`<p><b>الهدف العام للوحدة:</b> معرفة تركيب وأنواع مولدات التاكو.</p><p><b>الأهداف التفصيلية:</b></p><ol><li>أن يميز المتدرب بين أنواع التاكومترات.</li><li>أن يحدد المتدرب أسباب الخطأ في قراءة التاكومترات وطرق تلافيها.</li><li>أن يتمكن المتدرب من معايرة التاكومترات.</li></ol>`},
   {err:'في الهدف الثالث (ص 28) كُتب «أن يتمكن <b>المتدر</b> من معايرة التاكومترات»، والصحيح «المتدرب» (خطأ مطبعي).'},

@@ -422,7 +422,7 @@ B.params=function(host,id,defs,onChange){
  return P;
 };
 /* يثبّت اتجاه «رقم + وحدة» داخل النص العربي حتى لا تنقلب: 1500 rpm لا rpm 1500 */
-B.ltrU=t=>String(t).replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>');
+B.ltrU=t=>String(t).split(/(<svg[\s\S]*?<\/svg>)/).map((p,i)=>i%2?p:p.replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>')).join('');  /* لا يلمس ما داخل رسومات SVG */
 B.styleMode=()=>{try{return localStorage.getItem('elib-style')==='stations'?'stations':'formal'}catch(e){return 'formal'}};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
 const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
