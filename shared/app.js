@@ -212,10 +212,15 @@ function renderStations(L,body){
   });
 }
 
+/* داخل رسومات SVG: نص عربي فيه «(1-3)» أو «5 V» قد ينعكس ترتيبه؛ نضع كل مقطع لاتيني/رقمي في tspan باتجاه LTR */
+function fixSvgBidi(root){const NS='http://www.w3.org/2000/svg',re=/(\(\d+-\d+\)|\d+(?:[.,]\d+)?\s?(?:kV|V|mA|A|kW|W|Ω|Hz|rpm|%|s)?(?![\w\u0600-\u06FF]))/g;
+ root.querySelectorAll('svg text').forEach(t=>{if(t.children.length)return;const txt=t.textContent;if(!/[\u0600-\u06FF]/.test(txt)||!/\d/.test(txt))return;
+  const parts=txt.split(re);if(parts.length<2)return;t.textContent='';
+  parts.forEach((p,i)=>{if(!p)return;if(i%2){const ts=document.createElementNS(NS,'tspan');ts.setAttribute('direction','ltr');ts.setAttribute('unicode-bidi','embed');ts.textContent=p;t.appendChild(ts)}else t.appendChild(document.createTextNode(p))})})}
 function renderTheory(L,body){
   /* أسلوب الشرح يختاره المستخدم من الزر في الأعلى: «رسمي» أو «المحطات». L.stations = مصفوفة محتوى المحطات */
   if(B.styleMode()==='stations'){
-    if(Array.isArray(L.stations)&&L.stations.length)return renderStations(Object.assign({},L,{theory:L.stations}),body);
+    if(Array.isArray(L.stations)&&L.stations.length){const r=renderStations(Object.assign({},L,{theory:L.stations}),body);fixSvgBidi(body);return r}
     body.innerHTML='<div class="st-missing">هذا الدرس لم يُجهَّز بأسلوب «المحطات» بعد، فيظهر بالأسلوب الرسمي.</div>';
     const host=document.createElement('div');body.appendChild(host);body=host;
   }
@@ -422,7 +427,7 @@ B.params=function(host,id,defs,onChange){
  return P;
 };
 /* يثبّت اتجاه «رقم + وحدة» داخل النص العربي حتى لا تنقلب: 1500 rpm لا rpm 1500 */
-B.ltrU=t=>String(t).split(/(<svg[\s\S]*?<\/svg>)/).map((p,i)=>i%2?p:p.replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>')).join('');  /* لا يلمس ما داخل رسومات SVG */
+B.ltrU=t=>String(t).split(/(<svg[\s\S]*?<\/svg>|\$\$[\s\S]*?\$\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\])/).map((p,i)=>i%2?p:p.replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>')).join('');  /* لا يلمس ما داخل رسومات SVG ولا المعادلات */
 B.styleMode=()=>{try{return localStorage.getItem('elib-style')==='stations'?'stations':'formal'}catch(e){return 'formal'}};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
 const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
