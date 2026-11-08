@@ -593,3 +593,7 @@ html[data-hidefix] div.fx-chip{display:block}
 .fx-show{font:inherit;font-size:12px;font-weight:600;color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent);border:0;border-radius:999px;padding:1px 10px;cursor:pointer}
 html[data-hidefix] .fx-chip.bkf{display:none}
 .fx-chip{background:none!important;padding:0!important}
+/* مسابقة الصف (للمدرب) — مربع صغير أسفل «اختبر نفسك» */
+.classquiz{margin-top:26px;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--muted)}
+.classquiz b{color:var(--fg);font-weight:600;margin-inline-end:8px}
+.classquiz a.btn{text-decoration:none}

@@ -453,12 +453,16 @@ function renderExamples(L,body){
 }
 
 /* ---------------- QUIZ ---------------- */
+/* مسابقة الصف (للمدرب): تظهر فقط إذا وُضع رابط الخادم في shared/quiz-config.js */
+function classQuizBox(L){const u=String(G.QUIZ_URL||'').trim().replace(/\/+$/,'');if(!u)return '';
+  const cid=(location.pathname.match(/\/courses\/([^/]+)\//)||[])[1];if(!cid)return '';
+  return `<div class="classquiz"><div><b>مسابقة الصف (للمدرب)</b><span>اعرض أسئلة هذا الدرس على الشاشة، ويجيب الطلاب من جوالاتهم.</span></div><a class="btn" target="_blank" rel="noopener" href="${esc(u+'/host?course='+encodeURIComponent(cid)+'&lesson='+encodeURIComponent(L.id))}">ابدأ مسابقة من أسئلة هذا الدرس</a></div>`}
 function renderQuiz(L,body){
   let ans={};
   const draw=()=>{const sc=Object.entries(ans).filter(([i,a])=>L.quiz[i].c===a).length;
     body.innerHTML=`<div class="viewseg"><h2 class="qtitle">اختبر فهمك للدرس</h2><div><span class="score">${sc} / ${L.quiz.length}</span> <button class="btn" id="qreset">إعادة</button></div></div><div class="quiz">`+
     L.quiz.map((q,i)=>{const a=ans[i];return `<div class="qq"><h3>${i+1}. ${B.ltrU(q.q)}</h3><div class="opts">`+q.o.map((o,j)=>{let c='';if(a!=null){if(j===q.c)c='right';else if(j===a)c='wrong'}
-      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${B.ltrU(o)}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>';
+      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${B.ltrU(o)}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>'+classQuizBox(L);
     $$('.opt',body).forEach(b=>b.addEventListener('click',()=>{ans[b.dataset.q]=+b.dataset.o;draw()}));
     $('#qreset',body).addEventListener('click',()=>{ans={};draw()});B.math(body);};
   draw();
