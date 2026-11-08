@@ -576,3 +576,9 @@ body::before{background:var(--hero1)}
 .stylebtn b{font-weight:700;color:#9be3c0}
 .st-missing{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:14px}
 @media (max-width:600px){.stylebtn .sl{display:none}.stylebtn{padding:0 10px}.topbar .brand span{font-size:13.5px}}
+
+/* book / corrected inline switch */
+.bkf{display:none}
+.bkctl{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}
+.bkctl .seg button{font-size:13px;padding:4px 12px}
+span.bkf{border-radius:4px;background:color-mix(in srgb,var(--blue) 14%,transparent);padding:0 3px}

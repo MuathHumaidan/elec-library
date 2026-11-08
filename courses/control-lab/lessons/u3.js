@@ -1053,8 +1053,11 @@ B.lesson({
 const GA=0.0063,GB=0.379,GK=21.81;
 const pidTF=(Kp,Ki,Kd)=>({num:[GK*Kd,GK*Kp,GK*Ki],den:[GA,GB+GK*Kd,1+GK*Kp,GK*Ki]});
 const TWS=[0.5,2,5,10].map(v=>[v,lt(v+' s')]);
-const PID_COLS=md=>[{h:'زمن الصعود t<sub>r</sub> (s)',f:m=>tF(m.tr)},md==='book'?{h:'زمن الصعود t<sub>r</sub> (s)',f:m=>tF(m.tr)}:{h:'زمن الاستقرار t<sub>s</sub> (s)',f:m=>TSV(m)},{h:'قيمة الخرج X<sub>0</sub>',f:m=>m.x0,dp:3},{h:'الخطأ e',f:m=>m.e,dp:3},{h:'التعدي M<sub>p</sub>',f:m=>m.Mp>0?fm(m.MpP,1)+' %':'0'}];
-const PID_NOTE=md=>md==='book'?'في الكتاب العمودان الثاني والثالث بالعنوان نفسه «زمن الصعود t<sub>r</sub> (s)»، فيتكرر الرقم نفسه.':'جعلنا العمود المكرر «زمن الاستقرار t<sub>s</sub>» (2 %) لأنه المقدار الذي تطلبه بقية تجارب الوحدة. وقد يكون المقصود t<sub>d</sub> أو t<sub>p</sub>؛ القياسان يظهران أيضاً تحت الشاشة.';
+let PID_C2='ts';
+const PID_C2O={ts:['زمن الاستقرار t<sub>s</sub> (s)',m=>TSV(m)],td:['زمن التأخير t<sub>d</sub> (s)',m=>tF(m.td)],tp:['زمن القمة t<sub>p</sub> (s)',m=>TPV(m)]};
+const PID_COLS=md=>[{h:'زمن الصعود t<sub>r</sub> (s)',f:m=>tF(m.tr)},md==='book'?{h:'زمن الصعود t<sub>r</sub> (s)',f:m=>tF(m.tr)}:{h:PID_C2O[PID_C2][0],f:PID_C2O[PID_C2][1]},{h:'قيمة الخرج X<sub>0</sub>',f:m=>m.x0,dp:3},{h:'الخطأ e',f:m=>m.e,dp:3},{h:'التعدي M<sub>p</sub>',f:m=>m.Mp>0?fm(m.MpP,1)+' %':'0'}];
+const PID_NOTE=md=>md==='book'?'في الكتاب العمودان الثاني والثالث بالعنوان نفسه «زمن الصعود t<sub>r</sub> (s)»، فيتكرر الرقم نفسه.':'العمود الثاني في الكتاب مكرر («زمن الصعود» مرتين)، والكتاب لا يحدد المقصود به. اختر ما يطلبه المدرب: <select data-pidc2 style="font:inherit;margin-inline-start:6px">'+Object.keys(PID_C2O).map(k=>`<option value="${k}"${k===PID_C2?' selected':''}>${PID_C2O[k][0].replace(/ \(s\)$/,'')}</option>`).join('')+'</select><br><span class="sub">الافتراضي «زمن الاستقرار» (2 %) لأنه المقدار الذي تطلبه بقية تجارب الوحدة. والعلامة «—» في زمن القمة تعني أن الخرج لا يتعدى القيمة النهائية فلا قمة له.</span>';
+document.addEventListener('change',e=>{const sl=e.target.closest&&e.target.closest('select[data-pidc2]');if(!sl)return;PID_C2=sl.value;const row=sl.closest('.callout').previousElementSibling;const b=row&&[...row.querySelectorAll('button')].find(x=>Object.values(x.dataset).includes('fixed'));if(b)b.click()});
 B.lesson({
  id:'u3-l4',unit:3,order:4,pages:'35–39',
  title:'التجربة الرابعة: الحاكم التناسبي التكاملي التفاضلي PID- Controller',

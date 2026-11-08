@@ -470,5 +470,13 @@ function route(){
   const L=B.LESSONS.find(l=>l.id===h);
   if(L){renderLesson(L)}else{stopRun();document.body.classList.remove('in-lesson');delete document.body.dataset.tab;renderHome()}
 }
+/* book-vs-corrected inline switch: <div class="seg"><button data-bkfix="k" data-bkv="book">…<button data-bkfix="k" data-bkv="fixed">…</div>; content: class bkb / bkf with data-bk="k" */
+B.bkOn=k=>document.documentElement.getAttribute('data-bk-'+k)==='fixed';
+B.bkCtl=(k,lbl)=>{const f=B.bkOn(k);return `<span class="bkctl">${lbl?`<span class="sub">${lbl}</span>`:''}<span class="seg" role="group"><button data-bkfix="${k}" data-bkv="book" aria-pressed="${!f}">كما في الكتاب</button><button data-bkfix="${k}" data-bkv="fixed" aria-pressed="${f}">المصحح</button></span></span>`};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bkfix]');if(!b)return;const k=b.dataset.bkfix,f=b.dataset.bkv==='fixed';
+  if(!document.getElementById('bkst-'+k)){const st=document.createElement('style');st.id='bkst-'+k;const h=`html[data-bk-${k}="fixed"]`;
+    st.textContent=`${h} .bkf[data-bk="${k}"]{display:inline}${h} .bkf.blk[data-bk="${k}"]{display:block}${h} .bkb[data-bk="${k}"]{display:none}${h} .seg button[data-bkfix="${k}"][data-bkv="fixed"]{background:var(--blue);color:#fff}${h} .seg button[data-bkfix="${k}"][data-bkv="book"]{background:var(--surface);color:var(--muted)}`;document.head.appendChild(st)}
+  document.documentElement.setAttribute('data-bk-'+k,f?'fixed':'book');
+  document.querySelectorAll(`[data-bkfix="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.bkv==='fixed')===f)))});
 B.start=function(){window.addEventListener('hashchange',route);route()};
 })(window);
