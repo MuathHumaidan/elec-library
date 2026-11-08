@@ -234,7 +234,7 @@ function renderTheory(L,body){
     else if(b.html) h+=`<div class="prose">${b.html}</div>`;
   });
   h+='</article>';
-  body.innerHTML=h;
+  body.innerHTML=B.ltrFig(h);
   $$('.widget',body).forEach(el=>{const b=L.theory[+el.dataset.w];try{b.widget(el,B)}catch(e){console.error(e)}});
 }
 function idleState(L,P){return makeState(L,P||createPLC(curProgram(L)),{},L.plant&&L.plant.init?L.plant.init():{},0)}
@@ -428,6 +428,8 @@ B.params=function(host,id,defs,onChange){
 };
 /* يثبّت اتجاه «رقم + وحدة» داخل النص العربي حتى لا تنقلب: 1500 rpm لا rpm 1500 */
 B.ltrU=t=>String(t).split(/(<svg[\s\S]*?<\/svg>|\$\$[\s\S]*?\$\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\])/).map((p,i)=>i%2?p:p.replace(/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%))(?![^<]*>)/g,'<span class="ltr">$1</span>')).join('');  /* لا يلمس ما داخل رسومات SVG ولا المعادلات */
+/* أرقام الأشكال والمعادلات مثل (2-1) داخل النص العربي في الشرح الرسمي: نثبّت اتجاهها (خارج SVG والمعادلات) */
+B.ltrFig=t=>String(t).split(/(<svg[\s\S]*?<\/svg>|\$\$[\s\S]*?\$\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|<span class="ltr">[\s\S]*?<\/span>)/).map((p,i)=>i%2?p:p.replace(/(\(\d+-\d+(?:-\d+)?\))(?![^<]*>)/g,'<span class="ltr">$1</span>')).join('');
 B.styleMode=()=>{try{return localStorage.getItem('elib-style')==='stations'?'stations':'formal'}catch(e){return 'formal'}};
 B.round=(x,dp)=>{const p=Math.pow(10,dp||0);return Math.round(x*p)/p};
 const fmtN=(v,dp)=>{if(typeof v!=='number'||!isFinite(v))return v==null?'':String(v);return (dp==null?+v.toPrecision(6):B.round(v,dp)).toLocaleString('en-US',{useGrouping:false,maximumFractionDigits:dp==null?6:dp,minimumFractionDigits:dp==null?0:dp})};
