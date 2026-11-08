@@ -123,7 +123,7 @@ B.lesson({
      <p><b>مستوى الأداء المطلوب:</b> 100٪. <b>الوقت المتوقع للتدريب:</b> ساعتان.</p>
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج – حاسب آلي – جهاز عرض (داتا شو) – سبورة – كراسة الطالب – قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 98'},
-    {watch:String.raw`<p>صفحة المقدمة مكررة في الكتاب بصيغتين: متطلبات الجدارة في ص 97 «اجتياز ورشة أساسيات الكهرباء، اجتياز الرسم الفني»، وفي ص 98 «اجتياز ورشة التحكم في المحركات الثلاثية الأوجه»، والوسائل في ص 97 بلا «كراسة الطالب».</p>`},
+    {watch:String.raw`<p>صفحة المقدمة مكررة في الكتاب بصيغتين: متطلبات الجدارة في ص 97 «اجتياز ورشة أساسيات الكهرباء، اجتياز الرسم الفني»، وفي ص 98 «اجتياز ورشة التحكم في المحركات الثلاثية الأوجه»، والوسائل في ص 97 بلا «كراسة الطالب».</p>`,fix:true},
     {tip:String.raw`<p>إلى الآن كانت المداخل «ثنائية»: ضاغط مضغوط <span class="ltr">1</span> أو غير مضغوط <span class="ltr">0</span>. في هذه الوحدة يدخل إلى الـ PLC <b>رقم</b> يتغير باستمرار: درجة الحرارة. سنقرؤه، ونحوّله، ونقارنه بالحرارة المطلوبة، ثم نشغّل السخان أو نوقفه.</p>`,title:'الجديد في هذه الوحدة'}
    ]},
 
@@ -209,7 +209,7 @@ B.lesson({
       el.querySelector('[data-rs]').onclick=rs;
     }},
     {tip:String.raw`<p>في تطبيق الغرفة الذي ستبنيه: <b>عنصر التحكم النهائي</b> هو متمم السخان <span class="ltr">K1</span> الذي يوصل الكهرباء إلى مقاومات التسخين (الشكل <span class="ltr">(1-5)</span> في الدرس القادم)، و<b>المقارن والحاكم</b> كلاهما داخل برنامج الـ PLC.</p>`,title:'أين هذه العناصر في تطبيقنا؟'},
-    {watch:String.raw`<p>يقول الكتاب «لتشغيل <b>مروحة</b> التسخين أو إيقافها»، والحمل في تطبيق الوحدة سخان كهربي (مقاومات تسخين). الفكرة واحدة: الحاكم يشغّل عنصر التسخين أو يوقفه.</p>`}
+    {watch:String.raw`<p>يقول الكتاب «لتشغيل <b>مروحة</b> التسخين أو إيقافها»، والحمل في تطبيق الوحدة سخان كهربي (مقاومات تسخين). الفكرة واحدة: الحاكم يشغّل عنصر التسخين أو يوقفه.</p>`,fix:true}
    ]},
 
   {st:6,short:'أنظمة التحكم',title:'أنظمة التحكم: الحلقة المفتوحة والحلقة المغلقة',ref:'ص 100',
@@ -256,7 +256,7 @@ B.lesson({
    <p><b>الأهداف:</b> أن يعرف المتدرب كيف يتم عمل دائرة التحكم في درجة الحرارة (طريقة التحكم في درجات الحرارة)، وأن يكتب برامج للتحكم في درجة الحرارة.</p>
    <p><b>محتوى الوحدة (ص 98):</b> أولاً: فكرة عمل التحكم في درجات الحرارة. ثانياً: كتابة برنامج للتحكم في درجات الحرارة (PLC) باللغة (LAD).</p>
    <p><b>مستوى الأداء:</b> 100٪. <b>الوقت المتوقع:</b> ساعتان. <b>الوسائل:</b> مختبر التحكم المنطقي المبرمج، حاسب آلي، جهاز عرض، سبورة، كراسة الطالب، قلم.</p>`},
-  {err:'صفحة المقدمة مكررة بصيغتين: متطلبات الجدارة في ص 97 «اجتياز ورشة أساسيات الكهرباء، اجتياز الرسم الفني»، وفي ص 98 «اجتياز ورشة التحكم في المحركات الثلاثية الأوجه»، والوسائل في ص 97 بلا «كراسة الطالب».'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'صفحة المقدمة مكررة بصيغتين: متطلبات الجدارة في ص 97 «اجتياز ورشة أساسيات الكهرباء، اجتياز الرسم الفني»، وفي ص 98 «اجتياز ورشة التحكم في المحركات الثلاثية الأوجه»، والوسائل في ص 97 بلا «كراسة الطالب».'+'</div>'},
   {h:'أولاً: فكرة عمل التحكم في درجات الحرارة',ref:'ص 99',html:`<p>«من المعلوم أن التحكم في درجة الحرارة من الأمور المهمة في التطبيقات العملية. وحتى تتم عملية التحكم في درجة الحرارة عن طريق سخان كهربي فيلزم قياس درجة الحرارة الفعلية <span class="ltr">actual value</span> ومقارنتها بدرجة الحرارة المرغوب بها <span class="ltr">set value</span> وبالتالي فإن قيمة الخطأ بين القيمة المرغوب بها والقيمة الفعلية تحدد سلوك منظومة التحكم.»</p>
    <p>العناصر المستخدمة في مثل هذه التطبيقات:</p>
    <ol><li><b>النظام (System):</b> النظام المراد التحكم بخرجه وعلاقته مع الدخل.</li>
@@ -371,7 +371,7 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>والجدول التالي يوضح قائمة التشغيل حسب الشكل <span class="ltr">(1-5)</span> وهي على النحو التالي:</p>`+IO5_BOOK,ref:'ص 101'},
-    {watch:ERR_ADDR},
+    {watch:ERR_ADDR,fix:true},
     {tip:String.raw`<p>المدخلان التناظريان لا يعطيان الحرارة بالدرجات مباشرة: المقاومة تعطي رقماً من <span class="ltr">0</span> إلى <span class="ltr">27648</span> (حسب الجهد من <span class="ltr">0</span> إلى <span class="ltr">10</span> فولت)، والثرموكبل يعطي رقماً سنعرف قاعدته في المحطة الرابعة. تحويل هذه الأرقام إلى درجات هو أول ما يفعله البرنامج (الدرس 5.3).</p>`,title:'أرقام لا درجات'}
    ]},
 
@@ -392,7 +392,7 @@ B.lesson({
      [String.raw`تغيير العنوان إلى <span class="ltr">PIW288</span>`,false,String.raw`العنوان يُضبط في <span class="ltr">Address</span>، و<span class="ltr">PIW288</span> للمقاومة R لا للثرموكبل.`]]}},
     {tip:String.raw`<p>في تبويب <span class="ltr">Address</span> نتأكد أن عنوان قناة الثرموكبل هو <span class="ltr">PIW290</span> كما في الشكل <span class="ltr">(1-5)</span>؛ لأن البرنامج سيقرأ الحرارة من هذا العنوان. وفي تبويب الإدخال نختار نوع القياس <span class="ltr">TC-IL</span> والمدى <span class="ltr">Type K</span>.</p>`,title:'ماذا نضبط فعلاً؟'},
     {add:String.raw`<p>لكل نوع من الثرموكبل (<span class="ltr">K</span>، <span class="ltr">J</span>، <span class="ltr">N</span>…) معدنان مختلفان، فيعطي كل نوع جهداً مختلفاً عند الحرارة نفسها. لو اخترنا نوعاً غير الموصول لحوّل الموديول الجهد إلى حرارة بجدول خاطئ، فتظهر قراءة خاطئة مع أن الأسلاك سليمة.</p>`,title:'لماذا يهم نوع الثرموكبل؟'},
-    {watch:String.raw`<p>النص يقول الموديول «<span class="ltr">AI 8x12 bit</span>» بينما اللقطة في الشكل <span class="ltr">(2-5)</span> تُظهر «<span class="ltr">AI8xTC</span>» (موديول ثرموكبل). والنص يسمي النوافذ <span class="ltr">General</span> و<span class="ltr">Address</span> و<span class="ltr">Inputs</span>، واللقطة فيها <span class="ltr">General</span> و<span class="ltr">Addresses</span> و<span class="ltr">Inputs - Part 1</span> و<span class="ltr">Inputs - Part 2</span>.</p>`}
+    {watch:String.raw`<p>النص يقول الموديول «<span class="ltr">AI 8x12 bit</span>» بينما اللقطة في الشكل <span class="ltr">(2-5)</span> تُظهر «<span class="ltr">AI8xTC</span>» (موديول ثرموكبل). والنص يسمي النوافذ <span class="ltr">General</span> و<span class="ltr">Address</span> و<span class="ltr">Inputs</span>، واللقطة فيها <span class="ltr">General</span> و<span class="ltr">Addresses</span> و<span class="ltr">Inputs - Part 1</span> و<span class="ltr">Inputs - Part 2</span>.</p>`,fix:true}
    ]},
 
   {st:4,short:'قراءة الثرموكبل',title:'قراءة الثرموكبل داخل الـ PLC',ref:'ص 102',
@@ -429,11 +429,11 @@ B.lesson({
   {fig:'(1-5)',ref:'ص 100',caption:'مخطط توصيل وحدة PLC ودائرة القدرة للسخان (القيم المكتوبة مثال: R على 5 v والغرفة 25°C)',draw:()=>`<div class="svgbox">${fig15({})}</div>`},
   {h:'جدول قائمة التشغيل',ref:'ص 101',html:'<p>«والجدول التالي يوضح قائمة التشغيل حسب الشكل (1-5)»، كما هو مطبوع:</p>'},
   {fig:'',ref:'ص 101',caption:'قائمة التشغيل',draw:()=>IO5_BOOK},
-  {err:ERR_ADDR},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+ERR_ADDR+'</div>'},
   {h:'تهيئة وحدة المدخل التناظري',ref:'ص 101–102',html:`<p>«توصل وحدة الدخل التناظري بحساس درجة الحرارة الثيرموكبل <span class="ltr">Thermocouple K-type</span> وتتم تهيئته كما هو موضح بالشكل (2-5). يتم إدراج موديول <span class="ltr">AI 8x12 bit</span> في مكونات النظام ثم نضغط على العنصر مرتين لفتح خصائصه وسوف تظهر لنا نافذة <span class="ltr">Properties</span> وبها ثلاث نوافذ فرعية هي <span class="ltr">General</span> و <span class="ltr">Address</span> و <span class="ltr">Inputs</span>.»</p>
    <ul><li><b>General:</b> بيانات التوصيف العامة وإمكانية كتابة تعليق.</li><li><b>Address:</b> عناوين قنوات التوصيل (Channels) بدايتها ونهايتها ويمكن تغييرها — نستخدم العنوان <b>PIW290</b>.</li><li><b>Input:</b> بيانات التهيئة المختلفة للموديول: <span class="ltr">Measuring Type = TC-IL</span> و <span class="ltr">Measuring Range = Type K</span>.</li></ul>`},
   {fig:'(2-5)',ref:'ص 102',caption:'تهيئة الموديول AI8xTC في برنامج SIMATIC (معاد رسمها؛ الإطار الأحمر حول المجموعة 0-1)',draw:()=>HWCFG},
-  {err:'النص يقول الموديول «AI 8x12 bit» بينما اللقطة في الشكل (2-5) تُظهر «AI8xTC» (موديول ثرموكبل). والنص يسمي النوافذ General و Address و Inputs، واللقطة فيها General و Addresses و Inputs - Part 1 و Inputs - Part 2.'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'النص يقول الموديول «AI 8x12 bit» بينما اللقطة في الشكل (2-5) تُظهر «AI8xTC» (موديول ثرموكبل). والنص يسمي النوافذ General و Address و Inputs، واللقطة فيها General و Addresses و Inputs - Part 1 و Inputs - Part 2.'+'</div>'},
   {h:'قراءة الثرموكبل داخل الـ PLC',ref:'ص 102',html:'<p>«وباستخدام الثيرموكبل ستكون قراءة الحرارة داخل PLC كعدد صحيح Integer كما بالجدول» — Table 4-26 من كتالوج سيمنز:</p>'},
   {fig:'',ref:'ص 102',caption:'Table 4-26 Analog value representation for thermocouples type K',draw:()=>T426},
   {html:'<p>«وبحسب الجدول فإن القراءة للقيمة الفعلية للحرارة داخل PLC = القراءة الفعلية للحرارة × 10». أي أن <span class="ltr">25.0°C</span> تُقرأ <b>250</b>. أما المقاومة R فقراءتها من 0 (عند 0 v) إلى <b>27648</b> (عند 10 v).</p>'}
@@ -564,7 +564,7 @@ B.lesson({
       const draw=()=>{const c=chain(+rg.value,0);o('v').textContent=(+rg.value).toFixed(1);o('p').textContent=c.piw288;o('l').textContent=c.ld0;o('m0').textContent=c.md0.toFixed(1);o('m10').textContent=fnum(c.md10a,4);o('m100').textContent=fnum(c.md100,2)+' °C'};
       rg.oninput=draw;draw();
     }},
-    {watch:String.raw`<p>الخطوة 1 تقول إن القيمة الحقيقية تُمرَّر في <span class="ltr">LD0</span>، لكن في البرنامج <span class="ltr">LD0</span> هو ناتج <span class="ltr">I_DI</span> (عدد صحيح مزدوج)، والقيمة الحقيقية <span class="ltr">Real</span> تذهب إلى <span class="ltr">MD0</span> (الشبكة 1، ص 104).</p>`}
+    {watch:String.raw`<p>الخطوة 1 تقول إن القيمة الحقيقية تُمرَّر في <span class="ltr">LD0</span>، لكن في البرنامج <span class="ltr">LD0</span> هو ناتج <span class="ltr">I_DI</span> (عدد صحيح مزدوج)، والقيمة الحقيقية <span class="ltr">Real</span> تذهب إلى <span class="ltr">MD0</span> (الشبكة 1، ص 104).</p>`,fix:true}
    ]},
 
   {st:2,short:'الحرارة الفعلية',title:'خطوة العمل 3: الحرارة الفعلية من الثرموكبل',ref:'ص 103',
@@ -608,7 +608,7 @@ B.lesson({
         o('d').innerHTML=c1?'<b>شرط التشغيل متحقق:</b> يُثبَّت السخان (ما دام شرط التشغيل الآخر في Network 6 متحققاً — المحطة الخامسة).':c2?'<b>شرط الإيقاف متحقق:</b> يُلغى السخان.':'<b>بين الحدين:</b> لا شرط تشغيل ولا شرط إيقاف، فيبقى السخان على حاله.'};
       el.querySelectorAll('input').forEach(i=>i.oninput=draw);draw();
     }},
-    {watch:String.raw`<p>الخطوة 4 مطبوعة في الكتاب «≤CMP»، والخطوة 5 تقول «أقل من <span class="ltr">80%</span>»، بينما البرنامج (ص 105) يستخدم <span class="ltr">CMP &lt;=R</span>، أي «أقل من <b>أو يساوي</b>». وشرط الإيقاف <span class="ltr">CMP &gt;R</span>: «أكبر من» فقط.</p>`}
+    {watch:String.raw`<p>الخطوة 4 مطبوعة في الكتاب «≤CMP»، والخطوة 5 تقول «أقل من <span class="ltr">80%</span>»، بينما البرنامج (ص 105) يستخدم <span class="ltr">CMP &lt;=R</span>، أي «أقل من <b>أو يساوي</b>». وشرط الإيقاف <span class="ltr">CMP &gt;R</span>: «أكبر من» فقط.</p>`,fix:true}
    ]},
 
   {st:4,short:'الشبكات 1–5',title:'ثانياً: برنامج LAD — الشبكات 1 إلى 5 (التحويل والمعايرة)',ref:'ص 104',
@@ -638,7 +638,7 @@ B.lesson({
       const draw=()=>{o('v').textContent=g('v').toFixed(1);o('t').textContent=g('t').toFixed(1);o('n').innerHTML=mathNets(chain(g('v'),g('t')))};
       el.querySelectorAll('input').forEach(i=>i.oninput=draw);draw();
     }},
-    {watch:String.raw`<p>عنوان <span class="ltr">Network 5</span> «<span class="ltr">80% And 120% of <b>Actual</b> Value</span>»، لكن الحساب على <span class="ltr">MD100</span> وهي القيمة <b>المطلوبة</b> <span class="ltr">(Set Value)</span>، وهذا المتفق مع خطوات العمل. كذلك يُستخدم <span class="ltr">MD10</span> مرتين: ناتجاً وسيطاً في <span class="ltr">Network 2</span> ثم يُكتب فوقه في <span class="ltr">Network 3</span> (لا يضر لأن <span class="ltr">Network 2</span> استهلكه قبلها). والإملاء «<span class="ltr">Temprature</span>» و«<span class="ltr">Scalling</span>» كما في الكتاب.</p>`}
+    {watch:String.raw`<p>عنوان <span class="ltr">Network 5</span> «<span class="ltr">80% And 120% of <b>Actual</b> Value</span>»، لكن الحساب على <span class="ltr">MD100</span> وهي القيمة <b>المطلوبة</b> <span class="ltr">(Set Value)</span>، وهذا المتفق مع خطوات العمل. كذلك يُستخدم <span class="ltr">MD10</span> مرتين: ناتجاً وسيطاً في <span class="ltr">Network 2</span> ثم يُكتب فوقه في <span class="ltr">Network 3</span> (لا يضر لأن <span class="ltr">Network 2</span> استهلكه قبلها). والإملاء «<span class="ltr">Temprature</span>» و«<span class="ltr">Scalling</span>» كما في الكتاب.</p>`,fix:true}
    ]},
 
   {st:5,short:'الشبكتان 6 و 7',title:'الشبكتان 6 و 7: التخزين والإلغاء بالمقارنات',ref:'ص 105',
@@ -656,7 +656,7 @@ B.lesson({
      [String.raw`يبقى يعمل، لأن <span class="ltr">(S)</span> ثبّته ولم يأتِ بعد شرط الإلغاء`,true,'المقارن الأول صار 0، لكن الملف المثبّت لا يتأثر بذلك؛ ينتظر Network 7.'],
      [String.raw`يتوقف، لأن شرط <span class="ltr">&lt;=R</span> لم يعد متحققاً`,false,'هذا يحدث مع ملف عادي (=)، لا مع ملف تثبيت (S).'],
      ['يعمل ويتوقف بسرعة متكررة',false,'المسافة بين الحدين والتثبيت هما بالضبط ما يمنع ذلك.']]}},
-    {watch:String.raw`<p><b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في <span class="ltr">Network 6</span> هو <b><span class="ltr">S1</span> مضغوط و</b> الحرارة ≤ <span class="ltr">80%</span>. و<span class="ltr">S1</span> «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز <span class="ltr">120%</span> لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى <span class="ltr">80%</span> إلا إذا ضُغط <span class="ltr">S1</span> مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> في المختبر يضيف علامة <span class="ltr">M0.0</span> يثبتها <span class="ltr">S1</span> ويلغيها <span class="ltr">S0</span>، وتحل محل <span class="ltr">I0.1</span> في <span class="ltr">Network 6</span>. بدّل بين النسختين في المختبر.</p>`}
+    {watch:String.raw`<p><b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في <span class="ltr">Network 6</span> هو <b><span class="ltr">S1</span> مضغوط و</b> الحرارة ≤ <span class="ltr">80%</span>. و<span class="ltr">S1</span> «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز <span class="ltr">120%</span> لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى <span class="ltr">80%</span> إلا إذا ضُغط <span class="ltr">S1</span> مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> في المختبر يضيف علامة <span class="ltr">M0.0</span> يثبتها <span class="ltr">S1</span> ويلغيها <span class="ltr">S0</span>، وتحل محل <span class="ltr">I0.1</span> في <span class="ltr">Network 6</span>. بدّل بين النسختين في المختبر.</p>`,fix:true}
    ]},
 
   {st:6,short:'والمطلوب',title:'والمطلوب',ref:'ص 105',
@@ -690,14 +690,14 @@ B.lesson({
    <li>ويتوقف السخان إذا كانت الحرارة الفعلية أكبر من <b>120٪</b> من الحرارة المطلوبة.</li></ol>
    <p><b>ملاحظة من الكتاب:</b> قبل البدء في تنفيذ الدائرة على (PLC) يجب مراجعة الكتالوج الخاص بالوحدة وتحديد المداخل والمخارج الرقمية والتناظرية وترقيمها حسب المتوفر في المختبر والبلوكات.</p>`},
   {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> مثال: R على 5 v ← PIW288 = 13824 ← 13824 ÷ 27648 × 100 = <b>50°C</b> مطلوبة. فيعمل السخان عندما تنزل الحرارة إلى 40°C (80٪) ويتوقف عندما تتجاوز 60°C (120٪). المسافة بين الحدين تمنع تشغيل السخان وإيقافه بسرعة.'},
-  {err:'الخطوة 1 تقول القيمة الحقيقية تُمرَّر في <b>LD0</b>، لكن في البرنامج LD0 هو ناتج I_DI (عدد صحيح مزدوج) والقيمة الحقيقية تذهب إلى <b>MD0</b>. والخطوة 4 مكتوبة «≤CMP» والخطوة 5 تقول «أقل من 80٪» بينما البرنامج يستخدم <span class="ltr">CMP &lt;=R</span> (أقل من <b>أو يساوي</b>).'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'الخطوة 1 تقول القيمة الحقيقية تُمرَّر في <b>LD0</b>، لكن في البرنامج LD0 هو ناتج I_DI (عدد صحيح مزدوج) والقيمة الحقيقية تذهب إلى <b>MD0</b>. والخطوة 4 مكتوبة «≤CMP» والخطوة 5 تقول «أقل من 80٪» بينما البرنامج يستخدم <span class="ltr">CMP &lt;=R</span> (أقل من <b>أو يساوي</b>).'+'</div>'},
   {h:'ثانياً: برنامج LAD — الشبكات 1–5 (تحويل ومعايرة)',ref:'ص 104',html:'<p>كل شبكة فيها صناديق حسابية موصولة EN ← ENO. القيم الخضراء مثال (R على 5 v والغرفة 25°C):</p>'},
   {fig:'',ref:'ص 104',caption:'Network 1–5 بلغة LAD (معاد رسمها)',draw:()=>mathNets(chain(5,25))},
-  {err:'عنوان Network 5 «80% And 120% of <b>Actual</b> Value»، لكن الحساب على <b>MD100</b> وهي القيمة <b>المطلوبة</b> (Set Value)، وهذا المتفق مع خطوات العمل. كذلك يُستخدم MD10 مرتين: ناتجاً وسيطاً في Network 2 ثم يُكتب فوقه في Network 3 (لا يضر لأن Network 2 استهلكه قبلها). والإملاء «Temprature» و «Scalling» كما في الكتاب.'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'عنوان Network 5 «80% And 120% of <b>Actual</b> Value»، لكن الحساب على <b>MD100</b> وهي القيمة <b>المطلوبة</b> (Set Value)، وهذا المتفق مع خطوات العمل. كذلك يُستخدم MD10 مرتين: ناتجاً وسيطاً في Network 2 ثم يُكتب فوقه في Network 3 (لا يضر لأن Network 2 استهلكه قبلها). والإملاء «Temprature» و «Scalling» كما في الكتاب.'+'</div>'},
   {h:'الشبكتان 6 و 7 (التخزين والإلغاء بالمقارنات)',ref:'ص 105',html:'<ul><li><b>Network 6 : Start Heating</b> — I0.1 (Start "S1") على التوالي مع مقارن <span class="ltr">CMP &lt;=R</span> (IN1 = MD200، IN2 = MD80) ← ملفا <b>(S)</b> للمخرجين Q4.0 Heater "K1" و Q4.1 Heater Lamp "H1".</li><li><b>Network 7 : End Heating</b> — [ I0.0 (stop "S0") ∥ <span class="ltr">CMP &gt;R</span> (IN1 = MD200، IN2 = MD120) ] ← ملفا <b>(R)</b> للمخرجين Q4.0 و Q4.1.</li></ul>'},
   {draw:'lad',caption:'Network 6–7 بلغة LAD (النسخة المختارة حالياً)',ref:'ص 105'},
   {note:'المحاكي يرسم الشبكتين من STL مكافئ (الكتاب أعطاهما بلغة LAD فقط): <span class="ltr">L MD 200 / L MD 80 / &lt;=R</span> هو صندوق المقارنة نفسه.'},
-  {err:'<b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في Network 6 هو <b>S1 مضغوط و</b> الحرارة ≤ 80٪. و S1 «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز 120٪ لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى 80٪ إلا إذا ضُغط S1 مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> يضيف علامة M0.0 يثبتها S1 ويلغيها S0، وتحل محل I0.1 في Network 6. بدّل بين النسختين في المختبر.'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'<b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في Network 6 هو <b>S1 مضغوط و</b> الحرارة ≤ 80٪. و S1 «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز 120٪ لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى 80٪ إلا إذا ضُغط S1 مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> يضيف علامة M0.0 يثبتها S1 ويلغيها S0، وتحل محل I0.1 في Network 6. بدّل بين النسختين في المختبر.'+'</div>'},
   {h:'والمطلوب',ref:'ص 105',html:'<ol><li>تنفيذ التمرين السابق على جهاز الحاسب الآلي ثم نقله إلى وحدة (PLC) مع اختبار صحة عمل الدائرة.</li><li>إعادة كتابة البرنامج السابق باستخدام لغة FBD ولغة STL (انظر الدرس 5.4).</li></ol>'}
  ],
  io:[
@@ -712,9 +712,9 @@ B.lesson({
   {id:'S0',addr:'I0.0',type:'push',color:'red',label:'Stop Heating'},
   {id:'S1',addr:'I0.1',type:'push',color:'green',label:'Heat enable'}
  ],
- variants:{default:'book',note:'Network 6 في الكتاب يشترط أن يكون S1 مضغوطاً لحظة نزول الحرارة إلى 80٪. المصحح يحفظ أمر التشغيل في M0.0.',
+ variants:{default:'book',note:'<span class="fixnote">Network 6 في الكتاب يشترط أن يكون S1 مضغوطاً لحظة نزول الحرارة إلى 80٪. المصحح يحفظ أمر التشغيل في M0.0.</span>',
   book:{label:'كما في الكتاب',program:[N6('I'),N7],note:'كما في الكتاب (ص 105): <span class="ltr">I0.1 AND MD200 &lt;= MD80</span>. بعد أول إيقاف عند 120٪ لا يعود السخان للعمل وحده.'},
-  fixed:{label:'المصحح',program:[NM,N6('M'),N7],note:'المصحح: أضيفت شبكة تحفظ أمر S1 في M0.0 (يلغيها S0)، و Network 6 تستخدم M0.0 بدل I0.1. يعمل الحاكم ذو الموضعين تلقائياً بين 80٪ و 120٪.'}},
+  fixed:{label:'المصحح',program:[NM,N6('M'),N7],note:'<span class="fixnote">المصحح: أضيفت شبكة تحفظ أمر S1 في M0.0 (يلغيها S0)، و Network 6 تستخدم M0.0 بدل I0.1. يعمل الحاكم ذو الموضعين تلقائياً بين 80٪ و 120٪.</span>'}},
  power:st=>fig15({S1:st.btn('S1'),S0:st.btn('S0'),T:st.plant.T,V:st.plant.V,Q40:st.Q('Q4.0'),Q41:st.Q('Q4.1')}),powerRef:'الشكل (1-5) ص 100',
  plant:heatPlant(),
  plcNote:'قيم MD200 و MD80 و MD120 تحسبها الشبكات 1–5 (عمليات أعداد حقيقية تُعرض في الشرح وفي لوحة الغرفة)، ثم تقارنها الشبكتان 6 و 7 هنا. عمود «الحالة» للمدخلين التناظريين PIW288 و PIW290 لا معنى له (هما أرقام وليسا بتات).',
@@ -798,7 +798,7 @@ B.lesson({
      ['ضاعت، لأن التحميل الجديد كتب فوقها',false,'لا تضيع: كل تحميل ينقل القيمة القديمة إلى ACCU2.'],
      [String.raw`في <span class="ltr">ACCU2</span>`,true,'ولذلك يقسم /R بعدها: ACCU2 ÷ ACCU1 = القراءة ÷ 27648.0.']]}},
     {tip:String.raw`<p>الأسطر 2 إلى 9 هي الشبكات 3 و 4 من برنامج LAD مكتوبة بحروف: <span class="ltr">ITD</span> بدل <span class="ltr">I_DI</span>، و<span class="ltr">DTR</span> بدل <span class="ltr">DI_R</span>، و<span class="ltr">/R</span> بدل <span class="ltr">DIV_R</span>، و<span class="ltr">*R</span> بدل <span class="ltr">MUL_R</span>. الفرق الوحيد هو المقياس (المحطة السابقة).</p>`,title:'قارن بـ LAD'},
-    {watch:String.raw`<p><b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على <span class="ltr">10.0</span>، وفي STL تُقسم على <span class="ltr">27648.0</span> وتُضرب في <span class="ltr">100.0</span> (<span class="ltr">0–10 v</span> ← <span class="ltr">0–100°C</span>). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. فلو وصلت ثرموكبلاً حقيقياً مع هذا البرنامج لكانت الحرارة المحسوبة خاطئة.</p>`}
+    {watch:String.raw`<p><b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على <span class="ltr">10.0</span>، وفي STL تُقسم على <span class="ltr">27648.0</span> وتُضرب في <span class="ltr">100.0</span> (<span class="ltr">0–10 v</span> ← <span class="ltr">0–100°C</span>). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. فلو وصلت ثرموكبلاً حقيقياً مع هذا البرنامج لكانت الحرارة المحسوبة خاطئة.</p>`,fix:true}
    ]},
 
   {st:3,short:'STL: التشغيل',title:'دائرة STL (2): الحرارة المطلوبة <span class="ltr">MD100</span> وحد التشغيل <span class="ltr">MD80</span>',ref:'ص 106',
@@ -814,7 +814,7 @@ B.lesson({
      [String.raw`إذا كانت <span class="ltr">MD200 ≤ MD80</span>`,true,'المقارنة بين ACCU2 (MD200، المحمَّل أولاً) و ACCU1 (MD80).'],
      [String.raw`إذا كانت <span class="ltr">MD80 ≤ MD200</span>`,false,'هذا عكس الترتيب: الأول المحمَّل هو الطرف الأيسر في المقارنة.'],
      ['دائماً، لأن المقارنة لا تحتاج شرطاً',false,'المقارنة نفسها هي الشرط؛ نتيجتها RLO = 0 أو 1.']]}},
-    {watch:String.raw`<p>السطر <span class="ltr">L MD 200</span> مباشرة بعد <span class="ltr">T MD 200</span> ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر (منقول كما في الكتاب). والأسطر الفارغة مطبوعة هكذا في الكتاب ولا تفعل شيئاً.</p>`}
+    {watch:String.raw`<p>السطر <span class="ltr">L MD 200</span> مباشرة بعد <span class="ltr">T MD 200</span> ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر (منقول كما في الكتاب). والأسطر الفارغة مطبوعة هكذا في الكتاب ولا تفعل شيئاً.</p>`,fix:true}
    ]},
 
   {st:4,short:'STL: الإيقاف',title:'دائرة STL (3): حد الإيقاف <span class="ltr">MD120</span> والإلغاء',ref:'ص 106',
@@ -830,7 +830,7 @@ B.lesson({
      [String.raw`بالضغط على <span class="ltr">S0</span>`,false,'البرنامج لا يقرأ I0.0 أصلاً، فلا أثر للضاغط.'],
      ['لا توجد طريقة في البرنامج؛ السخان يتبع المقارنة فقط',true,'هذا ما ينقص STL الكتاب مقارنة بـ LAD (انظر «انتبه»).'],
      [String.raw`بإطفاء المصباح <span class="ltr">H1</span>`,false,'المصباح Q4.1 غير موجود في هذا البرنامج، والمصباح مخرج لا يتحكم في شيء.']]}},
-    {watch:String.raw`<p><b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط <span class="ltr">S1 (I0.1)</span> ولا <span class="ltr">S0 (I0.0)</span> ولا المصباح <span class="ltr">Q4.1</span>؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و<span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف <span class="ltr">S1</span> و<span class="ltr">S0</span> بعلامة <span class="ltr">M0.0</span> والمصباح <span class="ltr">H1</span> (الأسطر المضافة مظللة).</p>`}
+    {watch:String.raw`<p><b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط <span class="ltr">S1 (I0.1)</span> ولا <span class="ltr">S0 (I0.0)</span> ولا المصباح <span class="ltr">Q4.1</span>؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و<span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف <span class="ltr">S1</span> و<span class="ltr">S0</span> بعلامة <span class="ltr">M0.0</span> والمصباح <span class="ltr">H1</span> (الأسطر المضافة مظللة).</p>`,fix:true}
    ]},
 
   {st:5,short:'والمطلوب',title:'والمطلوب: البرنامج بلغتي FBD و STL',ref:'ص 105',
@@ -868,8 +868,8 @@ B.lesson({
    <tr><td class="ltr">T MD 200</td><td>نقل ACCU1 إلى العنوان MD200</td></tr>
    <tr><td class="ltr">&lt;=R ، &gt;R</td><td>مقارنة ACCU2 مع ACCU1، والنتيجة RLO</td></tr>
    <tr><td class="ltr">S Q 4.0 ، R Q 4.0</td><td>تثبيت / إلغاء السخان إذا كانت RLO = 1</td></tr></tbody></table>`},
-  {err:'<b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على 10.0، وفي STL تُقسم على 27648.0 وتُضرب في 100.0 (0–10 v ← 0–100°C). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. كذلك السطر <span class="ltr">L MD 200</span> بعد <span class="ltr">T MD 200</span> مباشرة ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر.'},
-  {err:'<b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط S1 (I0.1) ولا S0 (I0.0) ولا المصباح Q4.1؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و <span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف S1 و S0 بعلامة M0.0 والمصباح H1 (الأسطر المضافة مظللة).'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'<b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على 10.0، وفي STL تُقسم على 27648.0 وتُضرب في 100.0 (0–10 v ← 0–100°C). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. كذلك السطر <span class="ltr">L MD 200</span> بعد <span class="ltr">T MD 200</span> مباشرة ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر.'+'</div>'},
+  {html:'<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> '+'<b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط S1 (I0.1) ولا S0 (I0.0) ولا المصباح Q4.1؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و <span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف S1 و S0 بعلامة M0.0 والمصباح H1 (الأسطر المضافة مظللة).'+'</div>'},
   {h:'والمطلوب',ref:'ص 105',html:'<p>«إعادة كتابة البرنامج السابق باستخدام لغة FBD ولغة STL.» برنامج STL أعلاه هو صيغة الكتاب لمحاكاة الثرموكبل. نفّذه في المختبر سطراً سطراً وراقب المركمين.</p>'}
  ],
  lab:(el)=>{
@@ -903,7 +903,7 @@ B.lesson({
   const execLine=i=>{const o=prog()[i];if(i===0)readIn();if(!o){return}const r=stlExec(o.l,mem);trace[i]=r;if(r)S.cnt++};
   const scan=()=>{readIn();mem.fc=true;trace=[];prog().forEach((o,i)=>{trace[i]=stlExec(o.l,mem)})};
   $('#nx').onclick=()=>{if(!S.step){S.step=true;segs('data-mode','step')}if(S.pc===0){trace=[];mem.fc=true}execLine(S.pc);S.pc=(S.pc+1)%prog().length;drawStl()};
-  const hdr=()=>{const f=S.var==='fixed';$('#vnote').innerHTML=f?'المصحح: أضيف S1 و S0 بالعلامة M0.0 (مثل المصحح في الدرس 5.3) والمصباح H1 مع السخان.':'كما في الكتاب (ص 106): لا يوجد S1 ولا S0 ولا H1. السخان يُثبَّت ويُلغى بالمقارنة فقط.';
+  const hdr=()=>{const f=S.var==='fixed';$('#vnote').innerHTML=f?'<span class="fixnote">المصحح: أضيف S1 و S0 بالعلامة M0.0 (مثل المصحح في الدرس 5.3) والمصباح H1 مع السخان.</span>':'كما في الكتاب (ص 106): لا يوجد S1 ولا S0 ولا H1. السخان يُثبَّت ويُلغى بالمقارنة فقط.';
     $('#bnote').textContent=f?'':'في نسخة الكتاب الضاغطان لا أثر لهما: البرنامج لا يقرأ I0.0 ولا I0.1.';$('#btns').style.opacity=f?1:.5;
     el.querySelector('[data-pot]').style.display=S.src==='pot'?'':'none';el.querySelector('[data-room]').style.display=S.src==='room'?'':'none';$('#nx').textContent=S.step?'نفّذ السطر التالي':'خطوة بخطوة: السطر الأول';drawStl()};
   const drawStl=()=>{const P=prog();$('#stl').innerHTML=`<table class="stl" style="width:100%"><thead><tr><td>#</td><td>التعليمة</td><td></td><td class="r">ACCU1</td><td class="r">ACCU2</td><td class="r">RLO</td></tr></thead><tbody>`+P.map((o,i)=>{const p=o.l.trim().split(/\s+/),r=trace[i];const cur=S.step&&i===(S.pc-1+P.length)%P.length&&trace[i]!==undefined;

@@ -149,7 +149,7 @@ function figHTML(L,b){
 /* ---------------- THEORY: أسلوب المحطات ----------------
  L.stations = true و L.theory = [{intro:true}, {st:1,title,q,ref,art,cap,side:[blocks],body:[blocks]}, {recap:[...]}]
  الكتل: {book,ref} نص الكتاب · {tip,title} توضيح للمتدرب · {add,title} إضافة من خارج الكتاب
-        {watch} انتبه · {predict:{q,opts:[[نص,صح؟,سبب]]}} جرّب · {widget(el,B),title} جرّب · {html} */
+        {watch,fix?} انتبه (fix:true = شرح خطأ في الكتاب، يُخفى بزر «إخفاء الشرح») · {predict:{q,opts:[[نص,صح؟,سبب]]}} جرّب · {widget(el,B),title} جرّب · {html} */
 const TG={book:['نص الكتاب','t-book'],tip:['توضيح للمتدرب','t-tip'],add:['إضافة من خارج الكتاب','t-add'],try:['جرّب','t-try'],watch:['انتبه','t-watch']};
 const tagH=k=>`<span class="tg ${TG[k][1]}">${TG[k][0]}</span>`;
 const ORDW=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
@@ -160,7 +160,7 @@ function renderStations(L,body){
     if(b.book!=null) return `<div class="sb sb-book"><div class="sb-h">${tagH('book')}${b.ref?`<span class="ref">${b.ref}</span>`:''}</div><div class="prose">${b.book}</div></div>`;
     if(b.tip!=null) return `<div class="sb sb-tip"><div class="sb-h">${tagH('tip')}${b.title?`<b>${b.title}</b>`:''}</div><div class="prose">${b.tip}</div></div>`;
     if(b.add!=null) return `<div class="sb sb-add"><div class="sb-h">${tagH('add')}${b.title?`<b>${b.title}</b>`:''}</div><div class="prose">${b.add}</div></div>`;
-    if(b.watch!=null) return `<div class="sb sb-watch"><div class="sb-h">${tagH('watch')}</div><div class="prose">${b.watch}</div></div>`;
+    if(b.watch!=null) return `<div class="sb sb-watch${b.fix?' fixnote':''}"><div class="sb-h">${tagH('watch')}</div><div class="prose">${b.watch}</div></div>`;
     if(b.predict){const p=b.predict;return `<div class="sb sb-try pd"><div class="sb-h">${tagH('try')}<b>توقّع قبل أن تكمل</b></div><div class="pd-q">${p.q}</div><div class="pd-o">${p.opts.map((o,j)=>`<button type="button" data-j="${j}" data-ok="${o[1]?1:0}">${o[0]}</button>`).join('')}</div><div class="pd-fb" hidden></div></div>`}
     if(b.widget){W.push(b.widget);return `<div class="sb sb-try"><div class="sb-h">${tagH('try')}${b.title?`<b>${b.title}</b>`:''}</div><div class="sw-host" data-w="${W.length-1}"></div></div>`}
     if(b.html) return `<div class="prose">${b.html}</div>`;
@@ -229,7 +229,7 @@ function renderTheory(L,body){
     if(b.h) h+=`<h2 class="th">${b.h}${b.ref?` <span class="ref">${b.ref}</span>`:''}</h2>`;
     if(b.fig||b.draw) h+=figHTML(L,b);
     else if(b.note) h+=`<div class="callout">${b.note}</div>`;
-    else if(b.err) h+=`<div class="callout err"><b>ملاحظة على الكتاب:</b> ${b.err}</div>`;
+    else if(b.err) h+=`<div class="callout err fixnote"><b>ملاحظة على الكتاب:</b> ${String(b.err).replace(/^<(div|span) class="fixnote">/,'<$1>')}</div>`;
     else if(b.widget){h+=`<div class="widget" data-w="${(L.theory.indexOf(b))}"></div>`}
     else if(b.html) h+=`<div class="prose">${b.html}</div>`;
   });
@@ -475,8 +475,21 @@ B.bkOn=k=>document.documentElement.getAttribute('data-bk-'+k)==='fixed';
 B.bkCtl=(k,lbl)=>{const f=B.bkOn(k);return `<span class="bkctl">${lbl?`<span class="sub">${lbl}</span>`:''}<span class="seg" role="group"><button data-bkfix="${k}" data-bkv="book" aria-pressed="${!f}">كما في الكتاب</button><button data-bkfix="${k}" data-bkv="fixed" aria-pressed="${f}">المصحح</button></span></span>`};
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bkfix]');if(!b)return;const k=b.dataset.bkfix,f=b.dataset.bkv==='fixed';
   if(!document.getElementById('bkst-'+k)){const st=document.createElement('style');st.id='bkst-'+k;const h=`html[data-bk-${k}="fixed"]`;
-    st.textContent=`${h} .bkf[data-bk="${k}"]{display:inline}${h} .bkf.blk[data-bk="${k}"]{display:block}${h} .bkb[data-bk="${k}"]{display:none}${h} .seg button[data-bkfix="${k}"][data-bkv="fixed"]{background:var(--blue);color:#fff}${h} .seg button[data-bkfix="${k}"][data-bkv="book"]{background:var(--surface);color:var(--muted)}`;document.head.appendChild(st)}
+    st.textContent=`${h} .bkf:not(.fx-chip)[data-bk="${k}"]{display:inline}${h} .bkf.blk:not(.fx-chip)[data-bk="${k}"]{display:block}${h} .bkb[data-bk="${k}"]{display:none}html[data-hidefix][data-bk-${k}="fixed"] .fx-chip.bkf[data-bk="${k}"]{display:block}html[data-hidefix][data-bk-${k}="fixed"] span.fx-chip.bkf:not(.blk)[data-bk="${k}"]{display:inline-block}${h} .seg button[data-bkfix="${k}"][data-bkv="fixed"]{background:var(--blue);color:#fff}${h} .seg button[data-bkfix="${k}"][data-bkv="book"]{background:var(--surface);color:var(--muted)}`;document.head.appendChild(st)}
   document.documentElement.setAttribute('data-bk-'+k,f?'fixed':'book');
   document.querySelectorAll(`[data-bkfix="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.bkv==='fixed')===f)))});
+/* hideable correction notes: any element with class "fixnote" (the explanation that the book is wrong, shown in «المصحح»)
+   gets a small «إخفاء الشرح» button; when hidden (remembered on this device for the whole site) a small «لماذا؟» chip shows instead */
+(function(){
+  const KEY='elib-hidefix';let hid=false;try{hid=localStorage.getItem(KEY)==='1'}catch(e){}
+  const apply=()=>document.documentElement.toggleAttribute('data-hidefix',hid);apply();
+  const deco=root=>{(root.querySelectorAll?root:document).querySelectorAll('.fixnote:not([data-fx])').forEach(n=>{n.setAttribute('data-fx','1');
+    const b=document.createElement('button');b.type='button';b.className='fx-hide';b.textContent='إخفاء الشرح';b.title='إخفاء شروح التصحيح في كل الموقع';n.appendChild(b);
+    const c=document.createElement(n.tagName==='SPAN'?'span':'div');c.className='fx-chip';c.innerHTML='<button type="button" class="fx-show">لماذا؟</button>';if(n.classList.contains('bkf')){c.classList.add('bkf');if(n.classList.contains('blk'))c.classList.add('blk');c.dataset.bk=n.dataset.bk}n.parentNode.insertBefore(c,n)})};
+  const set=v=>{hid=v;try{localStorage.setItem(KEY,v?'1':'0')}catch(e){}apply()};
+  document.addEventListener('click',e=>{if(!e.target.closest)return;if(e.target.closest('.fx-hide')){set(true)}else if(e.target.closest('.fx-show')){set(false)}});
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.matches&&n.matches('.fixnote'))deco(n.parentNode||document);else if(n.querySelector&&n.querySelector('.fixnote'))deco(n)}}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('DOMContentLoaded',()=>deco(document));
+})();
 B.start=function(){window.addEventListener('hashchange',route);route()};
 })(window);
