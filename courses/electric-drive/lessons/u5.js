@@ -37,7 +37,7 @@ const lt=s=>`<span class="ltr">${s}</span>`;
 /* ---------- small helpers (local to this file) ---------- */
 function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
 function stepsUI(host,steps){let i=0;
-  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
+  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${LTU(s.t)}</h4><p>${LTU(s.x)}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
   host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
   return {check(){const s=steps[i];if(s&&s.done&&s.done()){i++;draw()}},redraw:draw};}
@@ -72,6 +72,9 @@ function plotSVG(o){const W=o.w||520,H=o.h||250,L=o.left||54,Rm=16,T=16,Bm=40;
   s+='</g>';if(o.extra)s+=o.extra(X,Y);
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'منحنى'}"><defs><clipPath id="${cid}"><rect x="${L}" y="${T-2}" width="${W-L-Rm+2}" height="${H-T-Bm+4}"/></clipPath></defs>${s}</svg>`}
 const Q=(n,q,ans)=>`<details class="ed-q"><summary>${n}: ${q}</summary><div class="ed-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> ${ans}</div></details>`;
+const LTU=x=>B.ltrU(x).replace(/<span class="ltr">(\(\d+-\d+\))<\/span>/g,'$1');   // units LTR; equation/figure numbers stay as printed (like the other courses)
+const LT=x=>typeof x==='string'?LTU(x):x;
+const FIXL=L=>{(L.theory||[]).forEach(b=>{['h','html','note','err','caption'].forEach(k=>{if(b[k])b[k]=LT(b[k])})});(L.examples||[]).forEach(x=>{['title','q','note'].forEach(k=>{if(x[k])x[k]=LT(x[k])})});return L};
 const ADD='<b>توضيح للمتدرب — ليس من الكتاب:</b> ';
 const Z=a=>{a.forEach(q=>{if(q&&typeof q.v==='number'&&q.dp==null&&Number.isInteger(q.v))q.dp=0});return a};
 const SUG='<b>حل مقترح (ليس من الكتاب):</b> الكتاب لا يطبع إجابات للتمارين؛ الحل هنا بطريقة الكتاب نفسها وبتقريبه.';
@@ -113,7 +116,7 @@ function netSVG(k,L,sp,xv){const s=SYS[k],W=760,H=262,x0=40,x1=720,yO=96,yO2=110
   o+=`<path d="M${x0} 239H${x1}" stroke="var(--muted)"/>`+S.t(x1+8,256,'km','m','start');
   return o+'</svg>'}
 
-B.lesson({
+B.lesson(FIXL({
  id:'u5-l1',unit:5,order:1,pages:'50–55، 64',
  title:'التحريك الكهربائي: أنواعه ومميزاته وعيوبه ونظم تغذية شبكاته',
  summary:'ما المقصود بالتحريك الكهربائي، ونوعاه (مركبة مستقلة ذاتياً أو مركبة تأخذ الطاقة من شبكة)، ومزاياه الثماني وعيوبه الثلاثة، ونظم تغذية الشبكات الثلاثة: التيار المستمر والمتردد أحادي الوجه والمتردد ثلاثي الأوجه.',
@@ -171,7 +174,7 @@ B.lesson({
     <div class="svgbox" id="n1x" style="max-width:520px;margin-inline:auto"></div>
     <p class="ed-cap" id="n1xt"></p></div>
    <div class="panel c6"><h2>جرّب</h2><ol class="steps" id="n1st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const ui=()=>{const s=SYS[k];$('#n1spw').style.display=s.sp?'':'none';if(s.sp){const r=$('#n1s');r.min=s.sp[0];r.max=s.sp[1];r.step=s.sp[1]-s.sp[0]>5?1:0.5;sp=clamp(sp,s.sp[0],s.sp[1]);if(sp<s.sp[0]||sp>s.sp[1])sp=(s.sp[0]+s.sp[1])/2;r.value=sp}
    const ar=x=>`<span style="font-family:var(--font);font-size:14px">${x}</span>`;$('#n1V').innerHTML=/[\u0600-\u06FF]/.test(s.V)?ar('مستمر (نظام المدن)'):lt(s.V);$('#n1f').innerHTML=s.f==='تيار مستمر'?'<span style="font-family:var(--font);font-size:14px">مستمر</span>':lt(s.f.replace(' أو ',' / '));
    $('#n1w').innerHTML=`<span style="font-family:var(--font);font-size:14px">${s.w===2?'خطان':'خط واحد'}</span>`;$('#n1r').innerHTML=`<span style="font-family:var(--font);font-size:14px">${s.ret}</span>`;
@@ -202,7 +205,7 @@ B.lesson({
   {q:'المسافة بين محطات التغذية في النظام المتردد أحادي الوجه:',o:['3–5 km','40–50 km','50–80 km','أكثر من 200 km'],c:2,e:'ص 55: بسبب تقليل الجهد المفقود مع التردد المنخفض.'},
   {q:'في النظام المتردد ثلاثي الأوجه تتكون شبكة التحريك من:',o:['خط هوائي واحد والقضبان','خطين هوائيين وأحد القضبان خط ثالث','ثلاثة خطوط هوائية','كابل أرضي'],c:1,e:'ص 55.'}
  ]
-});
+}));
 
 /* ======================================================================
    Lesson u5-l2 — قوى التحريك والقدرة المحركة لدواليب القطار
@@ -260,7 +263,7 @@ const G51=[{id:'m',label:'كتلة القطار',sym:'m',unit:'ton',value:250},{
  {id:'a',label:'التسارع',sym:'a',unit:'m/s²',value:0.6},{id:'v',label:'السرعة في نهاية التسارع',sym:'v',unit:'km/h',value:60},{id:'r',label:'المقاومة النوعية لحركة القطار',sym:'r',unit:'N/kg',value:0.05},{id:'g',label:'عجلة الجاذبية الأرضية',sym:'g',unit:'m/s²',value:9.81}];
 const cloneG=(arr,vals)=>arr.map(q=>Object.assign({},q,vals&&vals[q.id]!=null?{value:vals[q.id]}:{}));
 
-B.lesson({
+B.lesson(FIXL({
  id:'u5-l2',unit:5,order:2,pages:'55–57، 64',
  title:'قوى التحريك والقدرة المحركة لدواليب القطار',
  summary:'قوة التحريك الكلية على حافة دولاب القاطرة هي مجموع قوة التسارع وقوة المقاومة لحركة القطار وقوة الجاذبية على المنحدر (Ft = Fa + Fr ± Fg)، ومنها قدرة الدواليب PL = Ft·v وقدرة المحركات Pm = PL/ηc. مع مثال (5-1).',
@@ -304,7 +307,7 @@ B.lesson({
    <div class="panel c6"><h2>قوة التحريك مع الزمن</h2><div class="svgbox" id="f2p1"></div></div>
    <div class="panel c6"><h2>قدرة الدواليب مع الزمن</h2><div class="svgbox" id="f2p2"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="f2st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#f2tp'),'u5-l2',[{k:'kw',label:'ثابت مقاومة الرياح (القوة = الثابت × مربع السرعة)',unit:'N/(m/s)²',value:6,min:0,max:200,step:0.5,hint:'يعمل فقط عند تشغيل مفتاح «الرياح»؛ الكتاب لا يعطي رقماً لمقاومة الرياح.'}],()=>steps.redraw());
   const sg=()=>st.dir==='up'?1:st.dir==='dn'?-1:0;
   const F=(ph,v)=>{const m=st.m*1000,s=st.g/100,Fa=(ph==='idle'||ph==='acc')?m*st.a:0,Fr=m*st.r+(st.wind?TP.v.kw*v*v:0),Fg=sg()*m*G*s,Ft=Fa+Fr+Fg;return {Fa,Fr,Fg,Ft,PL:Ft*v,Pm:Ft*v/(st.eta/100)}};
@@ -359,7 +362,7 @@ B.lesson({
   {q:'إذا كانت القدرة المطلوبة للدواليب 900 kW وكفاءة صندوق التروس 90% فقدرة المحركات:',o:['810 kW','900 kW','1000 kW','990 kW'],c:2,e:'المعادلة (5-7): \\(P_m=900/0.9=1000\\) kW.'},
   {q:'في مثال (5-1) كانت القدرة اللازمة لدواليب التحريك عند نهاية فترة التسارع:',o:['172 kW','2872 kW','1000 kW','16.67 kW'],c:1,e:'\\(P_L=172310\\times16.67\\approx2872\\) kW.'}
  ]
-});
+}));
 
 /* ======================================================================
    Lesson u5-l3 — ميكانيكية حركة القطارات: صندوق التروس والعزم وقوة الجر
@@ -395,7 +398,7 @@ const G52=[{id:'m',label:'كتلة القطار',sym:'m',unit:'ton',value:250},{
  {id:'r',label:'المقاومة النوعية',sym:'r',unit:'N/kg',value:0.04},{id:'D',label:'قطر الدولاب',sym:'D',unit:'cm',value:92}];
 const Q52='<p>قطار كتلته <span class="ltr">250 ton</span>، يتحرك بواسطة أربعة محركات، بدأ حركته من السكون صاعداً لمستوى مائل <span class="ltr">1:80</span> واستغرق <span class="ltr">20 s</span> لتصل سرعته <span class="ltr">42 km/h</span>. إذا كانت نسبة تحويل صندوق التروس <span class="ltr">3.5</span> وكفاءته <span class="ltr">92%</span>، والمقاومة النوعية لحركة القطار <span class="ltr">0.04 N/kg</span>، وقطر الدولاب <span class="ltr">92 cm</span>، أوجد مقدار العزم المتولد من كل محرك.</p>';
 
-B.lesson({
+B.lesson(FIXL({
  id:'u5-l3',unit:5,order:3,pages:'58–60، 64',
  title:'ميكانيكية حركة القطارات: صندوق التروس والعزم وقوة الجر',
  summary:'تنتقل الحركة من ترس المحرك إلى ترس الدولاب عبر صندوق تروس نسبته σ = nm/nL وكفاءته ηc، فيكبر العزم على الدولاب TL = σ·ηc·Tm، وقوة الجر على حافة الدولاب Ft = 2ηc·σ·Tm/D. مع مثال (5-2).',
@@ -431,7 +434,7 @@ B.lesson({
    <div class="panel c12"><h2>النتائج <small>المعادلات (5-8) إلى (5-13)</small></h2><div class="facts">${fact('العزم الكلي T<sub>m</sub>','g3Tm')}${fact('عزم كل محرك','g3Tp')}${fact('T<sub>L</sub> = σ·η<sub>c</sub>·T<sub>m</sub> (5-11)','g3TL')}${fact('F<sub>t</sub> = 2η<sub>c</sub>σT<sub>m</sub>/D (5-13)','g3Ft')}${fact('سرعة الدولاب n<sub>L</sub>','g3nL')}${fact('سرعة المحرك n<sub>m</sub> = σ·n<sub>L</sub>','g3nm')}${fact('P<sub>L</sub> = F<sub>t</sub>·v (5-6)','g3PL')}${fact('P<sub>m</sub> = T<sub>m</sub>·ω<sub>m</sub> (5-8)','g3Pm')}${fact('P<sub>L</sub> / P<sub>m</sub>','g3r')}</div>
     <p class="ed-cap" id="g3cap"></p></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="g3st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const ids=[['g3T','T'],['g3F','Ft'],['g3N','N'],['g3s','sig'],['g3e','eta'],['g3D','D'],['g3v2','v']];
   const sync=()=>{ids.forEach(([id,k])=>{$('#'+id).value=st[k]});segSet(el,'md',st.mode);$('#g3fw').style.display=st.mode==='fwd'?'':'none';$('#g3iv').style.display=st.mode==='inv'?'':'none'};
   ids.forEach(([id,k])=>{$('#'+id).oninput=e=>{st[k]=+e.target.value;st.pre=''}});
@@ -469,7 +472,7 @@ B.lesson({
   {q:'إذا صغُر قطر الدولاب مع بقاء عزم المحركات ثابتاً فإن قوة الجر:',o:['تزيد','تقل','لا تتغير','تصبح صفراً'],c:0,e:'D في مقام المعادلة (5-13).'},
   {q:'T<sub>m</sub> في المعادلة (5-13) هو:',o:['عزم محرك واحد','العزم الكلي = عدد المحركات × عزم المحرك الواحد','عزم الدولاب','عزم الاحتكاك'],c:1,e:'ص 59.'}
  ]
-});
+}));
 
 /* ======================================================================
    Lesson u5-l4 — تطبيقات: زمن التسارع وسرعة القطار وتيار المحرك
@@ -518,7 +521,7 @@ function runSVG(o){/* simple side view of the train on a line, u 0..1 */const W=
   for(const q of [16,74])s+=`<circle cx="${fx(x+q)}" cy="86" r="6" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.4"/>`;
   return s+'</svg>'}
 
-B.lesson({
+B.lesson(FIXL({
  id:'u5-l4',unit:5,order:4,pages:'61–64',
  title:'تطبيقات: زمن التسارع وسرعة القطار وتيار المحرك',
  summary:'من عزم المحركات نحسب قوة الجر، ونطرح منها المقاومة والجاذبية لنعرف القوة المتبقية للتسارع، ومنها زمن الوصول إلى سرعة معينة أو السرعة بعد زمن معين، ثم تيار كل محرك من القدرة والكفاءات وجهد المصدر. الأمثلة (5-3) و(5-4) و(5-5) والتمرينان (5-5) و(5-6).',
@@ -560,7 +563,7 @@ B.lesson({
     <div id="r4vw">${sl('r4vT','السرعة المطلوبة',10,140,1,st.vT)}</div><div id="r4tw">${sl('r4tT','زمن التسارع',5,120,1,st.tT)}</div>
     ${sl('r4m','كتلة القطار',50,500,5,st.m)}${sl('r4N','عدد المحركات',1,8,1,st.N)}${sl('r4T','عزم المحرك الواحد',1000,12000,50,st.T)}${sl('r4s','نسبة تحويل صندوق التروس σ',1,8,0.1,st.sig)}${sl('r4e','كفاءة صندوق التروس η<sub>c</sub>',70,100,1,st.eta)}${sl('r4D','قطر الدولاب',50,130,1,st.D)}${sl('r4r','المقاومة النوعية r',0,0.1,0.005,st.r)}${sl('r4g','الميل (sinθ %) — صاعد',0,8,0.1,st.g)}${sl('r4V','جهد المصدر',600,3000,50,st.V)}${sl('r4em','كفاءة المحرك η<sub>m</sub>',60,100,1,st.em)}</div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="r4st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const ids=[['r4vT','vT'],['r4tT','tT'],['r4m','m'],['r4N','N'],['r4T','T'],['r4s','sig'],['r4e','eta'],['r4D','D'],['r4r','r'],['r4g','g'],['r4V','V'],['r4em','em']];
   const sync=()=>{ids.forEach(([id,k])=>{$('#'+id).value=st[k]});segSet(el,'stp',st.stop);segSet(el,'pre',st.pre);$('#r4vw').style.display=st.stop==='v'?'':'none';$('#r4tw').style.display=st.stop==='t'?'':'none'};
   const reset=()=>{st.t=0;st.v=0;st.ph='idle';st.hist=[];st.end=null;st.blocked=false;$('#r4end').style.display='none'};
@@ -616,6 +619,6 @@ B.lesson({
   {q:'أثناء التسارع بقوة جر ثابتة، تيار المحرك:',o:['ثابت','يقل','يزيد مع زيادة السرعة','صفر'],c:2,e:'\\(P_L=F_t\\,v\\) تزيد مع السرعة، فيزيد التيار (توضيح؛ لذلك حسب الكتاب التيار عند نهاية التسارع).'},
   {q:'في مثال (5-4) كانت سرعة القطار بعد 20 s:',o:['0.55 m/s','11 m/s','22 m/s','40 m/s'],c:1,e:'\\(a=0.55\\) و \\(v=0.55\\times20=11\\) m/s.'}
  ]
-});
+}));
 
 })(PLCBOOK);

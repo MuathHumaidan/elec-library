@@ -37,7 +37,7 @@ const lt=s=>`<span class="ltr">${s}</span>`;
 /* ---------- small helpers (local to this file) ---------- */
 function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
 function stepsUI(host,steps){let i=0;
-  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
+  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${LTU(s.t)}</h4><p>${LTU(s.x)}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
   host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
   return {check(){const s=steps[i];if(s&&s.done&&s.done()){i++;draw()}},redraw:draw};}
@@ -72,6 +72,9 @@ function plotSVG(o){const W=o.w||520,H=o.h||250,L=o.left||54,Rm=16,T=16,Bm=40;
   s+='</g>';if(o.extra)s+=o.extra(X,Y);
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'منحنى'}"><defs><clipPath id="${cid}"><rect x="${L}" y="${T-2}" width="${W-L-Rm+2}" height="${H-T-Bm+4}"/></clipPath></defs>${s}</svg>`}
 const Q=(n,q,ans)=>`<details class="ed-q"><summary>${n}: ${q}</summary><div class="ed-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> ${ans}</div></details>`;
+const LTU=x=>B.ltrU(x).replace(/<span class="ltr">(\(\d+-\d+\))<\/span>/g,'$1');   // units LTR; equation/figure numbers stay as printed (like the other courses)
+const LT=x=>typeof x==='string'?LTU(x):x;
+const FIXL=L=>{(L.theory||[]).forEach(b=>{['h','html','note','err','caption'].forEach(k=>{if(b[k])b[k]=LT(b[k])})});(L.examples||[]).forEach(x=>{['title','q','note'].forEach(k=>{if(x[k])x[k]=LT(x[k])})});return L};
 const ADD='<b>توضيح للمتدرب — ليس من الكتاب:</b> ';
 const Z=a=>{a.forEach(q=>{if(q&&typeof q.v==='number'&&q.dp==null&&Number.isInteger(q.v))q.dp=0});return a};
 const SUG='<b>حل مقترح (ليس من الكتاب):</b> الكتاب لا يطبع إجابات للتمارين؛ الحل هنا بطريقة الكتاب نفسها وبتقريبه.';
@@ -130,7 +133,7 @@ function ntPlane(o){const xm=o.xm,ym=o.ym,y0=o.y0==null?0:o.y0;
    under:(X,Y)=>(o.zones||[]).map(z=>arT(fx(X(z[0])),fx(Y(z[1])),z[2],{fs:12,col:z[3]||'--muted'})).join(''),
    extra:(X,Y)=>(o.pts||[]).map(p=>`<circle cx="${fx(X(clamp(p[0],-xm,xm)))}" cy="${fx(Y(clamp(p[1],y0,ym)))}" r="${p[3]||6}" fill="var(${p[2]||'--live'})" stroke="var(--surface)" stroke-width="2"/>`).join('')+(o.more?o.more(X,Y):''),aria:'مستوى السرعة والعزم'})}
 
-B.lesson({
+B.lesson(FIXL({
  id:'u6-l1',unit:6,order:1,pages:'65–71، 78',
  title:'أنواع الفرامل الكهربائية والفرملة بإعادة التوليد',
  summary:'لماذا نحتاج إلى الفرملة، ومزايا الفرامل الكهربائية على الميكانيكية، وطرقها الثلاث بالمحرك نفسه. ثم الفرملة بإعادة التوليد: تعمل الآلة مولداً وهي موصلة بالمصدر عندما تزيد قوتها الدافعة عن جهده، فتعيد الطاقة إليه، لكنها لا توقف المحرك. مع مثال (6-1).',
@@ -179,7 +182,7 @@ B.lesson({
    <div class="panel c12"><h2>مستوى السرعة والعزم <small>المستقيم = كل نقاط التشغيل الممكنة بالجهد والمجال الحاليين؛ النقطة = نقطة التشغيل الآن</small></h2><div class="svgbox" id="r1nt" style="max-width:760px;margin-inline:auto"></div>
     <p class="ed-cap">يمين المحور الرأسي: الآلة <b>محرك</b> (عزمها مع الدوران). يساره: <b>مولد — فرملة بإعادة التوليد</b> (عزمها ضد الدوران وتعيد الطاقة إلى المصدر). الخط الأفقي المتقطع = سرعة اللاحمل.</p></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="r1st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#r1tp'),'u6-l1',[{k:'If',label:'تيار المجال I<sub>f</sub>',unit:'A',value:2,min:0,max:50,step:0.1,hint:'لا يعطيه الكتاب؛ يدخل فقط في تيار الخط.'},
    {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.8,min:0.05,max:30,step:0.05}],()=>steps.redraw());
   const bind=(id,k)=>{$('#'+id).oninput=e=>{st[k]=+e.target.value;st.pre=''}};bind('r1T','TL');bind('r1f','fld');bind('r1V','V');
@@ -221,7 +224,7 @@ B.lesson({
   {q:'بثبات تيار المجال، القوة الدافعة E تتناسب مع:',o:['التيار','السرعة n','مربع السرعة','مقاومة المنتج'],c:1,e:'المعادلتان (6-1) و(6-2): E = Kϕn.'},
   {q:'في مثال (6-1) كانت أقل سرعة فرملية تقريباً:',o:['1150 rpm','1176 rpm','1200 rpm','1250 rpm'],c:2,e:'≈ 1200 rpm (بالحساب الصحيح 1199.5).'}
  ]
-});
+}));
 
 /* ======================================================================
    Lesson u6-l2 — الفرملة الديناميكية
@@ -236,7 +239,7 @@ function solve62(g){const Eb=R(g.kE*g.V,2),Ib=R(g.kI*g.IFL,2),Rt=R(Eb/Ib,2),Rx=R
 const G62=[{id:'hp',label:'القدرة (لا تدخل في الحل)',sym:'P',unit:'hp',value:15},{id:'V',label:'جهد المصدر',sym:'V',unit:'V',value:230},{id:'Ra',label:'مقاومة المنتج',sym:'R_a',unit:'Ω',value:0.38},{id:'IFL',label:'تيار الحمل الكامل',sym:'I_{FL}',unit:'A',value:54},
  {id:'kE',label:'نسبة القوة الدافعة عند الفرملة إلى جهد المصدر',sym:'',unit:'',value:0.9},{id:'kI',label:'أقصى تيار فرملة (مضاعف تيار الحمل الكامل)',sym:'',unit:'',value:1.75}];
 
-B.lesson({
+B.lesson(FIXL({
  id:'u6-l2',unit:6,order:2,pages:'72–74، 78',
  title:'الفرملة الديناميكية',
  summary:'يُفصل المنتج عن المصدر ويوصل بمقاومة إضافية R، فيعمل الآلة مولداً وتتحول طاقة الحركة إلى حرارة في المقاومة حتى تتباطأ الآلة. تُحسب المقاومة من المعادلة (6-5) بحيث لا يتعدى التيار حداً معيناً. مع مثال (6-2).',
@@ -270,7 +273,7 @@ B.lesson({
    <div class="panel c6"><h2>السرعة مع الزمن <small>يبقى آخر ثلاث محاولات للمقارنة</small></h2><div class="svgbox" id="d2p1"></div></div>
    <div class="panel c6"><h2>تيار الفرملة مع الزمن</h2><div class="svgbox" id="d2p2"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="d2st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#d2tp'),'u6-l2',[{k:'n0',label:'سرعة المحرك عند لحظة الفرملة',unit:'rpm',value:1000,min:100,max:5000,step:10,hint:'الكتاب لا يعطي سرعة المحرك في مثال (6-2).'},
    {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:2,min:0.1,max:60,step:0.1,hint:'الزمن الذي يحتاجه العزم المقنن لتغيير السرعة من الصفر إلى سرعة الفرملة.'},
    {k:'fr',label:'عزم الاحتكاك (نسبة من العزم المقنن)',unit:'%',value:3,min:0,max:30,step:0.5},
@@ -320,7 +323,7 @@ B.lesson({
   {q:'إذا بقيت R ثابتة فإن عزم الفرملة مع تباطؤ الآلة:',o:['يزيد','يبقى ثابتاً','يقل','ينعكس'],c:2,e:'E تقل مع السرعة فيقل التيار والعزم.'},
   {q:'في محرك التوالي أثناء الفرملة الديناميكية يجب:',o:['قصر المجال','فصل المجال عن المنتج وتغذيته تغذية مستقلة','عكس المجال مع المنتج','زيادة الجهد'],c:1,e:'ص 74.'}
  ]
-});
+}));
 
 /* ======================================================================
    Lesson u6-l3 — الفرملة بالتيار المعكوس (التبديل)
@@ -370,7 +373,7 @@ const GX65=[{id:'hp',label:'القدرة',sym:'P',unit:'hp',value:25},{id:'V',la
 const Q63='<p>محرك للتيار المستمر توصيلة التوازي، <span class="ltr">220 V</span>، <span class="ltr">18.4 kW</span>، سرعته عند الحمل الكامل <span class="ltr">600 rpm</span>، مطلوب فرملته بالتيار المعكوس (التبديل)، إذا كان تيار الحمل الكامل <span class="ltr">95 A</span>، ومقاومة المنتج <span class="ltr">0.1 Ω</span>. أوجد: 1) قيمة المقاومة الإضافية التي يجب توصيلها على التوالي مع ملف المنتج، إذا كانت قيمة التيار الابتدائي أثناء الفرملة ينبغي ألا تتعدى <span class="ltr">130 A</span>. 2) القيمة الابتدائية لعزم الفرملة. 3) قيمة عزم الفرملة عندما تهبط سرعة الدوران إلى نصف قيمتها عند الحمل الكامل.</p>';
 const Q64='<p>محرك للتيار المستمر توصيلة التوازي، <span class="ltr">400 V</span>، تيار الحمل الكامل <span class="ltr">200 A</span>، ومقاومة المنتج <span class="ltr">0.1 Ω</span>، سرعته عند الحمل الكامل <span class="ltr">600 rpm</span>، مطلوب فرملته بالتيار المعكوس (التبديل). احسب: 1) قيمة المقاومة التي يجب توصيلها على التوالي مع دائرة المنتج لتمنع زيادة التيار الابتدائي أثناء الفرملة الكهربائية عن <span class="ltr">300 A</span>. 2) القيمة الابتدائية لعزم الفرملة. 3) قيمة عزم الفرملة عندما تهبط سرعة الدوران إلى نصف قيمتها عند الحمل الكامل.</p>';
 
-B.lesson({
+B.lesson(FIXL({
  id:'u6-l3',unit:6,order:3,pages:'74–78',
  title:'الفرملة بالتيار المعكوس (التبديل)',
  summary:'يُعكس طرفا المنتج أثناء الدوران فتُضاف قوته الدافعة إلى جهد المصدر، فيلزم مقاومة على التوالي تحدّ التيار، ويبذل المحرك عزماً معاكساً يوقفه بسرعة — لكن يجب فصل المصدر عند السرعة صفر وإلا دار عكسياً. المعادلتان (6-6) و(6-7)، والمثالان (6-3) و(6-4)، ومقارنة الطرق الثلاث.',
@@ -416,7 +419,7 @@ B.lesson({
    <div class="panel c6"><h2>السرعة مع الزمن <small>تبقى آخر ثلاث محاولات</small></h2><div class="svgbox" id="p3p1"></div></div>
    <div class="panel c6"><h2>تيار المنتج مع الزمن</h2><div class="svgbox" id="p3p2"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="p3st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#p3tp'),'u6-l3',[{k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:2,min:0.1,max:60,step:0.1,hint:'الزمن الذي يحتاجه العزم المقنن لتغيير السرعة من الصفر إلى سرعة الحمل الكامل.'},
    {k:'fr',label:'عزم الاحتكاك (نسبة من العزم المقنن)',unit:'%',value:3,min:0,max:30,step:0.5}],()=>{reset();steps.redraw()});
   const P=()=>{const wf=rad(st.n),Eb=st.V-st.IFL*st.Ra,K=Eb/wf,Tn=K*st.IFL;return {wf,Eb,K,Tn,J:TP.v.tau*Tn/wf,Tf:TP.v.fr/100*Tn,Rt:st.Ra+st.R}};
@@ -483,6 +486,6 @@ B.lesson({
   {q:'من عيوب الفرملة بالتبديل:',o:['لا توقف المحرك','الطاقة المهدرة من المصدر واحتمال عدم دقة الفصل عند السرعة صفر','تحتاج مولداً منفصلاً','لا تحتاج مقاومة'],c:1,e:'ص 74.'},
   {q:'أي الطرق الثلاث تعيد الطاقة إلى المصدر؟',o:['التبديل','الديناميكية','إعادة التوليد','كلها'],c:2,e:'ص 69.'}
  ]
-});
+}));
 
 })(PLCBOOK);

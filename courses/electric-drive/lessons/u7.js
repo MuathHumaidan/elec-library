@@ -37,7 +37,7 @@ const lt=s=>`<span class="ltr">${s}</span>`;
 /* ---------- small helpers (local to this file) ---------- */
 function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
 function stepsUI(host,steps){let i=0;
-  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${s.t}</h4><p>${s.x}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
+  const draw=()=>{host.innerHTML=steps.map((s,j)=>`<li class="${j<i?'done':j===i?'cur':''}"><span class="k">${j<i?'✓':j+1}</span><div><h4>${LTU(s.t)}</h4><p>${LTU(s.x)}</p>${j===i?`<div class="act">${s.done?'<span class="hint">بانتظار تنفيذك…</span> <button class="btn" data-next>تخطَّ</button>':'<button class="btn primary" data-next>التالي</button>'}</div>`:''}</div></li>`).join('')+
     (i>=steps.length?`<li class="cur"><span class="k">✓</span><div><h4>أحسنت، أنهيت التجربة</h4><p style="display:block">جرّب قيماً أخرى، أو أعد التجربة من أولها.</p><div class="act"><button class="btn" data-restart>إعادة التجربة</button></div></div></li>`:'');B.math(host)};
   host.addEventListener('click',e=>{if(e.target.closest('[data-next]')){i++;draw()}if(e.target.closest('[data-restart]')){i=0;draw()}});draw();
   return {check(){const s=steps[i];if(s&&s.done&&s.done()){i++;draw()}},redraw:draw};}
@@ -72,6 +72,9 @@ function plotSVG(o){const W=o.w||520,H=o.h||250,L=o.left||54,Rm=16,T=16,Bm=40;
   s+='</g>';if(o.extra)s+=o.extra(X,Y);
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'منحنى'}"><defs><clipPath id="${cid}"><rect x="${L}" y="${T-2}" width="${W-L-Rm+2}" height="${H-T-Bm+4}"/></clipPath></defs>${s}</svg>`}
 const Q=(n,q,ans)=>`<details class="ed-q"><summary>${n}: ${q}</summary><div class="ed-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> ${ans}</div></details>`;
+const LTU=x=>B.ltrU(x).replace(/<span class="ltr">(\(\d+-\d+\))<\/span>/g,'$1');   // units LTR; equation/figure numbers stay as printed (like the other courses)
+const LT=x=>typeof x==='string'?LTU(x):x;
+const FIXL=L=>{(L.theory||[]).forEach(b=>{['h','html','note','err','caption'].forEach(k=>{if(b[k])b[k]=LT(b[k])})});(L.examples||[]).forEach(x=>{['title','q','note'].forEach(k=>{if(x[k])x[k]=LT(x[k])})});return L};
 const ADD='<b>توضيح للمتدرب — ليس من الكتاب:</b> ';
 const Z=a=>{a.forEach(q=>{if(q&&typeof q.v==='number'&&q.dp==null&&Number.isInteger(q.v))q.dp=0});return a};
 const SUG='<b>حل مقترح (ليس من الكتاب):</b> الكتاب لا يطبع إجابات للتمارين؛ الحل هنا بطريقة الكتاب نفسها وبتقريبه.';
@@ -91,7 +94,7 @@ function heatRun(P,duty,x,ton,toff,Tend){const rise=P.tmax-P.amb,a=P.a/100,pl=s=
   segs.forEach(([t0,t1,s])=>{const tau=s==='stop'?P.tc:P.th,tgt=rise*pl(s);for(let t=t0;t<t1-1e-9;){const d=Math.min(dt,t1-t);th=tgt+(th-tgt)*Math.exp(-d/tau);t+=d;const T=P.amb+th;pts.push([t,T]);if(T>mx)mx=T;if(tOver==null&&T>P.tmax+0.05)tOver=t}});
   return {pts,segs,max:mx,over:mx>P.tmax+0.05,tOver}}
 
-B.lesson({
+B.lesson(FIXL({
  id:'u7-l1',unit:7,order:1,pages:'79–87',
  title:'آلية اختيار محرك التحريك المناسب',
  summary:'مميزات المحرك الكهربائي، والعوامل الخمسة التي تحكم اختياره، ولماذا يتحدد حجم المحرك بأقصى درجة حرارة يصل إليها، وأنماط التشغيل الزمني الخمسة، ومقدرة المحرك على تحمل الأحمال الزائدة حتى عزم التعثر.',
@@ -152,7 +155,7 @@ B.lesson({
     ${sl('h7x','الحمل (نسبة من الحمل الكامل)',0,250,5,st.x)}<div id="h7tw">${sl('h7on','زمن فترة الحمل',2,120,1,st.ton)}${sl('h7off','زمن الفترة التالية (توقف أو دوران بلا حمل)',2,240,1,st.toff)}</div>
     ${sl('h7s','عزم التعثر (مرة من عزم الحمل الكامل) — الكتاب: من 1.5 إلى 2',1.5,2,0.05,st.stall)}</div>
    <div class="panel c6"><h2>جرّب</h2><ol class="steps" id="h7st"></ol></div></div>`;
-  B.math(el);const $=s=>el.querySelector(s);
+  el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#h7tp'),'u7-l1',[
    {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},
    {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},
@@ -199,6 +202,6 @@ B.lesson({
   {q:'عزم التعثر عادة يساوي من عزم الحمل الكامل:',o:['0.5 إلى 1 مرة','1.5 إلى 2 مرة','3 إلى 4 مرات','10 مرات'],c:1,e:'ص 84.'},
   {q:'في التشغيل قصير الأمد أو المتقطع، الفيصل في حد الحمل الزائد هو:',o:['درجة الحرارة القصوى','عزم التعثر','جهد المصدر','الضوضاء'],c:1,e:'ص 85.'}
  ]
-});
+}));
 
 })(PLCBOOK);

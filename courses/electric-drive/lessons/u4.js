@@ -97,11 +97,11 @@ function plot(o){const W=o.w||300,H=o.h||210,L=o.left||44,R=o.right||10,T=12,Bm=
 const G=9.81;
 const PHASES=[['start','بدء الحركة والتسارع (أرض مستوية)',1,1,0],['free','الانطلاق الحر بسرعة منتظمة',0,1,0],['up','صعود مرتفع بسرعة منتظمة',0,1,1],['startUp','بدء الحركة على مرتفع',1,1,1]];
 function forceBars(v,cur){const m=v.m*1000,Fa=m*v.a,Fr=m*v.r,Fg=m*G*v.sn;const rows=PHASES.map(([k,l,ia,ir,ig])=>({k,l,Fa:ia*Fa,Fr:ir*Fr,Fg:ig*Fg}));
-  const mx=niceMax(Math.max(...rows.map(r=>r.Fa+r.Fr+r.Fg))/1000);const W=560,L=10,R=70,rowH=44;const X=f=>L+f/1000/mx*(W-L-R);
-  let s=`<svg viewBox="0 0 ${W} ${rows.length*rowH+30}" role="img" aria-label="قوة الجر اللازمة في كل مرحلة">`;
-  ticks(mx,4).forEach(t=>{s+=`<path d="M${fx(X(t*1000))} 4V${rows.length*rowH+4}" stroke="var(--line)" stroke-dasharray="3 3"/>`+S.t(fx(X(t*1000)),rows.length*rowH+18,fm(t),'m')});
-  s+=S.t(W-4,rows.length*rowH+18,'kN','m','end');
-  rows.forEach((r,i)=>{const y=8+i*rowH;let x=L;const seg=(f,col)=>{if(f<=0)return '';const w=X(f)-L;const o=`<rect x="${fx(x)}" y="${y}" width="${fx(w)}" height="24" fill="var(${col})" opacity="${r.k===cur?1:0.45}"/>`;x+=w;return o};
+  const mx=niceMax(Math.max(...rows.map(r=>r.Fa+r.Fr+r.Fg))/1000);const W=560,L=10,R=70,rowH=58;const X=f=>L+f/1000/mx*(W-L-R);
+  let s=`<svg viewBox="0 0 ${W} ${rows.length*rowH+34}" role="img" aria-label="قوة الجر اللازمة في كل مرحلة">`;
+  ticks(mx,4).forEach(t=>{s+=`<path d="M${fx(X(t*1000))} 4V${rows.length*rowH+12}" stroke="var(--line)" stroke-dasharray="3 3"/>`+S.t(fx(X(t*1000)),rows.length*rowH+26,fm(t),'m')});
+  s+=S.t(W-4,rows.length*rowH+26,'kN','m','end');
+  rows.forEach((r,i)=>{const y=22+i*rowH;let x=L;s+=`<text class="txt ar" x="${W-6}" y="${y-5}" text-anchor="start" font-size="12"${r.k===cur?' font-weight="700"':' style="fill:var(--muted)"'}>${r.l}</text>`;const seg=(f,col)=>{if(f<=0)return '';const w=X(f)-L;const o=`<rect x="${fx(x)}" y="${y}" width="${fx(w)}" height="24" fill="var(${col})" opacity="${r.k===cur?1:0.45}"/>`;x+=w;return o};
     s+=seg(r.Fa,'--live')+seg(r.Fr,'--blue')+seg(r.Fg,'--stop');const tot=r.Fa+r.Fr+r.Fg;s+=S.t(fx(x+6),y+17,fm(tot/1000,1),'','start');
     if(r.k===cur)s+=`<rect x="${L-4}" y="${y-4}" width="${fx(x-L+8)}" height="32" fill="none" stroke="var(--fg)" stroke-width="1.6" rx="4"/>`});
   return {svg:s+'</svg>',rows,Fa,Fr,Fg}}
@@ -153,7 +153,7 @@ lesson({
   const f={m:240,a:0.5556,r:0.05,sn:0.01,ph:'startUp'};const did={};
   const s={run:false,n:0,I:0,Il:0,Va:0,starting:false,phase:'free',off:0,surgeT:0,dur:1,t:0,hist:[],peak:0,peakEv:'',evT:-1,ev:null,ang:0};
   el.innerHTML=`<div class="grid e34-lab">
-   <div class="panel c12"><h2>(أ) قوة الجر اللازمة في كل مرحلة <small>البند 1 ص 45 — المعادلات (5-1) إلى (5-5) من الوحدة الخامسة ص 55–56، والأرقام الافتراضية من التمرين <span class="ltr">5-4</span> ص 64</small></h2>
+   <div class="panel c12"><h2>(أ) قوة الجر اللازمة في كل مرحلة <small>البند 1 ص 45 — المعادلات <span class="ltr">(5-1)</span> إلى <span class="ltr">(5-5)</span> من الوحدة الخامسة ص 55–56، والأرقام الافتراضية من التمرين <span class="ltr">5-4</span> ص 64</small></h2>
     <div class="grid" style="margin-top:0"><div class="c7"><div id="fbar" class="svgbox"></div>
      <div class="e34-legend"><span><i style="border-color:var(--live)"></i>قوة التسارع <span class="ltr">F<sub>a</sub> = m·a</span></span><span><i style="border-color:var(--blue)"></i>مقاومة الحركة <span class="ltr">F<sub>r</sub> = m·r</span></span><span><i style="border-color:var(--stop)"></i>الجاذبية <span class="ltr">F<sub>g</sub> = m·g·sinθ</span></span></div>
      <div class="e34-row">${segHTML('fph',PHASES.map(p=>[p[0],p[1]]),f.ph)}</div></div>
