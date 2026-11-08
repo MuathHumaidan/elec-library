@@ -199,6 +199,173 @@ lesson({
  id:'u3-l1',unit:3,order:1,pages:'32–36',
  title:'أنواع محركات التحريك، وخواص محرك التوالي للتيار المستمر',
  summary:'أنواع المحركات المستخدمة في التحريك الكهربائي: محركات التيار المستمر والمحركات الحثية والتزامنية. ثم خواص محرك التوالي: العزم يتناسب مع مربع تيار المنتج قبل التشبع ومع التيار نفسه بعده، والسرعة تنخفض كلما زاد الحمل، ولا يُشغَّل بلا حمل.',
+ stations:[
+  {intro:true},
+
+  {st:1,short:'أهداف الوحدة',title:'الوحدة الثالثة: الهدف العام والأهداف التفصيلية',ref:'ص 33',
+   q:'أي المحركات تصلح لتحريك قطار أو رافعة؟ هذه الوحدة تعرّفك بخواص أربعة منها.',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="بطاقتان: محركات التيار المستمر (التوالي والمركب) ومحركات التيار المتردد (العام والحثي ثلاثي الأوجه)" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><text x="180" y="50" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">خواص محركات التحريك</text><g data-tip="الهدف التفصيلي الأول: خواص محرك التوالي (الدرس الأول من الوحدة) والمحرك المركب (الدرس الثاني)."><rect x="40" y="68" width="280" height="96" rx="14" fill="#F2C14E" stroke="#2C4A40" stroke-width="3"/><text x="180" y="96" text-anchor="middle" font-size="14.5" font-weight="700" fill="#2C4A40">محركات التيار المستمر</text><rect x="190" y="112" width="112" height="36" rx="10" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><text x="246" y="135" text-anchor="middle" font-size="13" fill="#2C4A40">التوالي</text><rect x="58" y="112" width="112" height="36" rx="10" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><text x="114" y="135" text-anchor="middle" font-size="13" fill="#2C4A40">المركب</text></g><g data-tip="الهدف التفصيلي الثاني: خواص المحرك العام والمحرك الحثي ثلاثي الأوجه (الدرس الثالث من الوحدة)."><rect x="40" y="178" width="280" height="96" rx="14" fill="#4FB3A9" stroke="#2C4A40" stroke-width="3"/><text x="180" y="206" text-anchor="middle" font-size="14.5" font-weight="700" fill="#2C4A40">محركات التيار المتردد</text><rect x="210" y="222" width="92" height="36" rx="10" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><text x="256" y="245" text-anchor="middle" font-size="13" fill="#2C4A40">العام</text><rect x="58" y="222" width="140" height="36" rx="10" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"/><text x="128" y="245" text-anchor="middle" font-size="13" fill="#2C4A40">الحثي ثلاثي الأوجه</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">أربعة محركات في ثلاثة دروس</text></svg>`,
+   cap:'هدفا الوحدة: خواص محركين للتيار المستمر ومحركين للتيار المتردد.<br><b>مرّر المؤشر على كل بطاقة (أو المسها في الجوال) لتعرف الدرس الذي يشرحها.</b>',
+   side:[
+    {predict:{q:'أي هذه المحركات <b>لا</b> تدرس خواصه في هذه الوحدة؟',opts:[
+     ['محرك التيار المستمر التوالي',false,'هذا موضوع الدرس الأول من الوحدة.'],
+     ['المحرك الحثي ثلاثي الأوجه',false,'هذا من محركات التيار المتردد المستخدمة في التحريك، وهو في الدرس الثالث.'],
+     ['محرك التيار المستمر المركب',false,'هذا موضوع الدرس الثاني.'],
+     ['المولد التزامني',true,'الوحدة عن المحركات المستخدمة في التحريك فقط: التوالي والمركب للتيار المستمر، والعام والحثي للتيار المتردد.']]}}
+   ],
+   body:[
+    {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة خواص محركات التيار المستمر والتيار المتردد المستخدمة في التحريك الكهربائي.</p>
+     <p><b>الأهداف التفصيلية:</b></p><ul><li>أن يعرف المتدرب خواص محركات التيار المستمر من النوع التوالي والمركب.</li><li>أن يعرف المتدرب خواص محركات التيار المتردد المستخدمة في التحريك.</li></ul>`,ref:'ص 33'},
+    {tip:String.raw`<p>«الخواص» هنا تعني ثلاث علاقات ستتكرر مع كل محرك: <b>العزم مع تيار المنتج</b>، و<b>السرعة مع تيار المنتج</b>، و<b>السرعة مع العزم</b>. والسؤال الذي يجمعها: كيف يتصرف المحرك عندما يزيد حمله أو ينقص؟</p>`}
+   ]},
+
+  {st:2,short:'أنواع المحركات',title:'أنواع المحركات الكهربائية المستخدمة في التحريك الكهربائي',ref:'ص 34',
+   q:'محرك يبدأ حمله ثقيلاً، وآخر يجب أن تبقى سرعته ثابتة، وثالث قدرته كبيرة جداً: هل يصلح لها محرك واحد؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="ثلاث بطاقات: محركات التيار المستمر، والمحركات الحثية بنوعيها، والمحركات التزامنية" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><g data-tip="محركات التيار المستمر: سرعات مطلوبة بدقة، ومدى واسع لتغيير السرعة، وسهولة السيطرة وعكس الاتجاه، وعزم بدء مناسب. الرمز ⟦M⟧ داخل دائرة = محرك، والخطان تحته = تيار مستمر."><rect x="244" y="52" width="100" height="214" rx="14" fill="#F2C14E" stroke="#2C4A40" stroke-width="3"/><circle cx="294" cy="108" r="30" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><text x="294" y="115" text-anchor="middle" font-size="20" font-weight="700" fill="#2C4A40">M</text><line x1="282" y1="124" x2="306" y2="124" stroke="#2C4A40" stroke-width="2.5"/><line x1="282" y1="129" x2="288" y2="129" stroke="#2C4A40" stroke-width="2.5"/><line x1="291" y1="129" x2="297" y2="129" stroke="#2C4A40" stroke-width="2.5"/><line x1="300" y1="129" x2="306" y2="129" stroke="#2C4A40" stroke-width="2.5"/><text x="294" y="168" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">التيار المستمر</text><text x="294" y="200" text-anchor="middle" font-size="12" fill="#2C4A40">سرعة دقيقة</text><text x="294" y="220" text-anchor="middle" font-size="12" fill="#2C4A40">وتحكم سهل</text></g><g data-tip="المحركات الحثية نوعان: ذو القفص السنجابي (بسيط ورخيص وصلب، للسرعة الثابتة)، وذو العضو الدوار الملفوف (عزم بدء كبير بتيار بدء أقل، وسهولة التحكم). الرمز ⟦3~⟧ = تيار متردد ثلاثي الأوجه."><rect x="130" y="52" width="100" height="214" rx="14" fill="#4FB3A9" stroke="#2C4A40" stroke-width="3"/><circle cx="180" cy="108" r="30" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><text x="180" y="112" text-anchor="middle" font-size="20" font-weight="700" fill="#2C4A40">M</text><text x="180" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">3~</text><text x="180" y="168" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">الحثية</text><rect x="140" y="184" width="80" height="30" rx="8" fill="#FBF6EE" stroke="#2C4A40" stroke-width="1.6"/><text x="180" y="204" text-anchor="middle" font-size="11.5" fill="#2C4A40">قفص سنجابي</text><rect x="140" y="222" width="80" height="30" rx="8" fill="#FBF6EE" stroke="#2C4A40" stroke-width="1.6"/><text x="180" y="242" text-anchor="middle" font-size="11.5" fill="#2C4A40">دوار ملفوف</text></g><g data-tip="المحركات التزامنية: سرعة دوران ثابتة القيمة وقدرات كبيرة، ويمكن تصميمها لسرعات بطيئة بمعامل قدرة عالٍ وكفاءة مرتفعة. الرمز ⟦MS⟧ = محرك تزامني."><rect x="16" y="52" width="100" height="214" rx="14" fill="#CFE6DB" stroke="#2C4A40" stroke-width="3"/><circle cx="66" cy="108" r="30" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><text x="66" y="112" text-anchor="middle" font-size="18" font-weight="700" fill="#2C4A40">MS</text><text x="66" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">3~</text><text x="66" y="168" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">التزامنية</text><text x="66" y="200" text-anchor="middle" font-size="12" fill="#2C4A40">سرعة ثابتة</text><text x="66" y="220" text-anchor="middle" font-size="12" fill="#2C4A40">وقدرة كبيرة</text></g><text x="180" y="298" text-anchor="middle" font-size="13" fill="#2C4A40">لكل نوع تطبيقات تناسبه</text></svg>`,
+   cap:'أهم المحركات المستخدمة في التحريك الكهربائي، وأبرز ما يميز كل نوع.<br><b>مرّر المؤشر على كل بطاقة (أو المسها في الجوال) لتعرف مزايا النوع ومعنى رمزه.</b>',
+   side:[
+    {predict:{q:'تطبيق يحتاج <b>عزماً كبيراً لبدء الحركة مع تيار بدء أقل</b>. أي نوع يذكره الكتاب له؟',opts:[
+     ['الحثي ذو القفص السنجابي',false,'هذا النوع يناسب التطبيقات التي تحتاج سرعة دوران ثابتة، ومزاياه البساطة والرخص والصلابة.'],
+     ['التزامني',false,'التزامني للسرعة الثابتة والقدرات الكبيرة.'],
+     ['الحثي ذو العضو الدوار الملفوف',true,'نص الكتاب في ص 34: «وهو مناسب للتطبيقات التي تحتاج لعزم كبير لبدء حركتها مع نقص في قيمة تيار بدء الحركة».']]}}
+   ],
+   body:[
+    {book:String.raw`<p>هناك عدة أنواع من المحركات الكهربائية، المستخدمة في التحريك الكهربائي بصفة عامة وتختلف فيما بينها، حسب طبيعة مصدر التغذية، وطريقة تركيبها ونظرية عملها، وأهم هذه المحركات:</p>
+     <p><b>أ) محركات التيار المستمر:</b> تتميز محركات التيار المستمر بأنها تدور بالسرعات المطلوبة بدقة، وذات مدى واسع لتغيير السرعة، مع إمكانية السيطرة عليها بسهولة، وإمكانية عكس اتجاه حركتها الدورانية، بالإضافة إلى تميزها بعزم بدء حركة مناسب.</p>
+     <p><b>ب) المحركات الحثية:</b> يوجد منها نوعان: النوع الأول عضوه الدوار ذو <b>القفص السنجابي</b>، ويتميز ببساطة تركيبه وبقلة تكاليفه وصلابته، هذا النوع مناسب للتطبيقات التي تحتاج إلى سرعة دوران ثابتة. النوع الثاني هو المحرك ذو <b>العضو الدوار الملفوف</b>، وهو مناسب للتطبيقات التي تحتاج لعزم كبير لبدء حركتها مع نقص في قيمة تيار بدء الحركة، ويمتاز هذا النوع عن سابقه بسهولة التحكم فيه من حيث السرعة وعزم وتيار بدء الحركة.</p>
+     <p><b>ج) المحركات التزامنية:</b> هذا النوع من المحركات مناسب للتطبيقات التي تحتاج سرعة دوران ثابتة القيمة وقدرات كبيرة بالإضافة إلى إمكانية تصميمها لتعمل عند سرعات بطيئة بمعامل قدرة عالٍ وبكفاءة تشغيل مرتفعة.</p>`,ref:'ص 34'},
+    {tip:String.raw`<table class="tt"><thead><tr><th>النوع</th><th>أهم ما يميزه</th><th>يناسب</th></tr></thead><tbody>
+     <tr><td>محركات التيار المستمر</td><td>سرعة دقيقة ومدى واسع لتغييرها، سهولة التحكم وعكس الاتجاه، عزم بدء مناسب</td><td>التحكم الدقيق في السرعة</td></tr>
+     <tr><td>الحثي ذو القفص السنجابي</td><td>بسيط، رخيص، صلب</td><td>السرعة الثابتة</td></tr>
+     <tr><td>الحثي ذو العضو الدوار الملفوف</td><td>عزم بدء كبير بتيار بدء أقل، سهولة التحكم في السرعة</td><td>الأحمال الثقيلة عند البدء</td></tr>
+     <tr><td>التزامني</td><td>سرعة ثابتة، قدرات كبيرة، معامل قدرة عالٍ وكفاءة مرتفعة حتى في السرعات البطيئة</td><td>القدرات الكبيرة بسرعة ثابتة</td></tr></tbody></table>`,title:'الأنواع في جدول'},
+    {add:String.raw`<p>المحرك القفصي هو محرك المضخات والمراوح والسيور الناقلة في أغلب المصانع، لأن سرعتها لا تحتاج إلى تغيير. أما الرافعات الكبيرة التي تبدأ حركتها وهي محمّلة فكثيراً ما تستعمل المحرك ذا العضو الدوار الملفوف.</p>`}
+   ]},
+
+  {st:3,short:'محرك التوالي',title:'محركات التيار المستمر كمحركات للتحريك — خواص محرك التوالي',ref:'ص 35',
+   q:'في محرك التوالي لا يوجد مصدر مستقل لملف المجال. فمن أين يأتي تيار المجال، وماذا يحدث له عندما يزيد الحمل؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="دائرة محرك توالٍ: المصدر وملف المجال والمنتج في حلقة واحدة يمر فيها تيار واحد" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#F7DCC8"/><path d="M70 140V90H140M220 90H290V134M290 186V230H70V172" fill="none" stroke="#2C4A40" stroke-width="4" stroke-linejoin="round"/><g data-tip="مصدر الجهد المستمر ⟦V⟧: الخط الطويل هو القطب الموجب ⟦+⟧ والقصير هو السالب ⟦−⟧."><line x1="48" y1="140" x2="92" y2="140" stroke="#2C4A40" stroke-width="4"/><line x1="58" y1="152" x2="82" y2="152" stroke="#2C4A40" stroke-width="6"/><line x1="48" y1="162" x2="92" y2="162" stroke="#2C4A40" stroke-width="4"/><line x1="58" y1="172" x2="82" y2="172" stroke="#2C4A40" stroke-width="6"/><text x="36" y="146" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">+</text><text x="36" y="178" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">−</text><text x="112" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">V</text><rect x="30" y="130" width="96" height="52" fill="transparent"/></g><g data-tip="ملف المجال موصول على التوالي مع المنتج: يمر فيه تيار المنتج ⟦Ia⟧ نفسه، فيقوى المجال كلما زاد التيار."><path d="M140 90a10 10 0 0 1 20 0a10 10 0 0 1 20 0a10 10 0 0 1 20 0a10 10 0 0 1 20 0" fill="none" stroke="#E8735A" stroke-width="5"/><text x="180" y="64" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">ملف المجال</text><rect x="136" y="50" width="88" height="46" fill="transparent"/></g><g data-tip="المنتج (العضو الدوار): الملف الذي يدور ويولّد العزم. الفرشتان على جانبيه توصلان التيار إليه."><circle cx="290" cy="160" r="26" fill="#CFE6DB" stroke="#2C4A40" stroke-width="3.5"/><rect x="283" y="128" width="14" height="8" fill="#2C4A40"/><rect x="283" y="184" width="14" height="8" fill="#2C4A40"/><text x="290" y="166" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40">A</text><text x="246" y="166" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">المنتج</text></g><g data-tip="اتجاه التيار: تيار واحد ⟦Ia⟧ يدور في الحلقة كلها، فتيار المجال = تيار المنتج."><polygon points="112,82 124,90 112,98" fill="#12855A"/><polygon points="248,82 260,90 248,98" fill="#12855A"/><polygon points="282,104 290,116 298,104" fill="#12855A"/><polygon points="196,222 184,230 196,238" fill="#12855A"/><text x="112" y="122" text-anchor="middle" font-size="14" font-weight="700" fill="#12855A">Ia</text><text x="196" y="256" text-anchor="middle" font-size="14" font-weight="700" fill="#12855A">Ia</text></g><text x="180" y="296" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">تيار واحد يمر في المنتج وملف المجال</text></svg>`,
+   cap:'في محرك التوالي يوصل ملف المجال على التوالي مع المنتج، فيمر فيهما التيار نفسه.<br><b>مرّر المؤشر على المصدر والملف والمنتج والأسهم (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'زاد الحمل على محرك التوالي فزاد تيار المنتج. ماذا يحدث للمجال المغناطيسي؟',opts:[
+     ['يقل، لأن الجهد يتوزع على حمل أكبر',false,'المجال يأتي من تيار ملف المجال، وهذا التيار هو تيار المنتج نفسه، فلا يقل.'],
+     ['يزداد، لأن تيار المنتج نفسه يمر في ملف المجال',true,'نص الكتاب في ص 35: «يزداد المجال المغناطيسي في محركات التوالي مع زيادة تيار المنتج بزيادة التحميل».'],
+     ['لا يتغير، لأن ملف المجال لا علاقة له بالحمل',false,'هذا صحيح في محرك التوازي تقريباً، لكن ملف التوالي يمر فيه تيار المنتج.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>في محركات التيار المستمر إثارة توالي توصل ملفات المجال <b>على التوالي</b> مع ملفات المنتج. ومن الواضح أن تيار المنتج يمر في ملفات المجال، فعند زيادة التحميل يزداد تيار المنتج وبالتالي تيار المجال. إذاً <b>يزداد المجال المغناطيسي في محركات التوالي مع زيادة تيار المنتج بزيادة التحميل</b>.</p>`,ref:'ص 35'},
+    {tip:String.raw`<p>حمل أكبر ← تيار منتج أكبر ← تيار مجال أكبر (لأنه التيار نفسه) ← مجال مغناطيسي أقوى. هذه الحلقة هي سر كل خواص محرك التوالي التي ستراها في المحطات الثلاث القادمة.</p>`,title:'الفكرة في سطر'}
+   ]},
+
+  {st:4,short:'العزم مع التيار',title:'أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 35',
+   q:'إذا ضاعفنا تيار محرك التوالي، هل يتضاعف العزم فقط… أم أكثر؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="منحنى العزم مع تيار المنتج: جزء منحنٍ من O إلى A ثم خط مستقيم من A إلى B" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><line x1="170" y1="190" x2="170" y2="250" stroke="#7A8F86" stroke-width="1.5" stroke-dasharray="4 4"/><g data-tip="الجزء ⟦OA⟧: قبل التشبع المغناطيسي. المجال يزيد مع التيار، فالعزم يتناسب مع مربع التيار ⟦T ∝ Ia²⟧ ويظهر منحنياً."><path d="M60 250Q115 250 170 190" fill="none" stroke="#4FB3A9" stroke-width="6" stroke-linecap="round"/><path d="M60 250Q115 250 170 190" fill="none" stroke="transparent" stroke-width="22"/><text x="108" y="212" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">قبل التشبع</text></g><g data-tip="الجزء ⟦AB⟧: بعد التشبع. المجال ثابت، فالعزم يتناسب مع التيار ⟦T ∝ Ia⟧ ويظهر خطاً مستقيماً."><path d="M170 190L290 59" fill="none" stroke="#E8735A" stroke-width="6" stroke-linecap="round"/><path d="M170 190L290 59" fill="none" stroke="transparent" stroke-width="22"/><text x="270" y="150" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">بعد التشبع</text></g><g data-tip="النقطة ⟦A⟧: يصل عندها المحرك إلى التشبع المغناطيسي، فيتوقف المجال عن الزيادة."><circle cx="170" cy="190" r="7" fill="#2C4A40"/><text x="160" y="180" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">A</text></g><circle cx="290" cy="59" r="5" fill="#2C4A40"/><text x="280" y="54" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">B</text><text x="50" y="266" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">O</text><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-1a)</span> مبسطاً: منحنٍ قبل التشبع، ومستقيم بعده.<br><b>مرّر المؤشر على جزأي المنحنى والنقطة A (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'قبل التشبع المغناطيسي، تضاعف تيار المنتج. كم يصبح العزم تقريباً؟',opts:[
+     ['ضعف ما كان',false,'هذا ما يحدث بعد التشبع فقط (المنحنى AB)، لأن المجال يكون ثابتاً.'],
+     ['أربعة أضعاف ما كان',true,String.raw`قبل التشبع يزيد المجال مع التيار أيضاً، فالعزم يتناسب مع مربع التيار: \(2^2=4\).`],
+     ['لا يتغير',false,'العزم يتناسب طردياً مع التيار ومع المجال، وكلاهما زاد.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>يتناسب العزم طردياً مع كل من تيار المنتج والمجال المغناطيسي:</p>
+     <div class="eq">$$T\propto\phi\,I_a$$</div>
+     <p>يعتمد المجال المغناطيسي على تيار المجال أي على تيار المنتج طالما أن العلاقة بين المجال المغناطيسي وتيار المجال علاقة خطية، أي <b>قبل</b> أن يصل المحرك إلى مستوى التشبع المغناطيسي \((\phi\propto I_a)\)، إذاً يتناسب العزم مع مربع تيار المنتج:</p>
+     <div class="eq">$$T\propto I_a^{2}\qquad\text{(OA)}$$</div>
+     <p>كما يوضح ذلك المنحنى <span class="ltr">OA</span> في الشكل <span class="ltr">(3-1a)</span>. وبمجرد أن يصل المحرك إلى مستوى التشبع المغناطيسي يصبح المجال المغناطيسي ثابتاً لا يعتمد على أي زيادة في التيار، فيتناسب العزم طردياً مع تيار المجال:</p>
+     <div class="eq">$$T\propto I_a\qquad\text{(AB)}$$</div>
+     <p>كما يوضح ذلك المنحنى <span class="ltr">AB</span> في الشكل <span class="ltr">(3-1a)</span>.</p>`,ref:'ص 35'},
+    {title:'ضاعف التيار وقارن العزم',widget:(el,B)=>{
+      const fm=x=>{let s=(+x).toFixed(2);return s.replace(/0+$/,'').replace(/\.$/,'')};
+      el.innerHTML=`<p class="sub" style="margin:0 0 10px">حرّك المؤشر لتضرب تيار المنتج في عدد، وقارن ما يحدث للعزم قبل التشبع وبعده. (نسب فقط، بلا أرقام محرك معين.)</p>
+       <label class="w-sl"><span>تيار المنتج يصبح <b class="ltr" data-o="k"></b> مرة قيمته الأولى</span><input type="range" min="1" max="3" step="0.5" dir="ltr" value="2"></label>
+       <div style="margin-top:12px;display:grid;gap:8px">
+        <div><div class="sub" style="margin:0">قبل التشبع (المنحنى <span class="ltr">OA</span>): العزم ∝ مربع التيار</div><div style="background:var(--surface-2);border-radius:8px;height:16px;overflow:hidden" dir="ltr"><div data-o="ba" style="height:100%;background:var(--blue);transition:width .3s"></div></div></div>
+        <div><div class="sub" style="margin:0">بعد التشبع (المنحنى <span class="ltr">AB</span>): العزم ∝ التيار</div><div style="background:var(--surface-2);border-radius:8px;height:16px;overflow:hidden" dir="ltr"><div data-o="bb" style="height:100%;background:var(--live);transition:width .3s"></div></div></div>
+       </div>
+       <div class="w-facts" style="grid-template-columns:1fr 1fr"><div><span>العزم قبل التشبع يصبح</span><b data-o="a"></b></div><div><span>العزم بعد التشبع يصبح</span><b data-o="b"></b></div></div>`;
+      const o=k=>el.querySelector(`[data-o="${k}"]`),rg=el.querySelector('input');
+      const draw=()=>{const k=+rg.value;o('k').textContent=fm(k);o('a').textContent='× '+fm(k*k);o('b').textContent='× '+fm(k);o('ba').style.width=(k*k/9*100)+'%';o('bb').style.width=(k/9*100)+'%'};
+      rg.oninput=draw;draw();
+    }},
+    {watch:String.raw`<p>في الكتاب يُطبع رمز التناسب كأنه الحرف «α» (مثل <span class="ltr">T α φ Ia</span>)، والمقصود الرمز \(\propto\) ومعناه «يتناسب مع»، وليس حرف ألفا.</p>`},
+    {tip:String.raw`<p>بعد التشبع يقول الكتاب «يتناسب العزم طردياً مع <b>تيار المجال</b>»، ولا تعارض: في محرك التوالي تيار المجال هو تيار المنتج نفسه.</p>`}
+   ]},
+
+  {st:5,short:'السرعة مع التيار',title:'ب- علاقة السرعة مع تيار المنتج <span class="ltr">n = f(I<sub>a</sub>)</span>',ref:'ص 35',
+   q:'المجال يقوى كلما زاد التيار… فهل يسرع المحرك أم يبطئ؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="منحنى السرعة مع تيار المنتج: يبدأ عالياً جداً عند التيار الصغير وينخفض بسرعة ثم يتسطح" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#E6E2F8"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><g data-tip="الخط المتقطع عند تيار صغير جداً (تيار اللاحمل): هنا يكون المجال ضعيفاً جداً، فتصبح السرعة عالية إلى درجة الخطورة."><line x1="88" y1="48" x2="88" y2="250" stroke="#E8735A" stroke-width="3" stroke-dasharray="7 5"/><rect x="78" y="48" width="20" height="202" fill="transparent"/></g><g data-tip="قبل التشبع: المجال يزيد مع التيار، فالسرعة تتناسب عكسياً مع التيار ⟦n ∝ 1/Ia⟧."><path d="M100 58C115 140 140 172 170 180" fill="none" stroke="#12855A" stroke-width="6" stroke-linecap="round"/><path d="M100 58C115 140 140 172 170 180" fill="none" stroke="transparent" stroke-width="22"/><text x="176" y="118" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">قبل التشبع</text></g><g data-tip="بعد التشبع: المجال ثابت، فتكاد السرعة تثبت (تنخفض قليلاً فقط لأن ⟦E⟧ تنقص قليلاً)."><path d="M170 180L310 190" fill="none" stroke="#4FB3A9" stroke-width="6" stroke-linecap="round"/><path d="M170 180L310 190" fill="none" stroke="transparent" stroke-width="22"/><text x="246" y="216" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">بعد التشبع</text></g><circle cx="170" cy="180" r="5" fill="#2C4A40"/><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-1b)</span> مبسطاً: السرعة تنخفض بسرعة مع التيار ثم تكاد تثبت بعد التشبع.<br><b>مرّر المؤشر على جزأي المنحنى والخط المتقطع (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'قبل التشبع، تضاعف تيار المنتج. ماذا يحدث للسرعة تقريباً؟',opts:[
+     ['تتضاعف',false,'العكس: المجال يتضاعف تقريباً، والسرعة تتناسب عكسياً مع المجال.'],
+     ['لا تتغير',false,'لا تكاد تتغير بعد التشبع فقط، أما قبله فالمجال يزيد مع التيار.'],
+     ['تصبح نصف ما كانت تقريباً',true,String.raw`\(n\propto\dfrac{1}{\phi}\propto\dfrac{1}{I_a}\): تيار أكبر بمرتين يعني سرعة أقل بمرتين تقريباً (بإهمال النقص الطفيف في \(E\)).`]]}}
+   ],
+   body:[
+    {book:String.raw`<p>في محركات التيار المستمر:</p>
+     <div class="eq">$$n\propto\frac{E}{\phi}\qquad\qquad E=V-I_a\,(R_a+R_s)$$</div>
+     <p>كلما ازداد تيار المنتج تنقص قيمة \(E\) نقصاً طفيفاً (يمكن إهمال هذا النقص في قيمة \(E\))، وتزداد قيمة \(\phi\) مع زيادة تيار المنتج قبل الوصول لمستوى التشبع المغناطيسي، أي أن:</p>
+     <div class="eq">$$n\propto\frac{1}{\phi}\propto\frac{1}{I_a}$$</div>
+     <p>وعندما يصل المحرك لمستوى التشبع تثبت قيمة المجال المغناطيسي وتثبت السرعة أيضاً. <b>سرعة محرك التوالي تتناسب عكسياً مع تيار المجال قبل التشبع المغناطيسي ثم تصبح ثابتة بعد الوصول إلى التشبع</b>، الشكل <span class="ltr">(3-1b)</span>.</p>`,ref:'ص 35'},
+    {tip:String.raw`<p><b>الرموز:</b> \(n\) السرعة، \(E\) القوة الدافعة الكهربائية العكسية، \(V\) جهد المصدر، \(R_a\) مقاومة المنتج، \(R_s\) مقاومة ملف التوالي، \(\phi\) المجال المغناطيسي، والرمز \(\propto\) يعني «يتناسب مع».</p>
+     <p>المعادلة \(n\propto E/\phi\) تقول: المجال الأقوى يجعل المحرك <b>أبطأ</b> لنفس الجهد. لذلك حين يقوى المجال مع الحمل في محرك التوالي تنخفض سرعته.</p>`},
+    {watch:String.raw`<p>بعد التشبع «تثبت» السرعة تقريباً فقط: تنخفض قليلاً لأن \(E\) نفسها تنقص قليلاً مع زيادة التيار. وجملة الكتاب عن التشبع جملة مستقلة؛ العلاقة \(n\propto 1/I_a\) تخص ما <b>قبل</b> التشبع فقط.</p>`}
+   ]},
+
+  {st:6,short:'العزم مع السرعة',title:'ج- علاقة العزم مع السرعة <span class="ltr">T = f(n)</span>',ref:'ص 36',
+   q:'قطار يبدأ صعود مرتفع. ماذا يفعل محرك التوالي بسرعته وعزمه دون أن يتدخل السائق؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="منحنى السرعة مع العزم لمحرك التوالي: سرعة عالية عند عزم صغير، وسرعة منخفضة عند عزم كبير" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><path d="M80 60C110 170 170 215 310 232" fill="none" stroke="#2C4A40" stroke-width="5" stroke-linecap="round"/><g data-tip="حمل خفيف (مثل السير على أرض مستوية): يكفي عزم صغير، فيدور المحرك بسرعة عالية."><circle cx="96" cy="105" r="10" fill="#4FB3A9" stroke="#2C4A40" stroke-width="2.5"/><text x="166" y="96" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">عزم صغير</text><text x="166" y="114" text-anchor="middle" font-size="12.5" fill="#2C4A40">سرعة عالية</text><rect x="84" y="80" width="128" height="40" fill="transparent"/></g><g data-tip="حمل ثقيل (مثل بدء الحركة أو صعود مرتفع): يولد المحرك عزماً كبيراً، وتنخفض سرعته تلقائياً."><circle cx="235" cy="218" r="10" fill="#E8735A" stroke="#2C4A40" stroke-width="2.5"/><text x="240" y="176" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">عزم كبير</text><text x="240" y="194" text-anchor="middle" font-size="12.5" fill="#2C4A40">سرعة منخفضة</text><rect x="196" y="160" width="90" height="70" fill="transparent"/></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-1c)</span> مبسطاً: كلما زاد العزم انخفضت السرعة.<br><b>مرّر المؤشر على النقطتين (أو المسهما في الجوال) لتعرف الحالة التي تمثلها كل منهما.</b>',
+   side:[
+    {predict:{q:'قطار بمحرك توالٍ بدأ يصعد مرتفعاً فزاد الحمل. ماذا يحدث؟',opts:[
+     ['تنخفض السرعة ويزيد العزم تلقائياً',true,'زيادة العزم تتطلب تياراً أكبر، فيزيد تيار المجال، فتنخفض السرعة (ص 36). وهذا ما يناسب الصعود.'],
+     ['تزيد السرعة ويقل العزم',false,'هذا يحدث عندما <b>ينقص</b> الحمل، لا عندما يزيد.'],
+     ['تبقى السرعة ثابتة ويزيد العزم',false,'السرعة الثابتة تقريباً من صفات محرك التوازي، أما محرك التوالي فسرعته متغيرة تلقائياً.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>علاقة العزم مع السرعة يمكن استنتاجها من العلاقتين السابقتين وكما هي مبينة في الشكل <span class="ltr">(3-1c)</span>. من الواضح أن محرك التوالي <b>يولد عزماً كبيراً عند السرعات المنخفضة والعكس صحيح</b>. هذا بسبب أن الزيادة في العزم تتطلب زيادة في تيار المنتج وبالتالي زيادة بالتبعية في تيار المجال مما يؤدي إلى انخفاض السرعة.</p>`,ref:'ص 36'},
+    {tip:String.raw`<table class="tt"><thead><tr><th>الرسم في الشكل (3-1)</th><th>المحوران</th><th>شكل المنحنى</th></tr></thead><tbody>
+     <tr><td><span class="ltr">(a)</span></td><td>العزم مع تيار المنتج</td><td>منحنٍ صاعد <span class="ltr">OA</span> ثم مستقيم <span class="ltr">AB</span></td></tr>
+     <tr><td><span class="ltr">(b)</span></td><td>السرعة مع تيار المنتج</td><td>عالية جداً عند التيار الصغير، تنخفض ثم تكاد تثبت</td></tr>
+     <tr><td><span class="ltr">(c)</span></td><td>السرعة مع العزم</td><td>عالية عند العزم الصغير، منخفضة عند العزم الكبير</td></tr></tbody></table>
+     <p>الشكل كاملاً مرسوم في الأسلوب الرسمي لهذا الدرس، وفي المختبر تتحرك نقطة التشغيل على المنحنيات الثلاثة.</p>`,title:'الشكل (3-1) في جدول'},
+    {add:String.raw`<p>لهذه الخاصية استُعمل محرك التوالي للتيار المستمر زمناً طويلاً في القطارات الكهربائية وعربات الترام: عند البدء والصعود يعطي عزماً كبيراً بسرعة منخفضة، وعلى الأرض المستوية يسرع وحده.</p>`}
+   ]},
+
+  {st:7,short:'ملاحظات مهمة',title:'يجب ملاحظة النقاط التالية في خواص محرك التوالي',ref:'ص 36',
+   q:'لماذا يُمنع تشغيل محرك التوالي وهو غير مربوط بحمله؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="عضو دوار عليه أسهم قوى الطرد المركزية، ومؤشر سرعة في المنطقة الحمراء، وجهاز حماية يفصل المصدر" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#F7DCC8"/><g data-tip="العضو الدوار يدور بسرعة عالية جداً عند اللاحمل."><circle cx="120" cy="140" r="56" fill="#CFE6DB" stroke="#2C4A40" stroke-width="3.5"/><circle cx="120" cy="140" r="12" fill="#2C4A40"/><line x1="120" y1="140" x2="120" y2="92" stroke="#2C4A40" stroke-width="4" stroke-linecap="round"/><line x1="120" y1="140" x2="161.6" y2="164" stroke="#2C4A40" stroke-width="4" stroke-linecap="round"/><line x1="120" y1="140" x2="78.4" y2="164" stroke="#2C4A40" stroke-width="4" stroke-linecap="round"/></g><g data-tip="قوى الطرد المركزية: تشد أجزاء العضو الدوار إلى الخارج، وتكبر كثيراً مع السرعة حتى يمكن أن يتحطم العضو الدوار."><line x1="120" y1="78" x2="120" y2="54" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="120,44 112,58 128,58" fill="#E8735A"/><line x1="174" y1="171" x2="195" y2="183" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="204,188 188,188 196,174" fill="#E8735A"/><line x1="66" y1="171" x2="45" y2="183" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="36,188 44,174 52,188" fill="#E8735A"/><line x1="174" y1="109" x2="195" y2="97" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="204,92 196,106 188,92" fill="#E8735A"/><line x1="66" y1="109" x2="45" y2="97" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="36,92 52,92 44,106" fill="#E8735A"/><line x1="120" y1="202" x2="120" y2="226" stroke="#E8735A" stroke-width="5" stroke-linecap="round"/><polygon points="120,236 112,222 128,222" fill="#E8735A"/></g><g data-tip="مؤشر السرعة: المؤشر في المنطقة الحمراء، أي أن السرعة زادت عن الحد المسموح به."><path d="M232 130A46 46 0 0 1 324 130" fill="none" stroke="#2C4A40" stroke-width="10"/><path d="M310.7 97.5A46 46 0 0 1 324 130" fill="none" stroke="#E8735A" stroke-width="10"/><line x1="278" y1="130" x2="314" y2="106" stroke="#2C4A40" stroke-width="4" stroke-linecap="round"/><circle cx="278" cy="130" r="7" fill="#2C4A40"/><text x="278" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">السرعة</text></g><g data-tip="جهاز الحماية: يفصل مصدر الجهد عند زيادة السرعة عن الحد المسموح به (ص 36)."><rect x="232" y="186" width="92" height="60" rx="10" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><line x1="248" y1="226" x2="266" y2="226" stroke="#2C4A40" stroke-width="3"/><line x1="266" y1="226" x2="290" y2="210" stroke="#2C4A40" stroke-width="3"/><line x1="292" y1="226" x2="308" y2="226" stroke="#2C4A40" stroke-width="3"/><circle cx="266" cy="226" r="3" fill="#2C4A40"/><circle cx="292" cy="226" r="3" fill="#2C4A40"/><text x="278" y="204" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">يفصل المصدر</text></g><text x="180" y="290" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">بلا حمل: سرعة خطرة</text></svg>`,
+   cap:'عند إزالة الحمل يضعف المجال جداً، فترتفع السرعة وتكبر قوى الطرد المركزية؛ لذلك يُزوَّد المحرك بحماية تفصل المصدر.<br><b>مرّر المؤشر على الأسهم والمؤشر وجهاز الحماية (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'ما الطريقة الصحيحة لتشغيل محرك التوالي حسب الكتاب؟',opts:[
+     ['يُشغَّل بلا حمل أولاً حتى تستقر سرعته، ثم يُربط الحمل',false,'هذا بالضبط ما يحذّر منه الكتاب: بلا حمل تزداد السرعة إلى درجة الخطورة.'],
+     ['يُحمَّل أولاً ثم تبدأ الحركة',true,'نص الكتاب في ص 36: «يجب ألا يبدأ محرك التوالي حركته بدون أحمال، بل يجب أن يتم تحميله أولاً ثم تبدأ الحركة».'],
+     ['يُشغَّل بأي طريقة، فسرعته ثابتة',false,'سرعة محرك التوالي متغيرة تلقائياً حسب الحمل، وليست ثابتة.']]}}
+   ],
+   body:[
+    {book:String.raw`<p><b>أ)</b> محرك التوالي ذو <b>سرعة متغيرة تلقائياً</b>، أي أن المحرك يغير من سرعته ذاتياً حسب التحميل. عندما ينقص الحمل تزداد سرعة المحرك تلقائياً، هذه الخاصية مطلوبة للتحريك الكهربائي حيث يضبط المحرك سرعته ذاتياً مع تغير التحميل.</p>
+     <p><b>ب)</b> عندما يصل تيار المنتج إلى قيمته عند اللاحمل، بسبب إزالة الحمل، يصبح المجال المغناطيسي صغيراً جداً. وتزداد السرعة إلى قيمة عالية جداً إلى درجة الخطورة حيث يمكن أن يتحطم العضو الدوار تحت تأثير قوى الطرد المركزية. لذا <b>يجب ألا يبدأ محرك التوالي حركته بدون أحمال</b>، بل يجب أن يتم تحميله أولاً ثم تبدأ الحركة.</p>
+     <p>أقل حمل لمحرك التوالي يجب أن يكون بالقدر الكافي للحفاظ على السرعة في الحدود المعقولة، وللاحتياط لابد من تزويد المحرك بالأجهزة اللازمة لفصل مصدر الجهد عند زيادة السرعة عن الحد المسموح به.</p>`,ref:'ص 36'},
+    {title:'ماذا يحدث لو أُزيل الحمل؟',widget:(el,B)=>{
+      const S=['أُزيل الحمل','نقص تيار المنتج إلى قيمته عند اللاحمل','صار المجال المغناطيسي صغيراً جداً','ارتفعت السرعة إلى درجة الخطورة','قوى الطرد المركزية قد تحطم العضو الدوار'];
+      el.innerHTML=`<p class="sub" style="margin:0 0 10px">اضغط «أزِل الحمل» وتابع كيف ينتقل الأثر من حلقة إلى التي بعدها.</p><div class="chain">${S.map((s,i)=>`<span class="ck${i===S.length-1?' end':''}">${s}</span>${i<S.length-1?'<span class="ar">←</span>':''}`).join('')}</div><div class="w-row"><button class="btn pri" type="button" data-go>أزِل الحمل</button><button class="btn" type="button" data-rs>إعادة</button></div>`;
+      const ks=[...el.querySelectorAll('.ck')];let tm=[];
+      const rs=()=>{tm.forEach(clearTimeout);tm=[];ks.forEach(k=>k.classList.remove('on'))};
+      el.querySelector('[data-go]').onclick=()=>{rs();ks.forEach((k,i)=>tm.push(setTimeout(()=>k.classList.add('on'),i*550)))};
+      el.querySelector('[data-rs]').onclick=rs;
+    }},
+    {add:String.raw`<p>لهذا السبب يُربط محرك التوالي بحمله عادةً ربطاً مباشراً أو بالتروس، ولا يُربط بسير؛ فلو انقطع السير أو انزلق لأصبح المحرك فجأة بلا حمل.</p>`},
+    {watch:String.raw`<p>«سرعة متغيرة تلقائياً» ميزة في التحريك، لكن طرفها الآخر خطر: نقص الحمل يرفع السرعة، وإزالته كلياً ترفعها إلى درجة الخطورة. الميزة والخطر من السبب نفسه: المجال يتبع تيار الحمل.</p>`}
+   ]},
+
+  {recap:[
+   String.raw`أهم محركات التحريك: محركات التيار المستمر، والحثية (القفصي والملفوف)، والتزامنية، ولكل نوع تطبيقات تناسبه (ص 34).`,
+   String.raw`في محرك التوالي يمر تيار المنتج في ملف المجال، فيقوى المجال مع الحمل (ص 35).`,
+   String.raw`العزم: \(T\propto\phi\,I_a\)؛ قبل التشبع \(T\propto I_a^2\) (المنحنى OA)، وبعده \(T\propto I_a\) (المنحنى AB).`,
+   String.raw`السرعة: \(n\propto E/\phi\)، وقبل التشبع \(n\propto 1/I_a\)؛ فالمحرك يعطي عزماً كبيراً عند السرعات المنخفضة والعكس (ص 35–36).`,
+   String.raw`سرعة محرك التوالي متغيرة تلقائياً، ولا يبدأ حركته بدون حمل، ويُزوَّد بحماية تفصل المصدر عند زيادة السرعة (ص 36).`]}
+],
  theory:[
   {h:'الوحدة الثالثة: محركات التيار المستمر والمتردد كمحركات للتحريك',ref:'ص 32–33',html:`<p><b>الهدف العام للوحدة:</b> معرفة خواص محركات التيار المستمر والتيار المتردد المستخدمة في التحريك الكهربائي.</p>
    <p><b>الأهداف التفصيلية:</b></p><ul><li>أن يعرف المتدرب خواص محركات التيار المستمر من النوع التوالي والمركب.</li><li>أن يعرف المتدرب خواص محركات التيار المتردد المستخدمة في التحريك.</li></ul>`},
@@ -338,6 +505,182 @@ lesson({
  id:'u3-l2',unit:3,order:2,pages:'37–39',
  title:'خواص المحرك المركب: التراكمي والتفاضلي',
  summary:'المحرك المركب فيه ملفان للمجال: ملف توازٍ وملف توالٍ. في التراكمي يساعد ملف التوالي ملف التوازي (φt = φsh + φse) فتقل السرعة مع الحمل وتبقى سرعة اللاحمل معقولة، وفي الفرقي يعاكسه (φt = φsh − φse) فتزيد السرعة مع الحمل، لذلك يُتجنَّب في التحريك.',
+ stations:[
+  {intro:true},
+
+  {st:1,short:'المحرك المركب',title:'خواص المحرك المركب',ref:'ص 37',
+   q:'ماذا لو جمعنا في محرك واحد ملف توالٍ وملف توازٍ؟ وهل يتعاونان دائماً؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="دائرة محرك مركب قصير: ملف توالٍ في الخط الرئيس، وملف توازٍ موصول على طرفي المنتج" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#E6E2F8"/><path d="M70 140V90H100M180 90H290V134M290 186V230H70V172M210 90V128M210 192V230" fill="none" stroke="#2C4A40" stroke-width="4" stroke-linejoin="round"/><circle cx="210" cy="90" r="5" fill="#2C4A40"/><circle cx="210" cy="230" r="5" fill="#2C4A40"/><g data-tip="مصدر الجهد المستمر ⟦V⟧."><line x1="48" y1="140" x2="92" y2="140" stroke="#2C4A40" stroke-width="4"/><line x1="58" y1="152" x2="82" y2="152" stroke="#2C4A40" stroke-width="6"/><line x1="48" y1="162" x2="92" y2="162" stroke="#2C4A40" stroke-width="4"/><line x1="58" y1="172" x2="82" y2="172" stroke="#2C4A40" stroke-width="6"/><text x="104" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">V</text><rect x="40" y="130" width="76" height="52" fill="transparent"/></g><g data-tip="ملف التوالي: موصول على التوالي مع المنتج، فيمر فيه تيار الحمل، ويتغير مجاله ⟦φse⟧ مع الحمل."><path d="M100 90a10 10 0 0 1 20 0a10 10 0 0 1 20 0a10 10 0 0 1 20 0a10 10 0 0 1 20 0" fill="none" stroke="#E8735A" stroke-width="5"/><text x="140" y="64" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">ملف التوالي</text><rect x="96" y="50" width="88" height="46" fill="transparent"/></g><g data-tip="ملف التوازي: موصول على التوازي مع المنتج (مباشرة على طرفيه، لذلك يسمى المركب «قصيراً»). مجاله ⟦φsh⟧ موجود دائماً ما دام الجهد موجوداً."><path d="M210 128a8 8 0 0 1 0 16a8 8 0 0 1 0 16a8 8 0 0 1 0 16a8 8 0 0 1 0 16" fill="none" stroke="#4FB3A9" stroke-width="5"/><text x="166" y="165" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40">ملف التوازي</text><rect x="120" y="124" width="104" height="72" fill="transparent"/></g><g data-tip="المنتج (العضو الدوار)."><circle cx="290" cy="160" r="26" fill="#CFE6DB" stroke="#2C4A40" stroke-width="3.5"/><rect x="283" y="128" width="14" height="8" fill="#2C4A40"/><rect x="283" y="184" width="14" height="8" fill="#2C4A40"/><text x="290" y="166" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40">A</text></g><text x="180" y="290" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">ملفان للمجال: توالٍ وتوازٍ</text></svg>`,
+   cap:'المحرك المركب (القصير): ملف التوالي في الخط الرئيس، وملف التوازي على طرفي المنتج.<br><b>مرّر المؤشر على الملفين والمصدر والمنتج (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'على أي أساس يُقسم المحرك المركب إلى نوعين؟',opts:[
+     ['على عدد لفات ملف التوازي',false,'عدد اللفات يغير قوة المجال، لكنه ليس أساس التقسيم في الكتاب.'],
+     ['على جهد المصدر: مستمر أو متردد',false,'المحرك المركب محرك تيار مستمر في الحالتين.'],
+     ['على مجال ملف التوالي: هل يساعد مجال ملف التوازي أم يعاكسه',true,'نص الكتاب في ص 37: إن ساعده فهو «المركب التراكمي»، وإن عاكسه فهو «المركب الفرقي أو التفاضلي».']]}}
+   ],
+   body:[
+    {book:String.raw`<p>يحتوي محرك التيار المستمر المركب (قصير) على ملفين للمجال المغناطيسي، يوصل الملف الأول <b>على التوازي</b> مع المنتج ويوصل الثاني <b>على التوالي</b> مع المنتج. وينقسم المحرك المركب إلى نوعين بناءً على مجال ملف التوالي هل يساعد أم يعاكس مجال ملف التوازي، ففي الحالة الأولى يسمى المحرك بـ<b>المحرك المركب التراكمي</b> وفي الثانية يسمى بـ<b>المحرك المركب الفرقي أو التفاضلي</b>.</p>`,ref:'ص 37'},
+    {tip:String.raw`<table class="tt"><thead><tr><th>النوع</th><th>مجال ملف التوالي</th><th>المجال الكلي</th></tr></thead><tbody>
+     <tr><td>المركب التراكمي</td><td>يساعد مجال ملف التوازي</td><td>مجموع المجالين</td></tr>
+     <tr><td>المركب الفرقي (التفاضلي)</td><td>يعاكس مجال ملف التوازي</td><td>الفرق بين المجالين</td></tr></tbody></table>
+     <p>ملف التوازي يعطي مجالاً ثابتاً تقريباً، وملف التوالي يعطي مجالاً يتغير مع الحمل. الفرق بين النوعين هو اتجاه توصيل ملف التوالي فقط.</p>`,title:'النوعان في سطرين'}
+   ]},
+
+  {st:2,short:'التراكمي',title:'خواص المحرك المركب تراكمياً',ref:'ص 37',
+   q:'مجالان في الاتجاه نفسه… كيف نحسب المجال الكلي؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="سهم مجال ملف التوازي وسهم مجال ملف التوالي في الاتجاه نفسه، ومجموعهما سهم أطول للمجال الكلي" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><g data-tip="⟦φsh⟧: مجال ملف التوازي، ثابت تقريباً لأن ملف التوازي على جهد ثابت."><line x1="50" y1="110" x2="166" y2="110" stroke="#4FB3A9" stroke-width="14" stroke-linecap="round"/><polygon points="184,110 164,98 164,122" fill="#4FB3A9"/><text x="112" y="88" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φsh</text></g><g data-tip="⟦φse⟧: مجال ملف التوالي، يكبر مع تيار الحمل، وهنا في نفس اتجاه ⟦φsh⟧."><line x1="190" y1="110" x2="262" y2="110" stroke="#E8735A" stroke-width="14" stroke-linecap="round"/><polygon points="280,110 260,98 260,122" fill="#E8735A"/><text x="232" y="88" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φse</text></g><text x="180" y="150" text-anchor="middle" font-size="13" fill="#2C4A40">نفس الاتجاه: يتجمعان</text><g data-tip="⟦φt⟧: المجال الكلي = مجموع المجالين، فهو أكبر من مجال أي من الملفين وحده."><line x1="50" y1="196" x2="262" y2="196" stroke="#2C4A40" stroke-width="16" stroke-linecap="round"/><polygon points="282,196 260,182 260,210" fill="#2C4A40"/><text x="166" y="232" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φt = φsh + φse</text></g><text x="180" y="282" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">ملف التوالي يساعد ملف التوازي</text></svg>`,
+   cap:'في المركب التراكمي يضاف مجال ملف التوالي إلى مجال ملف التوازي.<br><b>مرّر المؤشر على كل سهم (أو المسه في الجوال) لتعرف معناه.</b>',
+   side:[
+    {predict:{q:'محرك مركب تراكمي يدور بلا حمل (تيار المنتج صغير جداً). كم يكون المجال الكلي تقريباً؟',opts:[
+     ['صفراً تقريباً، كمحرك التوالي',false,'في محرك التوالي وحده نعم، لكن هنا يوجد ملف التوازي ومجاله باقٍ.'],
+     ['مجال ملف التوازي تقريباً',true,String.raw`بلا حمل يتلاشى \(\phi_{se}\) تقريباً، فيبقى \(\phi_t\approx\phi_{sh}\). وهذا ما يحفظ السرعة في الحدود المعقولة (المحطة الرابعة).`],
+     ['ضعف مجال ملف التوازي',false,'مجال ملف التوالي يتبع تيار الحمل، وبلا حمل يكون صغيراً جداً.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>في المحرك المركب تراكمياً يوصل ملف التوالي بحيث يكون المجال المغناطيسي الناتج عنه في <b>نفس اتجاه</b> المجال الناتج عن ملف التوازي، أي أن ملف التوالي يساعد ملف التوازي. فعند أي حمل يكون المجال المغناطيسي الإجمالي هو مجموع مجالي ملفي التوازي والتوالي. إذاً محصلة المجال المغناطيسي تعتمد على قيمة التيار في كل من ملفي التوازي والتوالي.</p>
+     <div class="eq">$$\phi_t=\phi_{sh}+\phi_{se}$$</div>`,ref:'ص 37'},
+    {tip:String.raw`<p><b>الرموز:</b> \(\phi_t\) المجال الكلي (المحصلة)، \(\phi_{sh}\) مجال ملف التوازي <span class="ltr">(shunt)</span>، \(\phi_{se}\) مجال ملف التوالي <span class="ltr">(series)</span>.</p>
+     <p>كلما زاد الحمل زاد \(\phi_{se}\) فزاد \(\phi_t\)، لكن \(\phi_t\) لا ينزل أبداً تحت \(\phi_{sh}\).</p>`}
+   ]},
+
+  {st:3,short:'العزم (التراكمي)',title:'التراكمي: أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 37',
+   q:'لنفس التيار، أيهما يعطي عزماً أكبر: ملف التوالي وحده، أم ملف التوازي وحده، أم الاثنان معاً؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="العزم مع تيار المنتج: منحنى المركب التراكمي فوق منحنى ملف التوالي وحده وخط ملف التوازي وحده" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><g data-tip="ملف التوازي وحده (للمقارنة): المجال ثابت، فالعزم يزيد مع التيار في خط مستقيم."><path d="M60 250L310 150" fill="none" stroke="#4FB3A9" stroke-width="4" stroke-dasharray="9 6"/><path d="M60 250L310 150" fill="none" stroke="transparent" stroke-width="18"/><text x="262" y="158" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">توازٍ وحده</text></g><g data-tip="ملف التوالي وحده (للمقارنة): المجال يزيد مع التيار، فالعزم يزيد مع مربع التيار قبل التشبع."><path d="M60 250Q185 250 310 160" fill="none" stroke="#E8735A" stroke-width="4" stroke-dasharray="9 6"/><path d="M60 250Q185 250 310 160" fill="none" stroke="transparent" stroke-width="18"/><text x="250" y="236" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">توالٍ وحده</text></g><g data-tip="المركب التراكمي: المجال الكلي ⟦φt = φsh + φse⟧ أكبر، فالعزم أكبر من عزم أي من الملفين وحده."><path d="M60 250L110 226.4L160 195.6L210 157.6L260 112.4L310 60" fill="none" stroke="#12855A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M60 250L110 226.4L160 195.6L210 157.6L260 112.4L310 60" fill="none" stroke="transparent" stroke-width="20"/><text x="214" y="112" text-anchor="middle" font-size="12.5" font-weight="700" fill="#12855A">التراكمي</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي للمقارنة</text></svg>`,
+   cap:'المنحنى الأخضر للمركب التراكمي كما في الشكل <span class="ltr">(3-2a)</span>، والخطان المتقطعان للمقارنة فقط (ليسا في رسم الكتاب).<br><b>مرّر المؤشر على كل منحنى (أو المسه في الجوال) لتعرف ما يمثله.</b>',
+   side:[
+    {predict:{q:'ماذا يقول الكتاب عن عزم المحرك المركب التراكمي؟',opts:[
+     ['أقل من عزم ملف التوالي وحده',false,'العكس: المجال الكلي أكبر، فالعزم أكبر.'],
+     ['يساوي متوسط عزمي الملفين',false,'المجالان يتجمعان، فلا معنى للمتوسط هنا.'],
+     ['أكبر من العزم المتولد عندما يعمل المحرك بأي من الملفين على حدة',true,String.raw`نص الكتاب في ص 37. السبب: \(T\propto I_a\,\phi_t\) و\(\phi_t\) هو مجموع المجالين.`]]}}
+   ],
+   body:[
+    {book:String.raw`<p>بما أن \((T\propto I_a\,\phi_t)\) وأن \((\phi_t=\phi_{sh}+\phi_{se})\) فإن محصلة المجال الكلي أصبحت أكبر من ذي قبل. وبالتالي سيزداد العزم بما يتناسب مع الزيادة في المجال، الشكل <span class="ltr">(3-2a)</span>. <b>العزم المتولد سيكون أكبر من ذلك العزم المتولد عندما يعمل المحرك بأي من الملفين على حدة.</b></p>`,ref:'ص 37'},
+    {tip:String.raw`<p>العزم يتناسب مع حاصل ضرب التيار في المجال. لنفس التيار: المجال الكلي في التراكمي = مجال التوازي + مجال التوالي، فهو أكبر من كل منهما وحده، فيكون العزم أكبر.</p>`}
+   ]},
+
+  {st:4,short:'السرعة (التراكمي)',title:'التراكمي: ب- علاقة السرعة مع تيار المنتج <span class="ltr">n = f(I<sub>a</sub>)</span>',ref:'ص 37–38',
+   q:'محرك التوالي تجمح سرعته بلا حمل. هل يحدث هذا للمحرك المركب التراكمي؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="السرعة مع تيار المنتج: منحنى التراكمي يبدأ من سرعة محدودة وينخفض، ومنحنى التوالي المتقطع يرتفع جداً عند التيار الصغير" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><g data-tip="محرك التوالي وحده (للمقارنة): عند التيار الصغير جداً تكون السرعة عالية إلى درجة الخطورة."><path d="M92 50C110 150 160 200 310 225" fill="none" stroke="#E8735A" stroke-width="4" stroke-dasharray="9 6"/><path d="M92 50C110 150 160 200 310 225" fill="none" stroke="transparent" stroke-width="18"/><text x="140" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">توالٍ وحده</text></g><g data-tip="المركب التراكمي: تقل سرعته مع زيادة التحميل كمحرك التوالي، لكن بلا جموح."><path d="M60 100C140 104 230 150 310 196" fill="none" stroke="#12855A" stroke-width="6" stroke-linecap="round"/><path d="M60 100C140 104 230 150 310 196" fill="none" stroke="transparent" stroke-width="20"/><text x="236" y="132" text-anchor="middle" font-size="12.5" font-weight="700" fill="#12855A">التراكمي</text></g><g data-tip="سرعة اللاحمل في التراكمي محدودة: عند تلاشي مجال ملف التوالي يبقى مجال ملف التوازي موجوداً."><circle cx="60" cy="100" r="9" fill="#F2C14E" stroke="#2C4A40" stroke-width="2.5"/></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي للمقارنة</text></svg>`,
+   cap:'المنحنى الأخضر للمركب التراكمي كما في الشكل <span class="ltr">(3-2b)</span>، والمتقطع لمحرك التوالي للمقارنة فقط.<br><b>مرّر المؤشر على المنحنيين والدائرة الصفراء (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'لماذا تبقى سرعة المحرك المركب التراكمي في الحدود المعقولة بدون أحمال؟',opts:[
+     ['لأن مجال ملف التوازي يبقى موجوداً عند تلاشي مجال ملف التوالي',true,'نص الكتاب في ص 38. المجال لا ينهار، فلا ترتفع السرعة إلى درجة الخطورة.'],
+     ['لأن ملف التوالي يقوى عند اللاحمل',false,'العكس: مجال ملف التوالي يتلاشى تقريباً عند اللاحمل لأن التيار صغير.'],
+     ['لأن جهد المصدر ينخفض عند اللاحمل',false,'جهد المصدر ثابت؛ السبب في المجال.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>بما أن \((n\propto E/\phi_t)\) وأن \((\phi_t=\phi_{sh}+\phi_{se})\)، فعند زيادة الحمل فإن مجال ملف التوالي يساعد مجال ملف التوازي مما يزيد من المجال الكلي للمحرك، لذلك <b>تقل سرعة المحرك مع زيادة الحمل</b>. وتكون السرعة أقل من تلك السرعة التي يدور بها المحرك عندما يعمل بأي من الملفين كل على حدة. من خلال الشكل <span class="ltr">(3-2b)</span> يمكن ملاحظة النقاط التالية:</p>
+     <ul><li>أن سرعة المحرك المركب التراكمي تقل مع زيادة التحميل كما في حالة محرك التوالي.</li><li>أن سرعة المحرك تكون في الحدود المعقولة عندما يدور المحرك بدون أحمال، بسبب أن مجال ملف التوازي يكون موجوداً عند تلاشي مجال ملف التوالي.</li></ul>`,ref:'ص 37–38'},
+    {tip:String.raw`<p>التراكمي أخذ من محرك التوالي ميزته (السرعة تنخفض مع الحمل والعزم يزيد)، وأخذ من محرك التوازي أمانه (مجال لا ينهار عند اللاحمل).</p>`,title:'أفضل ما في الاثنين'}
+   ]},
+
+  {st:5,short:'الخواص الميكانيكية (التراكمي)',title:'التراكمي: ج- علاقة العزم مع السرعة <span class="ltr">T = f(n)</span>',ref:'ص 38',
+   q:'أين يقع منحنى التراكمي إذا رسمناه مع منحنيي التوالي والتوازي؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="السرعة مع العزم: منحنى التراكمي يقع بين خط التوازي شبه الأفقي ومنحنى التوالي" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#E6E2F8"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><g data-tip="محرك التوازي (للمقارنة): سرعته تكاد تكون ثابتة مع تغير العزم."><path d="M60 100L310 130" fill="none" stroke="#4FB3A9" stroke-width="4" stroke-dasharray="9 6"/><path d="M60 100L310 130" fill="none" stroke="transparent" stroke-width="18"/><text x="270" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">توازٍ</text></g><g data-tip="محرك التوالي (للمقارنة): سرعة عالية جداً عند العزم الصغير، ومنخفضة عند العزم الكبير."><path d="M85 50C110 170 170 215 310 232" fill="none" stroke="#E8735A" stroke-width="4" stroke-dasharray="9 6"/><path d="M85 50C110 170 170 215 310 232" fill="none" stroke="transparent" stroke-width="18"/><text x="122" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">توالٍ</text></g><g data-tip="المركب التراكمي (الشكل ⟦(3-2c)⟧): خواصه بين التوازي والتوالي؛ السرعة تنخفض مع زيادة الحمل، وسرعة اللاحمل محدودة."><path d="M60 100C150 115 230 160 310 200" fill="none" stroke="#12855A" stroke-width="6" stroke-linecap="round"/><path d="M60 100C150 115 230 160 310 200" fill="none" stroke="transparent" stroke-width="20"/><text x="232" y="176" text-anchor="middle" font-size="12.5" font-weight="700" fill="#12855A">التراكمي</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي للمقارنة</text></svg>`,
+   cap:'المنحنى الأخضر للمركب التراكمي، ويقع بين منحنيي التوازي والتوالي (المتقطعين، للمقارنة فقط).<br><b>مرّر المؤشر على كل منحنى (أو المسه في الجوال) لتعرف ما يمثله.</b>',
+   side:[
+    {predict:{q:'ماذا تسمى علاقة العزم مع السرعة أحياناً؟',opts:[
+     ['الخواص الكهربائية للمحرك',false,'الكتاب يسميها «الخواص الميكانيكية»، لأن العزم والسرعة كميتان ميكانيكيتان على عمود المحرك.'],
+     ['الخواص الميكانيكية للمحرك',true,'نص الكتاب في ص 38: «علاقة العزم مع السرعة أو كما تسمى أحياناً الخواص الميكانيكية للمحرك».'],
+     ['خواص اللاحمل',false,'اللاحمل نقطة واحدة على المنحنى، لا اسم العلاقة كلها.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>علاقة العزم مع السرعة أو كما تسمى أحياناً <b>الخواص الميكانيكية للمحرك</b> تظهر في الشكل <span class="ltr">(3-2c)</span>، وهي <b>تقع بين خواص محرك التوازي ومحرك التوالي</b>. يتضح من الشكل أن للمحرك خواص التوالي، أي انخفاض السرعة مع زيادة الحمل، ويتضح أيضاً أن سرعة اللاحمل تكون في الحدود المسموح بها ميكانيكياً.</p>`,ref:'ص 38'},
+    {tip:String.raw`<table class="tt"><thead><tr><th>الرسم في الشكل (3-2)</th><th>المحوران</th><th>شكل المنحنى</th></tr></thead><tbody>
+     <tr><td><span class="ltr">(a)</span></td><td>العزم مع تيار المنتج</td><td>يبدأ من الصفر ويرتفع أسرع من الخط المستقيم</td></tr>
+     <tr><td><span class="ltr">(b)</span></td><td>السرعة مع تيار المنتج</td><td>يبدأ من سرعة لاحمل محدودة ثم ينخفض تدريجياً</td></tr>
+     <tr><td><span class="ltr">(c)</span></td><td>السرعة مع العزم</td><td>يبدأ من قيمة محدودة وينخفض تدريجياً دون أن يصل إلى الصفر</td></tr></tbody></table>`,title:'الشكل (3-2) في جدول'}
+   ]},
+
+  {st:6,short:'الفرقي',title:'خواص المحرك المركب فرقياً (أو التفاضلي)',ref:'ص 38',
+   q:'لو عكسنا طرفي ملف التوالي فقط، ماذا يحدث للمجال الكلي؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="سهم مجال ملف التوازي إلى اليمين، وسهم مجال ملف التوالي معاكس له، والمجال الكلي سهم أقصر" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#F7DCC8"/><g data-tip="⟦φsh⟧: مجال ملف التوازي، ثابت تقريباً."><line x1="60" y1="96" x2="262" y2="96" stroke="#4FB3A9" stroke-width="14" stroke-linecap="round"/><polygon points="282,96 262,84 262,108" fill="#4FB3A9"/><text x="160" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φsh</text></g><g data-tip="⟦φse⟧: مجال ملف التوالي، في عكس اتجاه ⟦φsh⟧، ويكبر مع تيار الحمل."><line x1="282" y1="140" x2="206" y2="140" stroke="#E8735A" stroke-width="14" stroke-linecap="round"/><polygon points="188,140 208,128 208,152" fill="#E8735A"/><text x="240" y="170" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φse</text></g><g data-tip="⟦φt⟧: المجال الكلي = الفرق بين المجالين، ويصغر كلما زاد الحمل."><line x1="60" y1="210" x2="168" y2="210" stroke="#2C4A40" stroke-width="16" stroke-linecap="round"/><polygon points="188,210 166,196 166,224" fill="#2C4A40"/><text x="140" y="246" text-anchor="middle" font-size="16" font-weight="700" fill="#2C4A40" direction="ltr">φt = φsh − φse</text></g><text x="180" y="286" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">ملف التوالي يعاكس ملف التوازي</text></svg>`,
+   cap:'في المركب الفرقي يُطرح مجال ملف التوالي من مجال ملف التوازي.<br><b>مرّر المؤشر على كل سهم (أو المسه في الجوال) لتعرف معناه.</b>',
+   side:[
+    {predict:{q:'في المحرك المركب الفرقي، ماذا يحدث للمجال الكلي كلما زاد الحمل؟',opts:[
+     ['يزداد',false,'هذا في التراكمي. هنا مجال ملف التوالي يُطرح.'],
+     ['لا يتغير',false,'مجال ملف التوالي يتغير مع تيار الحمل، فيتغير الفرق.'],
+     ['يتناقص',true,String.raw`الحمل الأكبر يزيد \(\phi_{se}\)، و\(\phi_t=\phi_{sh}-\phi_{se}\) فيصغر المجال الكلي.`]]}}
+   ],
+   body:[
+    {book:String.raw`<p>في المحرك المركب فرقياً يوصل ملف التوالي بحيث يكون المجال المغناطيسي الناتج عنه في <b>عكس اتجاه</b> المجال الناتج عن ملف التوازي، أي أن ملف التوالي يعاكس ملف التوازي. فعند أي حمل تكون محصلة المجال المغناطيسي هي الفرق بين مجالي ملفي التوازي والتوالي:</p>
+     <div class="eq">$$\phi_t=\phi_{sh}-\phi_{se}$$</div>`,ref:'ص 38'},
+    {watch:String.raw`<p>التراكمي والفرقي قد يكونان المحرك نفسه تماماً؛ الفرق في <b>اتجاه توصيل</b> طرفي ملف التوالي فقط. لذلك يجب التأكد من التوصيل الصحيح عند تركيب المحرك أو صيانته.</p>`}
+   ]},
+
+  {st:7,short:'العزم (الفرقي)',title:'الفرقي: أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 38',
+   q:'إذا كان المجال يضعف كلما زاد التيار، هل يبقى العزم يزيد؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="العزم مع تيار المنتج للمركب الفرقي: منحنى يرتفع ثم يقل ميله، وتحته خط مستقيم متقطع أشد ميلاً" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><g data-tip="الخط المتقطع المستقيم: مرسوم للمقارنة كما في الشكل ⟦(3-3a)⟧؛ يوضح أن عزم الفرقي يزيد بمعدل أقل منه."><path d="M60 250L240 56" fill="none" stroke="#7A8F86" stroke-width="4" stroke-dasharray="9 6"/><path d="M60 250L240 56" fill="none" stroke="transparent" stroke-width="18"/></g><g data-tip="المركب الفرقي: العزم يزيد مع التيار، لكن ميله يقل تدريجياً لأن المجال الكلي يضعف."><path d="M60 250Q160 120 310 108" fill="none" stroke="#E8735A" stroke-width="6" stroke-linecap="round"/><path d="M60 250Q160 120 310 108" fill="none" stroke="transparent" stroke-width="20"/><text x="250" y="140" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">الفرقي</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-3a)</span> مبسطاً: عزم الفرقي يزيد، لكن بمعدل يقل تدريجياً.<br><b>مرّر المؤشر على المنحنى والخط المتقطع (أو المسهما في الجوال) لتعرف معناهما.</b>',
+   side:[
+    {predict:{q:'كيف يزداد عزم المحرك المركب الفرقي مع تيار المنتج حسب الكتاب؟',opts:[
+     ['بمعدل أكبر من محرك التوالي',false,'هذا أقرب إلى التراكمي، حيث يتجمع المجالان.'],
+     ['يزداد، لكن بمعدل أقل من محرك التوالي',true,'نص الكتاب في ص 38: «سيزداد العزم المتولد ولكن بمعدل أقل من محرك التوالي».'],
+     ['يتناقص مع زيادة التيار',false,'العزم ما زال يزيد، لأن التيار يزيد أسرع مما يضعف المجال.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>بما أن مجال ملف التوالي يعاكس مجال ملف التوازي، فإن محصلة المجال المغناطيسي تتناقص مع زيادة تيار الحمل. في هذه الحالة سيزداد العزم المتولد ولكن <b>بمعدل أقل</b> من محرك التوالي، الشكل <span class="ltr">(3-3a)</span>.</p>`,ref:'ص 38'},
+    {tip:String.raw`<p>العزم \(T\propto I_a\,\phi_t\): التيار يكبر، والمجال \(\phi_t\) يصغر. الحاصل ما زال يكبر، لكن أبطأ؛ لذلك ينحني المنحنى إلى الأسفل بدل أن يكون مستقيماً.</p>`}
+   ]},
+
+  {st:8,short:'السرعة (الفرقي)',title:'الفرقي: ب- علاقة السرعة مع تيار المنتج <span class="ltr">n = f(I<sub>a</sub>)</span>',ref:'ص 38',
+   q:'في كل المحركات السابقة كانت السرعة تنخفض مع الحمل. هل يشذ المركب الفرقي عن ذلك؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="السرعة مع تيار المنتج للمركب الفرقي: خط أفقي متقطع عند سرعة اللاحمل، والمنحنى يرتفع فوقه مع زيادة التيار" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="56" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">Ia</text><g data-tip="الخط الأفقي المتقطع: مستوى سرعة اللاحمل، كما في الشكل ⟦(3-3b)⟧."><path d="M60 160H310" fill="none" stroke="#7A8F86" stroke-width="3" stroke-dasharray="9 6"/><path d="M60 160H310" fill="none" stroke="transparent" stroke-width="16"/><text x="270" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">سرعة اللاحمل</text></g><g data-tip="المركب الفرقي: السرعة ترتفع فوق سرعة اللاحمل كلما زاد الحمل، ثم ترتفع بشكل أسرع؛ وهذا خطر على المحرك."><path d="M60 160C160 158 250 130 310 60" fill="none" stroke="#E8735A" stroke-width="6" stroke-linecap="round"/><path d="M60 160C160 158 250 130 310 60" fill="none" stroke="transparent" stroke-width="20"/><text x="214" y="110" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">الفرقي</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-3b)</span> مبسطاً: سرعة الفرقي ترتفع فوق سرعة اللاحمل كلما زاد الحمل.<br><b>مرّر المؤشر على المنحنى والخط المتقطع (أو المسهما في الجوال) لتعرف معناهما.</b>',
+   side:[
+    {predict:{q:'زاد الحمل على محرك مركب فرقي. ماذا يحدث لسرعته؟',opts:[
+     ['تنخفض كمحرك التوالي',false,'في التوالي والتراكمي يقوى المجال مع الحمل فتنخفض السرعة. هنا المجال يضعف.'],
+     ['تبقى ثابتة',false,'المجال الكلي يتغير مع الحمل، فلا تبقى السرعة ثابتة.'],
+     ['تزداد',true,'نص الكتاب في ص 38: «مع زيادة الحمل تتناقص محصلة المجال المغناطيسي، وبالتالي تزداد سرعة المحرك».']]}}
+   ],
+   body:[
+    {book:String.raw`<p>مع زيادة الحمل تتناقص محصلة المجال المغناطيسي، وبالتالي تزداد سرعة المحرك، الشكل <span class="ltr">(3-3b)</span>، أي أن <b>سرعة المحرك تزداد بزيادة الحمل</b>، هذه الخاصية تشكل خطورة على المحرك إذا ما ازداد التحميل عليه وازدادت السرعة عن الحدود المعقولة.</p>`,ref:'ص 38'},
+    {title:'زِد الحمل: التراكمي مقابل الفرقي',widget:(el,B)=>{
+      const C={cum:['زاد الحمل','زاد تيار المنتج','زاد مجال ملف التوالي','زاد المجال الكلي (يساعد)','انخفضت السرعة'],
+               diff:['زاد الحمل','زاد تيار المنتج','زاد مجال ملف التوالي','نقص المجال الكلي (يعاكس)','ارتفعت السرعة: خطر']};
+      let k='diff',tm=[];
+      el.innerHTML=`<p class="sub" style="margin:0 0 10px">اختر النوع، ثم اضغط «زِد الحمل» وتابع السلسلة. لاحظ أن الحلقات الثلاث الأولى واحدة في النوعين.</p>
+       <div class="w-row" style="margin-top:0"><button class="btn" type="button" data-k="cum">المركب التراكمي</button><button class="btn" type="button" data-k="diff">المركب الفرقي</button></div>
+       <div class="chain" style="margin-top:10px"></div>
+       <div class="w-row"><button class="btn pri" type="button" data-go>زِد الحمل</button><button class="btn" type="button" data-rs>إعادة</button></div>`;
+      const ch=el.querySelector('.chain');
+      const rs=()=>{tm.forEach(clearTimeout);tm=[];ch.querySelectorAll('.ck').forEach(x=>x.classList.remove('on'))};
+      const draw=()=>{rs();const S=C[k];ch.innerHTML=S.map((s,i)=>`<span class="ck${i===S.length-1?' end':''}">${s}</span>${i<S.length-1?'<span class="ar">←</span>':''}`).join('');
+        el.querySelectorAll('[data-k]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.k===k);b.classList.toggle('pri',b.dataset.k===k)})};
+      el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{k=b.dataset.k;draw()});
+      el.querySelector('[data-go]').onclick=()=>{rs();ch.querySelectorAll('.ck').forEach((x,i)=>tm.push(setTimeout(()=>x.classList.add('on'),i*550)))};
+      el.querySelector('[data-rs]').onclick=rs;
+      draw();
+    }}
+   ]},
+
+  {st:9,short:'الخواص الميكانيكية (الفرقي)',title:'الفرقي: ج- علاقة العزم مع السرعة <span class="ltr">T = f(n)</span>',ref:'ص 38–39',
+   q:'لماذا يوصي الكتاب بتجنب هذا المحرك في التحريك؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="السرعة مع العزم للمركب الفرقي: المنحنى يرتفع فوق سرعة اللاحمل حتى يدخل منطقة السرعة غير المسموح بها" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#F7DCC8"/><rect x="40" y="36" width="290" height="236" rx="12" fill="#FBF6EE"/><g data-tip="المنطقة الحمراء: سرعة أعلى من الحدود المسموح بها؛ يصل إليها الفرقي عند زيادة العزم زيادة كبيرة."><rect x="62" y="44" width="262" height="44" fill="#E8735A" opacity="0.28"/><text x="190" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">فوق الحدود المسموح بها</text></g><path d="M60 50V250H316" fill="none" stroke="#2C4A40" stroke-width="2.5"/><polygon points="60,42 54,54 66,54" fill="#2C4A40"/><polygon points="324,250 312,244 312,256" fill="#2C4A40"/><text x="76" y="104" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">n</text><text x="314" y="270" text-anchor="middle" font-size="15" font-weight="700" fill="#2C4A40">T</text><g data-tip="الخط الأفقي المتقطع: مستوى سرعة اللاحمل، كما في الشكل ⟦(3-3c)⟧."><path d="M60 170H310" fill="none" stroke="#7A8F86" stroke-width="3" stroke-dasharray="9 6"/><path d="M60 170H310" fill="none" stroke="transparent" stroke-width="16"/><text x="272" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">سرعة اللاحمل</text></g><g data-tip="المركب الفرقي: كلما ازداد العزم ازدادت السرعة."><path d="M60 170C170 168 250 140 304 56" fill="none" stroke="#E8735A" stroke-width="6" stroke-linecap="round"/><path d="M60 170C170 168 250 140 304 56" fill="none" stroke="transparent" stroke-width="20"/><text x="200" y="134" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">الفرقي</text></g><text x="180" y="300" text-anchor="middle" font-size="13" fill="#2C4A40">رسم توضيحي لشكل المنحنى</text></svg>`,
+   cap:'الشكل <span class="ltr">(3-3c)</span> مبسطاً: كلما زاد العزم زادت السرعة، حتى تتجاوز الحدود المسموح بها.<br><b>مرّر المؤشر على المنحنى والخط المتقطع والمنطقة الحمراء (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'قطار بمحرك مركب فرقي يبدأ صعود مرتفع (يزيد الحمل). ما المشكلة؟',opts:[
+     ['تزداد السرعة بدل أن تنخفض، وقد تتجاوز الحدود المسموح بها',true,'نص الكتاب في ص 38: «فعند زيادة العزم زيادة كبيرة تزداد السرعة عن الحدود المسموح بها». لذلك يجب تجنبه كمحرك للتحريك.'],
+     ['يتوقف المحرك فوراً',false,'لا يقول الكتاب ذلك؛ المشكلة في ارتفاع السرعة لا في التوقف.'],
+     ['لا مشكلة، فعزمه يزيد بمعدل أكبر من التوالي',false,'عزمه يزيد بمعدل أقل من محرك التوالي، وسرعته ترتفع مع الحمل.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>أو الخواص الميكانيكية للمحرك مبينة في الشكل <span class="ltr">(3-3c)</span>. كما يتضح من الشكل أنه كلما ازداد العزم ازدادت السرعة. فعند زيادة العزم زيادة كبيرة تزداد السرعة عن الحدود المسموح بها.</p>
+     <p><b>ملحوظة: يجب تجنب استخدام هذا النوع كمحرك للتحريك.</b></p>`,ref:'ص 38–39'},
+    {tip:String.raw`<table class="tt"><thead><tr><th></th><th>المركب التراكمي</th><th>المركب الفرقي</th></tr></thead><tbody>
+     <tr><td>المجال الكلي</td><td>\(\phi_{sh}+\phi_{se}\): يزيد مع الحمل</td><td>\(\phi_{sh}-\phi_{se}\): ينقص مع الحمل</td></tr>
+     <tr><td>العزم مع التيار</td><td>أكبر من عزم أي من الملفين وحده</td><td>يزيد بمعدل أقل من محرك التوالي</td></tr>
+     <tr><td>السرعة مع الحمل</td><td>تنخفض (كالتوالي)، واللاحمل محدود</td><td>ترتفع، وقد تتجاوز الحد المسموح</td></tr>
+     <tr><td>في التحريك</td><td>مناسب</td><td>يجب تجنبه</td></tr></tbody></table>`,title:'المقارنة في جدول'},
+    {watch:String.raw`<p>في الكتاب يُطبع رمز التناسب كأنه الحرف «α» (مثل <span class="ltr">T α Ia . φt</span> في ص 37)، والمقصود \(\propto\) «يتناسب مع».</p>`}
+   ]},
+
+  {recap:[
+   String.raw`المحرك المركب فيه ملف توازٍ وملف توالٍ؛ إن ساعد مجال التوالي مجال التوازي فهو تراكمي، وإن عاكسه فهو فرقي (تفاضلي) (ص 37).`,
+   String.raw`التراكمي: \(\phi_t=\phi_{sh}+\phi_{se}\)؛ عزمه أكبر من عزم أي من الملفين وحده، وسرعته تقل مع الحمل، وسرعة اللاحمل محدودة.`,
+   String.raw`خواصه الميكانيكية (العزم مع السرعة) تقع بين خواص محرك التوازي ومحرك التوالي (ص 38).`,
+   String.raw`الفرقي: \(\phi_t=\phi_{sh}-\phi_{se}\)؛ عزمه يزيد بمعدل أقل من التوالي، وسرعته تزيد مع الحمل، فيجب تجنبه كمحرك للتحريك (ص 38–39).`]}
+],
  theory:[
   {h:'خواص المحرك المركب',ref:'ص 37',html:`<p>يحتوي محرك التيار المستمر المركب (قصير) على ملفين للمجال المغناطيسي، يوصل الملف الأول <b>على التوازي</b> مع المنتج ويوصل الثاني <b>على التوالي</b> مع المنتج. وينقسم المحرك المركب إلى نوعين بناءً على مجال ملف التوالي هل يساعد أم يعاكس مجال ملف التوازي، ففي الحالة الأولى يسمى المحرك بـ<b>المحرك المركب التراكمي</b> وفي الثانية يسمى بـ<b>المحرك المركب الفرقي أو التفاضلي</b>.</p>`},
   {fig:'',caption:'توضيح للمتدرب — ليس من الكتاب: دائرة المحرك المركب (ملف توالٍ D1–D2 مع المنتج، وملف توازٍ E1–E2 على المصدر). رسم توضيحي.',draw:()=>box(dcCircuitSVG({type:'cum'}),420)},
@@ -455,6 +798,131 @@ lesson({
  id:'u3-l3',unit:3,order:3,pages:'39–42',
  title:'محركات التيار المتردد للتحريك: المحرك العام والمحرك الحثي ثلاثي الأوجه',
  summary:'المحرك العام محرك توالٍ يعمل على التيار المستمر والمتردد، قدرته كبيرة بالنسبة لحجمه، وسرعته على المتردد أقل وعزم بدئه أضعف، فيناسب التحريك خارج المدن. والمحرك الحثي ثلاثي الأوجه: منحنى العزم مع السرعة جزءان، غير متزن من s = 1 إلى sm ومتزن من sm إلى 0. مع أسئلة الوحدة الثالثة.',
+ stations:[
+  {intro:true},
+
+  {st:1,short:'المحرك العام',title:'محركات التيار المتردد كمحركات للتحريك — المحرك العام',ref:'ص 39',
+   q:'محرك واحد يعمل إذا وصلته بمصدر تيار مستمر، ويعمل أيضاً إذا وصلته بمصدر تيار متردد. ما هذا المحرك، وما ميزته؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="محرك عام واحد يمكن توصيله بمصدر تيار مستمر أو بمصدر تيار متردد" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><g data-tip="مصدر تيار مستمر: الرمز ⟦=⟧ أو ⟦D.C⟧."><rect x="28" y="56" width="104" height="70" rx="12" fill="#F2C14E" stroke="#2C4A40" stroke-width="3"/><line x1="58" y1="84" x2="102" y2="84" stroke="#2C4A40" stroke-width="4"/><line x1="58" y1="96" x2="70" y2="96" stroke="#2C4A40" stroke-width="4"/><line x1="74" y1="96" x2="86" y2="96" stroke="#2C4A40" stroke-width="4"/><line x1="90" y1="96" x2="102" y2="96" stroke="#2C4A40" stroke-width="4"/><text x="80" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">مستمر</text></g><g data-tip="مصدر تيار متردد: الرمز ⟦~⟧ أو ⟦A.C⟧."><rect x="228" y="56" width="104" height="70" rx="12" fill="#4FB3A9" stroke="#2C4A40" stroke-width="3"/><path d="M256 90q8 -16 16 0t16 0t16 0" fill="none" stroke="#2C4A40" stroke-width="4" stroke-linecap="round"/><text x="280" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40">متردد</text></g><path d="M80 126V160L150 196M280 126V160L210 196" fill="none" stroke="#2C4A40" stroke-width="3" stroke-dasharray="8 6"/><g data-tip="المحرك العام (محرك التوالي العام): تركيبه مثل محرك التيار المستمر التوالي مع بعض التعديلات ليعمل جيداً على التيار المتردد. قدرته عالية مقارنة بحجمه."><circle cx="180" cy="214" r="40" fill="#FBF6EE" stroke="#2C4A40" stroke-width="4"/><text x="180" y="222" text-anchor="middle" font-size="22" font-weight="700" fill="#2C4A40">M</text><rect x="220" y="208" width="44" height="12" rx="3" fill="#2C4A40"/></g><text x="180" y="290" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">محرك واحد يعمل على المصدرين</text></svg>`,
+   cap:'المحرك العام يعمل على مصدر التيار المستمر وعلى مصدر التيار المتردد.<br><b>مرّر المؤشر على المصدرين والمحرك (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'لماذا يُستخدم المحرك العام في التطبيقات التي تتطلب خفة في الوزن؟',opts:[
+     ['لأنه لا يحتاج إلى ملف مجال',false,'هو محرك توالٍ، فيه ملف مجال على التوالي مع المنتج.'],
+     ['لأنه ذو قدرة عالية مقارنة بحجمه',true,'نص الكتاب في ص 39: «يمكنه أن يعمل بسرعات عالية، وينتج عزماً كبيراً، فهو ذو قدرة عالية مقارنة بحجمه».'],
+     ['لأنه يعمل على التيار المتردد فقط',false,'ميزته أنه يعمل على المصدرين معاً.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>محرك التوالي العام أو <b>المحرك العام</b> هو محرك يعمل على كل من مصدري التيار المستمر والتيار المتردد، وله نفس تركيب آلات التيار المستمر ذات تغذية التوالي مع إدخال بعض التعديلات لتحسين أداء المحرك عند تشغيله بالتيار المتردد، وهذا النوع من المحركات يمكنه أن يعمل بسرعات عالية، وينتج عزماً كبيراً، فهو <b>ذو قدرة عالية مقارنة بحجمه</b>. لذلك يستخدم في التطبيقات التي تتطلب خفة في وزن المحرك المستخدم مع قدرات عالية.</p>`,ref:'ص 39'},
+    {add:String.raw`<p>المحرك العام الصغير موجود في بيتك: في المثقاب الكهربائي، والمكنسة الكهربائية، والخلاط. كلها تحتاج سرعة عالية وقدرة كبيرة من محرك خفيف صغير. وفي التحريك الكهربائي يُستخدم المحرك العام بقدرات كبيرة لجر القطارات على شبكات التيار المتردد.</p>`},
+    {tip:String.raw`<p>لماذا يعمل محرك التوالي على التيار المتردد أصلاً؟ لأن تيار المنتج وتيار المجال هما التيار نفسه؛ فإذا انعكس اتجاه التيار انعكس الاثنان معاً، فيبقى العزم في الاتجاه نفسه.</p>`}
+   ]},
+
+  {st:2,short:'خواص المحرك العام',title:'خواص محرك التوالي العام',ref:'ص 39–40',
+   q:'المحرك نفسه والجهد نفسه، مرة مستمراً ومرة متردداً. في أي الحالتين يدور أسرع؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="الشكل 3-4: العزم مع السرعة بالوحدات النسبية، منحنى التيار المتردد على يسار منحنى التيار المستمر" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#E6E2F8"/><rect x="24" y="30" width="316" height="252" rx="12" fill="#FBF6EE"/><g stroke="#C9C2B3" stroke-width="1" stroke-dasharray="3 4"><line x1="70" y1="194" x2="320" y2="194"/><line x1="70" y1="142" x2="320" y2="142"/><line x1="70" y1="90" x2="320" y2="90"/><line x1="70" y1="38" x2="320" y2="38"/><line x1="118" y1="38" x2="118" y2="246"/><line x1="166" y1="38" x2="166" y2="246"/><line x1="214" y1="38" x2="214" y2="246"/><line x1="262" y1="38" x2="262" y2="246"/><line x1="310" y1="38" x2="310" y2="246"/></g><path d="M70 36V246H322" fill="none" stroke="#2C4A40" stroke-width="2.5"/><g font-size="11" fill="#2C4A40" text-anchor="middle"><text x="118" y="261">0.2</text><text x="166" y="261">0.4</text><text x="214" y="261">0.6</text><text x="262" y="261">0.8</text><text x="310" y="261">1.0</text><text x="56" y="250">0</text><text x="54" y="198">1.0</text><text x="54" y="146">2.0</text><text x="54" y="94">3.0</text><text x="54" y="42">4.0</text></g><text x="196" y="276" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40" direction="ltr">Speed (pu)</text><text x="36" y="142" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40" direction="ltr" transform="rotate(-90 36 142)">Torque (pu)</text><g data-tip="منحنى التشغيل على التيار المتردد ⟦A.C⟧: لنفس العزم تكون السرعة أقل منها على التيار المستمر."><path d="M94 38L118 74.4L166 116L214 152.4L262 173.2L310 194" fill="none" stroke="#E8735A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M94 38L118 74.4L166 116L214 152.4L262 173.2L310 194" fill="none" stroke="transparent" stroke-width="20"/><text x="140" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#E8735A" direction="ltr">A.C</text></g><g data-tip="منحنى التشغيل على التيار المستمر ⟦D.C⟧: لنفس العزم تكون السرعة أعلى."><path d="M190 38L214 79.6L262 136.8L286 162.8L310 181" fill="none" stroke="#2C4A40" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M190 38L214 79.6L262 136.8L286 162.8L310 181" fill="none" stroke="transparent" stroke-width="20"/><text x="276" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40" direction="ltr">D.C</text></g><g data-tip="خط عزم واحد ⟦2.0 pu⟧: يقطع منحنى ⟦A.C⟧ عند سرعة أقل مما يقطع منحنى ⟦D.C⟧."><line x1="70" y1="142" x2="320" y2="142" stroke="#12855A" stroke-width="2.5"/><circle cx="200" cy="142" r="6" fill="#E8735A" stroke="#2C4A40" stroke-width="2"/><circle cx="266" cy="142" r="6" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2.5"/><rect x="70" y="134" width="250" height="16" fill="transparent"/></g></svg>`,
+   cap:'الشكل <span class="ltr">(3-4)</span> مرسوماً من جديد بتدريج الكتاب (النقاط مقروءة تقريبياً من رسمه). الخط الأخضر عزم واحد يقطع المنحنيين.<br><b>مرّر المؤشر على المنحنيين والخط الأخضر (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'لنفس الجهد، لماذا تكون سرعة المحرك العام على التيار المتردد أقل منها على التيار المستمر؟',opts:[
+     ['لأن معاوقة ملفات المنتج والمجال تمتص جزءاً من جهد المصدر',true,'هذا السبب الأول في ص 39–40. والسبب الثاني: التشبع عند القيم العظمى للتيار المتردد يقلل المجال والعزم.'],
+     ['لأن تردد المصدر يفرض سرعة تزامنية',false,'هذا في المحرك الحثي والتزامني؛ المحرك العام محرك توالٍ بلا سرعة تزامنية.'],
+     ['لأن المحرك لا يدور على التيار المتردد إلا بنصف سرعته دائماً',false,'لا توجد نسبة ثابتة كهذه؛ الفرق يأتي من المعاوقة والتشبع.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>الشكل (3-4) يوضح خواص المحرك العام، يتضح من الشكل، أن خواص المحرك تختلف بعض الشيء عند تشغيله بالتيار المتردد، عن خواصه عند تشغيله بالتيار المستمر، وذلك لسببين:</p>
+     <ul><li>معاوقة ملفات المنتج وملفات المجال تمتص جزءاً من جهد المصدر، وبالتالي تكون <b>السرعة أقل</b> عند استخدام الجهد المتردد عنها في حالة استخدام نفس الجهد المستمر.</li>
+     <li>قد تصل الدائرة المغناطيسية إلى حالة التشبع المغناطيسي عند القيم العظمى للتيار المتردد، مما يقلل من قيمة المجال المغناطيسي وبالتالي <b>العزم المتولد</b>.</li></ul>`,ref:'ص 39–40'},
+    {title:'اختر عزماً واقرأ السرعتين',widget:(el,B)=>{
+      const AC=[[0.1,4.0],[0.2,3.3],[0.4,2.5],[0.6,1.8],[0.8,1.4],[1.0,1.0]],DC=[[0.5,4.0],[0.6,3.2],[0.8,2.1],[0.9,1.6],[1.0,1.25]];
+      const sp=(P,T)=>{for(let i=0;i<P.length-1;i++){const [n1,t1]=P[i],[n2,t2]=P[i+1];if(T<=t1&&T>=t2)return n1+(t1-T)/(t1-t2)*(n2-n1)}return NaN};
+      const f=x=>isFinite(x)?x.toFixed(2):'خارج الرسم';
+      el.innerHTML=`<p class="sub" style="margin:0 0 10px">حرّك العزم، واقرأ سرعة المحرك على كل مصدر من منحنيي الشكل (3-4). النقاط مقروءة تقريبياً من رسم الكتاب، والوحدات نسبية <span class="ltr">(pu)</span>.</p>
+       <label class="w-sl"><span>العزم <span class="ltr">T = <b data-o="T"></b> pu</span></span><input type="range" min="1.25" max="4" step="0.05" dir="ltr" value="2"></label>
+       <div class="w-facts" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><span>السرعة على التيار المستمر</span><b data-o="d"></b></div><div><span>السرعة على التيار المتردد</span><b data-o="a"></b></div><div><span>المتردد ÷ المستمر</span><b data-o="r"></b></div></div>`;
+      const o=k=>el.querySelector(`[data-o="${k}"]`),rg=el.querySelector('input');
+      const draw=()=>{const T=+rg.value,a=sp(AC,T),d=sp(DC,T);o('T').textContent=T.toFixed(2);o('d').textContent=f(d);o('a').textContent=f(a);o('r').textContent=isFinite(a)&&isFinite(d)?(a/d).toFixed(2):'—'};
+      rg.oninput=draw;draw();
+    }},
+    {tip:String.raw`<p><b>pu</b> اختصار <span class="ltr">per unit</span> أي «بالنسبة للقيمة المقننة»: <span class="ltr">1.0</span> تعني القيمة المقننة، و<span class="ltr">2.0</span> ضعفها. لذلك لا يحتاج الشكل إلى أرقام محرك معين.</p>`},
+    {watch:String.raw`<p>تعليق الشكل مطبوع في الكتاب «الشكل <span class="ltr">4-3</span>» بترتيب أرقام معكوس، والنص يسميه (3-4)؛ وهو الشكل نفسه.</p>`}
+   ]},
+
+  {st:3,short:'عزم البدء وخارج المدن',title:'عزم البدء في المحرك العام: لماذا خارج المدن؟',ref:'ص 40',
+   q:'قطار يقف كل بضع دقائق، وآخر يسير مسافات طويلة بلا توقف. أيهما يناسبه المحرك العام؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="خطان للقطار: خط داخل المدينة كثير المحطات المتقاربة، وخط خارج المدن محطاته متباعدة" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#FBE6C4"/><g data-tip="داخل المدن: المحطات متقاربة، فيتكرر الوقوف وبدء الحركة؛ والمحرك العام عزم بدئه قليل، فلا يناسب."><rect x="30" y="54" width="300" height="96" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2.5"/><text x="180" y="80" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2C4A40">داخل المدن</text><line x1="50" y1="116" x2="310" y2="116" stroke="#2C4A40" stroke-width="5" stroke-linecap="round"/><g fill="#E8735A" stroke="#2C4A40" stroke-width="2"><circle cx="60" cy="116" r="9"/><circle cx="102" cy="116" r="9"/><circle cx="144" cy="116" r="9"/><circle cx="186" cy="116" r="9"/><circle cx="228" cy="116" r="9"/><circle cx="270" cy="116" r="9"/><circle cx="300" cy="116" r="9"/></g><text x="180" y="142" text-anchor="middle" font-size="12" fill="#2C4A40">وقوف وبدء حركة متكرر</text></g><g data-tip="خارج المدن: المسافات بين الوقفات طويلة، والتسارع العالي غير ضروري؛ فيناسب المحرك العام."><rect x="30" y="170" width="300" height="96" rx="14" fill="#FBF6EE" stroke="#2C4A40" stroke-width="2.5"/><text x="180" y="196" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2C4A40">خارج المدن</text><line x1="50" y1="232" x2="310" y2="232" stroke="#2C4A40" stroke-width="5" stroke-linecap="round"/><g fill="#12855A" stroke="#2C4A40" stroke-width="2"><circle cx="60" cy="232" r="9"/><circle cx="300" cy="232" r="9"/></g><text x="180" y="258" text-anchor="middle" font-size="12" fill="#2C4A40">مسافات طويلة بين الوقفات</text></g><text x="180" y="296" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2C4A40">الدوائر = المحطات</text></svg>`,
+   cap:'كثرة المحطات تعني كثرة بدء الحركة؛ وعزم البدء هو نقطة ضعف المحرك العام.<br><b>مرّر المؤشر على كل خط (أو المسه في الجوال) لتعرف لماذا يناسبه المحرك العام أو لا يناسبه.</b>',
+   side:[
+    {predict:{q:'لماذا لا يناسب المحرك العام وسائل التحريك داخل المدن؟',opts:[
+     ['لأن سرعته القصوى منخفضة',false,'المحرك العام يعمل بسرعات عالية؛ المشكلة عند البدء.'],
+     ['لأن وزنه كبير',false,'العكس: قدرته عالية مقارنة بحجمه ووزنه.'],
+     ['لأن عزم بدء حركته قليل، وداخل المدن يتكرر الوقوف وبدء الحركة',true,'نص الكتاب في ص 40: عند البدء يكون معامل القدرة رديئاً، فيكون عزم البدء أقل بكثير من محرك التيار المستمر.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>عند بدء الحركة \((E=0)\) يكون معامل القدرة رديئاً (منخفضاً) إذاً لنفس التيار يكون <b>عزم بدء الحركة أقل بكثير</b> من العزم المتولد في محرك التيار المستمر. نتيجة لقلة عزم بدء الحركة فإن هذه المحركات <b>ليست مناسبة لوسائل التحريك داخل المدن</b> حيث يتكرر الوقوف وبدء الحركة، لكنها تكون مناسبة للاستعمال في وسائل التحريك <b>خارج المدن</b> حيث تكون المسافات طويلة بين الوقفات، ولا يكون التسارع العالي ضرورياً في هذه الحالة.</p>`,ref:'ص 40'},
+    {tip:String.raw`<p>عند البدء لا يدور المحرك، فالقوة الدافعة العكسية \(E=0\). يبقى في الدائرة المقاومة والمعاوقة فقط، ومعاوقة الملفات على التيار المتردد كبيرة، فيصبح معامل القدرة رديئاً، فيقل الجزء المفيد من التيار الذي يولد العزم.</p>`},
+    {add:String.raw`<p>قطارات المسافات الطويلة بين المدن تبدأ حركتها مرات قليلة في الرحلة، ثم تسير طويلاً بسرعة شبه ثابتة؛ أما قطار الأنفاق (المترو) فيقف ويبدأ كل دقيقة أو دقيقتين تقريباً، فيحتاج تسارعاً عالياً وعزم بدء كبيراً.</p>`}
+   ]},
+
+  {st:4,short:'المحرك الحثي',title:'المحرك الحثي ثلاثي الأوجه',ref:'ص 41',
+   q:'على منحنى العزم والسرعة نفسه، جزء يعمل فيه المحرك بثبات وجزء لا يستطيع البقاء فيه. ما الفرق بينهما؟',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="الشكل 3-5: العزم مع الانزلاق والسرعة، الجزء الصاعد غير متزن والجزء الهابط متزن" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#DDEFE6"/><rect x="24" y="30" width="316" height="262" rx="12" fill="#FBF6EE"/><g data-tip="المنطقة البرتقالية: تشغيل غير متزن ⟦Unstable Operation⟧، من ⟦s = 1⟧ إلى ⟦s = sm⟧؛ هنا يزداد العزم بزيادة السرعة."><rect x="62" y="40" width="186" height="174" fill="#E8735A" opacity="0.18"/><text x="155" y="58" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">غير متزن</text></g><g data-tip="المنطقة الخضراء: تشغيل متزن ⟦Stable Operation⟧، من ⟦s = sm⟧ إلى ⟦s = 0⟧؛ هنا يقل العزم بزيادة السرعة."><rect x="248" y="40" width="64" height="174" fill="#12855A" opacity="0.18"/><text x="280" y="58" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2C4A40">متزن</text></g><path d="M62 36V214H318" fill="none" stroke="#2C4A40" stroke-width="2.5"/><text x="48" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="#2C4A40">T</text><line x1="248" y1="78" x2="248" y2="214" stroke="#7A8F86" stroke-width="2" stroke-dasharray="5 4"/><path d="M62 160C120 150 200 110 248 78C272 64 292 130 312 214" fill="none" stroke="#2C4A40" stroke-width="5" stroke-linecap="round"/><g data-tip="عزم البدء ⟦T starting⟧: العزم عند السكون ⟦(n = 0، s = 1)⟧."><circle cx="62" cy="160" r="7" fill="#F2C14E" stroke="#2C4A40" stroke-width="2.5"/><text x="70" y="184" text-anchor="start" font-size="11.5" font-weight="700" fill="#2C4A40" direction="ltr">T starting</text></g><g data-tip="أقصى عزم ⟦T max⟧ عند الانزلاق ⟦sm⟧: الحد بين الجزأين."><circle cx="248" cy="78" r="7" fill="#F2C14E" stroke="#2C4A40" stroke-width="2.5"/><text x="232" y="74" text-anchor="end" font-size="11.5" font-weight="700" fill="#2C4A40" direction="ltr">T max</text></g><g data-tip="محور الانزلاق ⟦s⟧: من ⟦1⟧ عند السكون إلى ⟦0⟧ عند السرعة التزامنية."><line x1="62" y1="236" x2="312" y2="236" stroke="#2C4A40" stroke-width="2"/><text x="62" y="252" text-anchor="middle" font-size="11.5" fill="#2C4A40">1.0</text><text x="248" y="252" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40">sm</text><text x="312" y="252" text-anchor="middle" font-size="11.5" fill="#2C4A40">0</text><text x="40" y="240" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40">s</text></g><g data-tip="محور السرعة ⟦n⟧: من ⟦0⟧ عند السكون إلى السرعة التزامنية ⟦ns⟧."><line x1="62" y1="266" x2="312" y2="266" stroke="#2C4A40" stroke-width="2"/><text x="62" y="282" text-anchor="middle" font-size="11.5" fill="#2C4A40">0</text><text x="312" y="282" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40">ns</text><text x="40" y="270" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2C4A40">n</text></g></svg>`,
+   cap:'الشكل <span class="ltr">(3-5)</span> مبسطاً: محوران أفقيان، الانزلاق من 1 إلى 0 والسرعة من 0 إلى <span class="ltr">n<sub>s</sub></span>.<br><b>مرّر المؤشر على المنطقتين والنقطتين والمحورين (أو المسها في الجوال) لتعرف معناها.</b>',
+   side:[
+    {predict:{q:'في أي جزء من المنحنى تكون خواص تشغيل المحرك متزنة؟',opts:[
+     [String.raw`من \(s=1\) إلى \(s=s_m\)، حيث يزداد العزم بزيادة السرعة`,false,'هذا هو الجزء غير المتزن حسب الكتاب.'],
+     [String.raw`من \(s=s_m\) إلى \(s=0\)، حيث يقل العزم بزيادة السرعة`,true,'نص الكتاب في ص 41: خواص التشغيل «غير متزنة في الجزء الأول، بينما تكون متزنة في الجزء الثاني».'],
+     [String.raw`عند \(s=1\) فقط`,false,'هذه نقطة السكون (بدء الحركة)، وهي في بداية الجزء غير المتزن.']]}}
+   ],
+   body:[
+    {book:String.raw`<p>بالرجوع إلى مقرر آلات التيار المتردد، عند رسم العلاقة بين العزم والانزلاق أو بين العزم والسرعة نحصل على المنحنى الموضح في الشكل (3-5):</p>
+     <p>ينقسم منحنى العلاقة بين العزم والانزلاق (السرعة) إلى جزأين مختلفين، فمن \(s=1\) إلى \(s=s_m\) يزداد عزم الدوران بزيادة السرعة بينما يقل عزم الدوران الذي يبذله المحرك من \(s=s_m\) إلى \(s=0\) بزيادة السرعة ولذلك فإن المحرك تكون خواص تشغيله <b>غير متزنة في الجزء الأول</b>، بينما تكون <b>متزنة في الجزء الثاني</b>.</p>`,ref:'ص 41'},
+    {title:'هزّة صغيرة في السرعة: ماذا يحدث؟',widget:(el,B)=>{
+      const C={st:['انخفضت السرعة قليلاً (حمل زاد لحظة)','زاد عزم المحرك','العزم أكبر من الحمل','عادت السرعة إلى مكانها: تشغيل متزن'],
+               un:['انخفضت السرعة قليلاً (حمل زاد لحظة)','نقص عزم المحرك','العزم أقل من الحمل','تنخفض السرعة أكثر فأكثر: تشغيل غير متزن']};
+      let k='st',tm=[];
+      el.innerHTML=`<p class="sub" style="margin:0 0 10px">اختر الجزء الذي يعمل فيه المحرك، ثم اضغط «هزّة» وتابع السلسلة.</p>
+       <div class="w-row" style="margin-top:0"><button class="btn" type="button" data-k="un">الجزء الأول: من <span class="ltr">s = 1</span> إلى <span class="ltr">s<sub>m</sub></span></button><button class="btn" type="button" data-k="st">الجزء الثاني: من <span class="ltr">s<sub>m</sub></span> إلى <span class="ltr">s = 0</span></button></div>
+       <div class="chain" style="margin-top:10px"></div>
+       <div class="w-row"><button class="btn pri" type="button" data-go>هزّة</button><button class="btn" type="button" data-rs>إعادة</button></div>`;
+      const ch=el.querySelector('.chain');
+      const rs=()=>{tm.forEach(clearTimeout);tm=[];ch.querySelectorAll('.ck').forEach(x=>x.classList.remove('on'))};
+      const draw=()=>{rs();const S=C[k];ch.innerHTML=S.map((s,i)=>`<span class="ck${i===S.length-1?' end':''}">${s}</span>${i<S.length-1?'<span class="ar">←</span>':''}`).join('');
+        el.querySelectorAll('[data-k]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.k===k);b.classList.toggle('pri',b.dataset.k===k)})};
+      el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{k=b.dataset.k;draw()});
+      el.querySelector('[data-go]').onclick=()=>{rs();ch.querySelectorAll('.ck').forEach((x,i)=>tm.push(setTimeout(()=>x.classList.add('on'),i*550)))};
+      el.querySelector('[data-rs]').onclick=rs;
+      draw();
+    }},
+    {tip:String.raw`<p>الانزلاق \(s=\dfrac{n_s-n}{n_s}\) (من مقرر آلات التيار المتردد): عند السكون \(s=1\)، وعند السرعة التزامنية \(s=0\). لذلك يسير محور الانزلاق عكس محور السرعة في الشكل.</p>
+     <p>في الجزء الثاني (المتزن) إذا انخفضت السرعة قليلاً <b>زاد</b> العزم فأعادها، وفي الجزء الأول انخفاضها <b>ينقص</b> العزم فتنخفض أكثر. لذلك يعمل المحرك في التشغيل العادي على الجزء الثاني.</p>`},
+    {watch:String.raw`<p>تعليق الشكل مطبوع في الكتاب «الشكل(<span class="ltr">5-3</span>)» بترتيب أرقام معكوس، والنص يسميه (3-5). والكتاب لا يذكر هنا معادلة لعزم المحرك الحثي؛ شكل المنحنى في المختبر من معادلة خارج الكتاب.</p>`}
+   ]},
+
+  {st:5,short:'أسئلة الوحدة',title:'أسئلة متنوعة — الوحدة الثالثة',ref:'ص 42',
+   q:'خمسة أسئلة تراجع الوحدة كلها. حاول الإجابة قبل أن تفتح الإجابة المقترحة.',
+   art:String.raw`<svg viewBox="0 0 360 320" role="img" aria-label="بطاقة بأسئلة الوحدة الخمسة والمحرك الذي يخصه كل سؤال" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><circle cx="180" cy="160" r="140" fill="#F7DCC8"/><rect x="44" y="40" width="272" height="240" rx="16" fill="#FBF6EE" stroke="#2C4A40" stroke-width="3"/><rect x="44" y="40" width="272" height="40" rx="16" fill="#2C4A40"/><rect x="44" y="64" width="272" height="16" fill="#2C4A40"/><text x="180" y="66" text-anchor="middle" font-size="14.5" font-weight="700" fill="#FBF6EE">أسئلة الوحدة الثالثة</text><g data-tip="السؤال ⟦3-1⟧: محرك التوالي — الدرس الأول من الوحدة."><rect x="60" y="92" width="240" height="30" rx="8" fill="#F2C14E"/><text x="272" y="112" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40" direction="ltr">3-1</text><text x="160" y="112" text-anchor="middle" font-size="12" fill="#2C4A40">محرك التوالي</text></g><g data-tip="السؤال ⟦3-2⟧: المحرك العام — المحطتان الأولى والثالثة من هذا الدرس."><rect x="60" y="128" width="240" height="30" rx="8" fill="#4FB3A9"/><text x="272" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40" direction="ltr">3-2</text><text x="160" y="148" text-anchor="middle" font-size="12" fill="#2C4A40">المحرك العام</text></g><g data-tip="السؤال ⟦3-3⟧: المركب الفرقي — الدرس الثاني من الوحدة."><rect x="60" y="164" width="240" height="30" rx="8" fill="#E8735A"/><text x="272" y="184" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40" direction="ltr">3-3</text><text x="160" y="184" text-anchor="middle" font-size="12" fill="#2C4A40">المركب الفرقي</text></g><g data-tip="السؤال ⟦3-4⟧: المحرك الحثي ثلاثي الأوجه — المحطة الرابعة من هذا الدرس."><rect x="60" y="200" width="240" height="30" rx="8" fill="#CFE6DB"/><text x="272" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40" direction="ltr">3-4</text><text x="160" y="220" text-anchor="middle" font-size="12" fill="#2C4A40">المحرك الحثي (رسم)</text></g><g data-tip="السؤال ⟦3-5⟧: مقارنة التوالي بالمركب التراكمي — الدرسان الأول والثاني من الوحدة."><rect x="60" y="236" width="240" height="30" rx="8" fill="#E6E2F8"/><text x="272" y="256" text-anchor="middle" font-size="12" font-weight="700" fill="#2C4A40" direction="ltr">3-5</text><text x="160" y="256" text-anchor="middle" font-size="12" fill="#2C4A40">التوالي والتراكمي</text></g></svg>`,
+   cap:'كل سؤال وموضوعه.<br><b>مرّر المؤشر على كل سطر (أو المسه في الجوال) لتعرف أين تجد شرحه.</b>',
+   side:[
+    {book:String.raw`<ol style="list-style:none;padding:0"><li><span class="ltr">3-1</span>: ما الذي يجعل محرك التيار المستمر توالي الأكثر مناسبة للاستخدام في التحريك الكهربائي؟</li><li><span class="ltr">3-2</span>: ما الذي يجعل محرك التوالي العام مناسباً للاستخدام في وسائل التحريك خارج المدن؟</li><li><span class="ltr">3-3</span>: لماذا يجب تجنب استخدام محرك التيار المستمر المركب فرقياً كمحرك جر؟</li><li><span class="ltr">3-4</span>: ارسم العلاقة بين العزم والسرعة للمحركات الحثية ثلاثية الأوجه؟</li><li><span class="ltr">3-5</span>: ما الفرق بين محرك التيار المستمر التوالي ومحرك التيار المستمر المركب التراكمي؟</li></ol>`,ref:'ص 42'}
+   ],
+   body:[
+    {predict:{q:'السؤال <span class="ltr">3-3</span>: لماذا يُتجنب المركب الفرقي كمحرك جر؟',opts:[
+     ['لأن عزم بدئه كبير جداً',false,'المشكلة ليست في العزم بل في السرعة.'],
+     ['لأن سرعته تزداد بزيادة الحمل، وقد تتجاوز الحدود المسموح بها',true,'مجال ملف التوالي يعاكس مجال ملف التوازي، فينقص المجال الكلي مع الحمل وترتفع السرعة (ص 38–39).'],
+     ['لأنه لا يعمل إلا على التيار المتردد',false,'المركب الفرقي محرك تيار مستمر.']]}},
+    {tip:String.raw`<p><b><span class="ltr">3-1</span>:</b> أنه يولد عزماً كبيراً عند السرعات المنخفضة (عند البدء والتحميل) وعزماً صغيراً عند السرعات العالية، وأنه ذو سرعة متغيرة تلقائياً: يغير سرعته ذاتياً حسب التحميل، فإذا زاد الحمل (كصعود مرتفع) انخفضت سرعته وزاد عزمه، وإذا نقص الحمل زادت سرعته (ص 35–36). مع الانتباه إلى أنه لا يُشغَّل بلا حمل.</p>
+     <p><b><span class="ltr">3-2</span>:</b> عزم بدء حركته على التيار المتردد أقل بكثير من محرك التيار المستمر لأن معامل القدرة عند البدء رديء، فلا يناسب داخل المدن حيث يتكرر الوقوف والبدء. أما خارج المدن فالمسافات بين الوقفات طويلة والتسارع العالي غير ضروري، وهو ذو قدرة عالية مقارنة بحجمه ووزنه (ص 39–40).</p>
+     <p><b><span class="ltr">3-3</span>:</b> لأن مجال ملف التوالي فيه يعاكس مجال ملف التوازي، فتتناقص محصلة المجال مع زيادة الحمل، فتزداد السرعة بزيادة الحمل؛ وعند زيادة العزم زيادة كبيرة تزداد السرعة عن الحدود المسموح بها، وهذا خطر على المحرك (ص 38–39).</p>
+     <p><b><span class="ltr">3-4</span>:</b> المنحنى كما في الشكل (3-5) والمحطة الرابعة: يبدأ عند السكون <span class="ltr">(n = 0، s = 1)</span> بعزم البدء، ويرتفع مع زيادة السرعة حتى أقصى عزم عند الانزلاق <span class="ltr">s<sub>m</sub></span> (الجزء غير المتزن)، ثم ينحدر بشدة حتى الصفر عند السرعة التزامنية <span class="ltr">(n = n<sub>s</sub>، s = 0)</span> (الجزء المتزن).</p>
+     <p><b><span class="ltr">3-5</span>:</b> في محرك التوالي ملف مجال واحد على التوالي مع المنتج، فالمجال كله يأتي من تيار المنتج: يتلاشى عند اللاحمل فتجمح السرعة، ولذلك لا يُشغَّل بلا حمل. أما المركب التراكمي ففيه ملف توالٍ وملف توازٍ يساعد أحدهما الآخر <span class="ltr">(φt = φsh + φse)</span>: سرعته تقل مع زيادة الحمل كالتوالي، وعزمه أكبر من عزم أي من الملفين وحده، وسرعة اللاحمل محدودة لأن مجال ملف التوازي يبقى موجوداً؛ وخواصه الميكانيكية تقع بين خواص التوازي والتوالي (ص 35–38).</p>`,title:'إجابات مقترحة'},
+    {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لأسئلة ص 42؛ الإجابات المقترحة هنا مأخوذة من نص الوحدة، وهي نفسها التي في الأسلوب الرسمي، ويعتمدها المدرب.</p>`}
+   ]},
+
+  {recap:[
+   String.raw`المحرك العام محرك توالٍ يعمل على المصدرين المستمر والمتردد، وقدرته عالية مقارنة بحجمه (ص 39).`,
+   String.raw`على التيار المتردد سرعته أقل (المعاوقة تمتص جزءاً من الجهد) وعزمه قد يقل (التشبع عند القيم العظمى)، الشكل (3-4).`,
+   String.raw`عند البدء \((E=0)\) معامل القدرة رديء فعزم البدء قليل؛ لذلك يناسب التحريك خارج المدن لا داخلها (ص 40).`,
+   String.raw`المحرك الحثي: من \(s=1\) إلى \(s_m\) تشغيل غير متزن، ومن \(s_m\) إلى \(s=0\) تشغيل متزن، الشكل (3-5).`]}
+],
  theory:[
   {h:'محركات التيار المتردد كمحركات للتحريك — المحرك العام',ref:'ص 39',html:`<p>محرك التوالي العام أو <b>المحرك العام</b> هو محرك يعمل على كل من مصدري التيار المستمر والتيار المتردد، وله نفس تركيب آلات التيار المستمر ذات تغذية التوالي مع إدخال بعض التعديلات لتحسين أداء المحرك عند تشغيله بالتيار المتردد، وهذا النوع من المحركات يمكنه أن يعمل بسرعات عالية، وينتج عزماً كبيراً، فهو <b>ذو قدرة عالية مقارنة بحجمه</b>. لذلك يستخدم في التطبيقات التي تتطلب خفة في وزن المحرك المستخدم مع قدرات عالية.</p>`},
   {h:'خواص محرك التوالي العام',ref:'ص 39–40',html:`<p>الشكل (3-4) يوضح خواص المحرك العام، يتضح من الشكل، أن خواص المحرك تختلف بعض الشيء عند تشغيله بالتيار المتردد، عن خواصه عند تشغيله بالتيار المستمر، وذلك لسببين:</p>
