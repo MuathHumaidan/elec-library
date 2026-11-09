@@ -4,6 +4,8 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const PI=Math.PI,N2W=PI/30,W2N=30/PI;            // rpm <-> rad/s
 const fm=(x,d)=>B.fmtN(x,d);
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 const K_EX=12/(1000*N2W*0.1);                      // من مثال (٢-١): 12 V عند 0.1 A و 1000 rpm  =>  K_E = 1.1459·I_f
 
 /* ---------- styles used only by this unit (CSS variables only) ---------- */
@@ -599,7 +601,8 @@ B.lesson({
   const $=s=>el.querySelector(s);
   $('#l2n').oninput=e=>{n=+e.target.value};$('#l2if').oninput=e=>{If=+e.target.value};$('#l2ra').oninput=e=>{Ra=+e.target.value};$('#l2rl').oninput=e=>{RLp=+e.target.value};
   $('#l2sw').onclick=()=>{sw=sw?0:1;const b=$('#l2sw');b.setAttribute('aria-pressed',sw?'true':'false');b.querySelector('small').innerHTML=sw?'مغلق: الحمل R<sub>L</sub> موصول':'مفتوح: لا حمل (R<sub>L</sub> = ∞)'};
-  const calc=()=>{const w=n*N2W,KE=K_EX*If,Ea=KE*w,RL=logR(RLp);const Va=sw?Ea/(1+Ra/RL):Ea,Ia=sw?Va/RL:0;return {w,KE,Ea,RL,Va,Ia}};
+  /* أعطال مخفية: fopen دائرة المجال مفتوحة، kF حلقات مقصورة في ملف المجال (فيض أقل)، frev أطراف المجال معكوسة، brush تلامس رديء عند الفرش (مقاومة إضافية في دائرة المنتج) */
+  const calc=()=>{const w=n*N2W,IfA=chF('fopen')?0:If,KE=K_EX*IfA*(chF('kF')?0.7:1)*(chF('frev')?-1:1),Ea=KE*w,RL=logR(RLp),RaA=chF('brush')?Ra+80:Ra;const Va=sw?Ea/(1+RaA/RL):Ea,Ia=sw?Va/RL:0;return {w,KE,Ea,RL,Va,Ia,IfA}};
   const steps=stepsUI($('#l2st'),[
    {t:'اللاحمل',x:'افتح المفتاح. لا يمر تيار في المنتج فيكون <span class="ltr">V<sub>a</sub> = E<sub>a</sub></span> تماماً، والنقطة على الخط الأزرق (٢-٢).',done:()=>!sw},
    {t:'وصّل حملاً صغير المقاومة',x:'أغلق المفتاح واجعل <span class="ltr">R<sub>L</sub></span> أقل من <span class="ltr">200 Ω</span>. يمر تيار ويهبط جهد على R<sub>a</sub>: الخط البرتقالي ينخفض تحت الأزرق.',done:()=>sw&&logR(RLp)<200},
@@ -611,7 +614,7 @@ B.lesson({
   loopOn(el,()=>{const c=calc();
    $('#l2n-v').textContent=n+' rpm';$('#l2if-v').textContent=fm(If,3)+' A';$('#l2ra-v').textContent=Ra+' Ω';$('#l2rl-v').textContent=sw?fmtR(c.RL):'∞ (مفتوح)';
    const sg=[n,If,Ra,RLp,sw].join();if(sg!==lastS){lastS=sg;
-    $('#l2c').innerHTML=dcCircuitSVG({live:1,If,sw:!!sw,Va:c.Va,Ia:c.Ia});$('#l2m').innerHTML=meterSVG(c.Va,80,'V',fm(c.Va,2)+' V');
+    $('#l2c').innerHTML=dcCircuitSVG({live:1,If:c.IfA,sw:!!sw,Va:c.Va,Ia:c.Ia});$('#l2m').innerHTML=meterSVG(c.Va,80,'V',fm(c.Va,2)+' V');
     $('#l2w').textContent=fm(c.w,2)+' rad/s';$('#l2ke').textContent=fm(c.KE,4)+' V·s';$('#l2ea').textContent=fm(c.Ea,2)+' V';$('#l2drop').textContent=fm(c.Ia*Ra,2)+' V';$('#l2va').textContent=fm(c.Va,2)+' V';
     $('#l2pc').textContent=c.Ea>0?fm((1-c.Va/c.Ea)*100,1)+' %':'—';
     const ws=[0,330],kl=sw?c.KE/(1+Ra/c.RL):c.KE;
@@ -1073,7 +1076,8 @@ B.lesson({
    {t:'خطأ التعامد',x:'أوقف الدوار (سرعة صفر) واجعل δ أكبر من <span class="ltr">2°</span>: يظهر جهد على ملف التوليد رغم السكون، وهذا ما يحذر منه الكتاب ص 38.',done:()=>nr===0&&mis>2},
    {t:'زاوية الطور',x:'أعد δ = 0 وحرّك السرعة من الصغيرة إلى الكبيرة وراقب «Δβ»: في هذا النموذج تتغير زاوية الخرج قليلاً مع السرعة، وهذا هو خطأ زاوية الوجه من متطلبات الدرس 2.1.'}
   ],()=>({}));
-  loopOn(el,dt=>{t+=dt;const sp=nr*dir,m=indModel(sp,ratio,PI4);const res=cmul(Cx(ratio*Math.sin(mis*PI/180)),Cx(PI4.V));const Et=cadd(m.Ea,res);
+  /* أعطال مخفية: mis الملفان غير متعامدين (زاوية إضافية)، gopen ملف التوليد مقطوع، grev أطراف ملف التوليد معكوسة */
+  loopOn(el,dt=>{t+=dt;const sp=nr*dir,m=indModel(sp,ratio,PI4);const res=cmul(Cx(ratio*Math.sin((mis+(chF('mis')?2:0))*PI/180)),Cx(PI4.V));let Et=cadd(m.Ea,res);if(chF('grev'))Et=Cx(-Et.re,-Et.im);if(chF('gopen'))Et=Cx(0);
    const Em=cabs(Et),ph=Em>1e-6?wrap180(cang(Et)):0;
    ang=(ang+sp/60*360*dt/60)%360;const vis=Math.cos(2*PI*1.0*t);
    $('#l4n-v').textContent=nr+' rpm';$('#l4r-v').textContent=fm(ratio,2);$('#l4m-v').textContent=fm(mis,1)+'°';
@@ -1187,7 +1191,7 @@ B.lesson({
   {note:'<b>توضيح للمتدرب (ليس من نص الكتاب) — كيف يقيس الإستروبوسكوب السرعة؟</b> مصباح يومض بعدد ومضات نختاره في الدقيقة. نضع علامة على العمود. إذا كان عدد الومضات في الدقيقة = عدد الدورات في الدقيقة، تظهر العلامة <b>ثابتة</b> في مكان واحد لأن الضوء يلتقطها في نفس الموضع كل مرة. عندها نقرأ السرعة من الجهاز مباشرة. ثم نصحح ثابت التاكو: $$K_g(\\text{الجديد}) = \\frac{V_a}{\\omega_{\\text{الإستروبوسكوب}}}$$ <b>تنبيه:</b> العلامة تبدو ثابتة أيضاً إذا كانت الومضات نصف السرعة أو ثلثها؛ لذلك نبدأ بعدد ومضات كبير وننزل حتى أول مرة تظهر فيها علامة واحدة ثابتة.'}
  ],
  lab:(el)=>{
-  const errs=[-0.08,-0.06,0.05,0.07],rndErr=errs[Math.floor(Math.random()*errs.length)];
+  const errs=[-0.08,-0.06,0.05,0.07],rndErr=chOn()?-0.06:errs[Math.floor(Math.random()*errs.length)];  // وضع التحدي: الفرق نفسه على كل الجوالات
   let Ks=0.02,Knom=0.1,Ktrue=Knom*(1+rndErr);  // أرقام توضيحية (تتبع «قيم المدرب» أدناه)
   let n=1500,p=1,ph3=0,fac=1,F=2000,Kuse=Knom,t=0,ang=0,lastS='',fixed=0,fixedOK=0;
   el.innerHTML=`<div id="l5tp"></div><div class="grid">
@@ -1238,7 +1242,9 @@ B.lesson({
   function diskSVG(imgs){const cx=110,cy=110;let s=`<svg viewBox="0 0 220 220" role="img" aria-label="العلامة على العمود"><circle cx="${cx}" cy="${cy}" r="96" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="8" fill="var(--fg)"/>`;
    imgs.forEach(([a,op])=>{const t=(a-90)*PI/180;s+=`<path d="M${cx} ${cy}L${(cx+86*Math.cos(t)).toFixed(1)} ${(cy+86*Math.sin(t)).toFixed(1)}" stroke="var(--live)" stroke-width="7" stroke-linecap="round" opacity="${op}"/>`});
    return s+'</svg>'}
-  loopOn(el,dt=>{t+=dt;const f=p*n/60,Epk=Ks*n*fac;ang=(ang+n/60*360*dt/50)%360;
+  /* أعطال مخفية: slip وصلة المولد التزامني بالعمود تنزلق (يدور أبطأ من العمود)، weak ضعف المغناطيس الدائم، cB ملف الوجه B في الثابت مقطوع */
+  const nGen=()=>chF('slip')?0.95*n:n;
+  loopOn(el,dt=>{t+=dt;const f=p*nGen()/60,Epk=Ks*nGen()*fac*(chF('weak')?0.85:1);ang=(ang+n/60*360*dt/50)%360;
    $('#l5g').innerHTML=genSVG(ang);
    $('#l5n-v').textContent=n+' rpm';$('#l5f-v').textContent=Math.round(fac*100)+' %';$('#l5s-v').textContent=F+' /min';
    // strobe: images at the last three flashes (true shaft angle at each flash)
@@ -1254,7 +1260,7 @@ B.lesson({
    const sg=[n,p,ph3,fac].join();if(sg!==lastS){lastS=sg;
     $('#l5e').textContent=fm(Epk,1)+' V';$('#l5fr').textContent=fm(f,1)+' Hz';$('#l5nv').textContent=fm(Epk/Ks,0)+' rpm';$('#l5nf').textContent=fm(60*f/p,0)+' rpm';
     $('#l5msg').innerHTML=Math.abs(fac-1)>0.005&&n>0?`<div class="callout err">${fac<1?'ضعف':'زاد'} المجال بنسبة <span class="ltr">${fm(Math.abs(fac-1)*100,0)} %</span>: القراءة من الجهد خاطئة بنفس النسبة، والقراءة من التردد صحيحة. لهذا «قياس السرعة بواسطة قياس التردد يكون عادة أكثر دقة» (ص 40).</div>`:'';
-    const ser=[],ph=ph3?[0,120,240]:[0],cols=['--live','--blue','--muted'];ph.forEach((d,i)=>{const pts=[];for(let j=0;j<=300;j++){const tt=j/300*0.1;pts.push([tt*1000,Epk*Math.sin(2*PI*f*tt-d*PI/180)])}ser.push({pts,color:cols[i],width:2})});
+    const ser=[],ph=ph3?[0,120,240]:[0],cols=['--live','--blue','--muted'];ph.forEach((d,i)=>{const pts=[],Ei=i===1&&chF('cB')?0:Epk;for(let j=0;j<=300;j++){const tt=j/300*0.1;pts.push([tt*1000,Ei*Math.sin(2*PI*f*tt-d*PI/180)])}ser.push({pts,color:cols[i],width:2})});
     const yG=Ks===0.02?70:70*Ks/0.02;   // بالقيم التوضيحية ±70 V تماماً
     plot($('#l5o'),{xmax:100,ymin:-yG,ymax:yG,ystep:yG/2,xlabel:'t (ms)',ylabel:'e (V)',series:ser})}
    steps.check()});

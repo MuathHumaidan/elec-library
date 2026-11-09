@@ -1,6 +1,8 @@
 /* Unit 10 — تشخيص أعطال الأجهزة العاملة مع الحاكم المنطقي المبرمج (ص 147–148) */
 (function(B){
 const {S,W,esc}=B;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- the book's two lists (الوحدة 10، ص 147–148) ---------- */
 const SWL=[['أ','عدم تحميل البرنامج على جهاز الحاسب بشكل صحيح.'],['ب','عدم الإلمام بالمكونات الأساسية للبرنامج.'],['ت','عدم تحديد أرقام المداخل والمخارج بشكل صحيح.'],
@@ -110,7 +112,7 @@ function lab10(el){
     <div class="panel c7"><h2>حالة البرنامج في الـ CPU <small>Program Status</small></h2><div id="u10prog"></div></div>
     <div class="panel c5"><h2>ما سبب العطل؟ <small>اختر البند من قائمتي الكتاب</small></h2><div id="u10ans"></div></div></div>`;
   function newFault(kind){answered=false;
-    if(kind==='ok'){fault=null}else{const pool=FAULTS.filter(x=>(filter==='all'||x.cat===filter)&&x.id!==last);fault=pool[Math.floor(Math.random()*pool.length)];last=fault.id}
+    if(kind&&typeof kind==='object'){fault=kind}else if(kind==='ok'){fault=null}else{const pool=FAULTS.filter(x=>(filter==='all'||x.cat===filter)&&x.id!==last);fault=pool[Math.floor(Math.random()*pool.length)];last=fault.id}
     f=Object.assign({},F0,fault||{});btn={S0:0,S1:0};progKey='';ang=0;lastSig='';
     q('#u10cmp').innerHTML=fault?`<b>شكوى المشغّل:</b> ${fault.complaint} <span class="sub">— شغّل النظام، راقب المؤشرات وحالة البرنامج، وقِس، ثم اختر السبب.</span>`:'<b>النظام السليم:</b> لا يوجد عطل. اضغط S1: يعمل K1 ويدور المحرك، وبعد 3 ث تضيء H1. اضغط S0 للإيقاف. تعرّف على المؤشرات والقراءات السليمة لتقارن بها.';
     renderAns();}
@@ -163,7 +165,8 @@ function lab10(el){
   el.querySelectorAll('[data-pb]').forEach(b=>{const k=b.dataset.pb;const dn=e=>{e&&e.preventDefault();btn[k]=1;b.classList.add('down')};const up=()=>{btn[k]=0;b.classList.remove('down')};
     b.addEventListener('pointerdown',dn);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up));
     b.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat)dn(e)});b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')up()})});
-  newFault('ok');
+  /* وضع التحدي: العطل المخفي من قائمة المختبر نفسها (معرّفه في challenge.js x) */
+  {const cf=chOn()&&FAULTS.find(x=>chF(x.id));if(cf)newFault(cf);else newFault('ok')}
   let tPrev=performance.now();
   function loop(now){if(!document.body.contains(el))return;const dt=Math.min(0.05,(now-tPrev)/1000);tPrev=now;
     const m=model();if(m.motor)ang=(ang+dt*600)%360;m.ang=ang;

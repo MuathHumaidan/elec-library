@@ -637,7 +637,7 @@ B.lesson(FIXL({
     <div class="ed-row">${segHTML('dr',[['up','صاعد'],['lvl','أفقي'],['dn','هابط']],st.dir)}</div>
     ${sl('f2g','الميل (sinθ بالنسبة المئوية)',0,6,0.05,st.g)}${sl('f2m','كتلة القطار m',50,500,5,st.m)}${sl('f2a','التسارع a',0.05,1.2,0.01,st.a)}${sl('f2vt','السرعة المطلوبة في نهاية التسارع',10,120,1,st.vT)}${sl('f2r','المقاومة النوعية r',0,0.1,0.005,st.r)}${sl('f2e','كفاءة صندوق التروس η<sub>c</sub>',70,100,1,st.eta)}
     <div class="ed-row">${swHTML('f2w','الرياح','أضف مقاومة الرياح (توضيح)',st.wind)}</div></div>
-   <div class="panel c12"><h2>القراءات الآن</h2><div class="facts">${fact('الزمن t','f2t')}${fact('السرعة v','f2vv')}${fact('F<sub>a</sub> (5-3)','f2Fa')}${fact('F<sub>r</sub> (5-4)','f2Fr')}${fact('±F<sub>g</sub> (5-5)','f2Fg')}${fact('F<sub>t</sub> (5-2)','f2Ft')}${fact('P<sub>L</sub> = F<sub>t</sub>·v (5-6)','f2PL')}${fact('P<sub>m</sub> = P<sub>L</sub>/η<sub>c</sub> (5-7)','f2Pm')}</div>
+   <div class="panel c12"><h2>القراءات الآن</h2><div class="facts" id="f2fx">${fact('الزمن t','f2t')}${fact('السرعة v','f2vv')}${fact('F<sub>a</sub> (5-3)','f2Fa')}${fact('F<sub>r</sub> (5-4)','f2Fr')}${fact('±F<sub>g</sub> (5-5)','f2Fg')}${fact('F<sub>t</sub> (5-2)','f2Ft')}${fact('P<sub>L</sub> = F<sub>t</sub>·v (5-6)','f2PL')}${fact('P<sub>m</sub> = P<sub>L</sub>/η<sub>c</sub> (5-7)','f2Pm')}</div>
     <div class="callout" id="f2end" style="display:none"></div></div>
    <div class="panel c6"><h2>قوة التحريك مع الزمن</h2><div class="svgbox" id="f2p1"></div></div>
    <div class="panel c6"><h2>قدرة الدواليب مع الزمن</h2><div class="svgbox" id="f2p2"></div></div>
@@ -889,7 +889,7 @@ B.lesson(FIXL({
     <div class="ed-row">${segHTML('md',[['fwd','أعرف عزم المحرك ← أحسب قوة الجر'],['inv','أعرف قوة الجر ← أحسب عزم المحرك']],st.mode)}</div>
     <div id="g3fw">${sl('g3T','عزم المحرك الواحد',500,12000,10,st.T)}</div><div id="g3iv">${sl('g3F','قوة الجر المطلوبة F<sub>t</sub>',10000,400000,1,st.Ft)}</div>
     ${sl('g3N','عدد المحركات',1,8,1,st.N)}${sl('g3s','نسبة تحويل صندوق التروس σ',1,8,0.1,st.sig)}${sl('g3e','كفاءة صندوق التروس η<sub>c</sub>',70,100,1,st.eta)}${sl('g3D','قطر الدولاب D',50,130,1,st.D)}${sl('g3v2','سرعة القطار v',0,120,1,st.v)}</div>
-   <div class="panel c12"><h2>النتائج <small>المعادلات (5-8) إلى (5-13)</small></h2><div class="facts">${fact('العزم الكلي T<sub>m</sub>','g3Tm')}${fact('عزم كل محرك','g3Tp')}${fact('T<sub>L</sub> = σ·η<sub>c</sub>·T<sub>m</sub> (5-11)','g3TL')}${fact('F<sub>t</sub> = 2η<sub>c</sub>σT<sub>m</sub>/D (5-13)','g3Ft')}${fact('سرعة الدولاب n<sub>L</sub>','g3nL')}${fact('سرعة المحرك n<sub>m</sub> = σ·n<sub>L</sub>','g3nm')}${fact('P<sub>L</sub> = F<sub>t</sub>·v (5-6)','g3PL')}${fact('P<sub>m</sub> = T<sub>m</sub>·ω<sub>m</sub> (5-8)','g3Pm')}${fact('P<sub>L</sub> / P<sub>m</sub>','g3r')}</div>
+   <div class="panel c12"><h2>النتائج <small>المعادلات (5-8) إلى (5-13)</small></h2><div class="facts" id="g3fx">${fact('العزم الكلي T<sub>m</sub>','g3Tm')}${fact('عزم كل محرك','g3Tp')}${fact('T<sub>L</sub> = σ·η<sub>c</sub>·T<sub>m</sub> (5-11)','g3TL')}${fact('F<sub>t</sub> = 2η<sub>c</sub>σT<sub>m</sub>/D (5-13)','g3Ft')}${fact('سرعة الدولاب n<sub>L</sub>','g3nL')}${fact('سرعة المحرك n<sub>m</sub> = σ·n<sub>L</sub>','g3nm')}${fact('P<sub>L</sub> = F<sub>t</sub>·v (5-6)','g3PL')}${fact('P<sub>m</sub> = T<sub>m</sub>·ω<sub>m</sub> (5-8)','g3Pm')}${fact('P<sub>L</sub> / P<sub>m</sub>','g3r')}</div>
     <p class="ed-cap" id="g3cap"></p></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="g3st"></ol></div></div>`;
   el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
@@ -1165,7 +1165,7 @@ B.lesson(FIXL({
    <div class="panel c7"><h2>رحلة القطار <small>مبنية على الأمثلة (5-3) إلى (5-5) ص 61–63</small></h2>
     <div class="svgbox" id="r4v"></div>
     <div class="ed-row"><button class="btn primary" id="r4go">انطلق من السكون</button><button class="btn" id="r4rs">إعادة</button><span class="sub">سرعة العرض</span>${segHTML('sp',[[1,'×1'],[4,'×4'],[10,'×10']],st.spd)}<span class="ed-chip" id="r4chip"></span></div>
-    <div class="facts">${fact('الزمن t','r4t')}${fact('السرعة v','r4vv')}${fact('التسارع a','r4a')}${fact('F<sub>t</sub> (5-13)','r4Ft')}${fact('F<sub>r</sub> + F<sub>g</sub>','r4Frg')}${fact('القدرة الداخلة لكل محرك','r4Pin')}${fact('تيار كل محرك I','r4I')}</div>
+    <div class="facts" id="r4fx">${fact('الزمن t','r4t')}${fact('السرعة v','r4vv')}${fact('التسارع a','r4a')}${fact('F<sub>t</sub> (5-13)','r4Ft')}${fact('F<sub>r</sub> + F<sub>g</sub>','r4Frg')}${fact('القدرة الداخلة لكل محرك','r4Pin')}${fact('تيار كل محرك I','r4I')}</div>
     <div class="callout" id="r4end" style="display:none"></div>
     <h2 style="margin-top:14px">السرعة مع الزمن</h2><div class="svgbox" id="r4p1"></div>
     <h2 style="margin-top:14px">تيار المحرك الواحد مع الزمن</h2><div class="svgbox" id="r4p2"></div><p class="ed-cap">أثناء التسارع: قوة الجر ثابتة والسرعة تزيد، فالقدرة والتيار يزيدان خطياً. بعد بلوغ السرعة يكفي أن تساوي قوة الجر \\(F_r+F_g\\) فيهبط التيار.</p></div>

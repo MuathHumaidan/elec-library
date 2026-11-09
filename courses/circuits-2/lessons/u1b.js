@@ -11,6 +11,8 @@ const RD=B.round;
 const f1=(x,d)=>{let v=RD(+x,d==null?2:d);if(v===0)v=0;return fm(v)};
 const lt=s=>`<span class="ltr">${s}</span>`;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- styles used only by this file (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('c2u1b-css'))return;const s=document.createElement('style');s.id='c2u1b-css';s.textContent=`
@@ -554,7 +556,9 @@ B.lesson({
    if(mode==='par'){
     ['R','L','C'].forEach(k=>$('#l8on'+k).setAttribute('aria-pressed',P.on[k]?'true':'false'));
     const V=cpol(P.V,P.th),G=P.on.R?1/P.R:0,BL=P.on.L?1/P.XL:0,BC=P.on.C?1/P.XC:0,Y=Cx(G,BC-BL);
-    const IR=csc(V,G),IL=cmul(V,Cx(0,-BL)),IC=cmul(V,Cx(0,BC)),IT=cmul(V,Y);S8={Y,IT,G,BL,BC};
+    /* عطل مخفي: القيم الفعلية للفروع (للتيارات فقط؛ السماحية المحسوبة بالقيم المكتوبة). خارج وضع التحدي هي نفسها */
+    const Ga=chF('ropen')?0:G,BLa=chF('lsh')?BL/0.6:BL,BCa=chF('copen')?0:chF('cdry')?BC/2:BC;
+    const IR=csc(V,Ga),IL=cmul(V,Cx(0,-BLa)),IC=cmul(V,Cx(0,BCa)),IT=cmul(V,Cx(Ga,BCa-BLa));S8={Y,IT,G,BL,BC};
     const br=[];if(P.on.R)br.push({t:'R',l:'R = '+f1(P.R)+' Ω',l2:'IR = '+PT(IR),i:sb('I','R'),c:'--muted'});if(P.on.L)br.push({t:'L',l:'XL = '+f1(P.XL)+' Ω',l2:'IL = '+PT(IL),i:sb('I','L'),c:'--live'});if(P.on.C)br.push({t:'C',l:'XC = '+f1(P.XC)+' Ω',l2:'IC = '+PT(IC),i:sb('I','C'),c:'--on'});
     $('#l8c').innerHTML=parFig({src:PT(V,2,1)+' V',it:'IT = '+PT(IT),br,first:120,sp:150,wr:140});
     $('#l8y').textContent=RT(Y,3)+' S';$('#l8yp').textContent=PT(Y,3,1)+' S';$('#l8z').textContent=cabs(Y)<1e-9?'∞':PT(cinv(Y),2,1)+' Ω';$('#l8it').textContent=PT(IT,2,1)+' A';
@@ -793,7 +797,8 @@ B.lesson({
   $('#l9ex').onclick=()=>{Object.assign(P,{I:80,Rs:450,rsOn:1,RL:2,L:0.24,C:0.265});setI(80);setRs(450);setRL(2);setL(0.24);setC(0.265);$('#l9rs').setAttribute('aria-pressed','true');did.ex=1;draw()};
   const fpOf=()=>{const L=P.L*1e-3,C=P.C*1e-6,r=L/C-P.RL*P.RL;return r>0?Math.sqrt(r)/(2*PI*L):NaN};
   $('#l9fp').onclick=()=>{const fp=fpOf();if(isFinite(fp)){P.f=RD(fp/1000,2);setF(P.f);draw()}};
-  const solve=fk=>{const w=2*PI*fk*1000,ZL=Cx(P.RL,w*P.L*1e-3),Yc=Cx(0,w*P.C*1e-6);let Y=cadd(cinv(ZL),Yc);if(P.rsOn)Y=cadd(Y,Cx(1/P.Rs));const I=Cx(P.I/1000);const V=cdiv(I,Y);return {w,ZL,Y,V,IL:cdiv(V,ZL),IC:cmul(V,Yc),IRs:P.rsOn?csc(V,1/P.Rs):Cx(0),Z:cinv(Y)}};
+  /* عطل مخفي: القيم الفعلية للخزان (مقاومة الملف، سعة المكثف، فرع مفتوح). الحسابات المعروضة (fp و XL و XC) بالقيم المكتوبة. خارج وضع التحدي لا فرق */
+  const solve=fk=>{const w=2*PI*fk*1000,ZL=Cx(P.RL+(chF('rcoil')?10:0),w*P.L*1e-3),Yc=chF('copen')?Cx(0):Cx(0,w*P.C*(chF('cdry')?0.5:1)*1e-6),lo=chF('lopen');let Y=cadd(lo?Cx(0):cinv(ZL),Yc);if(P.rsOn)Y=cadd(Y,Cx(1/P.Rs));const I=Cx(P.I/1000);const V=cdiv(I,Y);return {w,ZL,Y,V,IL:lo?Cx(0):cdiv(V,ZL),IC:cmul(V,Yc),IRs:P.rsOn?csc(V,1/P.Rs):Cx(0),Z:cinv(Y)}};
   let R9={};
   function draw(){const fp=fpOf(),r=solve(P.f);R9={r,fp};
    const XL=r.w*P.L*1e-3,XC=1/(r.w*P.C*1e-6),s2=P.RL*P.RL+XL*XL;
@@ -1078,11 +1083,14 @@ B.lesson({
   let R10={};
   const lbl=z=>RT(z,2);
   function draw(){const Z=P.Z.map(a=>Cx(a[0],a[1]-a[2])),[Za,Zb,Zc,Zd]=Z,V=cpol(P.V,P.th);NM.forEach((k,i)=>{$('#l10z'+k).textContent=lbl(Z[i])+' Ω'});
-   const sbc=cadd(Zb,Zc),res=cabs(sbc)<1e-9;let Zbc,ZT,IT,Ib,Ic,Vbc;
+   /* عطل مخفي: وصلة رخوة على التوالي، أو فرع مفتوح/مقصور في مجموعة التوازي (للتيارات والجهود فقط). خارج وضع التحدي لا فرق */
+   const ZaA=chF('aloose')?cadd(Za,Cx(4)):Za,chX=chF('bopen')||chF('copen')||chF('cshort');
+   const sbc=cadd(Zb,Zc),res=!chX&&cabs(sbc)<1e-9;let Zbc,ZT,IT,Ib,Ic,Vbc;
    if(res){IT=Cx(0);Vbc=V;Ib=cabs(Zb)>1e-12?cdiv(V,Zb):Cx(0);Ic=csub(Cx(0),Ib);Zbc=null}
+   else if(chX){const Zg=chF('cshort')?Cx(0):chF('bopen')?Zc:Zb;ZT=cadd(cadd(ZaA,Zg),Zd);IT=cabs(ZT)<1e-9?Cx(0):cdiv(V,ZT);Vbc=cmul(IT,Zg);Ib=chF('copen')?IT:Cx(0);Ic=chF('copen')?Cx(0):IT;Zbc=cdiv(cmul(Zb,Zc),cabs(sbc)<1e-9?Cx(1e-9):sbc);ZT=cadd(cadd(Za,Zbc),Zd)}
    else{Zbc=cdiv(cmul(Zb,Zc),sbc);ZT=cadd(cadd(Za,Zbc),Zd);if(cabs(ZT)<1e-9){$('#l10chip').className='cb-chip warn';$('#l10chip').textContent='Z_T = 0: دائرة قصر على المصدر! غيّر القيم.';return}
-    IT=cdiv(V,ZT);Ib=cdiv(cmul(Zc,IT),sbc);Ic=cdiv(cmul(Zb,IT),sbc);Vbc=cmul(IT,Zbc)}
-   const Va=cmul(IT,Za),Vd=cmul(IT,Zd);R10={IT,Ib,Ic,res,Zb,Zc};
+    const ZTa=chF('aloose')?cadd(cadd(ZaA,Zbc),Zd):ZT;IT=cdiv(V,ZTa);Ib=cdiv(cmul(Zc,IT),sbc);Ic=cdiv(cmul(Zb,IT),sbc);Vbc=cmul(IT,Zbc)}
+   const Va=cmul(IT,ZaA),Vd=cmul(IT,Zd);R10={IT,Ib,Ic,res,Zb,Zc};
    const zl=(i,nm)=>{const a=P.Z[i],r=[];if(a[0]>0)r.push({t:'R',l:f1(a[0])+'Ω'});if(a[1]>0)r.push({t:'L',l:f1(a[1])+'Ω'});if(a[2]>0)r.push({t:'C',l:f1(a[2])+'Ω'});return r};
    const za=zl(0),zb=zl(1),zc=zl(2),zd=zl(3);const items=[];
    if(za.length)za.forEach((e,i)=>items.push({s:'ser',t:e.t,l:e.l,w:62,gap:i?0:44}));else items.push({s:'ser',t:'W',w:40,gap:44});
@@ -1675,7 +1683,8 @@ B.lesson({
   segBind(el,'rf',v=>{ref=v;did['ref'+v]=1;draw()});
   $('#l12pl').onclick=()=>{play=!play;$('#l12pl').textContent=play?'⏸ إيقاف':'▶ تشغيل'};
   $('#l12g').style.display='none';
-  const unit=(x,u)=>{const a=Math.abs(x);return a>=1e6?f1(x/1e6,3)+' M'+u:a>=1e3?f1(x/1e3,3)+' k'+u:f1(x,2)+' '+u};
+  const unit=(x,u)=>{const a=Math.abs(x);if(chOn())return f1(x,2)+' '+u;   /* وضع التحدي: بلا بادئات (k و M) لتُقرأ القراءة رقماً واحداً */
+   return a>=1e6?f1(x/1e6,3)+' M'+u:a>=1e3?f1(x/1e3,3)+' k'+u:f1(x,2)+' '+u};
   const sig=()=>{const V=TP.v.V,I=TP.v.I,t=th*D;return ref==='i'?{v:a=>V*SQ2*Math.sin(a+t),i:a=>I*SQ2*Math.sin(a)}:{v:a=>V*SQ2*Math.sin(a),i:a=>I*SQ2*Math.sin(a-t)}};
   function draw(){const V=TP.v.V,I=TP.v.I,c=Math.cos(th*D),s=Math.sin(th*D),Sx=V*I,P=Sx*c,Qx=Sx*s;
    $('#l12V').textContent=unit(V,'V');$('#l12I').textContent=unit(I,'A');$('#l12P').textContent=unit(Math.abs(P)<1e-9*Sx?0:P,'W');$('#l12Q').textContent=unit(Math.abs(Qx)<1e-9*Sx?0:Qx,'VAR');$('#l12S').textContent=unit(Sx,'VA');
@@ -1905,14 +1914,15 @@ B.lesson({
   segBind(el,'pr',k=>{pre=k;L=JSON.parse(JSON.stringify(PRE[k].loads));V=PRE[k].V||TP.v.V;Qc=0;setQc(0);rows();did[k]=1;draw()});
   $('#l13calc').onclick=()=>{const P=L.reduce((a,l)=>a+(l.on?l.P:0),0),Q=L.reduce((a,l)=>a+(l.on?l.Q:0),0);const need=Q-P*Math.tan(Math.acos(tgt));Qc=Math.max(0,RD(need,0));setQc(Qc);draw()};
   let R13={};
-  function draw(){const on=L.filter(l=>l.on);const P=on.reduce((a,l)=>a+l.P,0),Q0=on.reduce((a,l)=>a+l.Q,0),Q=Q0-Qc,S=Math.hypot(P,Q),S0=Math.hypot(P,Q0),Ss=on.reduce((a,l)=>a+Math.hypot(l.P,l.Q),0),pf=S>0?P/S:1;R13={P,Q,pf};
+  /* عطل مخفي: فرع الحمل 3 لا يعمل، أو المكثف لا يعطي قدرته المفاعلة كاملة (للقراءات فقط). خارج وضع التحدي لا فرق */
+  function draw(){const on=L.filter((l,i)=>l.on&&!(i===2&&chF('lopen')));const QcA=chF('cfuse')?0:chF('chalf')?Qc/2:Qc;const P=on.reduce((a,l)=>a+l.P,0),Q0=on.reduce((a,l)=>a+l.Q,0),Q=Q0-QcA,S=Math.hypot(P,Q),S0=Math.hypot(P,Q0),Ss=on.reduce((a,l)=>a+Math.hypot(l.P,l.Q),0),pf=S>0?P/S:1;R13={P,Q,pf};
    $('#l13vn').textContent='جهد المصدر V = '+f1(V,1)+' V'+(pre==='e131'?' (توضيحي)':' (من المثال)');
-   $('#l13P').textContent=f1(P,1)+' W';$('#l13Q').textContent=f1(Q,1)+' VAR';$('#l13S').textContent=f1(S,1)+' VA';$('#l13Ss').textContent=f1(Ss+(Qc>0?Qc:0),1)+' VA';
+   $('#l13P').textContent=f1(P,1)+' W';$('#l13Q').textContent=f1(Q,1)+' VAR';$('#l13S').textContent=f1(S,1)+' VA';$('#l13Ss').textContent=f1(Ss+(QcA>0?QcA:0),1)+' VA';
    $('#l13pf').textContent=f1(pf,3)+(Math.abs(Q)<1e-6?'':Q>0?' متأخر':' متقدم');$('#l13I').textContent=f1(S/V,2)+' A';
    $('#l13C').textContent=f1(Qc/(2*PI*f*V*V)*1e6,1)+' µF';$('#l13I0').textContent=f1(S0/V,2)+' A';$('#l13I1').textContent=f1(S/V,2)+' A';
    const ch=$('#l13chip');if(Qc<=0){ch.className='cb-chip';ch.textContent='بلا مكثف'}else if(Q<-1e-6){ch.className='cb-chip warn';ch.textContent='مكثف أكبر من اللازم: صار الحمل الكلي سعوياً (معامل قدرة متقدم)'}else{ch.className='cb-chip ok';ch.textContent='المكثف خفّض Q_T والتيار، و P لم تتغير'}
    const its=[];let acc=Cx(0);on.forEach(l=>{const z=Cx(l.P,l.Q);if(cabs(z)<1e-9)return;its.push({z,from:cabs(acc)>1e-9?acc:null,lab:l.n,col:l.Q>0?'--live':l.Q<0?'--on':'--muted',w:2.2,mid:-1});acc=cadd(acc,z)});
-   if(Qc>0){its.push({z:Cx(0,-Qc),from:cabs(acc)>1e-9?acc:null,lab:'QC',col:'--on',dash:'6 4',w:2.2,mid:-1});acc=cadd(acc,Cx(0,-Qc))}
+   if(QcA>0){its.push({z:Cx(0,-QcA),from:cabs(acc)>1e-9?acc:null,lab:'QC',col:'--on',dash:'6 4',w:2.2,mid:-1});acc=cadd(acc,Cx(0,-QcA))}
    if(cabs(acc)>1e-9)its.push({z:acc,lab:'ST',col:'--stop',w:3.2,mid:1});
    $('#l13t').innerHTML=its.length?phasorSVG(its,{w:440,h:300,eq:true,arcs:[{a1:0,a2:cang(acc),r:46,lab:f1(cang(acc),1)+'°',col:'--stop'}],xl:'P',yl:'Q'}):'';
    steps.check()}
@@ -2111,7 +2121,8 @@ B.lesson({
   segBind(el,'m',v=>{P.m=+v;draw()});
   $('#l14ex').onclick=()=>{Object.assign(P,{V:220,I:3,pf:0.8,Ri:3,Rv:2000});Object.keys(setters).forEach(k=>setters[k](P[k]));draw()};
   let R14={};
-  function draw(){const Pt=P.V*P.I*P.pf,e1=P.Ri*P.I*P.I,e2=P.V*P.V/P.Rv,m1=Pt+e1,m2=Pt+e2,rd=P.m===1?m1:m2;R14={Pt,m1,m2,rd,e1,e2};
+  /* عطل مخفي: ملف التيار معكوس، أو ملف الجهد مفتوح، أو مقاومة مدى ملف الجهد زادت (لمؤشر الجهاز فقط). خارج وضع التحدي لا فرق */
+  function draw(){const Pt=P.V*P.I*P.pf,e1=P.Ri*P.I*P.I,e2=P.V*P.V/P.Rv,m1=Pt+e1,m2=Pt+e2,rd0=P.m===1?m1:m2,rd=chF('pcopen')?0:chF('ccrev')?-rd0:chF('vcrng')?rd0*0.8:rd0;R14={Pt,m1,m2,rd,e1,e2};
    $('#l14P').textContent=f1(Pt,1)+' W';$('#l14m1').textContent=f1(m1,1)+' W ('+(Pt>0?'+'+f1(e1/Pt*100,2)+'%':'—')+')';$('#l14m2').textContent=f1(m2,1)+' W ('+(Pt>0?'+'+f1(e2/Pt*100,2)+'%':'—')+')';
    const best=e1<e2?1:2,ch=$('#l14chip');ch.className='cb-chip '+(best===P.m?'ok':'hot');ch.textContent=(best===1?'الطريقة الأولى أدق لهذا الحمل (حمل صغير)':'الطريقة الثانية أدق لهذا الحمل (حمل كبير)')+(best===P.m?' — اخترتها':' — جرّب تغيير الطريقة');
    $('#l14c').innerHTML=wattFig(P.m,{cc:1,pc:1}).replace('</svg>',S.t(520,240,'I = '+f1(P.I,1)+' A','','middle')+S.t(538,166,'V = '+f1(P.V,0)+' V','b','start')+'</svg>').replace('viewBox="0 0 620 250"','viewBox="0 0 640 250"');

@@ -10,6 +10,9 @@ const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
+
 /* ---------- styles used only by this course's unit 3–4 files (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('e34-css'))return;const s=document.createElement('style');s.id='e34-css';s.textContent=`
 .e34-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
@@ -288,7 +291,7 @@ lesson({
      <div class="e34-legend"><span><i style="border-color:var(--live)"></i>قوة التسارع <span class="ltr">F<sub>a</sub> = m·a</span></span><span><i style="border-color:var(--blue)"></i>مقاومة الحركة <span class="ltr">F<sub>r</sub> = m·r</span></span><span><i style="border-color:var(--stop)"></i>الجاذبية <span class="ltr">F<sub>g</sub> = m·g·sinθ</span></span></div>
      <div class="e34-row">${segHTML('fph',PHASES.map(p=>[p[0],p[1]]),f.ph)}</div></div>
     <div class="c5">${sl('fm','كتلة القطار m (طن)',20,1000,1,f.m)}${sl('fa','التسارع a (m/s²)',0,1.5,0.0001,f.a)}${sl('fr','المقاومة النوعية لحركة القطار r (N/kg)',0,0.2,0.005,f.r)}${sl('fs','الميل sinθ (مثل 1:100 = 0.01)',0,0.06,0.001,f.sn)}
-     <div class="e34-meters">${meter('F<sub>a</sub>','fFa')}${meter('F<sub>r</sub>','fFr')}${meter('F<sub>g</sub>','fFg')}${meter('F<sub>t</sub> في المرحلة المختارة','fFt')}</div></div></div>
+     <div class="e34-meters" id="fFm">${meter('F<sub>a</sub>','fFa')}${meter('F<sub>r</sub>','fFr')}${meter('F<sub>g</sub>','fFg')}${meter('F<sub>t</sub> في المرحلة المختارة','fFt')}</div></div></div>
     <p class="sub" id="ftx"></p></div>
    <div class="c12" id="trtp"></div>
    <div class="panel c5"><h2>(ب) محرك جر توالٍ <small>البنود 1 و2 و5 و6 — <span id="trchip" class="e34-chip"></span></small></h2>
@@ -296,8 +299,8 @@ lesson({
     <div class="e34-row">${segHTML('tph',[['free','انطلاق حر'],['up','صعود مرتفع']],s.phase)}</div>
     ${sl('trd','مدة الانقطاع المؤقت',0.2,3,0.1,s.dur)}
     <div class="e34-row"><button class="btn" id="troff">انقطاع مؤقت للمصدر</button><button class="btn" id="trsg">ارتفاع مفاجئ في الجهد</button></div>
-    <div class="e34-meters">${meter('جهد المحرك','trV')}${meter('التيار I<sub>a</sub>','trI')}${meter('المجال kφ','trk')}${meter('الجهد العكسي E','trE')}${meter('السرعة n','trn')}${meter('العزم T','trT')}</div>
-    <div class="e34-meters">${meter('أعلى تيار في آخر حدث','trpk')}${meter('مضاعف التيار المقنن','trpx')}</div>
+    <div class="e34-meters" id="trm">${meter('جهد المحرك','trV')}${meter('التيار I<sub>a</sub>','trI')}${meter('المجال kφ','trk')}${meter('الجهد العكسي E','trE')}${meter('السرعة n','trn')}${meter('العزم T','trT')}</div>
+    <div class="e34-meters" id="trm2">${meter('أعلى تيار في آخر حدث','trpk')}${meter('مضاعف التيار المقنن','trpx')}</div>
     <div id="trmsg" class="e34-msg"></div></div>
    <div class="panel c7"><h2>التيار والسرعة مع الزمن <small>آخر 20 ثانية — الخط الأحمر = التيار المقنن</small></h2><div id="trgI" class="svgbox"></div><div id="trgN" class="svgbox"></div>
     <p class="sub">أرقام توضيحية. التيار هنا لا يحده إلا مقاومة الملفات (أهملنا محاثة المنتج)، لذلك تظهر القفزات حادة؛ في الواقع تكون أنعم قليلاً لكنها كبيرة أيضاً. عند بدء الحركة يحد جهاز البدء التيار (البند 1: عزم كبير بتيار محدود).</p></div>
@@ -314,7 +317,9 @@ lesson({
   /* (ب) */
   let TN,nN,J;
   const kp=I=>{const v=TP.v;return v.c*Math.min(Math.max(I,0),v.Is)};
-  const Tq=(I,Il)=>KT*kp(Il)*I;
+  /* أعطال مخفية: المحرك الفعلي (حلقات مقصورة في ملف التوالي / فرش متآكلة R×4)؛ kp و R السليمان للقيم المقننة */
+  const kpA=I=>{const v=TP.v;return chF('kF')?0.6*v.c*Math.min(Math.max(I,0),v.Is/0.6):kp(I)},RA=()=>chF('brush')?4*TP.v.R:TP.v.R;
+  const Tq=(I,Il)=>KT*kpA(Il)*I;
   const recompute=()=>{const v=TP.v;TN=KT*kp(v.IaN)*v.IaN;nN=(v.V-v.IaN*v.R)/Math.max(kp(v.IaN),1e-9);J=TN*v.tau/Math.max(nN,1)};
   const TP=B.params($('#trtp'),'u4-l1',TR_TP,()=>{recompute();steps.redraw()});recompute();
   const TL=()=>{const v=TP.v;return (s.phase==='up'?v.pUp:v.pFree)/100*TN};
@@ -344,9 +349,10 @@ lesson({
   loopOn(el,dt=>{const v=TP.v;s.t+=dt;
    const N=Math.max(1,Math.ceil(dt/0.001)),h=dt/N;
    for(let k=0;k<N;k++){let Va=0;
-    if(s.run){Va=v.V;if(s.off>0){Va=0;s.off-=h;if(s.off<=0){s.off=0}}else if(s.surgeT>0){Va=v.V*(1+v.surge/100);s.surgeT-=h}
-     if(s.starting&&Va>0){const need=v.kSt*v.IaN*v.R+kp(s.Il)*s.n;if(need>=v.V)s.starting=false;else Va=need}}
-    const I=Va>0?Math.max(0,(Va-kp(s.Il)*s.n)/v.R):0;
+    const VA=chF('lowV')?0.8*v.V:v.V;
+    if(s.run){Va=VA;if(s.off>0){Va=0;s.off-=h;if(s.off<=0){s.off=0}}else if(s.surgeT>0){Va=VA*(1+v.surge/100);s.surgeT-=h}
+     if(s.starting&&Va>0){if(chF('nost'))s.starting=false;else{const need=v.kSt*v.IaN*RA()+kpA(s.Il)*s.n;if(need>=VA)s.starting=false;else Va=need}}}
+    const I=Va>0?Math.max(0,(Va-kpA(s.Il)*s.n)/RA()):0;
     s.Il+=(I-s.Il)*(1-Math.exp(-h/v.tauF));
     const T=Tq(I,s.Il),load=s.run||s.n>0?TL():0;
     const w=(T-(s.n>0.1||T>load?load:T))/J;s.n=Math.max(0,s.n+w*h);
@@ -356,7 +362,7 @@ lesson({
    if(s.ev==='start'&&!s.starting&&s.t-s.evT>0.5)s.ev='done';
    s.hist.push({t:s.t,I:s.I,n:s.n});while(s.hist.length&&s.hist[0].t<s.t-21)s.hist.shift();
    const k=s.Va>0?kp(s.Il):0;
-   $('#trV').textContent=fm(s.Va,0)+' V';$('#trI').textContent=fm(s.I,0)+' A';$('#trk').textContent=fm(kp(s.Il),4);$('#trE').textContent=fm(kp(s.Il)*s.n,0)+' V';$('#trn').textContent=fm(s.n,0)+' rpm';$('#trT').textContent=fm(s.T||0,0)+' N·m';
+   $('#trV').textContent=fm(s.Va,0)+' V';$('#trI').textContent=fm(s.I,0)+' A';$('#trk').textContent=fm(kpA(s.Il),4);$('#trE').textContent=fm(kpA(s.Il)*s.n,0)+' V';$('#trn').textContent=fm(s.n,0)+' rpm';$('#trT').textContent=fm(s.T||0,0)+' N·m';
    $('#trpk').textContent=fm(s.peak,0)+' A';$('#trpx').textContent=fm(s.peak/v.IaN,1)+' ×';$('#trd-v').textContent=fm(s.dur,1)+' s';
    const ch=$('#trchip');
    if(!s.run){ch.className='e34-chip';ch.textContent=s.n>1?'المصدر مفصول — القطار يتباطأ':'متوقف'}

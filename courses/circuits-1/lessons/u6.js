@@ -2,6 +2,10 @@
    Lessons u6-l1 … u6-l4 (source: /home/claude/c4/ex/c1_d.md lessons 6–9). Helpers are copied from u5.js. */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const PI=Math.PI,D=PI/180,MU0=4*PI*1e-7;
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
@@ -818,7 +822,7 @@ B.lesson({
     const fl=(lab,p,a)=>[lab+'',p>=0?a:a+PI,Math.abs(p)/mx*30,'--on'];
     $('#g2c').innerHTML=shellSVG({nodes:true,gapC:gap,coils:{L:F1?'N1i1':'',C:F2?'N2i2':'',R:F3?'N3i3':''},flux:{TL:fl('φ1',p1,0),TR:fl('φ3',p3,PI),C:fl('φ2',p2,PI/2)}});
     $('#g2e').innerHTML=fig69eq({s1:F1+' AT',s2:F2+' AT',s3:F3+' AT',R1:fm(R1)+'e5',R2:fm(R2+(gap?20:0))+'e5'+(gap?' +gap':''),R3:fm(R3)+'e5'});
-    h=fact('ℑa (جهد العقدة a)','h0')+fact('φ1 (من اليسار نحو a)','h1')+fact('φ2 (نازل في الوسطى)','h2')+fact('φ3 (من اليمين نحو a)','h3');$('#g2f').innerHTML=h;$('#h0').textContent=fm(sig(Fa,4))+' AT';$('#h1').textContent=wb(p1);$('#h2').textContent=wb(p2);$('#h3').textContent=wb(p3);
+    h=fact('ℑa (جهد العقدة a)','h0')+fact('φ1 (من اليسار نحو a)','h1')+fact('φ2 (نازل في الوسطى)','h2')+fact('φ3 (من اليمين نحو a)','h3');$('#g2f').innerHTML=h;chOut(el,'g2ch',[['p2',p2*1e3]]);$('#h0').textContent=fm(sig(Fa,4))+' AT';$('#h1').textContent=wb(p1);$('#h2').textContent=wb(p2);$('#h3').textContent=wb(p3);
     const L1=F1+F2,L1r=r1*p1+r2*p2,L2=F3+F2,L2r=r3*p3+r2*p2;
     k=`<div class="callout"><b>KCL عند a (6-10):</b> <span class="ltr">φ1 − φ2 + φ3 = ${sci(p1-p2+p3+0,2)}</span> ✓<br><b>KVL الحلقة اليسرى:</b> <span class="ltr">N1i1 + N2i2 = ${fm(sig(L1,4))} AT</span> و <span class="ltr">ℜadc·φ1 + ℜac·φ2 = ${fm(sig(L1r,4))} AT</span> ✓<br><b>KVL الحلقة اليمنى:</b> <span class="ltr">N3i3 + N2i2 = ${fm(sig(L2,4))}</span> و <span class="ltr">ℜabc·φ3 + ℜac·φ2 = ${fm(sig(L2r,4))}</span> ✓</div>`;
     S2.p=[p1,p2,p3]}
@@ -827,7 +831,7 @@ B.lesson({
     const pc=p1-p3,mx=Math.max(Math.abs(p1),Math.abs(p3),Math.abs(pc),1e-12);const fl=(lab,p,a)=>[lab,p>=0?a:a+PI,Math.abs(p)/mx*30,'--on'];
     $('#g2c').innerHTML=shellSVG({coils:{L:G1?'N1I1':'',BL:G2?'N2I2':'',R:G3?'N3I3':''},flux:{L:fl('φ1',p1,-PI/2),R:fl('φ3',p3,PI/2),C:fl('φ1−φ3',pc,PI/2),BL:fl('φ2',p1,PI)}});
     $('#g2e').innerHTML=fig610eq({s1:G1+' AT',s2:G2+' AT',s3:G3+' AT',R1:fm(Q1)+'e5',R2:fm(Q2)+'e5',R3:fm(Q3)+'e5'});
-    h=fact('φ1 = φ2 (الحلقة اليسرى)','h1')+fact('φ3 (الحلقة اليمنى)','h3')+fact('فيض الساق الوسطى φ1 − φ3','h2');$('#g2f').innerHTML=h;$('#h1').textContent=wb(p1);$('#h3').textContent=wb(p3);$('#h2').textContent=wb(pc);
+    h=fact('φ1 = φ2 (الحلقة اليسرى)','h1')+fact('φ3 (الحلقة اليمنى)','h3')+fact('فيض الساق الوسطى φ1 − φ3','h2');$('#g2f').innerHTML=h;chOut(el,'g2ch',[['p2',pc*1e3]]);$('#h1').textContent=wb(p1);$('#h3').textContent=wb(p3);$('#h2').textContent=wb(pc);
     const resL=A1-(r1*p1+r2*(p1-p3)),resR=G3-(r3*p3+r2*(p3-p1));const ok=Math.abs(resL)<1e-6*Math.max(1,Math.abs(A1))&&Math.abs(resR)<1e-6*Math.max(1,Math.abs(G3));
     k=`<div class="callout${bk==='book'?' err':''}"><b>${bk==='book'?'كما في الكتاب:':'المصحح:'}</b> ${bk==='book'?'المعادلة الثانية \\(N_1I_1+N_2I_2=\\Re_1\\phi_1+\\Re_2(\\phi_1-\\phi_2)\\) وحدّها الثاني صفر، فتعطي \\(\\phi_1=(N_1I_1+N_2I_2)/\\Re_1\\).':'\\(N_1I_1+N_2I_2=\\Re_1\\phi_1+\\Re_2(\\phi_1-\\phi_3)\\) و \\(N_3I_3=\\Re_3\\phi_3+\\Re_2(\\phi_3-\\phi_1)\\) تحلّان معاً.'}<br>
      تحقق من الحلقة اليسرى الحقيقية: <span class="ltr">N1I1 + N2I2 − [ℜ1φ1 + ℜ2(φ1−φ3)] = ${fm(sig(resL,4))} AT</span> ${ok?'✓ القانون متحقق':'✗ القانون غير متحقق — الأرقام خاطئة'}</div>`;B.math($('#g2k'))}
@@ -1443,7 +1447,13 @@ B.lesson({
    s+=`<rect x="120" y="160" width="80" height="20" fill="var(--surface)"/>`+zig(120,170,200,170,6,'')+S.t(160,196,'R','','middle',13);
    if(!ac)s+=`<path class="w" d="M230 40V80M230 130V170"/><path d="M220 112H240L230 96Z" fill="var(--fg)"/><path d="M220 96H240" stroke="var(--fg)" stroke-width="2"/>`+S.t(224,148,'D','m','end');
    return s+'</svg>'};
-  const drawAC=()=>{if(md!=='ac')return;const Lv=L(),XL=2*PI*f*Lv,Z=Math.hypot(TP.v.R,XL),Im=TP.v.V/Z,ph=Math.atan2(XL,TP.v.R);
+  /* أعطال مخفية (وضع التحدي فقط): لفات مقصورة (الحث الفعلي ربع المتوقع)، القلب ساقط أو غير موجود (الحث = حث القلب الهوائي أياً كان الاختيار)،
+     الملف مقطوع، وصلة رخوة (مقاومة الدائرة الفعلية ثلاثة أضعاف). القيم المعروضة «(توضيح)» محسوبة بأرقام الملف السليم */
+  const chX=()=>chF('short')||chF('nocore')||chF('open')||chF('rhigh');
+  const chL=()=>chF('nocore')?TP.v.La:L()*(chF('short')?0.25:1),chR=()=>TP.v.R*(chF('rhigh')?3:1);
+  const drawAC=()=>{if(md!=='ac')return;const Lv=L(),XL=2*PI*f*Lv;let Z=Math.hypot(TP.v.R,XL),Im=TP.v.V/Z,ph=Math.atan2(XL,TP.v.R);
+   if(chX()){const Xe=2*PI*f*chL(),Re=chR();Z=Math.hypot(Re,Xe);Im=chF('open')?0:TP.v.V/Z;ph=Math.atan2(Xe,Re)}
+   chOut(el,'g4cha',[['Im',Im*1e3],['ph',ph/D]]);
    const T=2/f,pv=[],pi=[];for(let k=0;k<=400;k++){const tt=k/400*T;pv.push([tt*1000,TP.v.V*Math.sin(2*PI*f*tt)]);pi.push([tt*1000,Im*Math.sin(2*PI*f*tt-ph)])}
    const ki=TP.v.V/Math.max(Im,1e-12)*0.8;const pis=pi.map(p=>[p[0],p[1]*ki]);
    $('#g4p').innerHTML=plotSVG({w:620,h:240,x0:0,x1:T*1000,y0:-TP.v.V*1.1,y1:TP.v.V*1.1,xt:[0,T*250,T*500,T*750,T*1000].map(v=>+v.toPrecision(3)),yt:[-TP.v.V,0,TP.v.V],left:50,xl:'t (ms)',yl:'v , i',series:[{pts:pv,col:'--blue',w:2},{pts:pis,col:'--live',w:2.4}],aria:'الجهد والتيار في الملف'})+`<div class="sub" style="text-align:center">الأزرق: الجهد v — البرتقالي: التيار i (مكبّر ليظهر على نفس الرسم)</div>`;
@@ -1464,12 +1474,15 @@ B.lesson({
   ]);
   ui();
   loopOn(el,dt=>{t+=dt;
-   if(md==='dc'){const tau=L()/TP.v.R,iss=sw?TP.v.V/TP.v.R:0;i=iss+(i-iss)*Math.exp(-dt/Math.max(tau,1e-9));if(Math.abs(i-iss)<1e-12)i=iss;
+   if(md==='dc'){const tau=L()/TP.v.R,iss=sw?TP.v.V/TP.v.R:0;
+    if(chX()){const Re=chR(),ie=sw&&!chF('open')?TP.v.V/Re:0;i=chF('open')?0:ie+(i-ie)*Math.exp(-dt/Math.max(chL()/Re,1e-9));if(Math.abs(i-ie)<1e-12)i=ie}
+    else{i=iss+(i-iss)*Math.exp(-dt/Math.max(tau,1e-9));if(Math.abs(i-iss)<1e-12)i=iss}
+    chOut(el,'g4chd',[['i',i*1e3]]);
     hist.push([t,i]);while(hist.length&&hist[0][0]<t-5)hist.shift();const Imax=TP.v.V/TP.v.R;
     $('#g4c').innerHTML=cktSVG(sw||i>Imax*0.01,false);
     $('#g4p').innerHTML=plotSVG({w:620,h:240,x0:0,x1:5,y0:0,y1:Imax*1.15,xt:[0,1,2,3,4,5],xf:v=>fm(v-5),yt:[0,Imax/2,Imax],yf:v=>fm(sig(v,3)),left:56,xl:'t (s)',yl:'i (A)',series:[{pts:hist.map(p=>[p[0]-t+5,p[1]]),col:'--live',w:2.4}],extra:(X,Y)=>`<path d="M${X(0)} ${fx(Y(Imax))}H${X(5)}" stroke="var(--muted)" stroke-dasharray="5 4"/>`+S.t(X(5)-4,Y(Imax)-6,'V/R','m','end'),aria:'التيار مع الزمن'});
     $('#g4f2').innerHTML=fact('التيار i','d1')+fact('القيمة النهائية V/R','d2')+fact('جهد الحث الذاتي المعاكس','d3')+fact('ثابت الزمن τ = L/R (توضيح)','d4');
-    $('#d1').textContent=eng(i,'A');$('#d2').textContent=eng(Imax,'A');$('#d3').textContent=eng(sw?TP.v.V-TP.v.R*i:-TP.v.R*i,'V');$('#d4').textContent=eng(tau,'s');
+    $('#d1').textContent=eng(i,'A');$('#d2').textContent=eng(Imax,'A');$('#d3').textContent=eng(sw?TP.v.V-(chX()?chR():TP.v.R)*i:-(chX()?chR():TP.v.R)*i,'V');$('#d4').textContent=eng(tau,'s');
     $('#g4n').textContent=sw?(i<0.99*Imax?'التيار يتزايد تدريجياً: جهد الحث الذاتي يعارض الزيادة.':'استقر التيار: لا تغير ⇐ لا جهد حث ذاتي.'):(i>0.01*Imax?'التيار يتناقص تدريجياً: جهد الحث الذاتي يعارض النقص (يمر في الثنائي D).':'لا تيار.')}
    pp+=((act?1:0)-pp)*Math.min(1,dt*8);if(Math.abs(pp-(act?1:0))<0.002)pp=act?1:0;$('#g4s').innerHTML=solActSVG(pp,act);$('#g4sn').textContent=act?'الملف مهيج: المجال يسحب الغواص الحديدي إلى داخله.':'الملف غير مهيج: النابض يعيد الغواص إلى وضعه الأصلي.';
    steps.check()});

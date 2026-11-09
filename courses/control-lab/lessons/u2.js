@@ -9,6 +9,8 @@ const {S}=B;
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const R=(x,d)=>B.round(x,d);
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
 
@@ -172,10 +174,10 @@ function measure(d,W){const post=d.filter(r=>r[0]>=0);if(post.length<5)return nu
    ====================================================================== */
 const lag=(x,tg,T,h)=>tg+(x-tg)*Math.exp(-h/Math.max(T,1e-9));
 const PLANTS={
- th:{init:P=>({q:0,x:0}),step:(s,u,z,h,P)=>{s.q=lag(s.q,P.Ks*u-P.Kz*z,P.T1,h);s.x=lag(s.x,s.q,P.T2,h)},y:(s,P)=>P.xa+s.x,hmax:P=>Math.min(P.T1,P.T2)/4},
- mot:{init:()=>({x:0}),step:(s,u,z,h,P)=>{s.x=lag(s.x,P.Km*u,P.Tm,h)},y:s=>s.x,hmax:()=>Infinity},
+ th:{init:P=>({q:0,x:0}),step:(s,u,z,h,P)=>{if(chF('hopen')){u=0;z=0}s.q=lag(s.q,P.Ks*u*(chF('hweak')?0.5:1)-P.Kz*z,P.T1,h);s.x=lag(s.x,s.q,P.T2*(chF('sslow')?6:1),h)},y:(s,P)=>chF('sopen')?0:P.xa+(chF('scal')?1.5:0)+s.x,hmax:P=>Math.min(P.T1,P.T2)/4},
+ mot:{init:()=>({x:0}),step:(s,u,z,h,P)=>{s.x=lag(s.x,P.Km*u*(chF('mopen')?0:chF('mfric')?0.6:chF('mbrush')?0.9:1),P.Tm*(chF('mfric')?0.6:chF('mbrush')?3:1),h)},y:s=>chF('tacho')?0:s.x,hmax:()=>Infinity},
  pt1:{init:()=>({x:0}),step:(s,u,z,h,P)=>{s.x=lag(s.x,P.K1*u,P.T1,h)},y:s=>s.x,hmax:()=>Infinity},
- light:{init:()=>({x:0}),step:(s,u,z,h,P)=>{s.x=lag(s.x,P.KL*u,P.TL,h)},y:s=>s.x,hmax:()=>Infinity}};
+ light:{init:()=>({x:0}),step:(s,u,z,h,P)=>{s.x=lag(s.x,P.KL*u*(chF('ledopen')?0:chF('dirty')?0.5:1),P.TL*(chF('slow')?5:1),h)},y:s=>s.x+(chF('amb')?0.8:0),hmax:()=>Infinity}};
 
 /* ======================================================================
    Generic step-response bench (used by all three lessons)
@@ -781,7 +783,7 @@ B.lesson({
    benchExtra:c=>({aria:'توصيل التجربة: المولد إلى الوحدة، Y1 على الخرج و Y2 على الدخل'}),
    chans:{mot:{inCh:'Y2',outCh:'Y1'},pt1:{inCh:'Y2',outCh:'Y1'}},amp0:0,ampBook:10,wins:[1,2,5,10],winBook:5,speeds:[0.2,1],speed0:1,
    rows0:()=>[],clearRows:c=>{c.rows.length=0},
-   spin:(c,y)=>c.kind==='mot'?y/10*c.P.nmax*0.12:0,
+   spin:(c,y)=>c.kind==='mot'?(chF('tacho')?c.st.x:y)/10*c.P.nmax*0.12:0,
    meters:(c,u,y)=>[['الدخل (Y2)',fm(u,2)+' V'],['الخرج (Y1)',fm(y,2)+' V']].concat(c.kind==='mot'?[['سرعة المحرك',fm(y/10*c.P.nmax,0)+' rpm']]:[]).concat([['زمن التسجيل',c.cap?fm(Math.max(0,c.cap.t),2)+' s':'—']]),
    tblTitle:'جدول النتائج ص 16 — يمتلئ بقياساتك',
    table:(c,host)=>gainTable(c,host,{kname:k=>k==='mot'?'المحرك':'PT1',gsLabel:'النموذج الرياضي',model}),

@@ -6,6 +6,8 @@ const {S,clamp,W}=B;
    Small helpers for this unit (local copies; other units may not be loaded)
    ===================================================================== */
 const q=(el,s)=>el.querySelector(s);
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
 const segHTML=(attr,items,cur)=>`<div class="seg" role="group" style="flex-wrap:wrap">${items.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join('')}</div>`;
 const segSet=(el,attr,cur)=>el.querySelectorAll(`[data-${attr}]`).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[attr])===String(cur)));
@@ -305,22 +307,24 @@ B.lesson({
   const T1=x=>{const u=Math.abs(x);return Math.sign(x)*0.5*Math.min(1,u/0.06)*Math.max(0,1-u/0.6)};
   loopOn(el,dt=>{
    t+=dt;phi+=dt*2*Math.PI*0.5;
-   const rotating=src!=='1ph'&&k>0;let T;
+   /* القيم الفعلية (تختلف عن المضبوطة فقط بعطل مخفي): capopen المكثف تالف (مفتوح) فلا تيار في ملف الجهد الثابت، aopen ملف التحكم مقطوع، arev أطراف ملف التحكم معكوسة، shopen مفتاح القصر لا يلامس */
+   const srcE=src==='cap'&&chF('capopen')?'1ph':src,kE=chF('aopen')?0:k,dE=chF('arev')?-d:d,shE=shorted&&!chF('shopen')&&!chF('aopen');
+   const rotating=srcE!=='1ph'&&kE>0;let T;
    const tau=TP.v.tau,fr=TP.v.fr/100,ns=Math.max(1,Math.ceil(dt/(0.5*tau)-1e-9)),h=dt/ns;  // خطوات أصغر فقط عند ثابت زمن صغير جداً (للثبات)
    for(let i=0;i<ns;i++){
-   if(rotating)T=k*d-w;else if(shorted)T=-w;else T=T1(w);
+   if(rotating)T=kE*dE-w;else if(shE)T=-w;else T=T1(w);
    if(!rotating&&!shorted&&Math.abs(w)>0.3&&k===0)flags.single=1;
    let a=T-fr*Math.sign(w);if(Math.abs(w)<0.01&&Math.abs(T)<=fr){w=0;a=0}
    w+=a/tau*h}
    th+=w*dt*360*0.45;
-   const f=fieldPaths(src,k,d,phi,160,74);
+   const f=fieldPaths(srcE,kE,dE,phi,160,74);
    q(el,'#u3l1-B').setAttribute('d',f.B);q(el,'#u3l1-Bh').setAttribute('d',f.H);q(el,'#u3l1-tr').setAttribute('d',f.T);
    q(el,'#u3l1-rot').setAttribute('transform',`rotate(${(th%360).toFixed(1)} 160 160)`);
    [0,2].forEach(i=>q(el,'#u3l1-c'+i).setAttribute('opacity',(0.12+0.75*Math.abs(f.ia)).toFixed(2)));[1,3].forEach(i=>q(el,'#u3l1-c'+i).setAttribute('opacity',(0.12+0.75*Math.abs(f.im)).toFixed(2)));
    ht+=dt;if(ht>0.08){ht=0;hist.push([t,w*100]);while(hist.length&&hist[0][0]<t-10)hist.shift();
      q(el,'#ch').innerHTML=plot({W:420,H:200,x:[t-10,t],y:[-110,110],yt:[-100,-50,0,50,100],xt:[],ax0:false,xl:'t →',yl:'speed %',lines:[{pts:hist,col:'--blue'}],aria:'السرعة مع الزمن'})}
-   q(el,'#fState').textContent=rotating?(k>=0.999?'دوار منتظم':'دوار (بيضاوي)'):(src==='1ph'?'نابض (لا يدور)':'وجه واحد فقط');
-   q(el,'#fT').textContent=(rotating?Math.round(k*100):0)+' %';q(el,'#fW').textContent=Math.round(Math.abs(w)*100)+' %';
+   q(el,'#fState').textContent=rotating?(kE>=0.999?'دوار منتظم':'دوار (بيضاوي)'):(srcE==='1ph'?'نابض (لا يدور)':'وجه واحد فقط');
+   q(el,'#fT').textContent=(rotating?Math.round(kE*100):0)+' %';q(el,'#fW').textContent=Math.round(Math.abs(w)*100)+' %';
    q(el,'#fD').textContent=Math.abs(w)<0.01?'متوقف':w>0?'⟳ مع عقارب الساعة':'⟲ عكس عقارب الساعة';
    const sg=[src,k,d,shorted,rotating,Math.abs(w)>0.05].join();
    if(sg!==lastSig){lastSig=sg;q(el,'#wir').innerHTML=wiringSVG(src,k,d,shorted);let m='';
@@ -1107,11 +1111,12 @@ B.lesson({
   el.querySelectorAll('[data-fm]').forEach(b=>b.addEventListener('click',()=>{form=b.dataset.fm;sync()}));
   const fseen=new Set();el.querySelectorAll('[data-ft]').forEach(b=>b.addEventListener('click',()=>{feat=feat===b.dataset.ft?null:b.dataset.ft;if(feat)fseen.add(feat);if(fseen.has('ind')&&fseen.has('cool'))flags.f2=1;sync()}));
   sync();B.math(el);
-  loopOn(el,dt=>{const K=TP.v.K,Ra=TP.v.Ra,tau=TP.v.tau,Tq=x=>K*(Va-K*x)/Ra;let T=0;
+  /* أعطال مخفية: aopen دائرة المنتج مفتوحة (لا تيار)، arev أطراف المنتج معكوسة؛ وضعف المغناطيس وتآكل الفرش بأرقام الآلة (K و Ra) */
+  loopOn(el,dt=>{const K=TP.v.K,Ra=TP.v.Ra,tau=TP.v.tau,VaE=chF('arev')?-Va:Va,Tq=x=>chF('aopen')?0:K*(VaE-K*x)/Ra;let T=0;
    const n=Math.max(4,Math.ceil(dt*K*K/(Ra*tau)/0.5-1e-9)),h=dt/n;   // خطوات أصغر فقط عند قيم مدرب حادة (للثبات)؛ بالقيم التوضيحية 4 دائماً
    for(let i=0;i<n;i++){T=Tq(w);const sgn=Math.abs(w)>1e-3?Math.sign(w):Math.sign(T);let net=T-TL*sgn;if(Math.abs(w)<2e-3&&Math.abs(T)<=TL){net=0;w=0}w+=net/tau*h}
    th+=w*dt*360*0.6;const g=q(el,'#u3fm');angF[form]+=0.5*dt*360*0.4;if(g){const c=form==='pc'?'270 90':'90 90';g.setAttribute('transform',`rotate(${(angF[form]%360).toFixed(1)} ${c})`)}
-   ht+=dt;if(ht<0.06)return;ht=0;T=Tq(w);const Ia=(Va-K*w)/Ra;
+   ht+=dt;if(ht<0.06)return;ht=0;T=Tq(w);const Ia=chF('aopen')?0:(VaE-K*w)/Ra;
    q(el,'#fw').textContent=w.toFixed(2)+' pu';q(el,'#fT').textContent=T.toFixed(2)+' pu';q(el,'#fI').textContent=Ia.toFixed(2)+' pu';q(el,'#fE').textContent=(K*w).toFixed(2)+' pu';q(el,'#fd').textContent=Math.abs(w)<0.01?'متوقف':w>0?'⟳ أمامي':'⟲ عكسي';
    q(el,'#cir').innerHTML=dcCircuitSVG({pm,live:Math.abs(Va)>0.001,Va,lbl:`Ia = ${Ia.toFixed(2)} pu`});
    q(el,'#tw').innerHTML=fig38SVG({Va,TL:TL*(w<-0.01||(Va<0&&Math.abs(w)<0.01)?-1:1),dot:{x:w,y:T,col:'--stop'},xs:1/K,ys:K/Ra});

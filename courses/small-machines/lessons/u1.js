@@ -13,6 +13,8 @@ const dpOf=v=>Number.isInteger(B.round(v,4))?0:Number.isInteger(B.round(v*10,4))
 const fmt3=x=>{const s=Math.abs(x).toFixed(3).replace(/0+$/,'').replace(/\.$/,'.0');return s};
 const sgnTxt=v=>v>0?'+1':v<0?'-1':'0';
 const ACW='⟲',CW='⟳';
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* ---------- motor definitions (torque model: T = −Σ i_k·sin(Z·(θ−e_k)), θ in degrees) ---------- */
 const MOT={
@@ -242,8 +244,10 @@ function stepLab(el,opt){
   const tpN=()=>{$('#tpnote').innerHTML=TP.trainer&&Math.abs(TP.v.tau-1/30)>1e-6?' <b>قيم المدرب:</b> كلما كبر ثابت زمن التسارع تأخر الدوار في الوصول إلى كل خطوة، وعند خطوات كثيرة في الثانية قد لا يلحق بها فلا تطابق زاوية الدوار عدد الخطوات × θ.':''};
   const TP=B.params($('#sltp'),opt.id,[{k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1/30,dp:4,min:0.005,max:2,step:0.001}],tpN);tpN();
   const incOf=()=>sq.half?M.step/2:M.step;
+  /* التغذية الفعلية للمجموعات (تختلف عن أوامر الجدول فقط بعطل مخفي في وضع التحدي): open = المجموعة الثانية مقطوعة، rev = أطراف المجموعة الثانية معكوسة، swap = المجموعتان الثانية والثالثة مبدلتان، stuck = المجموعة الأولى مغذّاة دائماً */
+  const phE=p=>{let q=p;if(chF('swap')&&q.length>2)q=[q[0],q[2],q[1]].concat(q.slice(3));if(chF('open'))q=q.map((v,k)=>k===1?0:v);if(chF('rev'))q=q.map((v,k)=>k===1?-v:v);if(chF('stuck'))q=q.map((v,k)=>k===0?1:v);return q};
   function applyPh(nv,count){const changed=nv.some((v,k)=>v!==ph[k]);ph=nv.slice();if(changed||count){hist.push(ph.slice());if(hist.length>12)hist.shift()}
-    prevT=tgt;tgt=settle(M,ph,th);lastD=B.round(tgt-prevT,2);if(!ph.some(v=>v))lastD=0;w.lastD=lastD}
+    prevT=tgt;tgt=settle(M,phE(ph),th);lastD=B.round(tgt-prevT,2);if(!phE(ph).some(v=>v))lastD=0;w.lastD=lastD}
   function reset(){ph=sq.rows[0].slice();th=0;om=0;r=0;acc=0;tgt=0;prevT=0;lastD=0;hist=[ph.slice()];sig='';tsig='';wsig=''}
   function buildSel(){$('#sqSel').innerHTML=mode==='seq'?`<div class="sub">التسلسل</div>${segHTML('sq',SQ.map(q=>[q.id,q.short]),sq.id,1)}`:`<div class="sub">مقارنة بالجدول</div>${segHTML('sq',SQ.map(q=>[q.id,q.short]),sq.id,1)}`;
     $('#sqSel').querySelectorAll('[data-sq]').forEach(b=>b.addEventListener('click',()=>{sq=SQ.find(q=>q.id===b.dataset.sq);if(mode==='seq'){auto=false;reset()}buildSel();buildCtl();tsig='';wsig=''}))}
@@ -281,11 +285,11 @@ function stepLab(el,opt){
     if(mode==='seq'&&auto){acc+=dt*rate;while(acc>=1){acc-=1;doStep()}}
     // physics (illustrative dynamics)
     const wn=1/TP.v.tau,c=2*0.35*wn,G=wn*wn/(M.Z*D);const n=Math.ceil(dt/0.002),h=dt/Math.max(1,n);
-    for(let i=0;i<n;i++){const T=torq(M,ph,th);om+=(G*T-c*om)*h;th+=om*h}
-    if(Math.abs(om)<0.02&&ph.some(v=>v)&&Math.abs(torq(M,ph,th))<1e-4&&torq(M,ph,th+0.05)>0)om+=4;
+    const pe=phE(ph);for(let i=0;i<n;i++){const T=torq(M,pe,th);om+=(G*T-c*om)*h;th+=om*h}
+    if(Math.abs(om)<0.02&&pe.some(v=>v)&&Math.abs(torq(M,pe,th))<1e-4&&torq(M,pe,th+0.05)>0)om+=4;
     el.querySelectorAll('[data-rot]').forEach(g=>{const [cx,cy]=g.dataset.rot.split(' ');g.setAttribute('transform',`rotate(${(-th).toFixed(2)} ${cx} ${cy})`)});
     el.querySelectorAll('[data-rl]').forEach(t=>{const [off,rr,cx,cy]=t.dataset.rl.split(' ').map(Number);const q=pol(cx,cy,rr,th+off);t.setAttribute('x',q[0].toFixed(1));t.setAttribute('y',(q[1]+4).toFixed(1))});
-    const sg=mk+'|'+ph.join(',');const cmp=$('#mv').clientWidth<520;if(sg!==sig||cmp!==w.cmp){sig=sg;w.cmp=cmp;$('#mv').innerHTML=motorSVG(M,ph,th,{compact:cmp});$('#say').innerHTML=sayText()}
+    const sg=mk+'|'+ph.join(',');const cmp=$('#mv').clientWidth<520;if(sg!==sig||cmp!==w.cmp){sig=sg;w.cmp=cmp;$('#mv').innerHTML=motorSVG(M,phE(ph),th,{compact:cmp});$('#say').innerHTML=sayText()}
     const hi=mode==='seq'?rowIdx(sq,r):sq.rows.findIndex(x=>x.every((v,k)=>v===ph[k]));
     const ts=sq.id+'|'+hi+'|'+mk;if(ts!==tsig){tsig=ts;$('#tb').innerHTML=seqTable(sq,M.labels,hi);$('#tref').textContent=(sq.gen?'':'الجدول ')+sq.tab+' '+sq.ref;
       $('#tnote').innerHTML=`«${sq.cap}». `+(mode==='seq'?`الصف المظلل هو الخطوة الحالية؛ كل خطوة = <b class="ltr">${incOf()}°</b>.`:(hi>=0?`التغذية الحالية تطابق الصف ${hi+1} من الجدول.`:'التغذية الحالية ليست صفًا في هذا الجدول.'))+(sq.gen?' <b>هذا الجدول مولَّد للتوضيح وليس مطبوعًا في الكتاب.</b>':'')}

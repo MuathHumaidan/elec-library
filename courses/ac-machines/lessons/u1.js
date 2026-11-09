@@ -8,6 +8,8 @@ const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const sig=(x,n)=>(!isFinite(x)||x===0)?x:+(+x).toPrecision(n);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* ---------- styles used only by this file (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('acu1a-css'))return;const s=document.createElement('style');s.id='acu1a-css';s.textContent=`
@@ -525,10 +527,15 @@ B.lesson({
 /* slot positions of الشكل (1-7) clockwise from 12 o'clock: label, clock angle, phase, side (+1 start / -1 return) */
 const SLOTS=[['A',0,'a',1],["C'",60,'c',-1],['B',120,'b',1],["A'",180,'a',-1],['C',240,'c',1],["B'",300,'b',-1]];
 const IM=10;
-function phaseCur(th,rev){const a=IM*Math.cos(th*D),b=IM*Math.cos((th-120)*D),c=IM*Math.cos((th-240)*D);return rev?{a,b:c,c:b}:{a,b,c}}
+function phaseCur(th,rev){let a=IM*Math.cos(th*D),b=IM*Math.cos((th-120)*D),c=IM*Math.cos((th-240)*D);
+  /* أعطال مخفية: seq تتابع أطوار المصدر معكوس، ph1 خط المصدر الثالث مفصول (يبقى تيار واحد يمر في ملفين) */
+  if(chF('seq'))rev=!rev;if(chF('ph1')){a=IM*Math.sqrt(3)/2*Math.cos((th+30)*D);b=-a;c=0}
+  return rev?{a,b:c,c:b}:{a,b,c}}
+/* عطل مخفي coilA: طرفا الملف A مبدّلان — تيار الخط كما هو لكن اتجاهه داخل الملف معكوس */
+const sdx=(ph,sd)=>ph==='a'&&chF('coilA')?-sd:sd;
 const sgnTxt=v=>Math.abs(v)<0.05?'0':v>0?'+':'−';
 /* resultant (2-pole): Σ s·u(clock) rotated 90° counter-clockwise on screen. returns {x,y} with y up */
-function fieldVec(cur){let x=0,y=0;SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sd;x+=v*Math.sin(c*D);y+=v*Math.cos(c*D)});return {x:-y,y:x}}
+function fieldVec(cur){let x=0,y=0;SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sdx(ph,sd);x+=v*Math.sin(c*D);y+=v*Math.cos(c*D)});return {x:-y,y:x}}
 /* the book's table of الشكل (1-7) */
 const T17=[[0,'الأولى','صفر','+','+','−','−','−','+','أفقي نحو اليسار'],[60,'الثانية','60°','+','+','+','−','−','−','نحو أعلى اليسار'],[120,'الثالثة','120°','−','+','+','+','−','−','نحو أعلى اليمين'],[180,'الرابعة','180°','−','−','+','+','+','−','أفقي نحو اليمين'],
  [240,'الخامسة','240°','−','−','−','+','+','+','نحو أسفل اليمين'],[300,'السادسة','300°','+','−','−','−','+','+','نحو أسفل اليسار'],[360,'السابعة','360°','+','+','−','−','−','+','أفقي نحو اليسار (مثل الأولى)'],[420,'الثامنة','420°','+','+','+','−','−','−','مثل الثانية']];
@@ -538,10 +545,10 @@ function t17HTML(cur){const sp=v=>`<span class="${v==='+'?'im-sgn-p':'im-sgn-m'}
 /* ring of الشكل (1-7): o={size,rev,label} */
 function ringSVG(th,o){o=o||{};const cur=phaseCur(th,o.rev),cx=110,cy=110,R=84,r0=60;let s=`<svg viewBox="0 0 220 ${o.label?246:220}" role="img" aria-label="المجال الدوار عند θ = ${fm(th,0)}°">`;
   // sectors coloured by sign (book: + blue, − yellow)
-  SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sd,a0=(c-30-90)*D,a1=(c+30-90)*D;const col=Math.abs(v)<0.05?'--surface-2':v>0?'--blue-soft':'--live-soft';
+  SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sdx(ph,sd),a0=(c-30-90)*D,a1=(c+30-90)*D;const col=Math.abs(v)<0.05?'--surface-2':v>0?'--blue-soft':'--live-soft';
     s+=`<path d="M${fx(cx+R*Math.cos(a0))} ${fx(cy+R*Math.sin(a0))}A${R} ${R} 0 0 1 ${fx(cx+R*Math.cos(a1))} ${fx(cy+R*Math.sin(a1))}L${fx(cx+r0*Math.cos(a1))} ${fx(cy+r0*Math.sin(a1))}A${r0} ${r0} 0 0 0 ${fx(cx+r0*Math.cos(a0))} ${fx(cy+r0*Math.sin(a0))}Z" fill="var(${col})"/>`});
   s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--fg)" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="${r0}" fill="none" stroke="var(--fg)" stroke-width="1.2"/>`;
-  SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sd,a=(c-90)*D,x=cx+72*Math.cos(a),y=cy+72*Math.sin(a),xl=cx+100*Math.cos(a),yl=cy+100*Math.sin(a);const t=sgnTxt(v);
+  SLOTS.forEach(([l,c,ph,sd])=>{const v=cur[ph]*sdx(ph,sd),a=(c-90)*D,x=cx+72*Math.cos(a),y=cy+72*Math.sin(a),xl=cx+100*Math.cos(a),yl=cy+100*Math.sin(a);const t=sgnTxt(v);
     s+=`<circle cx="${fx(x)}" cy="${fx(y)}" r="10" fill="var(--surface)" stroke="var(${t==='+'?'--blue':t==='−'?'--live':'--muted'})" stroke-width="2.4"/>`+S.t(fx(x),fx(y+4.5),t,'',null,15)+S.t(fx(xl),fx(yl+4),l,'b',null,13)});
   const v=fieldVec(cur),m=Math.hypot(v.x,v.y),L=48;if(m>0.5){const ux=v.x/m,uy=-v.y/m;s+=arrow(cx-ux*L,cy-uy*L,cx+ux*L,cy+uy*L,'--stop',4)}
   if(o.label)s+=arT(cx,238,o.label,{fs:13});
@@ -557,7 +564,7 @@ function wavesSVG(th,rev,o){o=o||{};const pts=k=>{const p=[];for(let x=0;x<=420;
 /* generalisation to p poles (illustration): 3p slot positions, N/S markers */
 function ringPSVG(th,p,rev){const pp=p/2,cur=phaseCur(th,rev),cx=130,cy=130,R=100;let s=`<svg viewBox="0 0 260 260" role="img" aria-label="المجال في آلة ذات ${p} أقطاب">`;
   s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--fg)" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="${R-26}" fill="none" stroke="var(--line)"/>`;
-  const n=6*pp;for(let j=0;j<n;j++){const [l,c,ph,sd]=SLOTS[j%6];const v=cur[ph]*sd,ma=(j*360/n-90)*D,x=cx+(R-13)*Math.cos(ma),y=cy+(R-13)*Math.sin(ma);const t=sgnTxt(v);
+  const n=6*pp;for(let j=0;j<n;j++){const [l,c,ph,sd]=SLOTS[j%6];const v=cur[ph]*sdx(ph,sd),ma=(j*360/n-90)*D,x=cx+(R-13)*Math.cos(ma),y=cy+(R-13)*Math.sin(ma);const t=sgnTxt(v);
     s+=`<circle cx="${fx(x)}" cy="${fx(y)}" r="${p>4?6:8}" fill="var(${t==='+'?'--blue-soft':t==='−'?'--live-soft':'--surface-2'})" stroke="var(${t==='+'?'--blue':t==='−'?'--live':'--muted'})" stroke-width="1.6"/>`;if(p<=4)s+=S.t(fx(cx+(R+12)*Math.cos(ma)),fx(cy+(R+12)*Math.sin(ma)+4),l,'m',null,10)}
   const v=fieldVec(cur);const ae=Math.atan2(v.x,v.y)/D;   // electrical clock angle of the arrow head (N)
   for(let k=0;k<pp;k++){[[ae,'N','--stop'],[ae+180,'S','--muted']].forEach(([e,t,col])=>{const ma=((e+360*k)/pp-90)*D,x=cx+50*Math.cos(ma),y=cy+50*Math.sin(ma);
@@ -1622,9 +1629,15 @@ B.lesson({
   const M=()=>mk==='m4'?Object.assign({},MOT.m4,{R1:TP.v.R1m4}):MOT[mk];
   const vmax=()=>test==='DC'?(M().conn===1?2*M().R1:2/3*M().R1)*M().Idc*1.4:M().VLr*(test==='NL'?1.15:1);
   const vstep=()=>test==='DC'?0.01:0.1;
-  const read=()=>{const m=M();if(test==='DC'){const Rt=m.conn===1?2*m.R1:2/3*m.R1;const v=B.round(V,2),i=B.round(v/Rt,2);return {V:v,I:i}}
-   const T=test==='NL'?m.NL:m.BR,k=V/T.V,v=B.round(V,1),i=B.round(T.I*k,2),p=B.round(T.P*k*k,0);let w1=0,w2=0,phi=0;
-   if(i>0){const pf=clamp(T.P/(SQ3*T.V*T.I),0,1);phi=Math.acos(pf)/D;w1=B.round(v*i*Math.cos((30-phi)*D),0);w2=p-w1}return {V:v,I:i,P:p,W1:w1,W2:w2,phi}};
+  /* أعطال مخفية (وضع التحدي فقط): conn التوصيل الداخلي عكس المطلوب (دلتا↔نجمة)، shortT حلقات مقصورة في ملف الثابت، gap ثغرة هوائية أكبر (كراسي تحميل متآكلة)، bars قضبان مكسورة في القفص */
+  const chK=m=>{let kI=1,kP=1;if(chF('conn')){const kc=m.conn===2?1/3:3;kI*=kc;kP*=kc}
+   if(test==='NL'){if(chF('shortT')){kI*=1.5;kP*=4}if(chF('gap')){kI*=1.4;kP*=1.15}}
+   else{if(chF('shortT')){kI*=1.05;kP*=1.1}
+    if(chF('bars')){const Y=m.conn===1,Vp=Y?m.BR.V/SQ3:m.BR.V,Ip=Y?m.BR.I:m.BR.I/SQ3,Z=Vp/Ip,Rq=m.BR.P/(3*Ip*Ip),Xq=Math.sqrt(Math.max(0,Z*Z-Rq*Rq)),Rn=m.R1+2*(Rq-m.R1),Zn=Math.hypot(Rn,Xq),r=Z/Zn;kI*=r;kP*=r*r*Rn/Rq}}
+   return [kI,kP]};
+  const read=()=>{const m=M();if(test==='DC'){const Rt=(m.conn===1?2*m.R1:2/3*m.R1)*(chF('conn')?(m.conn===2?3:1/3):1)*(chF('shortT')?0.95:1);const v=B.round(V,2),i=B.round(v/Rt,2);return {V:v,I:i}}
+   const T=test==='NL'?m.NL:m.BR,k=V/T.V,v=B.round(V,1),[kI,kP]=chK(m),i=B.round(T.I*k*kI,2),p=B.round(T.P*k*k*kP,0);let w1=0,w2=0,phi=0;
+   if(i>0){const pf=clamp(T.P*kP/(SQ3*T.V*T.I*kI),0,1);phi=Math.acos(pf)/D;w1=B.round(v*i*Math.cos((30-phi)*D),0);w2=p-w1}return {V:v,I:i,P:p,W1:w1,W2:w2,phi}};
   const ratedI=()=>test==='DC'?M().Idc:test==='BR'?M().BR.I:null;
   const setV=v=>{V=clamp(B.round(v,test==='DC'?2:1),0,vmax());const r=$('#l5v');if(r)r.value=V;draw()};
   const ui=()=>{const tl={NL:'اختبار اللاحمل <small>الشكل (1-13) ص 27</small>',BR:'اختبار إعاقة الحركة <small>الشكل (1-15) ص 29</small>',DC:`اختبار التيار المستمر <small>الشكل ${M().conn===1?'(1-16)':'(1-17)'} ص 30</small>`}[test];$('#l5h').innerHTML=tl;

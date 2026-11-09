@@ -7,6 +7,8 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 const isZ=(v,d)=>B.round(Math.abs(v),d==null?6:d)===0;
 const neg=(v,d)=>(v<0&&!isZ(v,d)?'−':'')+fm(Math.abs(v),d);          // printable signed number (true minus)
 const ltx=(v,d)=>(v<0&&!isZ(v,d)?'-':'')+fm(Math.abs(v),d);          // signed number for LaTeX
@@ -222,7 +224,7 @@ function seqPhasor(order,o){o=o||{};const ang={A:0,B:order==='ABC'?-120:120,C:or
   return phasorSVG(list,{w:o.w||220,h:o.h||200,max:1,pad:o.pad||40,arcs:o.arcs?[{a1:0,a2:120,r:30,lab:'120°'},{a1:120,a2:240,r:30,lab:'120°'},{a1:240,a2:360,r:30,lab:'120°'}]:null,aria:o.aria})}
 /* الشكل (2-2): waveforms (α from 0 to 4π) */
 const PI_LB={0:'0',120:'2π/3',240:'4π/3',360:'2π',480:'8π/3',600:'10π/3',720:'4π'};
-function wavesSVG(o){o=o||{};const Vm=o.Vm||1,dir=o.dir||1,ym=o.ym||Vm;const ser=[0,1,2].map(k=>{const pts=[];for(let i=0;i<=360;i++){const a=i*2;pts.push([a,Vm*Math.sin((a-dir*120*k)*D)])}return {pts,col:PC[k],w:2.2,dash:k===1?'2 4':k===2?'10 5':null}});
+function wavesSVG(o){o=o||{};const Vm=o.Vm||1,dir=o.dir||1,ym=o.ym||Vm;const ser=[0,1,2].map(k=>{const pts=[],g=o.k?o.k[k]:1;for(let i=0;i<=360;i++){const a=i*2;pts.push([a,g*Vm*Math.sin((a-dir*120*k)*D)])}return {pts,col:PC[k],w:2.2,dash:k===1?'2 4':k===2?'10 5':null}});
   return plotSVG({w:o.w||640,h:o.h||230,x0:0,x1:720,y0:-ym*1.1,y1:ym*1.1,xt:[0,120,240,360,480,600,720],xf:v=>PI_LB[v],yt:o.yt||[-ym,0,ym],yf:o.yf||(v=>v===0?'0':v>0?'+Vm':'−Vm'),xl:'α',yl:o.yl||'v',series:ser,
     extra:(X,Y)=>{let e=['VAA\'','VBB\'','VCC\''].map((l,k)=>ct(X(((90+dir*120*k)%360+360)%360),Y(Vm)-6,l,PC[k],'middle',11.5)).join('');if(o.extra)e+=o.extra(X,Y);return e},aria:'موجات جهود نظام ثلاثي الأطوار'})}
 
@@ -424,12 +426,14 @@ B.lesson({
     for(let k=0;k<3;k++){const p0=a0-dir*120*k-90,p1=alpha-dir*120*k-90;if(Math.floor(p0/360)!==Math.floor(p1/360))peaks.push('ABC'[k])}
     if(peaks.length>6)peaks.splice(0,peaks.length-6);
     if(alpha>=720)alpha-=720;$('#g1a').value=Math.round(alpha%360)}
-   const a=alpha,Vm=V*Math.SQRT2,v=[0,1,2].map(k=>Vm*Math.sin((a-dir*120*k)*D));
+   /* عطل مخفي: ملف B معكوس الطرفين، أو ملف C مقطوع، أو ملف C فيه حلقات مقصورة. خارج وضع التحدي kf = [1,1,1] */
+   const kf=[1,chF('crev')?-1:1,chF('copen')?0:chF('cweak')?0.7:1];
+   const a=alpha,Vm=V*Math.SQRT2,v=[0,1,2].map(k=>kf[k]*Vm*Math.sin((a-dir*120*k)*D));
    $('#g1gen').innerHTML=genSVG({thN:dir*(a-90),v:v.map(x=>Vm>0?x/Vm:0)});
    const ym=niceMax(Math.max(Vm,1)),a7=a%720;
-   $('#g1wv').innerHTML=wavesSVG({Vm:Math.max(Vm,1e-6),dir,ym,yt:[-ym,-ym/2,0,ym/2,ym],yf:x=>neg(x,0),yl:'v (V)',w:640,h:220,
+   $('#g1wv').innerHTML=wavesSVG({Vm:Math.max(Vm,1e-6),dir,ym,k:chOn()?kf:undefined,yt:[-ym,-ym/2,0,ym/2,ym],yf:x=>neg(x,0),yl:'v (V)',w:640,h:220,
      extra:(X,Y)=>`<path d="M${fx(X(a7))} 14V${220-36}" stroke="var(--fg)" stroke-width="1.6"/>`+v.map((x,k)=>`<circle cx="${fx(X(a7))}" cy="${fx(Y(x))}" r="4.5" fill="var(${PC[k]})" stroke="var(--surface)" stroke-width="1.5"/>`).join('')});
-   const list=[0,1,2].map(k=>({z:pol(Math.max(Vm,1e-6),(pv==='rot'?a:0)-dir*120*k),col:PC[k],w:2.6,lab:["VAA'","VBB'","VCC'"][k]}));
+   const list=[0,1,2].map(k=>({z:pol(Math.max(Vm,1e-6)*(chOn()?Math.max(Math.abs(kf[k]),1e-6):1),(pv==='rot'?a:0)-dir*120*k+(kf[k]<0?180:0)),col:PC[k],w:2.6,lab:["VAA'","VBB'","VCC'"][k]}));
    $('#g1ph').innerHTML=phasorSVG(list,{w:250,h:250,max:Math.max(Vm,1e-6),pad:40,circle:Math.max(Vm,1e-6),aria:'المطاورات الثلاثة',
      extra:(X,Y)=>pv!=='rot'?'':list.map((it,k)=>{const t=it.z;return `<path d="M${fx(X(t))} ${fx(Y(t))}H${fx(X(C(0,0)))}" stroke="var(${PC[k]})" stroke-dasharray="3 3" stroke-width="1.2"/><circle cx="${fx(X(C(0,0)))}" cy="${fx(Y(t))}" r="3.6" fill="var(${PC[k]})"/>`}).join('')});
    ['g1va','g1vb','g1vc'].forEach((id,k)=>{$('#'+id).textContent=neg(v[k],1)+' V'});
@@ -496,9 +500,10 @@ function lpPhasor(kind,o){o=o||{};const m=o.m||1,sel=o.sel||(kind==='V'?'AB':'B'
     arcs:[{a1:Math.min(pa,sa),a2:Math.max(pa,sa),r:44,lab:'30°'}].filter(a=>Math.abs(a.a2-a.a1)<=90)})}
 
 /* three-phase star load: E per phase, Z array [{re,im}], neutral on? → currents & voltages */
-function ySolve(E,Z,nOn){const Es=[pol(E,0),pol(E,-120),pol(E,120)];let VnN=C(0,0);
-  if(!nOn){const Y=Z.map(z=>cdiv(C(1,0),z));VnN=cdiv(csum(Es.map((e,i)=>cmul(e,Y[i]))),csum(Y))}
-  const Vl=Es.map(e=>csub(e,VnN)),I=Vl.map((v,i)=>cdiv(v,Z[i])),IN=nOn?csum(I):C(0,0);return {Es,Vl,I,IN,VnN}}
+/* rb, oc: أعطال «اكتشف العطل» فقط (ملف الطور B في المولد معكوس، والخط C مفتوح) — لا يمررهما إلا وضع التحدي */
+function ySolve(E,Z,nOn,rb,oc){const Es=[pol(E,0),pol(E,-120),pol(E,120)];if(rb)Es[1]=csc(Es[1],-1);let VnN=C(0,0);
+  if(!nOn){const Y=Z.map((z,i)=>oc&&i===2?C(0,0):cdiv(C(1,0),z));VnN=cdiv(csum(Es.map((e,i)=>cmul(e,Y[i]))),csum(Y))}
+  const Vl=Es.map((e,i)=>oc&&i===2?C(0,0):csub(e,VnN)),I=Vl.map((v,i)=>oc&&i===2?C(0,0):cdiv(v,Z[i])),IN=nOn?csum(I):C(0,0);return {Es,Vl,I,IN,VnN}}
 
 /* worked examples 2-1-1 / 2-1-3 (star–star) */
 function exYY(g,o){const V=g.V,R=g.R,X=g.X,out=[];
@@ -840,7 +845,7 @@ B.lesson({
      const q=s=>$('#l2rf').querySelector(s);q('#f1').textContent=fm(Iph,1)+' A';q('#f2').textContent=fm(IL,1)+' A';q('#f3').textContent=fm(SQ3,3);q('#f4').textContent=neg(la,0)+'°';q('#f5').textContent='0 A';q('#f6').textContent=fm(Vph,0)+' V';
      $('#l2rn').innerHTML=`المتقطع = −I<sub>${{B:'BC',C:'CA',A:'AB'}[selD]}</sub> مضافاً إلى رأس I<sub>${{B:'AB',C:'BC',A:'CA'}[selD]}</sub> (قانون كيرشوف عند العقدة ${selD}).`}
    }else{
-    const r=ySolve(E,Z,nOn);last=r;const IN=cabs(r.IN),Vn=cabs(r.VnN);
+    const r=chOn()?ySolve(E,Z,nOn&&!chF('nopen'),chF('erev'),chF('lopen')):ySolve(E,Z,nOn);last=r;const IN=cabs(r.IN),Vn=cabs(r.VnN);
     const pI=i=>ps(cabs(r.I[i]),cang(r.I[i]),2,1)+' A';
     $('#l2lc').innerHTML=sysSVG({gen:'Y',src:[`EAN ${fm(E,0)}∠0° V`,`${fm(E,0)}∠−120° V`,`${fm(E,0)}∠120° V`],load:'Y',z:Z.map(z=>zs(z,1)+' Ω'),neutral:'sw',nOn,flow:true,
       cur:{A:'IAa = '+pI(0),B:'IBb = '+pI(1),C:'ICc = '+pI(2),N:'IN = '+ps(IN,cang(r.IN),2,1)+' A'},
@@ -1521,7 +1526,13 @@ B.lesson({
   $('#l4r1').onclick=()=>{rev1=!rev1;$('#l4r1').setAttribute('aria-pressed',String(rev1));draw()};
   $('#l4r2').onclick=()=>{rev2=!rev2;$('#l4r2').setAttribute('aria-pressed',String(rev2));draw()};
   const calc=()=>{const Vph=conn==='Y'?VL/SQ3:VL,Iph=Vph/Zm,IL=conn==='Y'?Iph:SQ3*Iph,c=Math.cos(th*D),s=Math.sin(th*D);
-   const W1=VL*IL*Math.cos((30+th)*D),W2=VL*IL*Math.cos((30-th)*D);return {Vph,Iph,IL,P:SQ3*VL*IL*c,Q:SQ3*VL*IL*s,S:SQ3*VL*IL,pf:c,W1,W2,r1:rev1?-W1:W1,r2:rev2?-W2:W2}};
+   const W1=VL*IL*Math.cos((30+th)*D),W2=VL*IL*Math.cos((30-th)*D);let A1=W1,A2=W2;
+   /* عطل مخفي (وضع التحدي فقط): قراءتا الجهازين من الدائرة الفعلية — W1 = Re(V_AB·I_A*) و W2 = Re(V_CB·I_C*)، مع طور حمل مفتوح أو ملف جهد W2 على الخط الخطأ أو ملف تيار W1 معكوس */
+   if(chF('phopen')||chF('pcwrong')||chF('w1rev')){const Z=pol(Zm,th),Vab=pol(VL,30),Vbc=pol(VL,-90),Vca=pol(VL,150),op=chF('phopen');let Ia,Ic;
+    if(conn==='D'){const Iab=cdiv(Vab,Z),Ibc=op?C(0,0):cdiv(Vbc,Z),Ica=cdiv(Vca,Z);Ia=csub(Iab,Ica);Ic=csub(Ica,Ibc)}
+    else{const Es=[pol(VL/SQ3,0),pol(VL/SQ3,-120),pol(VL/SQ3,120)],Y=[0,1,2].map(i=>op&&i===1?C(0,0):cdiv(C(1,0),Z)),Vn=cdiv(csum(Es.map((e,i)=>cmul(e,Y[i]))),csum(Y));Ia=cmul(csub(Es[0],Vn),Y[0]);Ic=cmul(csub(Es[2],Vn),Y[2])}
+    const re=(v,i)=>v.re*i.re+v.im*i.im;A1=re(Vab,Ia)*(chF('w1rev')?-1:1);A2=re(chF('pcwrong')?Vca:csc(Vbc,-1),Ic)}
+   return {Vph,Iph,IL,P:SQ3*VL*IL*c,Q:SQ3*VL*IL*s,S:SQ3*VL*IL,pf:c,W1,W2,r1:rev1?-A1:A1,r2:rev2?-A2:A2}};
   let K=null;
   const kw=w=>neg(w/1000,2)+' kW';
   const draw=()=>{K=calc();const k=K;

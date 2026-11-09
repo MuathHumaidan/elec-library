@@ -1,6 +1,8 @@
 /* Unit 3 — تشغيل المحرك الحثي الثلاثي الأوجه بسرعتين (داهلندر) (ص 57–84) */
 (function(B){
 const {S,clamp,W}=B;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* =====================================================================
    Shared drawings for this unit
@@ -265,7 +267,9 @@ function timerBench(el,opt){
    ${opt.extra?'<div class="panel c12" id="tbExtra"></div>':''}
   </div>`;
   const $=s=>el.querySelector(s);
-  function build(){P=B.createPLC(progFor(type,tv));cur=null;curS=null;sfBlock=0;prevQ=0;lastSig='';
+  /* أعطال مخفية: نوع مزمن خاطئ في البرنامج، أو زمن TV في البرنامج ضعف المختار */
+  const ALT={SP:'SE',SE:'SP',SD:'SS',SS:'SD',SF:'SE'};let ptype=type;
+  function build(){ptype=chF('ttype')?ALT[type]:type;P=B.createPLC(progFor(ptype,chF('tv2')?tv*2:tv));cur=null;curS=null;sfBlock=0;prevQ=0;lastSig='';
     el.querySelectorAll('[data-ty]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ty===type));
     el.querySelectorAll('[data-tv]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tv===tv));
     $('#tbRule').innerHTML=`<b>${type} — ${TT[type].name} (${TT[type].en}):</b> ${TT[type].rule}`;
@@ -285,10 +289,12 @@ function timerBench(el,opt){
     t+=dt;let Sv,Rv;
     if(play){const u=(t-play.t0)/2,f=TD[play.k];Sv=inSeg(f.S,u)?1:0;Rv=inSeg(f.R,u)?1:0;if(u>f.end){w.played[play.k]=1;play=null;$('#tbPlayInfo').textContent='انتهى التسلسل. قارنه بالشكل في الشرح.'}}
     else{Sv=(bS||latchS)?1:0;Rv=bR?1:0}
-    const key='T'+TT[type].n;
+    const pS=Sv,pR=Rv;   // الضاغطان كما يضغطهما المتدرب (للرسم)
+    if(chF('sOpen'))Sv=0;if(chF('rStuck'))Rv=1;   // أعطال مخفية: سلك مدخل Start مقطوع، أو مدخل Reset ثابت على 1
+    const key='T'+TT[ptype].n;
     P.set('I0.1',Sv);P.set('I0.0',Rv);P.scan(dt);
     const tm=P.tim[key]||{q:0,run:0,el:0,tv:tv};
-    if(type==='SF'){ // book (19-4): after a Reset while Start is still 1, Q stays 0 until Start goes 0 and 1 again
+    if(ptype==='SF'){ // book (19-4): after a Reset while Start is still 1, Q stays 0 until Start goes 0 and 1 again
       if(Sv&&Rv)sfBlock=1;
       if(!Sv){if(sfBlock&&prevS){tm.run=0;tm.q=0;P.set('Q4.4',0)}sfBlock=0}
       if(sfBlock&&Sv){tm.q=0;tm.run=0;P.set('Q4.4',0);const tr=P.trace[0];if(tr){tr[5]=0;tr[6]=0}}}
@@ -305,8 +311,8 @@ function timerBench(el,opt){
     while(hist.length>2&&t-hist[1].t>SPAN+0.5)hist.shift();
     drawLive($('#tbCv'),hist,t,SPAN,tv);
     const rem=tm.run?Math.max(0,tm.tv-tm.el):0;
-    $('#tbLamp').classList.toggle('on',!!Q);$('#tbRem').textContent=tm.run?rem.toFixed(1)+' s':'—';
-    ['tbS','tbR'].forEach((id,j)=>$('#'+id).classList.toggle('down',!!(j?Rv:Sv)));
+    $('#tbLamp').classList.toggle('on',!!Q&&!chF('qOpen'));$('#tbRem').textContent=tm.run?rem.toFixed(1)+' s':'—';
+    ['tbS','tbR'].forEach((id,j)=>$('#'+id).classList.toggle('down',!!(j?pR:pS)));
     const sg=JSON.stringify([Sv,Rv,Q,tm.run,Math.ceil(rem*10),view,type,tv]);
     if(sg!==lastSig){lastSig=sg;const net=P.nets[0];
       $('#tbBox').innerHTML=timerBox({type,tv:`S5T#${tv}S`,S:Sv,R:Rv,Q,live:true,bi:'BI='+Math.round(rem*100),bcd:'W#16#0'+String(Math.round(rem*100)).padStart(3,'0')});
@@ -632,11 +638,13 @@ B.lesson({
   const sp=k=>`<span data-u3l1="${k}">${Math.round(TP.v[k])}</span>`;
   tpDom();
   const sync=()=>['K1','K2','K3'].forEach(k=>$('#'+k.toLowerCase()).setAttribute('aria-pressed',K[k]?'true':'false'));
-  const check=()=>{if(blown||trip)return;if(K.K1&&K.K3){blown=1;errSeen=1;K={K1:0,K2:0,K3:0};sync()}else if(K.K1&&K.K2){trip=1;errSeen=1;K={K1:0,K2:0,K3:0};sync()}};
+  /* أعطال مخفية: ملف K2 أو K3 مقطوع (لا يجذب)، أو تلامسات K1 ملتحمة (مغلقة دائماً) — KE = حالة التلامسات الفعلية */
+  const KE=()=>chF('k1weld')||chF('k2coil')||chF('k3coil')?{K1:K.K1||chF('k1weld')?1:0,K2:chF('k2coil')?0:K.K2,K3:chF('k3coil')?0:K.K3}:K;
+  const check=()=>{if(blown||trip)return;const k=KE();if(k.K1&&k.K3){blown=1;errSeen=1;K={K1:0,K2:0,K3:0};sync()}else if(k.K1&&k.K2){trip=1;errSeen=1;K={K1:0,K2:0,K3:0};sync()}};
   ['K1','K2','K3'].forEach(k=>$('#'+k.toLowerCase()).addEventListener('click',()=>{if(blown)return;trip=0;K[k]=K[k]?0:1;sync();check()}));
-  el.querySelectorAll('[data-pre]').forEach(b=>b.addEventListener('click',()=>{if(blown)return;trip=0;const p=b.dataset.pre;K=p==='d'?{K1:1,K2:0,K3:0}:p==='y'?{K1:0,K2:1,K3:1}:{K1:0,K2:0,K3:0};sync()}));
+  el.querySelectorAll('[data-pre]').forEach(b=>b.addEventListener('click',()=>{if(blown)return;trip=0;const p=b.dataset.pre;K=p==='d'?{K1:1,K2:0,K3:0}:p==='y'?{K1:0,K2:1,K3:1}:{K1:0,K2:0,K3:0};sync();check()}));
   $('#fix').addEventListener('click',()=>{blown=0;trip=0;K={K1:0,K2:0,K3:0};sync()});
-  const mode=()=>dahlMode(K);
+  const mode=()=>blown?'off':dahlMode(KE());
   const steps=stepsUI($('#st'),[
    {t:'الوضع الابتدائي',x:'كل المتممات مفصولة. لاحظ أن الجهد واصل حتى مداخل K1 و K2 فقط، والمحرك متوقف.'},
    {t:'السرعة البطيئة',x:'شغّل K1 وحده (أو زر «دلتا»). التغذية تصل إلى U1 و V1 و W1: توصيلة الدلتا.',done:()=>mode()==='delta'},
@@ -647,17 +655,17 @@ B.lesson({
    {t:'أعد الوضع',x:'إذا انصهرت المصاهر اضغط «استبدال المصاهر». تذكّر: في الدرس التالي يمنع التعشيق في دائرة التحكم هذا الخطأ.',done:()=>errSeen&&!blown}
   ],()=>({}));
   sync();
-  loopOn(el,dt=>{const m=mode(),tg=m==='delta'?TP.v.nd:m==='yy'?TP.v.ny:0;n+=(tg-n)*(1-Math.exp(-dt/(tg?TP.v.tau:2.2)));if(n<0.5&&!tg)n=0;ang=(ang+n/60*360*dt*0.12)%360;
+  loopOn(el,dt=>{const m=mode(),tg=chF('phase')?0:m==='delta'?TP.v.nd:m==='yy'?TP.v.ny:0;/* عطل مخفي phase: مصهر وجه منصهر — المحرك لا يبدأ */n+=(tg-n)*(1-Math.exp(-dt/(tg?TP.v.tau:2.2)));if(n<0.5&&!tg)n=0;ang=(ang+n/60*360*dt*0.12)%360;
     const r=$('#u3l1rot');if(r)r.setAttribute('transform',`rotate(${ang.toFixed(1)} 75 75)`);$('#spd').textContent=Math.round(n)+' rpm';
     const sg=JSON.stringify([K,blown,trip]);if(sg!==lastSig){lastSig=sg;
-      $('#pw').innerHTML=powerDahl(K.K1,K.K2,K.K3,{blown});$('#wd').innerHTML=`<div class="svgbox" style="margin-top:0;max-width:220px">${windDahl(m==='yy'?'yy':'delta',m!=='off')}</div>`;
+      const k=KE();$('#pw').innerHTML=powerDahl(k.K1,k.K2,k.K3,{blown});$('#wd').innerHTML=`<div class="svgbox" style="margin-top:0;max-width:220px">${windDahl(m==='yy'?'yy':'delta',m!=='off')}</div>`;
       $('#pl').innerHTML=m==='off'?`<p class="sub">لا يوجد مجال دوار والمحرك غير متصل.</p>`:polesSVG(m==='delta'?8:4,1);
       $('#pol').textContent=m==='delta'?'8':m==='yy'?'4':'—';const c=$('#chip');c.textContent=blown?'مصاهر منصهرة':m==='delta'?'دلتا — بطيئة':m==='yy'?'دبل نجمة — عالية':'متوقف';c.className='mode-chip '+(blown?'trip':m==='delta'?'slow':m==='yy'?'fast':'');
       $('#fix').hidden=!blown;
       let msg='';if(blown)msg='<div class="callout err"><b>قصر!</b> K1 مع K3: المتمم K3 قصر مخارج K1 فحدث قصر بين الخطوط وانصهرت المصاهر F1…3. (توضيح، ليس من نص الكتاب)</div>';
       else if(trip)msg='<div class="callout err"><b>خطأ في التوصيل:</b> K1 مع K2 يضع جهد الخط على نصف ملف مباشرة؛ التيار الكبير يفصل المرحل الحراري فتسقط المتممات. (توضيح، ليس من نص الكتاب)</div>';
-      else if(K.K2&&!K.K3&&!K.K1)msg='<div class="callout">K2 بدون K3: الأطراف U1 V1 W1 غير مقصورة فلا تتكون الدبل نجمة. شغّل K3 أيضاً.</div>';
-      else if(K.K3&&!K.K2&&!K.K1)msg='<div class="callout">K3 وحده يقصر U1 V1 W1 فقط، ولا تصل تغذية للمحرك.</div>';
+      else if(k.K2&&!k.K3&&!k.K1)msg='<div class="callout">K2 بدون K3: الأطراف U1 V1 W1 غير مقصورة فلا تتكون الدبل نجمة. شغّل K3 أيضاً.</div>';
+      else if(k.K3&&!k.K2&&!k.K1)msg='<div class="callout">K3 وحده يقصر U1 V1 W1 فقط، ولا تصل تغذية للمحرك.</div>';
       $('#msg').innerHTML=msg;}
     steps.check()});
  },

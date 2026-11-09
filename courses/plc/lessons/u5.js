@@ -1,6 +1,8 @@
 /* Unit 5 — التحكم في درجات الحرارة باستخدام حساسات درجة الحرارة (ص 97–106) */
 (function(B){
 const {S,clamp,W}=B;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ================= shared helpers ================= */
 const r2=v=>Math.round(v*100)/100;
@@ -278,7 +280,7 @@ B.lesson({
    <div class="viewseg" style="margin-top:8px"><div class="seg" role="group"><button data-lp="1" aria-pressed="true">حلقة مغلقة (مع الحساس)</button><button data-lp="0" aria-pressed="false">حلقة مفتوحة (بدون حساس)</button></div></div>
    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px"><label class="toggle">القيمة المطلوبة <input type="range" id="sv" min="20" max="70" step="1" value="40" style="width:180px;height:auto"> <b class="ltr" id="svv"></b></label>
    <label class="toggle">حرارة الجو المحيط <input type="range" id="ta" min="0" max="40" step="1" value="25" style="width:180px;height:auto"> <b class="ltr" id="tav"></b></label></div>
-   <div class="svgbox" id="bd"></div></div>
+   <div class="svgbox" id="bd"></div>${chOn()?'<div class="reads" id="l1m"></div>':''}</div>
    <div class="panel c7"><h2>الحرارة مع الزمن <small>آخر 60 ثانية</small></h2><div class="chart"><canvas id="ch"></canvas></div><div class="legend"><span><i style="background:var(--blue)"></i>الحرارة الفعلية</span><span><i style="background:var(--muted)"></i>القيمة المطلوبة</span></div><p class="sub" id="l1tpn" hidden></p></div>
    <div class="panel c5"><h2>التجربة خطوة بخطوة</h2><ol class="steps" id="stp"></ol></div></div>`;
   const $=s=>el.querySelector(s);
@@ -297,7 +299,9 @@ B.lesson({
    {t:'الحلقة المفتوحة',x:'اختر «حلقة مفتوحة». الحاكم الآن يشغّل السخان بقدر ثابت محسوب على أساس جو 25°C ولا يرى الحرارة الفعلية. انتظر وراقب ابتعاد الحرارة عن المطلوب.',done:()=>!st.closed&&Math.abs(st.T-st.set)>5},
    {t:'عد إلى المغلقة',x:'اختر «حلقة مغلقة» من جديد ولاحظ تصحيح الخطأ. هذه فائدة الحساس والمقارن.',done:()=>st.closed&&Math.abs(st.T-st.set)<1.5}]);
   const box=(x,y,w,t1,t2,on,dim)=>`<rect x="${x}" y="${y}" width="${w}" height="46" rx="6" class="sym" fill="${on?'var(--on-soft)':'var(--surface)'}" ${dim?'opacity=".4"':''}/>`+ar(x+w/2,y+19,t1,'','middle',12)+S.t(x+w/2,y+37,t2,'b');
-  const draw=()=>{const Vr=st.set/5,Vs=st.T/5,e=Vr-Vs,cl=st.closed;const fb=cl?'live':'';
+  /* أعطال مخفية: الحساس مقطوع (يقرأ صفراً) أو منحرف (يقرأ أقل بـ 10°C) — meas = الحرارة كما يراها الحاكم */
+  const meas=()=>chF('tcOpen')?0:chF('tcOff')?st.T-10:st.T;
+  const draw=()=>{const Vr=st.set/5,Vs=meas()/5,e=Vr-Vs,cl=st.closed;const fb=cl?'live':'';
    let s=`<svg viewBox="0 0 760 250">`;
    s+=box(10,30,110,'القيمة المطلوبة','Set = '+st.set+' °C');
    s+=S.w('M120 53H150','live')+box(150,30,120,'جهد المرجع','Vref = '+Vr.toFixed(2)+' v');
@@ -312,9 +316,10 @@ B.lesson({
    $('#bd').innerHTML=s+'</svg>';$('#svv').textContent=st.set+' °C';$('#tav').textContent=st.Ta+' °C'};
   let rd=0;
   runLoop(el,dt=>{st.t+=dt;const tau=TP.v.tau,G=TP.v.G;
-   if(st.closed){const e=st.set/5-st.T/5;if(e>0.1)st.H=1;else if(e<-0.1)st.H=0;st.duty=st.H}
+   if(st.closed){const e=st.set/5-meas()/5;if(e>0.1)st.H=1;else if(e<-0.1)st.H=0;st.duty=st.H}
    else{st.duty=clamp((st.set-25)/G,0,1);st.H=0}
-   const P=st.closed?st.H:st.duty;st.T+=dt*(G*P-(st.T-st.Ta))/tau;
+   const P=chF('heatOpen')?0:chF('k1weld')?1:st.closed?st.H:st.duty;st.T+=dt*(G*P-(st.T-st.Ta))/tau;   // أعطال مخفية: عنصر التسخين مقطوع، أو تلامسات K1 ملتحمة
+   const l1m=$('#l1m');if(l1m)l1m.innerHTML=`<div class="read"><span>حرارة الغرفة T</span><b>${st.T.toFixed(1)} °C</b></div><div class="read"><span>القيمة المطلوبة</span><b>${st.set} °C</b></div><div class="read"><span>حرارة الجو</span><b>${st.Ta} °C</b></div>`;
    const tn=$('#l1tpn'),mx=st.Ta+G,lim=mx<st.set;if(tn){tn.hidden=!lim;if(lim)tn.innerHTML=`بهذه القيم أقصى حرارة تصلها الغرفة والسخان يعمل باستمرار = حرارة الجو + <span class="ltr">${fnum(G,1)}</span> = <span class="ltr">${fnum(mx,1)} °C</span>، وهي أقل من القيمة المطلوبة، فلن تصل الحرارة إليها.`}
    ht+=dt;if(ht>0.1){ht=0;hist.push({t:st.t,v:st.T,sv:st.set});while(hist.length&&st.t-hist[0].t>60.3)hist.shift()}
    rd+=dt;if(rd>0.1){rd=0;draw()}
@@ -460,8 +465,10 @@ B.lesson({
    {t:'حدود النطاق',x:'جرّب 1500°C (Overrange، ما زالت × 10) ثم 1650°C (Overflow: 32767 = 7FFFH).',done:()=>{if(st.T>1372&&st.T<=1622)seen.o=1;return seen.o&&st.T>1622}},
    {t:'تحت النطاق',x:'جرّب −280°C: Underflow، والموديول يخرج 8000H حسب ذيل الجدول.',done:()=>st.T<-270},
    {t:'تهيئة خاطئة',x:'غيّر Measuring Range إلى Type J. الكتاب ينبه «Adjust type to Type K»: نوع ثرموكبل خاطئ يعطي قراءة خاطئة. ثم أعده إلى Type K.',done:()=>{if(!ok())seen.w=1;return seen.w&&ok()}}]);
-  runLoop(el,()=>{const c=chain(st.V,st.T),R=tcReading(st.T);$('#vv').textContent=st.V.toFixed(1)+' v';$('#tv').textContent=st.T+' °C';
-   $('#fig').innerHTML=fig15({V:st.V,T:clamp(st.T,-999,9999)}).replace('= '+c.piw290,'= '+(ok()?R.v:'?'));
+  /* أعطال مخفية: منزلق المقاومة مقطوع، أو مصدر 10 V للمقاومة ضعيف (8 V)، أو سلك الثرموكبل مقطوع، أو قطبية الثرموكبل معكوسة (الوصلة الباردة 25°C) */
+  const Vin=()=>chF('wiper')?0:chF('ref8')?st.V*0.8:st.V,tcR=()=>chF('tcOpen')?{v:32767,r:'Overflow'}:tcReading(chF('tcRev')?50-st.T:st.T);
+  runLoop(el,()=>{const c=chain(Vin(),st.T),R=tcR();$('#vv').textContent=st.V.toFixed(1)+' v';$('#tv').textContent=st.T+' °C';
+   $('#fig').innerHTML=fig15({V:Vin(),T:clamp(st.T,-999,9999)}).replace('= '+c.piw290,'= '+(ok()?R.v:'?'));
    $('#rd').innerHTML=`<div class="facts"><div class="fact"><span>PIW288 (R)</span><b>${c.piw288}</b></div><div class="fact"><span>PIW290 (decimal)</span><b>${ok()?R.v:'—'}</b></div><div class="fact"><span>hexa-decimal</span><b>${ok()?hex(R.v):'—'}</b></div><div class="fact"><span>Range</span><b>${ok()?R.r:'—'}</b></div></div>`+
     (ok()?(R.r==='Rated range'?`<p class="sub">الحرارة الفعلية داخل الـ PLC = ${R.v} ÷ 10 = <b class="ltr">${(R.v/10).toFixed(1)} °C</b></p>`:`<div class="callout err">${R.r==='Underflow'?'تحت النطاق: الموديول يشير إلى Underflow ويخرج 8000H (= −32768).':R.r==='Overflow'?'فوق النطاق تماماً: القراءة 32767 (7FFFH) مهما ارتفعت الحرارة.':'Overrange: فوق النطاق المقنن (حتى 1622°C) والقراءة ما زالت × 10.'}</div>`):`<div class="callout err"><b class="ltr">Adjust type to Type K</b> — التهيئة لا تطابق الحساس المركب (الكتاب: TC-IL و Type K)، فالقراءة غير صحيحة.</div>`);chk()});
  },

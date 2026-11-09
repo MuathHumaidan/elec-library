@@ -6,6 +6,8 @@ const {S,clamp,W}=B;
 const FL=110, Y1=380, CARH=76;                // floor spacing (px), level of floor 1, car height
 const POSMIN=-0.27, POSMAX=2.36, V=0.3;        // pos in floors (0 = floor 1, 2 = floor 3), speed floors/s
 const FLN=['الأول','الثاني','الثالث'];
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 const atF1=p=>p.pos<=0.005, atF3=p=>p.pos>=1.995;
 const f2pos=p=>Math.abs(p.pos-1)<0.03?'off':(p.pos<1?'b':'a');
 const f2st=st=>st.btn('F2X')?'off':f2pos(st.plant);
@@ -407,8 +409,11 @@ function lab91(el){
   const TASKS=[['b','حرّك الكابينة تحت الدور الثاني: يصبح F2 على b و I0.5 = 1.',x=>f2pos(x)==='b'],['a','حرّكها فوق الدور الثاني: F2 على a و I0.7 = 1.',x=>f2pos(x)==='a'],
     ['f1','أنزلها إلى الدور الأول: يُفتح F1 فيصبح I0.4 = 0.',x=>atF1(x)],['f3','اصعد بها إلى الدور الثالث: يُفتح F3 فيصبح I0.6 = 0.',x=>atF3(x)],
     ['s8','افتح باب الدور الثاني S8: يصبح I1.5 = 0.',()=>s.sw.S8],['so','اضغط SO2: يصبح I0.2 = 1 ما دمت ضاغطاً.',()=>s.btn.SO2]];
-  const act=id=>{const p={pos:s.pos/100};if(id==='F1')return atF1(p);if(id==='F3')return atF3(p);if(s.sw[id]!==undefined)return s.sw[id];return s.btn[id]?1:0};
-  function bitsOf(){const p={pos:s.pos/100},f=f2pos(p),b={};WIN.forEach(([id,ad,ty])=>{if(ty==='f2')b[ad]=f===(id==='F2b'?'b':'a')?1:0;else{const a=act(id)?1:0;b[ad]=ty==='no'?a:1-a}});return b}
+  const act0=id=>{const p={pos:s.pos/100};if(id==='F1')return atF1(p);if(id==='F3')return atF3(p);if(s.sw[id]!==undefined)return s.sw[id];return s.btn[id]?1:0};
+  /* أعطال مخفية: تلامس مفتوح دائماً (مفتاح نهاية F1 أو مفتاح باب S8 أو ضاغط الطوارئ SS) أو ضاغط مقصور (SO2)، وذراع F2 عالق على b */
+  const FX={F1:'f1open',S8:'s8open',SS:'ssopen',SO2:'so2short'};
+  const act=id=>FX[id]&&chF(FX[id])?1:act0(id),f2of=p=>chF('f2b')?'b':f2pos(p);
+  function bitsOf(){const p={pos:s.pos/100},f=f2of(p),b={};WIN.forEach(([id,ad,ty])=>{if(ty==='f2')b[ad]=f===(id==='F2b'?'b':'a')?1:0;else{const a=act(id)?1:0;b[ad]=ty==='no'?a:1-a}});return b}
   el.innerHTML=`<div class="callout">مختبر هذا الدرس بلا برنامج: حرّك الكابينة بيدك واضغط الضواغط وافتح مفاتيح الأمان، وراقب ماذا يصل إلى كل مدخل في الـ PLC حسب شكل التوصيل ص 146.</div>
    <div class="grid"><div class="panel c12"><h2>أدوات التحكم</h2>
     <label class="toggle" style="display:block">موضع الكابينة: <input id="l91pos" type="range" min="0" max="200" value="100" style="width:100%" aria-label="موضع الكابينة"></label>
@@ -420,10 +425,10 @@ function lab91(el){
     <div class="panel c6"><h2>مهام قصيرة</h2><ol class="steps" id="l91tasks"></ol></div>
     <div class="panel c6"><h2>جدول المداخل (حي)</h2><div id="l91io"></div></div></div>`;
   const q=x=>el.querySelector(x);
-  function render(){const p={pos:s.pos/100},f=f2pos(p);
+  function render(){const p={pos:s.pos/100},f=f2of(p);
     q('#l91shaft').innerHTML=`<div class="svgbox" style="margin-top:0;max-width:260px;margin-inline:auto">${shaftSVG({pos:p.pos,K:[0,0,0],doors:[s.sw.S7,s.sw.S8,s.sw.S9],F1a:atF1(p),F3a:atF3(p),F2:f,crash:''})}</div><p class="sub" style="text-align:center">${floorTxt(p.pos)}</p>`;
     q('#l91wire').innerHTML=`<div class="svgbox">${wiringSVG({act,F2:f,Q:()=>0},true)}</div>`;
-    q('#l91facts').innerHTML=`<div class="facts"><div class="fact"><span>F1 → I0.4</span><b>${atF1(p)?'0':'1'}</b></div><div class="fact"><span>F2 → I0.5 / I0.7</span><b>${f==='b'?'1 / 0':f==='a'?'0 / 1':'0 / 0'}</b></div><div class="fact"><span>F3 → I0.6</span><b>${atF3(p)?'0':'1'}</b></div><div class="fact"><span>SS → I0.0</span><b>${s.btn.SS?'0':'1'}</b></div></div>`;
+    q('#l91facts').innerHTML=`<div class="facts"><div class="fact"><span>F1 → I0.4</span><b>${act('F1')?'0':'1'}</b></div><div class="fact"><span>F2 → I0.5 / I0.7</span><b>${f==='b'?'1 / 0':f==='a'?'0 / 1':'0 / 0'}</b></div><div class="fact"><span>F3 → I0.6</span><b>${act('F3')?'0':'1'}</b></div><div class="fact"><span>SS → I0.0</span><b>${act('SS')?'0':'1'}</b></div></div>`;
     const b=bitsOf();q('#l91io').innerHTML=`<div class="tablebox"><table class="io"><thead><tr><th>الرمز</th><th>الوصف</th><th>العنوان</th><th>الحالة</th></tr></thead><tbody>${IO9.filter(r=>/^I/.test(r.addr)).map(r=>{const v=b[r.addr]||0;return `<tr class="${v?'hi':''}"><td class="mono">${r.sym}</td><td>${r.desc}</td><td class="mono">${r.addr}</td><td><span class="bit ${v?'one':''}">${v}</span></td></tr>`}).join('')}</tbody></table></div>`;
     TASKS.forEach(t=>{if(t[2](p))done[t[0]]=1});
     q('#l91tasks').innerHTML=TASKS.map((t,i)=>`<li class="${done[t[0]]?'done':''}"><span class="k">${done[t[0]]?'✓':i+1}</span><div><p style="display:block">${t[1]}</p></div></li>`).join('');

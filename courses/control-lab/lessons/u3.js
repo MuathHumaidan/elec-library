@@ -10,6 +10,8 @@ const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 /* keep «K<sub>p</sub> = 0.5» runs left-to-right inside Arabic text (outside tags and existing ltr spans) */
 const ltK=t=>typeof t!=='string'?t:t.replace(/(<span class="ltr">[\s\S]*?<\/span>)|((?:[A-Za-z]+<sub>[^<]+<\/sub>)(?:\s*[=\/·×]\s*(?:[A-Za-z]+<sub>[^<]+<\/sub>|[\d.]+(?:\s?(?:s|V|%))?))*)/g,(m,a,b)=>a?a:`<span class="ltr">${b}</span>`);
 
@@ -92,10 +94,12 @@ function simLoop(o){const P=o.plant,Tw=o.Tw,ext=o.ext||6,N=4000,dt=Tw/N,M=N*ext;
   const t=new Float64Array(M+1),w=new Float64Array(M+1),x=new Float64Array(M+1),u=new Float64Array(M+1);
   let s=P.x0.slice(),xi=0,uh=0,nextS=0,eP=null;const dN=P.Tt?Math.max(1,Math.round(P.Tt/dt)):0,buf=new Float64Array(dN+1);let bi=0;
   buf.fill(c.type==='open'?0:clamp(0,lo,hi));
+  /* أعطال مخفية: x لا يصل إلى الحاكم (fbopen) أو يصل إلى المدخل الموجب (fbrev)؛ منزلق Kp أو KI تالف؛ مكثف التكامل يسرّب؛ تلامس المفتاح I مقطوع */
+  const fx0=chF('fbopen')?0:chF('fbrev')?-1:1,kpF=chF('kp')?0.2:1,kiF=chF('ki')?0.2:1,lk=chF('leak'),iC=!chF('ioff');
   for(let i=0;i<=M;i++){const ti=i*dt,wi=o.w0,xv=P.y(s),z=o.zOn?o.zOn(ti):0;let ui;
     if(c.type==='open')ui=clamp(wi,lo,hi);
-    else if(c.type==='analog'){const e=wi-xv;const up=c.P?c.Kp*e:0;if(c.I){xi+=c.KI*e*dt;xi=clamp(xi,lo,hi)}else xi=0;ui=clamp(up+(c.I?xi:0),lo,hi)}
-    else{if(ti>=nextS-1e-9){const e=wi-xv;if(c.I){xi+=c.Kp*c.T0/c.Ti*e;xi=clamp(xi,lo,hi)}else xi=0;const ud=c.D&&eP!=null?c.Kp*c.Td*(e-eP)/c.T0:0;eP=e;
+    else if(c.type==='analog'){const e=wi-fx0*xv;const up=c.P?c.Kp*kpF*e:0;if(c.I){xi+=c.KI*kiF*e*dt-(lk?xi*dt:0);xi=clamp(xi,lo,hi)}else xi=0;ui=clamp(up+(c.I&&iC?xi:0),lo,hi)}
+    else{if(ti>=nextS-1e-9){const e=wi-fx0*xv;if(c.I){xi+=c.Kp*c.T0/c.Ti*e;xi=clamp(xi,lo,hi)}else xi=0;const ud=c.D&&eP!=null?c.Kp*c.Td*(e-eP)/c.T0:0;eP=e;
         uh=clamp((c.P?c.Kp*e:0)+(c.I?xi:0)+ud,lo,hi);nextS+=c.T0}ui=uh}
     t[i]=ti;w[i]=wi;x[i]=xv;u[i]=ui;
     let ud=ui;if(dN){buf[bi]=ui;bi=(bi+1)%(dN+1);ud=buf[bi]}
@@ -345,7 +349,7 @@ const TH_DEFS=()=>[
   {k:'Tdl',label:'زمن التأخير في بداية التسخين',unit:'s',value:4,min:0.2,max:40,step:0.1},
   {k:'dz',label:'انخفاض الخرج بسبب المروحة (5 V) في الحلقة المفتوحة',unit:'V',value:1.5,min:0,max:5,step:0.1}];
 const PLN={pt1:'PT1',motor:'محرك'};
-const plantOf=(s,P)=>s.plant==='motor'?PLANT.pt1(P.Km,P.Tm):PLANT.pt1(P.K1,P.T1);
+const plantOf=(s,P)=>{const g=chF('pweak')?0.5:1;return s.plant==='motor'?PLANT.pt1(P.Km*g,P.Tm):PLANT.pt1(P.K1*g,P.T1)};
 const gainOf=(s,P)=>s.plant==='motor'?P.Km:P.K1;
 const umax=r=>{let m=0;for(let i=0;i<=r.N;i++)m=Math.max(m,Math.abs(r.u[i]));return m};
 const CH_B=r=>[{arr:r.w,col:'--live',lab:'Y1 = w (الدخل المرجعي)',short:'Y1'},{arr:r.x,col:'--blue',lab:'Y2 = x (الخرج)',short:'Y2'}];
@@ -1051,7 +1055,9 @@ B.lesson({
    G(s) = 21.81 / (0.0063 s² + 0.379 s + 1) — every number here is from the book (no trainer fields)
    ====================================================================== */
 const GA=0.0063,GB=0.379,GK=21.81;
-const pidTF=(Kp,Ki,Kd)=>({num:[GK*Kd,GK*Kp,GK*Ki],den:[GA,GB+GK*Kd,1+GK*Kp,GK*Ki]});
+const pidTF=(Kp,Ki,Kd)=>{/* أخطاء مخفية في النموذج: بسط المحرك 2.181 (gk)، معامل s في المقام 3.79 (gb)، كتلة Integrator غير موصولة (nint) */
+  const K=GK*(chF('gk')?0.1:1),Bm=GB*(chF('gb')?10:1);if(chF('nint'))Ki=0;
+  return {num:[K*Kd,K*Kp,K*Ki],den:[GA,Bm+K*Kd,1+K*Kp,K*Ki]}};
 const TWS=[0.5,2,5,10].map(v=>[v,lt(v+' s')]);
 let PID_C2='ts';
 const PID_C2O={ts:['زمن الاستقرار t<sub>s</sub> (s)',m=>TSV(m)],td:['زمن التأخير t<sub>d</sub> (s)',m=>tF(m.td)],tp:['زمن القمة t<sub>p</sub> (s)',m=>TPV(m)]};
@@ -1327,7 +1333,7 @@ const SP_DEFS=()=>[
   {k:'Tt',label:'تأخير قياس السرعة (عدّ النبضات RPM/TTL)',unit:'s',value:0.05,min:0.001,max:2,step:0.001},
   {k:'T0',label:'زمن العيّنة للحاكم الرقمي T<sub>0</sub>',unit:'s',value:0.01,min:0.0005,max:0.5,step:0.0005},
   {k:'Um',label:'أعلى جهد يخرجه الحاكم (المحرك يدور في اتجاه واحد: من 0)',unit:'V',value:10,min:1,max:30,step:0.5}];
-const spPlant=P=>PLANT.pt2(P.Ks,P.T1,P.T2,P.Tt);
+const spPlant=P=>PLANT.pt2(P.Ks*(chF('fric')?0.6:1),P.T1*(chF('fric')?0.6:1),P.T2,P.Tt);
 const spTw=P=>niceT(4*(P.T1+P.T2+P.Tt));
 B.lesson({
  id:'u3-l5',unit:3,order:5,pages:'40–41',
@@ -1502,6 +1508,8 @@ const LT_DEFS=()=>[
   {k:'Kp0',label:'K<sub>p</sub> المقترح للبداية',unit:'',value:1,min:0.01,max:100,step:0.01},
   {k:'Ti0',label:'T<sub>i</sub> المقترح للبداية',unit:'s',value:0.05,min:0.001,max:10,step:0.001}];
 const ltBase=P=>niceT(5*P.T);
+/* أعطال مخفية: ثنائي ضعيف (ledweak)، ضوء خارجي يصل إلى الترانزستور الضوئي (amb) */
+const ltPlant=P=>{const p=PLANT.pt1(P.Ks*(chF('ledweak')?0.5:1),P.T);if(chF('amb')){const y=p.y;p.y=s=>y(s)+0.8}return p};
 B.lesson({
  id:'u3-l6',unit:3,order:6,pages:'42–43',
  title:'التجربة السادسة: الحاكم PID الرقمي — التحكم الرقمي في الإضاءة Automatic Light Control',
@@ -1616,7 +1624,7 @@ B.lesson({
      ctl:[{k:'w0',t:'sl',l:'قيمة الخطوة w (الكتاب لا يحددها)',min:1,max:8,step:0.5,u:'V'}],
      ctlNote:'نبدأ بخواص وحدة الإضاءة نفسها (الهدف الرابع: K<sub>s</sub> و T<sub>u</sub> و T<sub>g</sub>).',
      fig:(s,P,v)=>digitalSVG({sys:'light',open:1,run:!!v,v:v||{}}),
-     sim:(s,P)=>{const r=simLoop({plant:PLANT.pt1(P.Ks,P.T),Tw:ltBase(P)*2,w0:s.w0,sat:[0,P.Um],ctrl:{type:'open'}});const m=measure(r);m.id=identify(r);
+     sim:(s,P)=>{const r=simLoop({plant:ltPlant(P),Tw:ltBase(P)*2,w0:s.w0,sat:[0,P.Um],ctrl:{type:'open'}});const m=measure(r);m.id=identify(r);
        return {r,m,ch:CH_D(r),tan:m.id.g,meters:[['K<sub>s</sub>',fm(m.id.Ks,3)],['T<sub>u</sub>',fm(m.id.Tu,4)+' s'],['T<sub>g</sub>',fm(m.id.Tg,4)+' s'],['x<sub>L</sub> النهائي',fm(m.xf,2)+' V']],note:'T<sub>u</sub> صفر تقريباً: النظام من الرتبة الأولى بلا تأخير، و T<sub>g</sub> يساوي ثابته الزمني تقريباً.'}},
      tables:[{title:'خواص وحدة الإضاءة (من أهداف التجربة)',head:'',rows:[{key:'r1',l:'استجابة الخطوة'}],match:()=>'r1',cols:()=>[{h:'K<sub>s</sub>',f:m=>m.id.Ks,dp:3},{h:'T<sub>u</sub> (s)',f:m=>m.id.Tu,dp:4},{h:'T<sub>g</sub> (s)',f:m=>m.id.Tg,dp:4}]}]},
     {key:'closed',label:'2) الحلقة المغلقة: P ثم I ثم PI',prep:(s,P)=>fill(s,P),figTitle:'الشكل (3-9): التحكم الرقمي في الإضاءة',ref:'ص 43',s0:{ty:'P',Kp:null,Ti:null,w0:5,tw:3},
@@ -1624,7 +1632,7 @@ B.lesson({
       {k:'tw',t:'seg',l:'زمن العرض',o:TWM},{k:'w0',t:'sl',l:'القيمة المطلوبة w',min:1,max:8,step:0.5,u:'V'}],
      ctlNote:s=>s.ty==='I'?'التكاملي فقط: y = (K<sub>p</sub>/T<sub>i</sub>)·Σe·T<sub>0</sub>، أي K<sub>I</sub> = K<sub>p</sub>/T<sub>i</sub>.':'',
      fig:(s,P,v)=>digitalSVG({sys:'light',run:!!v,v:v||{}}),
-     sim:(s,P)=>{fill(s,P);const Tw=ltBase(P)*s.tw;const r=simLoop({plant:PLANT.pt1(P.Ks,P.T),Tw,w0:s.w0,sat:[0,P.Um],ctrl:{type:'digital',T0:P.T0,P:s.ty!=='I',I:s.ty!=='P',D:false,Kp:s.Kp,Ti:s.Ti}});const m=measure(r);
+     sim:(s,P)=>{fill(s,P);const Tw=ltBase(P)*s.tw;const r=simLoop({plant:ltPlant(P),Tw,w0:s.w0,sat:[0,P.Um],ctrl:{type:'digital',T0:P.T0,P:s.ty!=='I',I:s.ty!=='P',D:false,Kp:s.Kp,Ti:s.Ti}});const m=measure(r);
        return {r,m,ch:CH_D(r),meters:[['x<sub>0</sub> عند نهاية العرض',fm(m.x0,3)+' V'],['e = w − x',fm(m.e,3)+' V'],['M<sub>p</sub>',m.Mp>0?fm(m.MpP,1)+' %':'0'],['زمن الاستقرار t<sub>s</sub>',TSV(m)+' s',m.ts>m.Tw],['الحالة',m.osc?'يتذبذب':'مستقر',m.osc]],
         note:m.osc?'الإضاءة تتذبذب: K<sub>p</sub> كبير جداً مع تأخر الحاكم الرقمي زمن عيّنة.':m.ts>m.Tw?'لم يستقر داخل زمن العرض: اختر زمناً أطول.':''}},
      tables:[{title:'قياسات للمقارنة (إضافة: الكتاب يطلب الرسم فقط)',head:'الحاكم',rows:[{key:'P',l:'التناسبي فقط P'},{key:'I',l:'التكاملي فقط I'},{key:'PI',l:'التناسبي التكاملي PI'}],match:s=>s.ty,

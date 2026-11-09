@@ -32,6 +32,14 @@ const u=th=>[-Math.sin(th*D),-Math.cos(th*D)]; // unit vector, angle CCW from to
 const SANG={S1:0,S2:-120,S3:120};       // stator coil axes: S1 top, S2 lower-right, S3 lower-left (as drawn in الأشكال ٥-١ … ٥-٣)
 // coil voltages of a transmitter with rotor at th (illustrative, not in the book): E·cos(th − axis)
 const coilV=th=>['S1','S2','S3'].map(k=>Math.cos((th-SANG[k])*D));
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+/* وضع التحدي فقط: اتجاه المجال الذي يصنعه ثابت الجهاز المستقبل (CR أو CT) وشدته النسبية من جهود المرسل عند الزاوية th،
+   مع أعطال الأسلاك: swap13 السلكان S1 و S3 مبدلان، open2 السلك S2 مقطوع (يمر التيار في S1 و S3 فقط) */
+const chFld=th=>{const V=coilV(th),C=[SANG.S1,SANG.S2,SANG.S3];let x=0,y=0;
+  if(chF('open2')){const d=(V[0]-V[2])/2;x=d*(Math.cos(C[0]*D)-Math.cos(C[2]*D));y=d*(Math.sin(C[0]*D)-Math.sin(C[2]*D))}
+  else{const R=chF('swap13')?[V[2],V[1],V[0]]:V;for(let i=0;i<3;i++){x+=R[i]*Math.cos(C[i]*D);y+=R[i]*Math.sin(C[i]*D)}}
+  return {a:Math.atan2(y,x)/D,m:Math.hypot(x,y)/1.5}};
 
 /* synchro schematic symbol. o:{lab, rot (deg, physical rotor-axis angle CCW from top), kind:'coil'|'star', R, leads:'left'|'right'|null, volts:[3] (signed pu), hi} */
 function synSym(cx,cy,o){const R=o.R||40,RT=R+50;let s='';
@@ -271,7 +279,7 @@ B.lesson({
    {k:'DB',label:'زمن خمود التأرجح مع عنصر الكبح (كلما صغر هدأ الدوار أسرع)',unit:'s',value:DB0,min:0.02,max:60,step:0.01,dp:2},
    {k:'DN',label:'زمن خمود التأرجح بعد نزع عنصر الكبح (احتكاك فقط)',unit:'s',value:DN0,min:0.02,max:60,step:0.01,dp:2}]);
   // خطوة حركة واحدة؛ تُقسَّم إلى خطوات أصغر تلقائياً إذا صارت الحركة سريعة جداً (بالقيم التوضيحية خطوة واحدة دائماً)
-  const rx=(th,w,tgt,brk,dt)=>{const r=P0/TP.v.P,k=40*r*r,b=brk?11*(DB0/TP.v.DB):0.7*(DN0/TP.v.DN);
+  const rx=(th,w,tgt,brk,dt,m)=>{const r=P0/TP.v.P,k=40*r*r*(m==null?1:m),b=brk?11*(DB0/TP.v.DB):0.7*(DN0/TP.v.DN);
    const n=Math.max(1,Math.ceil(dt/Math.min(0.4/Math.sqrt(k),1/b))),h=dt/n;
    for(let i=0;i<n;i++){const err=wrap(th-tgt)*D;w+=(-k*Math.sin(err)-b*w)*h;th=wrap(th+w*h/D)}return [th,w]};
   const show=()=>{segSet(el,'m',mode);frame=null;const b=$('#body');
@@ -298,7 +306,7 @@ B.lesson({
      <div class="panel c12">${tryList(['أدر المرسل إلى 60°: يتبعه المستقبل ويقف عند 60°.','لاحظ تغير الجهود S1 و S2 و S3 مع الزاوية، وأيها يصير سالباً (معاكساً في الطور).','انزع عنصر الكبح ثم حرّك المرسل بسرعة: يتأرجح المستقبل حول الموضع قبل أن يستقر.'])}</div></div>`;
      $('#tA').addEventListener('input',e=>{thx=+e.target.value});el.querySelectorAll('[data-br]').forEach(x=>x.addEventListener('click',()=>{brake=+x.dataset.br;segSet(el,'br',brake)}));
      dragKnobs($('#tP'),560,330,()=>[{cx:130,cy:150,r:110,set:v=>{thx=Math.round(wrap(v))}}]);
-     frame=dt=>{[thr,wr]=rx(thr,wr,thx,brake,dt);
+     frame=dt=>{if(chOn()){const F=chFld(thx);[thr,wr]=rx(thr,wr,wrap(F.a+(chF('rrev')?180:0)),brake,dt,Math.max(F.m,0.03))}else [thr,wr]=rx(thr,wr,thx,brake,dt);   // وضع التحدي: rrev طرفا دوار المستقبل R1–R2 معكوسان
        const v=coilV(thx);$('#tP').innerHTML=pairSVG({thx,thy:thr,right:'CR',volts:v,rightRotLive:1});$('#tA').value=thx;$('#tA-v').textContent=thx;
        $('#tF').innerHTML=facts([['زاوية المرسل θx',degTxt(thx)],['زاوية المستقبل',degTxt(thr)],['الفرق',degTxt(wrap(thr-thx))]].concat(['S1','S2','S3'].map((k,i)=>[`جهد ${k} (نسبي)`,(v[i]>=0?'+':'−')+Math.abs(v[i]).toFixed(2)])))}}
    else{b.innerHTML=`<div class="grid"><div class="panel c8"><h2>المتحكم الفرقي بين المرسل والمستقبل <small>توضيح — ليس من الكتاب</small></h2><div class="svgbox" id="dP" style="max-width:640px;margin-inline:auto"></div>
@@ -483,10 +491,12 @@ B.lesson({
   [['sX',x=>thx=x],['sT',x=>tht=x],['sE',x=>Er=x],['sG',x=>G=x]].forEach(([id,f])=>$('#'+id).addEventListener('input',e=>f(+e.target.value)));
   dragKnobs($('#P'),mode==='det'?560:640,330,()=>mode==='det'?[{cx:130,cy:150,r:110,set:a=>{thx=Math.round(wrap(a))}},{cx:430,cy:150,r:110,set:a=>{tht=Math.round(wrap(a-90))}}]:[{cx:110,cy:150,r:60,set:a=>{thx=Math.round(wrap(a))}},{cx:110,cy:252,r:40,set:a=>{thx=Math.round(wrap(a))}}]);
   setMode(mode);
-  loopOn(el,dt=>{t+=dt;const al=wrap(thx-tht),e=Er*Math.sin(al*D);
+  /* وضع التحدي: جهد الخطأ من المجال الفعلي في ثابت CT (chFld)، و amprev أطراف خرج المكبر إلى المحرك معكوسة */
+  const eSin=()=>{if(!chOn())return Math.sin(wrap(thx-tht)*D);const F=chFld(thx);return F.m*Math.sin(wrap(F.a-tht)*D)};
+  loopOn(el,dt=>{t+=dt;const al=wrap(thx-tht),e=chOn()?Er*eSin():Er*Math.sin(al*D);
    if(mode==='servo'){// خطوات أصغر تلقائياً إذا صارت الحركة سريعة جداً (بالقيم التوضيحية خطوة واحدة دائماً)
     const K=TP.v.K,tau=TP.v.tau,n=Math.max(1,Math.ceil(dt/Math.min(0.5*tau,0.5/Math.max(G*K*D,1e-9)))),h=dt/n;
-    for(let i=0;i<n;i++){const a2=i?wrap(thx-tht):al;v+=(G*K*Math.sin(a2*D)-v)*h/tau;tht=wrap(tht+v*h)}hist.push([t,e]);while(hist.length&&t-hist[0][0]>10)hist.shift()}else v=0;
+    for(let i=0;i<n;i++){const a2=i?wrap(thx-tht):al,sn=chOn()?eSin()*(chF('amprev')?-1:1):Math.sin(a2*D);v+=(G*K*sn-v)*h/tau;tht=wrap(tht+v*h)}hist.push([t,e]);while(hist.length&&t-hist[0][0]>10)hist.shift()}else v=0;
    $('#sX').value=thx;$('#sX-v').textContent=thx;$('#sT').value=Math.round(tht);$('#sT-v').textContent=Math.round(tht);$('#sE-v').textContent=Er;$('#sG-v').textContent=G.toFixed(1);
    $('#P').innerHTML=mode==='det'?pairSVG({thx,thy:tht+90,right:'CT',volts:coilV(thx),e,rightRotLive:Math.abs(e)>0.5}):servoSVG(thx,tht,e/Er,G);
    $('#F').innerHTML=facts([['α = θx − θt',degTxt(al)],['e = Er sin α',(e<=-0.05?'−':'')+Math.abs(e).toFixed(1)+' V'],['الطور',Math.abs(e)<0.5?'—':e>0?'في طور المصدر':'عكس طور المصدر']].concat(mode==='servo'?[['سرعة المحرك',Math.abs(v)<0.5?'متوقف':(v>0?'↺ ':'↻ ')+Math.abs(v).toFixed(0)+' °/s']]:[]));

@@ -8,6 +8,8 @@ const lt=s=>`<span class="ltr">${s}</span>`;
 const fx=v=>(+v).toFixed(1);
 const eq=n=>`\\qquad (${n.replace('-','\\text{-}')})`;
 let UID=0;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* ---------- styles used only by this file (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('u1b-css'))return;const s=document.createElement('style');s.id='u1b-css';s.textContent=`
@@ -1209,10 +1211,18 @@ B.lesson({
   el.querySelectorAll('[data-sm]').forEach(b=>b.onclick=()=>{mk=b.dataset.sm;segSet(el,'sm',mk);reset()});
   $('#sRst').onclick=reset;
   let prevOn=0;
-  loopOn(el,dt=>{const s=st();let T=0,I=0;if(s.cv){const cv=CUR[s.cv];T=cv.T(u);I=cv.I(u)}
+  /* منحنى المحرك الفعلي في هذه المرحلة. أعطال مخفية (وضع التحدي فقط): ph1 انقطاع وجه، ydelta ملف كونتاكتور الدلتا 3 مقطوع،
+     attap المحول الذاتي على تفريعة 80% بدل 56%، rrweld تلامسات القاطع 1 في دائرة الدوار ملتصقة (مغلقة دائماً) */
+  const chCV=s=>{if(!s.cv)return null;let k=s.cv;
+   if(chF('ydelta')&&mk==='sd'&&k==='dol')return {T:()=>0,I:()=>0};
+   if(chF('rrweld')&&k==='rr1')k='rr2';
+   let cv=CUR[k];if(chF('attap')&&k==='at1')cv={T:u=>.64*Td(u),I:u=>.64*Id(u)};
+   if(chF('ph1')){const c0=cv;return {T:()=>0,I:u=>Math.sqrt(3)/2*c0.I(u)}}
+   return cv};
+  loopOn(el,dt=>{const s=st(),cvx=chCV(s);let T=0,I=0;if(cvx){T=cvx.T(u);I=cvx.I(u)}
    if(s.cv&&!prevOn&&u<0.02){tr=[];Imax=0}prevOn=s.cv?1:0;
    {const tau=TP.v.tau,nS=Math.max(1,Math.ceil(dt*40/tau)),h=dt/nS;   // du/dt = (T − TL)/tau ; sub-steps only when tau is small (default: one step)
-    for(let j=0;j<nS;j++){const Tj=j?(s.cv?CUR[s.cv].T(u):0):T;u=clamp(u+(Tj-TLl(u))/tau*h,0,0.995)}}
+    for(let j=0;j<nS;j++){const Tj=j?(cvx?cvx.T(u):0):T;u=clamp(u+(Tj-TLl(u))/tau*h,0,0.995)}}
    if(!s.cv&&u<0.002)u=0;
    if(s.cv){const l=tr[tr.length-1];if(!l||Math.abs(u-l[0])>0.003||Math.abs(T-l[1])>0.04||l[3]!==s.stage){tr.push([u,T,I,s.stage]);if(tr.length>3000)tr.shift()}Imax=Math.max(Imax,I)}
    ang=(ang+u*360*dt*1.6)%360;$('#sRot').setAttribute('transform',`rotate(${ang.toFixed(1)} 110 70)`);$('#sBar').setAttribute('width',(180*u).toFixed(1));

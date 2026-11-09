@@ -1,6 +1,10 @@
 /* دوائر كهربائية-1 — الوحدة الثانية «البطاريات» (ص 25–42): الدروس u2-l1 … u2-l4 */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const fm=(x,d)=>d==null?B.fmtN(x):B.fmtN(B.round(x,d));
 const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -708,7 +712,13 @@ function cellsLab(el,cfg){
    ${cfg.extra||''}
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="${id}st"></ol></div></div>`;
   const $=s=>el.querySelector(s);
-  const draw=()=>{const {n,m,E,r,R}=st,N=n*m,rb=n*r/m,I=groupI(n,m,E,r,R);
+  /* أعطال مخفية (وضع التحدي فقط) في خلية من الصف الأول: موصلة بالعكس، فارغة (قوتها الدافعة صفر ومقاومتها كبيرة)، مقطوعة من الداخل؛
+     أو كل الخلايا قديمة (مقاومتها الداخلية ثلاثة أضعاف). التيار المقاس من الصفوف المتوازية بمكافئ ثفنن */
+  const chX=()=>chF('rev')||chF('dead')||chF('open')||chF('aged');
+  const chI=(n,m,E,r,R)=>{if(chF('aged'))return groupI(n,m,E,3*r,R);const rows=[];for(let j=0;j<m;j++)rows.push([n*E,n*r]);
+    if(chF('rev'))rows[0][0]=(n-2)*E;else if(chF('dead'))rows[0]=[(n-1)*E,(n-1)*r+Math.max(10*r,5)];else if(chF('open'))rows.shift();
+    if(!rows.length)return 0;let G=0,J=0;rows.forEach(([e,p])=>{p=Math.max(p,1e-3);G+=1/p;J+=e/p});return (J/G)/(R+1/G)};
+  const draw=()=>{const {n,m,E,r,R}=st,N=n*m,rb=n*r/m;let I=groupI(n,m,E,r,R);if(chX())I=chI(n,m,E,r,R);
    [['n',0],['m',0],['E',1],['r',1],['R',1]].forEach(([k,d])=>{$('#'+id+k).value=st[k];$('#'+id+k+'-v').textContent=fm(st[k],d)+({E:' V',r:' Ω',R:' Ω'}[k]||'')});
    $('#'+id+'g').innerHTML=gridSVG({n,m,lblE:fm(E)+'V',lblR:fm(r)+'Ω',lblL:'R = '+fm(R)+' Ω',I:'I = '+fm(I,3)+' A',flow:I>0});
    $('#x'+id+'N').textContent=`${m} × ${n} = ${N}`;$('#x'+id+'Eb').textContent=fm(n*E,3)+' V';$('#x'+id+'rb').textContent=fm(rb,4)+' Ω';$('#x'+id+'I').textContent=fm(I,4)+' A';$('#x'+id+'Ir').textContent=fm(I/m,4)+' A';$('#x'+id+'V').textContent=fm(I*R,4)+' V';$('#x'+id+'P').textContent=fm(I*I*R,4)+' W';$('#x'+id+'eta').textContent=fm(100*R/(R+rb),1)+' %';

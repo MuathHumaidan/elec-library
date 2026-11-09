@@ -15,6 +15,8 @@ const fm=(x,d)=>B.fmtN(x,d);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const fx=v=>(+v).toFixed(1);
 const wrap180=d=>((d+180)%360+360)%360-180;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- styles used only by this unit (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('u3sg-css'))return;const s=document.createElement('style');s.id='u3sg-css';s.textContent=`
@@ -478,7 +480,8 @@ B.lesson({
   ]);
   loopOn(el,dt=>{if(n!==lastN){movedN++;lastN=n}
    ang=(ang+n/60*360*dt/60)%360;
-   const fr=f(),Ph=phi(If),E=SQ2*PI*fr*Ph*TK();
+   /* أعطال مخفية (وضع التحدي فقط): fopen دائرة المجال مفتوحة (تبقى المغنطة المتبقية)، kF حلقات مقصورة في ملفات المجال */
+   const fr=f(),Ph=phi(chF('fopen')?0.08:If*(chF('kF')?0.7:1)),E=SQ2*PI*fr*Ph*TK();
    $('#l1n-v').textContent=n+' rpm';$('#l1f-v').textContent=fm(If,1)+' A';
    $('#l1svg').innerHTML=`<svg viewBox="0 0 360 360" role="img" aria-label="مقطع المولد">${statorSVG(180,180)}<g transform="translate(180 180) rotate(${fx(ang)})">${type==='sal'?salientRotor(P,{flux:If>0.05,ang,hot:If>0.05}):cylRotor(P,{flux:If>0.05,ang,hot:If>0.05})}</g></svg>`;
    const sg=[type,P,n,If].join();
@@ -496,7 +499,7 @@ B.lesson({
    // three-phase waves (scroll with the slowed rotor angle)
    const pk=SQ2*E,ymax=Math.max(200,Math.ceil(pk*1.15/200)*200),th0=ang*P/2*D,we=2*PI*fr;
    const wave=sh=>{const p=[];for(let i=0;i<=200;i++){const t=i/200*0.05;p.push([t*1000,pk*Math.sin(we*t-th0-sh)])}return p};
-   plot($('#l1w'),{xmax:50,ymin:-ymax,ymax,xlabel:'t (ms)',ylabel:'e (V)',series:[{pts:wave(0),color:'--stop'},{pts:wave(2*PI/3),color:'--live'},{pts:wave(4*PI/3),color:'--blue'}]});
+   plot($('#l1w'),{xmax:50,ymin:-ymax,ymax,xlabel:'t (ms)',ylabel:'e (V)',series:[{pts:wave(0),color:'--stop'},{pts:chF('phb')?wave(0).map(q=>[q[0],0]):wave(chF('seq')?4*PI/3:2*PI/3),color:'--live'},{pts:wave(chF('seq')?2*PI/3:4*PI/3),color:'--blue'}]});   // phb ملف الوجه b مقطوع، seq طرفا الوجهين b و c مبدّلان
    steps.check()});
  },
  examples:[
@@ -1239,7 +1242,7 @@ B.lesson({
     <div id="l4s" class="svgbox" style="max-width:560px;margin-inline:auto"></div>
     <div id="l4sl"></div>
     <div class="sg-row"><button class="btn primary" id="l4take">سجّل القراءة</button><button class="btn" id="l4auto">قراءات تلقائية</button><button class="btn" id="l4clr">امسح القراءات</button></div>
-    <div id="l4m" class="sg-msg"></div>
+    <div id="l4m" class="sg-msg"></div>${chOn()?`<div class="facts" id="l4chm">${fact('تيار المجال I<sub>F</sub>','l4cf')}${fact('الفولتميتر E<sub>ph</sub>','l4ce')}${fact('الأميتر I<sub>SC</sub>','l4ci')}</div>`:''}
     <p class="sub">منحنى اللاحمل من الشكل (3-19) ص 114 (<b>قراءات تقريبية</b> بالنظر، ويمر بنقاط الحل 4.1/4.5/5.7 A)، و<span class="ltr">R<sub>A</sub> = 0.015 Ω</span> والتيار المقنن <span class="ltr">692.8 A</span> لكل وجه من مثال (3-1). ميل خط S.C.C <b>توضيحي</b> (<span class="ltr" id="l4kv"></span>)؛ القيمة التوضيحية اختيرت لتعطي <span class="ltr">X<sub>S</sub> = 0.1 Ω</span> في المنطقة الخطية كما في المثال.</p></div>
    <div class="panel c5"><h2><span>جدول القراءات وحساب X<sub>S</sub></span> <small>(3-11) و(3-12)</small></h2><div id="l4t" class="sg-tbl"></div></div>
    <div class="panel c4"><h2>O.C.C <small>الشكل (3-11)</small></h2><div class="sg-chart sm"><canvas id="l4o"></canvas></div>${legend([['--live','القراءات'],['--muted','خط الثغرة الهوائية',1]])}</div>
@@ -1254,12 +1257,14 @@ B.lesson({
   const TP=B.params($('#l4tp'),'u3-l4',[
    {k:'K',label:'ميل خط S.C.C: تيار القصر لكل 1 A من تيار المجال',unit:'A/A',value:KSC,dp:2,min:10,max:1e6}],()=>{sccR=[];warn=0;If=Math.min(If,scMax());mkSl();kTxt();steps.redraw()});
   const K=()=>TP.v.K;
+  /* القراءة الفعلية للفولتميتر والأميتر. أعطال مخفية (وضع التحدي فقط): kF حلقات مقصورة في ملفات المجال، loose وصلة القصر رخوة (مقاومة تلامس)، s1open ملف الوجه المقاس مقطوع */
+  const ocE=x=>chF('s1open')?0:occ(chF('kF')?0.75*x:x),scI=x=>chF('s1open')?0:K()*x*(chF('kF')?0.75:1)*(chF('loose')?0.6:1);
   const scMax=()=>Math.max(1,Math.ceil(1.2*IRATED/K()*100)/100);   // أعلى تيار مجال في اختبار القصر (1 A بالقيم التوضيحية)
   const kTxt=()=>{$('#l4kv').textContent=fm(K(),1)+' A/A'};kTxt();
   const mkSl=()=>{$('#l4sl').innerHTML=mode==='open'?sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span>',0,10,0.05,If):sl('l4f','تيار المجال <span class="ltr">I<sub>F</sub></span> (ارفعه ببطء)',0,scMax(),0.01,If);$('#l4f').oninput=e=>{If=+e.target.value};lastS=''};
   segOn(el,'tm',v=>{mode=v;If=0;mkSl()});mkSl();
   const kfit=()=>{if(!sccR.length)return null;let a=0,b=0;sccR.forEach(([x,y])=>{a+=x*y;b+=x*x});return b?a/b:null};
-  const take=(x)=>{x=x==null?If:x;if(mode==='open'){occR=occR.filter(r=>Math.abs(r[0]-x)>1e-6);occR.push([x,B.round(occ(x),1)]);occR.sort((a,b)=>a[0]-b[0])}else{const I=K()*x;if(I>IRATED*1.0001){warn=1}sccR=sccR.filter(r=>Math.abs(r[0]-x)>1e-6);sccR.push([x,B.round(I,1)]);sccR.sort((a,b)=>a[0]-b[0])}lastS=''};
+  const take=(x)=>{x=x==null?If:x;if(mode==='open'){occR=occR.filter(r=>Math.abs(r[0]-x)>1e-6);occR.push([x,B.round(ocE(x),1)]);occR.sort((a,b)=>a[0]-b[0])}else{const I=scI(x);if(I>IRATED*1.0001){warn=1}sccR=sccR.filter(r=>Math.abs(r[0]-x)>1e-6);sccR.push([x,B.round(I,1)]);sccR.sort((a,b)=>a[0]-b[0])}lastS=''};
   $('#l4take').onclick=()=>take();
   $('#l4auto').onclick=()=>{if(mode==='open')[1,2,3,4,5,6,7,8,9,10].forEach(take);else[0.1,0.2,0.3,0.4,0.5].map(v=>K()===KSC?v:Math.max(0.01,B.round(v*KSC/K(),2))).forEach(take)};
   $('#l4clr').onclick=()=>{occR=[];sccR=[];lastS=''};
@@ -1274,7 +1279,8 @@ B.lesson({
    {t:'X<sub>S</sub> من الاختبارين',x:()=>`في الجدول: عند كل تيار مجال \\(Z_S=E_{ph}/I_{SC}\\) ثم \\(X_S=\\sqrt{Z_S^2-R_A^2}\\). القيمة ثابتة (≈ <span class="ltr">${xsLin()} Ω</span>) في المنطقة الخطية ثم تقل مع التشبع (الشكل 3-14).`,done:()=>occR.length>=5&&sccR.length>=1},
    {t:'تنظيم الجهد',x:'في اللوحة الأخيرة اختر «متقدم» وخفّض معامل القدرة: يصبح \\(V_R\\%\\) سالباً، أي أن جهد اللاحمل أصغر من جهد الحمل.',done:()=>sawVRneg}
   ]);
-  loopOn(el,()=>{const I=mode==='short'?K()*If:0,E=mode==='open'?occ(If):0,over=mode==='short'&&I>IRATED;
+  loopOn(el,()=>{const I=mode==='short'?scI(If):0,E=mode==='open'?ocE(If):0,over=mode==='short'&&I>IRATED;
+   if(chOn()){$('#l4cf').textContent=fm(If,2)+' A';$('#l4ce').textContent=mode==='open'?fm(E,1)+' V':'0 V';$('#l4ci').textContent=mode==='short'?fm(I,1)+' A':'0 A'}
    $('#l4f-v').textContent=fm(If,2)+' A';$('#l4vi-v').textContent=fm(vrI,1)+' A';$('#l4vp-v').textContent=fm(vrPf,2);
    const sg=[mode,If,occR.length,sccR.length,vrI,vrPf,vrK,warn,K()].join();if(sg===lastS){steps.check();return}lastS=sg;
    $('#l4s').innerHTML='<div style="min-width:470px">'+testSVG(mode,{live:1,If,E:mode==='open'?E:null,Isc:mode==='short'?I:null,over})+'</div>';
@@ -1877,7 +1883,10 @@ B.lesson({
   let Fb=60,VbL=380,Vbp=VbL/SQ3,XS6=1,PLOSS=3,TOLV=5,TOLF=0.2,TOLP=12;   // bus 380 V 60 Hz, Xs, losses and closing limits: أرقام توضيحية (قيم المدرب)
   const NS=()=>30*Fb;                                 // السرعة التزامنية لمولد 4 أقطاب (1800 rpm بالقيم التوضيحية)
   let If=2,n=1740,seq=0,phi=Math.random()*360,closed=0,flash='',lastS='',bad=0,Pin=PLOSS,If2=4.5,swaps=0,seenQp=0,seenQn=0,lostSync=0;
-  const Vm=()=>VbL*occ(If)/occ(4.5)*(n/30/Fb),Fm=()=>n/30;
+  /* أعطال مخفية (وضع التحدي فقط): kF حلقات مقصورة في ملفات المجال، brush تلامس رديء في فرش المجال (تيار المجال الفعلي يتذبذب)، gov منظم سرعة المحرك الأولي يتأرجح، lamp1 المصباح الأول محترق */
+  const chIf=x=>x*(chF('kF')?0.8:1)*(chF('brush')?1-0.06*(1+Math.sin(2*PI*0.7*performance.now()/1000)):1);
+  const nE=()=>n+(chF('gov')&&!closed?8*Math.sin(2*PI*0.35*performance.now()/1000):0);
+  const Vm=()=>VbL*occ(chIf(If))/occ(4.5)*(nE()/30/Fb),Fm=()=>nE()/30;
   el.innerHTML=`<div id="l6tp"></div><div class="grid">
    <div class="panel c8"><h2>لوحة التزامن <small>مبنية على الشكل (3-18) ص 112</small></h2>
     <div id="l6d" class="svgbox" style="max-width:620px;margin-inline:auto"></div>
@@ -1949,14 +1958,14 @@ B.lesson({
    const vm=Vm(),vmp=vm/SQ3,fmv=Fm();
    const a=cpol(Vbp,0),b=cpol(Vbp,-120),c=cpol(Vbp,120),a2=cpol(vmp,phi),b2=cpol(vmp,seq?phi-120:phi+120),c2=cpol(vmp,seq?phi+120:phi-120);
    const L1=cabs(csub(a,a2)),L2=cabs(csub(b,c2)),L3=cabs(csub(c,b2)),nm=SQ3*Vbp;
-   const lamps=closed?[0,1,1]:[L1/nm,L2/nm,L3/nm];
-   $('#l6d').innerHTML='<div style="min-width:500px">'+fig318({lamps,closed,live:1,Vb:VbL,Fb,Vm:closed?VbL*occ(If2)/occ(4.5):vm,Fm:closed?Fb:fmv,Vs:closed?0:L1})+'</div>';
+   const lamps=closed?[0,1,1]:[chF('lamp1')?0:L1/nm,L2/nm,L3/nm];
+   $('#l6d').innerHTML='<div style="min-width:500px">'+fig318({lamps,closed,live:1,Vb:VbL,Fb,Vm:closed?VbL*occ(chIf(If2))/occ(4.5):vm,Fm:closed?Fb:fmv,Vs:closed?0:L1})+'</div>';
    $('#l6sy').innerHTML=syncSVG(closed?0:wrap180(phi));
-   $('#l6dv').textContent=fm((closed?VbL*occ(If2)/occ(4.5):vm)-VbL,1)+' V';$('#l6df').textContent=fm(closed?0:fmv-Fb,2)+' Hz';
+   $('#l6dv').textContent=fm((closed?VbL*occ(chIf(If2))/occ(4.5):vm)-VbL,1)+' V';$('#l6df').textContent=fm(closed?0:fmv-Fb,2)+' Hz';
    $('#l6sq').innerHTML=seq?'تتابع المولد مطابق للقضيب':'تتابع المولد معكوس';
    let extraMsg='';
    if(closed&&EXTRA_INFINITE_BUS&&$('#l6p')){$('#l6p-v').textContent=fm(Pin,1)+' kW';If2=If;
-    const E=Vbp*occ(If2)/occ(4.5),Pe=(Pin-PLOSS)*1000,arg=Pe*XS6/(3*Vbp*Math.max(E,1e-6));
+    const E=Vbp*occ(chIf(If2))/occ(4.5),Pe=(Pin-PLOSS)*1000,arg=Pe*XS6/(3*Vbp*Math.max(E,1e-6));
     if(Math.abs(arg)>1||E<1){closed=0;lostSync=1;flash='<div class="callout err"><b>فقد التزامن (إضافة من خارج الكتاب):</b> القدرة المطلوبة تجاوزت \\(P_{max}=3VE/X_S\\) فتجاوزت δ الزاوية 90°. فُتح القاطع في المحاكاة. أعد التزامن من جديد.</div>';n=NS()+12*Fb/60;$('#l6n').value=n;lastS=''}
     else{const d=Math.asin(arg)/D,Ev=cpol(E,d),Ic=cdiv(csub(Ev,Cx(Vbp)),Cx(0,XS6)),S=cmul(Cx(3*Vbp),Cx(Ic.re,-Ic.im)),P=S.re/1000,Q=S.im/1000,pfv=Math.abs(P)/Math.max(1e-9,Math.hypot(P,Q));
      if(Q>2)seenQp=1;if(Q<-2)seenQn=1;

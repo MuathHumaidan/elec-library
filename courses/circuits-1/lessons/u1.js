@@ -1,6 +1,10 @@
 /* دوائر كهربائية-1 — الوحدة الأولى «المكثفات الكهربائية» (ص 1–24): المقدمة والتمهيد + الدروس u1-l1 … u1-l4 */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const fm=(x,d)=>d==null?B.fmtN(x):B.fmtN(B.round(x,d));
 const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -424,7 +428,7 @@ B.lesson({
    $('#l1A-v').textContent=fm(A,0)+' cm² = '+fm(A*1e-4,4)+' m²';$('#l1d-v').textContent=fm(d,1)+' mm';$('#l1V-v').textContent=fm(V,0)+' V';$('#l1er-v').textContent=fm(erC,0);
    $('#l1erB').style.display=mat==='custom'?'':'none';
    $('#l1v').innerHTML=plateSVG({A,d,V,mat,nq:clamp(Math.round(8*Q/Q0),0,999),nE:clamp(Math.round(6*E/E0),0,999)});
-   $('#l1r').textContent=fm(r,2);$('#l1e').textContent=eSci((eps==='book'?EPS0_BOOK:EPS0)*r);$('#l1C').textContent=fmtF(C);$('#l1Q').textContent=fmtC(Q);$('#l1E').textContent=eSci(E);
+   chOut(el,'l1ch',[['C',C*1e12],['Q',Q*1e9]]);$('#l1r').textContent=fm(r,2);$('#l1e').textContent=eSci((eps==='book'?EPS0_BOOK:EPS0)*r);$('#l1C').textContent=fmtF(C);$('#l1Q').textContent=fmtC(Q);$('#l1E').textContent=eSci(E);
    $('#l1msg').innerHTML=eps==='book'?`<div class="callout err">بقيمة الكتاب \\(4\\pi\\times10^{-7}\\) تخرج السعة <b>${fmtF(C)}</b> بدل <b>${fmtF(Cof(A,d,r,'fix'))}</b> — أكبر بحوالي <span class="ltr">${fm(EPS0_BOOK/EPS0,0)}</span> مرة. هذا غير ممكن لمكثف بهذه الأبعاد: \\(4\\pi\\times10^{-7}\\) هي \\(\\mu_0\\) (النفاذية المغناطيسية) وليست \\(\\varepsilon_0\\).</div>`:`<div class="callout">السعة لا تتغير بتغيير V: هي صفة في المكثف نفسه (A و d والعازل). أما الشحنة فتتناسب مع V.</div>`;
    B.math($('#l1msg'));};
   $('#l1A').oninput=e=>{A=+e.target.value;draw()};$('#l1d').oninput=e=>{d=+(+e.target.value).toFixed(1);draw()};$('#l1V').oninput=e=>{V=+e.target.value;draw()};$('#l1er').oninput=e=>{erC=+e.target.value;draw()};
@@ -499,7 +503,12 @@ function capLab(el,cfg){
   const touch=()=>{st.dirty=true;st.preset=null};
   const load=k=>{const p=PRE[k];st.mode=p.mode;st.P=p.P.slice();st.S=p.S.slice();st.V=p.V;st.preset=k;st.dirty=false;seen.add(k);if(cfg.modes.length>1)segSet(el,id+'m',st.mode);$('#'+id+'V').value=st.V;counts();sliders();draw()};
   const capObj=(c,sol,live)=>({top:`${c.n} = ${fm(c.C)} μF`,bot:live?`${fm(c.V,4)} V · ${fm(c.Q,4)} μC`:'',fill:live?c.V/st.V:0,va:c.w==='S'&&st.mode!=='parallel'?('V'+(c.i+1)):''});
-  const draw=()=>{const sol=capSolve(st.mode,st.P,st.S,st.V);$('#'+id+'V-v').textContent=fm(st.V,0)+' V';
+  /* عطل مخفي في المكثف C2 (وضع التحدي فقط): مقصور، أو طرف مقطوع، أو جاف (سعته الفعلية أقل)، أو قيمته عشرة أضعاف المكتوب.
+     الجدول والرسم يكتبان السعة المكتوبة على المكثف، والجهد والشحنة والسعة المكافئة هي القيم الفعلية */
+  const chSolve=()=>{const k=chF('c2short')?1e9:chF('c2open')?1e-9:chF('c2dry')?0.4:chF('c2x10')?10:0;if(!k)return capSolve(st.mode,st.P,st.S,st.V);
+    const r=refs()[1],P=st.P.slice(),Sx=st.S.slice();if(r){const A=r[0]==='S'?Sx:P;A[r[1]]=(k>=1e9||k<=1e-9)?k:A[r[1]]*k}
+    const sol=capSolve(st.mode,P,Sx,st.V);sol.caps.forEach(c=>{c.C=st[c.w][c.i]});return sol};
+  const draw=()=>{const sol=chSolve();$('#'+id+'V-v').textContent=fm(st.V,0)+' V';
     refs().forEach(([a,i])=>{const b=$(`#${id}c${a}${i}-v`);if(b)b.textContent=fm(st[a][i])+' μF'});
     const Sc=sol.caps.filter(c=>c.w==='S'),Pc=sol.caps.filter(c=>c.w==='P');
     const src=`V = ${fm(st.V,0)} V`;let net;
@@ -1228,13 +1237,24 @@ B.lesson({
    {t:'بلا فقد',x:'اجعل V₂ مساوياً لـ V₁ ثم وصّل: لا تنتقل شحنة بين المكثفين فيكون الفقد صفراً.',done:()=>sh.conn&&sh.V1===sh.V2&&sh.V1>0}
   ]);
   btns();shDraw();
+  /* أعطال مخفية (وضع التحدي فقط): مكثف جاف (سعته الفعلية 40% من المكتوبة)، تسريب في العازل (مقاومة 3R على التوازي مع المكثف)،
+     مكثف مقصور، مقاومة الشحن والتفريغ مقطوعة */
+  const chX=()=>chF('cdry')||chF('leak')||chF('cshort')||chF('ropen'),chC=()=>C*1e-6*(chF('cdry')?0.4:1);
   loopOn(el,dt=>{t+=dt;const T=Math.max(tau(),1e-6),v0=v;
-   if(mode==='chg'){v+=(Vs-v)*(1-Math.exp(-dt/T));const dq=C*1e-6*(v-v0);Wsrc+=Vs*dq}
+   if(chX()){const Ce=chC(),Rr=TP.v.R*1e3,Rp=chF('leak')?3*Rr:Infinity,Rq=isFinite(Rp)?Rr*Rp/(Rr+Rp):Rr;
+    if(chF('cshort'))v=0;
+    else if(chF('ropen')){}
+    else if(mode==='chg'){const vi=isFinite(Rp)?Vs*Rp/(Rr+Rp):Vs;v=vi+(v-vi)*Math.exp(-dt/Math.max(Ce*Rq,1e-6));Wsrc+=Vs*Math.max(0,(Vs-(v+v0)/2)/Rr)*dt}
+    else if(mode==='dis'){v*=Math.exp(-dt/Math.max(Ce*Rq,1e-6));Wout+=0.5*Ce*(v0*v0-v*v)}
+    else if(isFinite(Rp))v*=Math.exp(-dt/Math.max(Ce*Rp,1e-6))}
+   else if(mode==='chg'){v+=(Vs-v)*(1-Math.exp(-dt/T));const dq=C*1e-6*(v-v0);Wsrc+=Vs*dq}
    else if(mode==='dis'){v*=Math.exp(-dt/T);Wout+=0.5*C*1e-6*(v0*v0-v*v)}
    hist.push([t,v]);const win=clamp(6*T,1,120);while(hist.length&&hist[0][0]<t-win)hist.shift();if(hist.length>1500)hist.splice(0,hist.length-1500);
-   const q=C*1e-6*v,W=0.5*C*1e-6*v*v,i=mode==='chg'?(Vs-v)/(TP.v.R*1e3):mode==='dis'?-v/(TP.v.R*1e3):0;
+   let q=C*1e-6*v,W=0.5*C*1e-6*v*v,i=mode==='chg'?(Vs-v)/(TP.v.R*1e3):mode==='dis'?-v/(TP.v.R*1e3):0;
+   if(chX()){const Ce=chC();q=Ce*v;W=0.5*Ce*v*v;if(chF('ropen'))i=0;else if(chF('cshort'))i=mode==='chg'?Vs/(TP.v.R*1e3):0}
+   chOut(el,'l4ch',[['v',v],['i',i*1e3],['Q',q*1e3],['W',W]]);
    $('#l4C-v').textContent=fm(C)+' μF';$('#l4V-v').textContent=fm(Vs,0)+' V';$('#l4tau').textContent=T>=1?fm(T,3)+' s':fm(T*1e3,3)+' ms';
-   $('#l4v').textContent=fm(v,1)+' V';$('#l4q').textContent=fmtC(q);$('#l4w1').textContent=fmtJ(W);$('#l4w2').textContent=fmtJ(0.5*q*v);$('#l4w3').textContent=fmtJ(C>0?0.5*q*q/(C*1e-6):0);$('#l4i').textContent=Math.abs(i)>=1?fm(i,3)+' A':fm(i*1e3,3)+' mA';
+   $('#l4v').textContent=fm(v,1)+' V';$('#l4q').textContent=fmtC(q);$('#l4w1').textContent=fmtJ(W);$('#l4w2').textContent=fmtJ(0.5*q*v);$('#l4w3').textContent=fmtJ(C>0?0.5*q*q/(chX()?chC():C*1e-6):0);$('#l4i').textContent=Math.abs(i)>=1?fm(i,3)+' A':fm(i*1e3,3)+' mA';
    $('#l4ws').textContent=mode==='chg'?fmtJ(Wsrc):'—';$('#l4wr').textContent=mode==='chg'?fmtJ(Math.max(0,Wsrc-(W-Wst))):'—';$('#l4wo').textContent=mode==='dis'?fmtJ(Wout):'—';
    const ym=niceMax(Math.max(Vs,v,10));
    $('#l4vt').innerHTML=plotSVG({w:620,h:220,x0:Math.max(0,t-win),x1:Math.max(win,t),y0:0,y1:ym,yt:ticks(ym),xt:[],xl:'t',yl:'v (V)',series:[{pts:hist,col:'--live',w:2}],aria:'جهد المكثف مع الزمن'});

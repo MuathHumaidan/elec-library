@@ -11,6 +11,9 @@ const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
+
 /* ---------- styles used only by this course's unit 3–4 files (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('e34-css'))return;const s=document.createElement('style');s.id='e34-css';s.textContent=`
 .e34-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
@@ -413,15 +416,18 @@ lesson({
     <div class="e34-row"><button class="btn" id="s1z">أزل الحمل (T<sub>L</sub> = 0)</button><button class="btn" id="s1rt">الحمل المقنن</button></div>
     <div id="s1msg" class="e34-msg"></div></div>
    <div class="panel c7"><h2>القراءات <small><span id="s1chip" class="e34-chip"></span></small></h2>
-    <div class="e34-meters">${meter('الجهد V','s1V')}${meter('تيار المنتج I<sub>a</sub>','s1I')}${meter('المجال kφ (V لكل rpm)','s1k')}${meter('الجهد العكسي E','s1E')}${meter('السرعة n','s1n')}${meter('العزم المتولد T','s1T')}</div>
-    <div class="e34-meters">${meter('T ÷ I<sub>a</sub>²','s1r2')}${meter('T ÷ I<sub>a</sub>','s1r1')}${meter('العزم المقنن','s1TN')}${meter('عزم النقطة A','s1TA')}${meter('أقل حمل آمن','s1Tm')}</div>
+    <div class="e34-meters" id="s1m">${meter('الجهد V','s1V')}${meter('تيار المنتج I<sub>a</sub>','s1I')}${meter('المجال kφ (V لكل rpm)','s1k')}${meter('الجهد العكسي E','s1E')}${meter('السرعة n','s1n')}${meter('العزم المتولد T','s1T')}</div>
+    <div class="e34-meters" id="s1m2">${meter('T ÷ I<sub>a</sub>²','s1r2')}${meter('T ÷ I<sub>a</sub>','s1r1')}${meter('العزم المقنن','s1TN')}${meter('عزم النقطة A','s1TA')}${meter('أقل حمل آمن','s1Tm')}</div>
     <p class="sub">في منطقة ما قبل التشبع تبقى <span class="ltr">T ÷ I<sub>a</sub>²</span> ثابتة (العزم ∝ مربع التيار)، وبعد النقطة A تبقى <span class="ltr">T ÷ I<sub>a</sub></span> ثابتة. «أقل حمل آمن» هو أصغر عزم حمل يُبقي السرعة تحت الحد المسموح (ص 36). الأرقام توضيحية، والعزم المتولد يساوي عزم الحمل مضافاً إليه عزم الاحتكاك.</p></div>
    <div class="panel c12"><h2>نقطة التشغيل على منحنيات الشكل ${lt('(3-1)')} <small>الدائرة البرتقالية = نقطة التشغيل الآن، والخط الأحمر = أقصى سرعة مسموحة</small></h2><div id="s1g" class="e34-figs"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="s1st"></ol></div></div>`;
   const $=q=>el.querySelector(q);
-  let M,TN,TA,Tmin,Imx;
-  const rebuild=()=>{const v=TP.v;M=dcModel(v,'series');TN=M.T(v.IaN);TA=M.T(v.Is);Tmin=minLoadFor(M,v.nMax,v.Tf);Imx=Math.min(M.Imax,Math.max(2.4*v.IaN,1.3*v.Is));
-   const r=$('#s1L');const mx=Math.max(10,niceMax(2.4*TN));r.max=mx;r.step=mx/240;if(s.TL>mx){s.TL=mx;r.value=mx}};
+  let M,MA,TN,TA,Tmin,Imx;
+  /* أعطال مخفية: MA = المحرك الفعلي (فرش متآكلة R×4 / حلقات مقصورة في ملف التوالي)، و M = بيانات المحرك السليم للمنحنيات والقيم المقننة */
+  const vA=v=>chF('brush')?Object.assign({},v,{R:4*v.R}):chF('kF')?Object.assign({},v,{c:0.6*v.c,Is:v.Is/0.6}):v;
+  const rebuild=()=>{const v=TP.v;M=dcModel(v,'series');MA=chF('brush')||chF('kF')?dcModel(vA(v),'series'):M;TN=M.T(v.IaN);TA=M.T(v.Is);Tmin=minLoadFor(M,v.nMax,v.Tf);Imx=Math.min(M.Imax,Math.max(2.4*v.IaN,1.3*v.Is));
+   const r=$('#s1L');const mx=Math.max(10,niceMax(2.4*TN));r.max=mx;r.step=B.chOn&&B.chOn()?'any':mx/240;   /* وضع التحدي: القيمة التي يثبتها المدرب تُضبط كما هي */
+  if(s.TL>mx){s.TL=mx;r.value=mx}};
   const TP=B.params($('#s1tp'),'u3-l1',SER_TP,()=>{rebuild();steps.redraw()});
   rebuild();
   const setMsg=(h,k)=>{$('#s1msg').innerHTML=h?`<div class="callout${k==='err'?' err':''}">${h}</div>`:''};
@@ -449,11 +455,11 @@ lesson({
    const c=plot({w:300,h:220,x0:0,x1:Tm,y0:0,y1:nm,xt:ticks(Tm,4),yt:ticks(nm,4),xl:'T (N·m)',yl:'n (rpm)',series:[{pts:pc,col:'--blue'}],hl:[{v:v.nMax,col:'--stop'}],vl:[{v:Tmin+v.Tf,col:'--muted'}],dots:sh?[{x:o.T,y:s.n,col:'--live',ring:1}]:[],aria:'السرعة مع العزم'});
    $('#s1g').innerHTML=`<figure>${box(a)}(a) <span class="ltr">T = f(I<sub>a</sub>)</span></figure><figure>${box(b)}(b) <span class="ltr">n = f(I<sub>a</sub>)</span></figure><figure>${box(c)}(c) <span class="ltr">n = f(T)</span> — الخط الرمادي: أقل عزم آمن</figure>`};
   loopOn(el,dt=>{const v=TP.v;s.t+=dt;
-   const o=M.op(s.TL+v.Tf);let target=0;
+   const o=chF('open')?{ok:false,I:NaN,n:0,T:NaN,k:NaN}:MA.op(s.TL+v.Tf);let target=0;
    if(s.on&&!s.trip&&!s.crash){target=o.ok?o.n:0;if(!isFinite(target))target=1e9;target=Math.min(target,3*v.nMax)}
    s.n+=(target-s.n)*(1-Math.exp(-dt/v.tau));if(Math.abs(target-s.n)<0.05)s.n=target;
-   if(s.on&&s.prot&&s.n>v.nMax){s.on=false;s.trip=true;did.tripped=1;setMsg(`<b>فصلت الحماية المصدر:</b> تجاوزت السرعة الحد المسموح ${lt(fm(v.nMax,0)+' rpm')}. الحمل كان ${lt(fm(s.TL,1)+' N·m')} وهو أقل من أقل حمل آمن ${lt(fm(Tmin,1)+' N·m')}. حمّل المحرك ثم اضغط «إعادة ضبط الحماية» وشغّل من جديد.`,'err')}
-   if(s.on&&!s.prot&&s.n>1.5*v.nMax){s.on=false;s.crash=true;did.crash=1;setMsg(`<b>خطر:</b> وصلت السرعة إلى ${lt(fm(s.n,0)+' rpm')}، أي أكثر من مرة ونصف من الحد المسموح. في الواقع قد يتحطم العضو الدوار تحت تأثير قوى الطرد المركزية (ص 36). أوقفنا المحاكاة؛ اضغط «إعادة ضبط الحماية».`,'err')}
+   if(s.on&&s.prot&&!chF('noprot')&&s.n>v.nMax){s.on=false;s.trip=true;did.tripped=1;setMsg(`<b>فصلت الحماية المصدر:</b> تجاوزت السرعة الحد المسموح ${lt(fm(v.nMax,0)+' rpm')}. الحمل كان ${lt(fm(s.TL,1)+' N·m')} وهو أقل من أقل حمل آمن ${lt(fm(Tmin,1)+' N·m')}. حمّل المحرك ثم اضغط «إعادة ضبط الحماية» وشغّل من جديد.`,'err')}
+   if(s.on&&(!s.prot||chF('noprot'))&&s.n>1.5*v.nMax){s.on=false;s.crash=true;did.crash=1;setMsg(`<b>خطر:</b> وصلت السرعة إلى ${lt(fm(s.n,0)+' rpm')}، أي أكثر من مرة ونصف من الحد المسموح. في الواقع قد يتحطم العضو الدوار تحت تأثير قوى الطرد المركزية (ص 36). أوقفنا المحاكاة؛ اضغط «إعادة ضبط الحماية».`,'err')}
    s.ang=(s.ang+s.n/60*360*dt/40)%360;
    const run=s.on&&!s.trip&&!s.crash;const I=run&&o.ok?o.I:0,T=run&&o.ok?o.T:0,k=run&&o.ok?o.k:0,E=k*s.n;
    $('#s1c').innerHTML=dcCircuitSVG({on:run,type:'series',ang:s.ang});
@@ -717,7 +723,7 @@ lesson({
     ${sl('c2L','عزم الحمل T<sub>L</sub>',0,160,0.5,s.TL)}
     <div id="c2msg" class="e34-msg"></div></div>
    <div class="panel c7"><h2>القراءات <small><span id="c2chip" class="e34-chip"></span></small></h2>
-    <div class="e34-meters">${meter('تيار المنتج I<sub>a</sub>','c2I')}${meter('المجال الكلي kφ<sub>t</sub>','c2k')}${meter('منه ملف التوالي ±kφ<sub>se</sub>','c2kse')}${meter('السرعة n','c2n')}${meter('العزم المتولد T','c2T')}</div>
+    <div class="e34-meters" id="c2m">${meter('تيار المنتج I<sub>a</sub>','c2I')}${meter('المجال الكلي kφ<sub>t</sub>','c2k')}${meter('منه ملف التوالي ±kφ<sub>se</sub>','c2kse')}${meter('السرعة n','c2n')}${meter('العزم المتولد T','c2T')}</div>
     <div class="e34-tbl"><table class="tt" id="c2tb"></table></div>
     <p class="sub">الجدول للمحرك نفسه بالأنواع الأربعة. الأرقام توضيحية، والعزم المتولد يساوي عزم الحمل مضافاً إليه عزم الاحتكاك.</p></div>
    <div class="panel c12"><h2>منحنيات الأنواع الأربعة <small>الخط السميك = النوع المختار، والدائرة = نقطة التشغيل، والخط الأحمر = أقصى سرعة مسموحة</small></h2>
@@ -730,6 +736,10 @@ lesson({
   const TP=B.params($('#c2tp'),'u3-l2',CMP_TP,()=>{rebuild();steps.redraw()});
   rebuild();
   const M=()=>Ms[s.type];
+  /* أعطال مخفية: المحرك الفعلي الذي يدور (الجدول والمنحنيات تبقى للمحرك السليم) */
+  const tyA=()=>{let t=s.type;if(chF('serev')&&(t==='cum'||t==='diff'))t=t==='cum'?'diff':'cum';if(chF('sebyp')&&(t==='cum'||t==='diff'))t='shunt';return t};
+  const MA=()=>{const v=TP.v,t=tyA();
+   if(!chF('brush')&&!chF('kSh')&&t===s.type)return M();return dcModel(Object.assign({},v,chF('brush')?{R:4*v.R}:{},chF('kSh')?{ksh:0.7*v.ksh}:{}),t)};
   const setMsg=(h,k)=>{$('#c2msg').innerHTML=h?`<div class="callout${k==='err'?' err':''}">${h}</div>`:''};
   segBind(el,'ty',v=>{s.type=v;s.on=false;s.trip=false;s.n=0;setMsg('','')});
   $('#c2L').oninput=e=>{s.TL=+e.target.value};
@@ -754,8 +764,8 @@ lesson({
    const b=plot({w:300,h:220,x0:0,x1:I1,y0:0,y1:nm,xt:ticks(niceMax(I1),4).filter(x=>x<=I1),yt:ticks(nm,4),xl:'Ia (A)',yl:'n (rpm)',series:ser((Mk,I)=>[I,Mk.n(I)]),hl:[{v:v.nMax,col:'--stop'}],dots:run?[{x:o.I,y:s.n,col:'--fg',ring:1}]:[],aria:'السرعة مع تيار المنتج'});
    const c=plot({w:300,h:220,x0:0,x1:Tm,y0:0,y1:nm,xt:ticks(Tm,4),yt:ticks(nm,4),xl:'T (N·m)',yl:'n (rpm)',series:ser((Mk,I)=>[Mk.T(I),Mk.n(I)]),hl:[{v:v.nMax,col:'--stop'}],dots:run?[{x:o.T,y:s.n,col:'--fg',ring:1}]:[],aria:'السرعة مع العزم'});
    $('#c2g').innerHTML=`<figure>${box(a)}(a) <span class="ltr">T = f(I<sub>a</sub>)</span></figure><figure>${box(b)}(b) <span class="ltr">n = f(I<sub>a</sub>)</span></figure><figure>${box(c)}(c) <span class="ltr">n = f(T)</span></figure>`;table()};
-  loopOn(el,dt=>{const v=TP.v;s.t+=dt;const Mx=M();const o=Mx.op(s.TL+v.Tf);let target=0;
-   if(s.on&&!s.trip){target=o.ok?o.n:(s.type==='diff'?Infinity:0);if(!isFinite(target))target=3*v.nMax;target=Math.min(target,3*v.nMax)}
+  loopOn(el,dt=>{const v=TP.v;s.t+=dt;const Mx=M();const o=MA().op(s.TL+v.Tf);let target=0;
+   if(s.on&&!s.trip){target=o.ok?o.n:(tyA()==='diff'?Infinity:0);if(!isFinite(target))target=3*v.nMax;target=Math.min(target,3*v.nMax)}
    s.n+=(target-s.n)*(1-Math.exp(-dt/v.tau));if(Math.abs(target-s.n)<0.05)s.n=target;
    if(s.on&&s.n>v.nMax){s.on=false;s.trip=true;if(s.type==='series')did.serTrip=1;if(s.type==='diff')did.diffTrip=1;
     setMsg(s.type==='diff'?`<b>فصلت الحماية المصدر:</b> في المحرك الفرقي ينقص المجال كلما زاد الحمل فترتفع السرعة؛ عند حمل ${lt(fm(s.TL,1)+' N·m')} تجاوزت السرعة ${lt(fm(v.nMax,0)+' rpm')} (ص 38–39).`:s.type==='series'?`<b>فصلت الحماية المصدر:</b> محرك التوالي بحمل ${lt(fm(s.TL,1)+' N·m')} جمحت سرعته فوق ${lt(fm(v.nMax,0)+' rpm')}.`:`<b>فصلت الحماية المصدر:</b> تجاوزت السرعة ${lt(fm(v.nMax,0)+' rpm')}.`,'err')}
@@ -768,7 +778,7 @@ lesson({
    const ch=$('#c2chip');
    if(s.trip){ch.className='e34-chip warn';ch.textContent='فصلت الحماية المصدر'}
    else if(!s.on){ch.className='e34-chip';ch.textContent=s.n>1?'المصدر مفصول — يتباطأ':'متوقف'}
-   else if(!o.ok){ch.className='e34-chip warn';ch.textContent=s.type==='diff'?'لا نقطة تشغيل: المجال ينهار والسرعة ترتفع':'الحمل أكبر مما يستطيعه المحرك'}
+   else if(!o.ok){ch.className='e34-chip warn';ch.textContent=tyA()==='diff'?'لا نقطة تشغيل: المجال ينهار والسرعة ترتفع':'الحمل أكبر مما يستطيعه المحرك'}
    else if(Math.abs(s.n-target)>Math.max(2,0.01*target)){ch.className='e34-chip hot';ch.textContent=s.n<target?'تتغير السرعة: تزيد':'تتغير السرعة: تقل'}
    else{ch.className='e34-chip ok';ch.textContent='مستقر — '+TNAME[s.type]}
    if(s.t-lastG>0.15){lastG=s.t;drawG(o)}
@@ -959,7 +969,7 @@ lesson({
     <div class="e34-row"><button class="btn primary" id="i3on">تشغيل</button><button class="btn" id="i3off">إيقاف</button></div>
     ${sl('i3L','عزم الحمل (بالنسبة للمقنن)',0,3,0.05,s.TL)}
     <div class="e34-row"><button class="btn" id="i3k">هزّة: نقص مؤقت في السرعة</button><button class="btn" id="i3u">ضع المحرك عند التقاطع على الجزء غير المتزن</button></div>
-    <div class="e34-meters">${meter('السرعة n','i3n')}${meter('الانزلاق s','i3s')}${meter('عزم المحرك','i3T')}${meter('عزم الحمل','i3TL')}${meter('عزم البدء','i3Tst')}${meter('أقصى عزم','i3Tmx')}</div>
+    <div class="e34-meters" id="i3m">${meter('السرعة n','i3n')}${meter('الانزلاق s','i3s')}${meter('عزم المحرك','i3T')}${meter('عزم الحمل','i3TL')}${meter('عزم البدء','i3Tst')}${meter('أقصى عزم','i3Tmx')}</div>
     <div id="i3msg" class="e34-msg"></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="i3st"></ol></div></div>`;
   const $=q=>el.querySelector(q);
@@ -970,7 +980,10 @@ lesson({
   $('#u3T').oninput=e=>{s.uT=+e.target.value;uni()};uni();
   /* induction */
   const TP=B.params($('#i3tp'),'u3-l3',IND_TP,()=>{steps.redraw()});
-  const Tmot=n=>{const v=TP.v;return kloss(clamp(1-n/v.ns,1e-6,1),v.Tm,v.sm)};
+  const Tmot=n=>{const v=TP.v,sl=clamp(1-n/v.ns,1e-6,1);
+   /* عطل مخفي: فقد أحد الأوجه (مجالان دواران متعاكسان، لا عزم عند السكون) / قضبان العضو الدوار مكسورة / جهد منخفض 80% */
+   if(chF('ph1'))return 0.6*(kloss(sl,v.Tm,v.sm)-kloss(2-sl,v.Tm,v.sm));if(chF('rotor'))return kloss(sl,0.75*v.Tm,1.5*v.sm);
+   return (chF('lowV')?0.64:1)*kloss(sl,v.Tm,v.sm)};
   const Tst=()=>kloss(1,TP.v.Tm,TP.v.sm);
   /* سرعتا التقاطع مع حمل ثابت: على الجزء غير المتزن (u) وعلى الجزء المتزن (s) */
   const cross=TL=>{const v=TP.v,f=s_=>kloss(s_,v.Tm,v.sm)-TL;const bis=(a,b)=>{let fa=f(a);for(let k=0;k<60;k++){const m=(a+b)/2,fm_=f(m);if((fm_>0)===(fa>0)){a=m;fa=fm_}else b=m}return (a+b)/2};

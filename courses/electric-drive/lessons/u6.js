@@ -9,6 +9,9 @@ const R=(x,d)=>B.round(x,d);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
 
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
+
 /* ---------- styles used only by this course's lesson files (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('edu6-css'))return;const s=document.createElement('style');s.id='edu6-css';s.textContent=`
 .ed-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
@@ -347,7 +350,7 @@ B.lesson(FIXL({
   el.innerHTML=`<div id="r1tp"></div><div class="grid ed-lab">
    <div class="panel c6"><h2>الدائرة الآن <small>مبنية على الشكل (6-1) ص 70 وآلة مثال (6-1)</small></h2><div class="svgbox" id="r1c" style="max-width:420px;margin-inline:auto"></div>
     <div class="ed-row"><span class="ed-chip" id="r1chip"></span></div>
-    <div class="facts">${fact('السرعة n','r1n')}${fact('القوة الدافعة E','r1E')}${fact('تيار المنتج I<sub>a</sub>','r1Ia')}${fact('تيار الخط I = I<sub>a</sub> + I<sub>f</sub>','r1I')}${fact('القدرة من المصدر V·I','r1P')}</div></div>
+    <div class="facts" id="r1fx">${fact('السرعة n','r1n')}${fact('القوة الدافعة E','r1E')}${fact('تيار المنتج I<sub>a</sub>','r1Ia')}${fact('تيار الخط I = I<sub>a</sub> + I<sub>f</sub>','r1I')}${fact('القدرة من المصدر V·I','r1P')}</div></div>
    <div class="panel c6"><h2>التحكم</h2>
     <div class="ed-row" style="margin-top:0"><button class="btn" id="r1ex">مثال (6-1): حمل هابط 190 Nm</button></div>
     ${sl('r1T','عزم الحمل (موجب = يعاكس الدوران، سالب = حمل هابط يدفع الآلة)',-300,300,1,st.TL)}${sl('r1f','تيار المجال (نسبة من قيمته الأصلية)',70,130,1,st.fld)}${sl('r1V','جهد المصدر V',120,240,1,st.V)}
@@ -360,7 +363,10 @@ B.lesson(FIXL({
    {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:0.8,min:0.05,max:30,step:0.05}],()=>steps.redraw());
   const bind=(id,k)=>{$('#'+id).oninput=e=>{st[k]=+e.target.value;st.pre=''}};bind('r1T','TL');bind('r1f','fld');bind('r1V','V');
   $('#r1ex').onclick=()=>{st.TL=-190;st.fld=100;st.V=220;$('#r1T').value=-190;$('#r1f').value=100;$('#r1V').value=220;st.pre='e61'};
-  const K=()=>K0*st.fld/100,wss=()=>Math.max(0,(st.V-st.TL/K()*Ra)/K());
+  const K=()=>K0*st.fld/100;
+  /* أعطال مخفية: الآلة الفعلية (فرش متآكلة Ra×5 / حلقات مقصورة في ملف المجال / منظم المجال عالق على 100%)؛ K و Ra السليمان لخط التشغيل المرسوم */
+  const KA=()=>K0*(chF('fstuck')?100:st.fld)/100*(chF('kF')?0.85:1),RaA=()=>chF('brush')?5*Ra:Ra;
+  const wss=()=>Math.max(0,(st.V-st.TL/KA()*RaA())/KA());
   const steps=stepsUI($('#r1st'),[
    {t:'بلا حمل',x:'اجعل عزم الحمل صفراً: تستقر السرعة عند سرعة اللاحمل <span class="ltr">≈ 1176.7 rpm</span>، حيث \\(E\\approx V\\) وتيار المنتج صفر تقريباً.',done:()=>Math.abs(st.TL)<1&&st.fld===100&&st.V===220&&Math.abs(st.w-wss())<0.05},
    {t:'محرك محمّل',x:'اجعل العزم <span class="ltr">+190 Nm</span> (حمل يعاكس الدوران): السرعة أقل من سرعة اللاحمل، \\(E<V\\)، والتيار يدخل المنتج — الآلة محرك.',done:()=>st.TL>=150&&st.fld===100&&st.V===220},
@@ -369,7 +375,7 @@ B.lesson(FIXL({
    {t:'اخفض جهد المصدر',x:'أرجع الحمل إلى <span class="ltr">0</span> أو قيمة موجبة والمجال إلى <span class="ltr">100%</span>، ثم اخفض الجهد فجأة إلى <span class="ltr">180 V</span> أو أقل: أثناء تباطؤ الآلة تكون \\(E>V\\) فيصبح التيار سالباً لحظياً — فرملة بإعادة التوليد بخفض جهد المصدر.',done:()=>st.sawT},
    {t:'لا توقف كلي',x:'لاحظ أن الآلة في كل الحالات استقرت على سرعة جديدة ولم تتوقف: الفرملة بإعادة التوليد <b>تخفض السرعة فقط</b> (ص 69). للإيقاف نحتاج الطريقتين في الدرسين التاليين.'}]);
   loopOn(el,dt=>{const k=K(),ws=wss();if(st.w==null)st.w=ws;st.w+=(ws-st.w)*(1-Math.exp(-dt/TP.v.tau));if(Math.abs(st.w-ws)<1e-4)st.w=ws;
-   const E=k*st.w,Ia=(st.V-E)/Ra,Il=Ia+TP.v.If,P=st.V*Il;if(Ia<-1&&st.TL>=0&&st.V<=180)st.sawT=true;
+   const E=KA()*st.w,Ia=(st.V-E)/RaA(),Il=Ia+TP.v.If,P=st.V*Il;if(Ia<-1&&st.TL>=0&&st.V<=180)st.sawT=true;
    $('#r1T-v').textContent=st.TL+' Nm';$('#r1f-v').textContent=st.fld+' %';$('#r1V-v').textContent=st.V+' V';
    $('#r1n').textContent=fm(rpm(st.w),1)+' rpm';$('#r1E').textContent=fm(E,2)+' V';$('#r1Ia').textContent=fm(Ia,1)+' A';$('#r1I').textContent=fm(Il,1)+' A';$('#r1P').textContent=fm(P/1000,2)+' kW';
    const gen=Ia<-0.5,ch=$('#r1chip');if(gen){ch.className='ed-chip ok';ch.textContent='مولد: E > V — فرملة بإعادة التوليد، الطاقة تعود إلى المصدر'}else if(Ia>0.5){ch.className='ed-chip ld';ch.textContent='محرك: E < V — الطاقة من المصدر إلى الحمل'}else{ch.className='ed-chip';ch.textContent='لا حمل تقريباً: E ≈ V'}
@@ -377,7 +383,7 @@ B.lesson(FIXL({
    $('#r1c').innerHTML=dcCkt(gen?'gen':'motor',{lab:{V:fm(st.V,0)+' V'},title:gen?'generator':'Motor'});
    const xm=300,line=T=>rpm((st.V-T/k*Ra)/k),base=T=>rpm((220-T/K0*Ra)/K0),n0=rpm(st.V/k),vals=[line(-xm),line(xm),base(-xm),base(xm),rpm(st.w)],y0=Math.max(0,Math.floor(Math.min(...vals)/50)*50-50),ym=Math.ceil(Math.max(...vals)/50)*50+50,yz=y0+(ym-y0)*0.12;
    $('#r1nt').innerHTML=ntPlane({cid:'r1ntc',xm,ym,y0,series:[{pts:[[-xm,base(-xm)],[xm,base(xm)]],col:'--muted',w:1.4,dash:'5 4'},{pts:[[-xm,line(-xm)],[xm,line(xm)]],col:'--blue'}],
-    zones:[[-150,yz,'مولد — فرملة بإعادة التوليد','--on'],[150,yz,'محرك','--blue-ink']],pts:[[k*Ia,rpm(st.w),'--live']],
+    zones:[[-150,yz,'مولد — فرملة بإعادة التوليد','--on'],[150,yz,'محرك','--blue-ink']],pts:[[KA()*Ia,rpm(st.w),'--live']],
     more:(X,Y)=>`<path d="M${fx(X(-xm))} ${fx(Y(n0))}H${fx(X(xm))}" stroke="var(--fg)" stroke-dasharray="3 4" stroke-width="1"/>`+S.t(fx(X(xm)-4),fx(Y(n0)-6),'n0 = '+fm(n0,1)+' rpm','m','end')});
    steps.check()});
  },
@@ -545,7 +551,7 @@ B.lesson(FIXL({
   el.innerHTML=`<div id="d2tp"></div><div class="grid ed-lab">
    <div class="panel c6"><h2>الدائرة <small>مبنية على الشكل (6-2) ص 73 وآلة مثال (6-2)</small></h2><div class="svgbox" id="d2c" style="max-width:420px;margin-inline:auto"></div>
     <div class="ed-row"><button class="btn primary" id="d2go">افصل المصدر وابدأ الفرملة</button><button class="btn" id="d2rs">أعد تشغيل المحرك</button><span class="ed-chip" id="d2chip"></span></div>
-    <div class="facts">${fact('السرعة n','d2n')}${fact('القوة الدافعة E','d2E')}${fact('تيار الفرملة I','d2I')}${fact('المقاومة المستعملة R','d2R')}${fact('عزم الفرملة T = Kϕ·I','d2T')}${fact('الحرارة في R حتى الآن','d2H')}${fact('زمن الفرملة','d2t')}</div></div>
+    <div class="facts" id="d2fx">${fact('السرعة n','d2n')}${fact('القوة الدافعة E','d2E')}${fact('تيار الفرملة I','d2I')}${fact('المقاومة المستعملة R','d2R')}${fact('عزم الفرملة T = Kϕ·I','d2T')}${fact('الحرارة في R حتى الآن','d2H')}${fact('زمن الفرملة','d2t')}</div></div>
    <div class="panel c6"><h2>طريقة الفرملة</h2>
     <div class="ed-row" style="margin-top:0">${segHTML('md',[['fix','R ثابتة'],['stepR','خفض R تدريجياً'],['field','زيادة تيار المجال']],st.mode)}</div>
     ${sl('d2Rs','المقاومة الإضافية R',0,5,0.01,st.R)}
@@ -561,8 +567,10 @@ B.lesson(FIXL({
    {k:'fmax',label:'أقصى زيادة لتيار المجال',unit:'%',value:150,min:100,max:300,step:5}],()=>{reset();steps.redraw()});
   const P=()=>{const w0=rad(TP.v.n0),K0=207/w0,Tn=K0*IFL;return {w0,K0,Tn,J:TP.v.tau*Tn/w0,Tf:TP.v.fr/100*Tn}};
   const reset=()=>{const p=P();st.ph='run';st.w=p.w0;st.f=1;st.t=0;st.heat=0;st.cur=[]};
+  /* أعطال مخفية: مقاومة الفرملة الفعلية (مفتوحة / جزء منها مقصور / أكبر من المكتوب عليها) */
+  const RuA=r=>chF('ropen')?1e9:chF('rshort')?0.4*r:chF('rhigh')?2.5*r:r;
   segBind(el,'md',v=>{st.mode=v});segBind(el,'sp',v=>{st.spd=+v});$('#d2Rs').oninput=e=>{st.R=+e.target.value};
-  $('#d2go').onclick=()=>{if(st.ph!=='run')reset();const p=P();st.ph='brake';st.t=0;st.heat=0;st.cur=[[0,rpm(st.w),0]];const E=p.K0*st.w;const Ru=st.mode==='fix'?st.R:st.mode==='stepR'?Math.max(0,E/Iset-Ra):st.R;st.I0=E/(Ra+Ru);st.over=st.I0>Iset+0.5;st.R0=Ru};
+  $('#d2go').onclick=()=>{if(st.ph!=='run')reset();const p=P();st.ph='brake';st.t=0;st.heat=0;st.cur=[[0,rpm(st.w),0]];const E=p.K0*st.w;const Ru=st.mode==='fix'?st.R:st.mode==='stepR'?Math.max(0,E/Iset-Ra):st.R;st.I0=E/(Ra+RuA(Ru));st.over=st.I0>Iset+0.5;st.R0=Ru};
   $('#d2rs').onclick=reset;
   const steps=stepsUI($('#d2st'),[
    {t:'الفرملة بالمقاومة المحسوبة',x:'المقاومة على <span class="ltr">1.81 Ω</span> (ناتج مثال 6-2) والطريقة «R ثابتة». اضغط «افصل المصدر وابدأ الفرملة»: التيار الابتدائي <span class="ltr">207 ÷ (0.38 + 1.81) ≈ 94.5 A</span> — لا يتعدى الحد.',done:()=>st.ph!=='run'&&st.mode==='fix'&&Math.abs(st.R0-1.81)<0.02},
@@ -575,10 +583,10 @@ B.lesson(FIXL({
    while(h>1e-9&&st.ph==='brake'){const d=Math.min(h,0.01);h-=d;let E0=p.K0*st.w,Ru=st.R;
     if(st.mode==='stepR')Ru=Math.max(0,E0/Iset-Ra);
     if(st.mode==='field'){const need=Iset*(Ra+st.R)/Math.max(1e-9,E0);st.f=clamp(need,1,TP.v.fmax/100)}else st.f=1;
-    const E=p.K0*st.f*st.w,I=E/(Ra+Ru),T=p.K0*st.f*I;st.w-=(T+p.Tf)/p.J*d;st.t+=d;st.heat+=I*I*Ru*d;st.Ru=Ru;
+    const E=p.K0*st.f*st.w,I=E/(Ra+RuA(Ru)),T=p.K0*st.f*I;st.w-=(T+p.Tf)/p.J*d;st.t+=d;st.heat+=I*I*RuA(Ru)*d;st.Ru=Ru;
     if(st.w<=0){st.w=0;st.ph='stop';st.done[st.mode]=1;st.runs.push({mode:st.mode,pts:st.cur.slice()});if(st.runs.length>3)st.runs.shift()}
     if(!st.cur.length||st.t-st.cur[st.cur.length-1][0]>=0.03)st.cur.push([st.t,rpm(st.w),I])}
-   const brake=st.ph==='brake';let Ru=st.mode==='fix'?st.R:(st.Ru!=null?st.Ru:st.R);const E=p.K0*(brake?st.f:1)*st.w,I=st.ph==='run'?(V-207)/Ra:(st.ph==='stop'?0:E/(Ra+Ru));
+   const brake=st.ph==='brake';let Ru=st.mode==='fix'?st.R:(st.Ru!=null?st.Ru:st.R);const E=p.K0*(brake?st.f:1)*st.w,I=st.ph==='run'?(V-207)/Ra:(st.ph==='stop'?0:E/(Ra+RuA(Ru)));
    $('#d2Rs-v').textContent=fm(st.R,2)+' Ω';
    $('#d2n').textContent=fm(rpm(st.w),0)+' rpm';$('#d2E').textContent=fm(E,1)+' V';$('#d2I').textContent=fm(I,1)+' A';$('#d2R').textContent=st.ph==='run'?'—':fm(Ru,2)+' Ω';$('#d2T').textContent=st.ph==='run'?'—':fm(p.K0*st.f*I,1)+' Nm';$('#d2H').textContent=fm(st.heat/1000,1)+' kJ';$('#d2t').textContent=fm(st.t,2)+' s';
    const ch=$('#d2chip');if(st.ph==='run'){ch.className='ed-chip ld';ch.textContent='يعمل محركاً'}else if(st.ph==='stop'){ch.className='ed-chip ok';ch.textContent='توقف في '+fm(st.t,2)+' s'}else if(st.over){ch.className='ed-chip warn';ch.textContent='التيار الابتدائي '+fm(st.I0,1)+' A يتعدى 94.5 A'}else{ch.className='ed-chip hot';ch.textContent='فرملة ديناميكية'}
@@ -858,7 +866,7 @@ B.lesson(FIXL({
   el.innerHTML=`<div id="p3tp"></div><div class="grid ed-lab">
    <div class="panel c6"><h2>الدائرة <small>مبنية على الشكلين (6-2) و(6-3)</small></h2><div class="svgbox" id="p3c" style="max-width:420px;margin-inline:auto"></div>
     <div class="ed-row"><button class="btn primary" id="p3go">ابدأ الفرملة</button><button class="btn" id="p3rs">أعد تشغيل المحرك</button><span class="ed-chip" id="p3chip"></span></div>
-    <div class="facts">${fact('السرعة n','p3n')}${fact('القوة الدافعة E','p3E')}${fact('الجهد على R<sub>t</sub>','p3VR')}${fact('تيار المنتج I<sub>a</sub>','p3I')}${fact('العزم T = Kϕ·I<sub>a</sub>','p3T')}${fact('الزمن','p3t')}</div>
+    <div class="facts" id="p3fx">${fact('السرعة n','p3n')}${fact('القوة الدافعة E','p3E')}${fact('الجهد على R<sub>t</sub>','p3VR')}${fact('تيار المنتج I<sub>a</sub>','p3I')}${fact('العزم T = Kϕ·I<sub>a</sub>','p3T')}${fact('الزمن','p3t')}</div>
     <div class="callout" id="p3half" style="display:none"></div></div>
    <div class="panel c6"><h2>التحكم</h2>
     <div class="ed-row" style="margin-top:0">${segHTML('pre',[['p63','آلة مثال (6-3)'],['p64','آلة مثال (6-4)']],st.pre)}</div>
@@ -875,9 +883,10 @@ B.lesson(FIXL({
   el.innerHTML=LTU(el.innerHTML);B.math(el);const $=s=>el.querySelector(s);
   const TP=B.params($('#p3tp'),'u6-l3',[{k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:2,min:0.1,max:60,step:0.1,hint:'الزمن الذي يحتاجه العزم المقنن لتغيير السرعة من الصفر إلى سرعة الحمل الكامل.'},
    {k:'fr',label:'عزم الاحتكاك (نسبة من العزم المقنن)',unit:'%',value:3,min:0,max:30,step:0.5}],()=>{reset();steps.redraw()});
-  const P=()=>{const wf=rad(st.n),Eb=st.V-st.IFL*st.Ra,K=Eb/wf,Tn=K*st.IFL;return {wf,Eb,K,Tn,J:TP.v.tau*Tn/wf,Tf:TP.v.fr/100*Tn,Rt:st.Ra+st.R}};
+  const P=()=>{const wf=rad(st.n),Eb=st.V-st.IFL*st.Ra,K=Eb/wf,Tn=K*st.IFL;/* RtA = المقاومة الفعلية (عطل مخفي: مقاومة الفرملة مفتوحة / جزء منها مقصور)؛ Rt السليمة لخطوط المستوى المرسومة */
+   return {wf,Eb,K,Tn,J:TP.v.tau*Tn/wf,Tf:TP.v.fr/100*Tn,Rt:st.Ra+st.R,RtA:st.Ra+(chF('ropen')?1e9:chF('rshort')?0.3*st.R:st.R)}};
   const reset=()=>{const p=P();st.ph='run';st.w=p.wf;st.t=0;st.cur=[];st.traj=[];st.half=null;st.rev=false;$('#p3half').style.display='none'};
-  const Ia=(p,w)=>st.ph==='run'?st.IFL:st.ph==='stop'?0:st.meth==='plug'?(-st.V-p.K*w)/p.Rt:-(p.K*w)/p.Rt;
+  const Ia=(p,w)=>st.ph==='run'?st.IFL:st.ph==='stop'?0:st.meth==='plug'?(-st.V-p.K*w)/p.RtA:-(p.K*w)/p.RtA;
   segBind(el,'pre',v=>{Object.assign(st,PRE[v]);st.pre=v;$('#p3R').value=st.R;reset()});segBind(el,'me',v=>{st.meth=v;reset()});segBind(el,'sp',v=>{st.spd=+v});
   $('#p3R').oninput=e=>{st.R=+e.target.value;if(st.ph!=='brake')reset()};
   $('#p3cut').onclick=()=>{st.cut=!st.cut;$('#p3cut').setAttribute('aria-pressed',String(st.cut))};
@@ -896,15 +905,15 @@ B.lesson(FIXL({
    while(h>1e-9&&st.ph==='brake'){const d=Math.min(h,0.005);h-=d;const I=Ia(p,st.w),T=p.K*I,wPrev=st.w;
     st.w+=(T-p.Tf*Math.sign(st.w||(-1)))/p.J*d;st.t+=d;
     if(!st.half&&st.w<=p.wf/2&&wPrev>p.wf/2){const Ih=Ia(p,p.wf/2);st.half={I:Ih,T:p.K*Ih}}
-    if(wPrev>0&&st.w<=0){if(st.cut||st.meth==='dyn'){st.w=0;st.ph='stop'}}
+    if(wPrev>0&&st.w<=0){if((st.cut&&!chF('zss'))||st.meth==='dyn'){st.w=0;st.ph='stop'}}
     if(st.w<-0.02*p.wf)st.rev=true;
-    if(st.ph==='brake'&&!st.cut&&st.meth==='plug'&&st.t>40*TP.v.tau)st.ph='stop';
+    if(st.ph==='brake'&&(!st.cut||chF('zss'))&&st.meth==='plug'&&st.t>40*TP.v.tau)st.ph='stop';
     if(st.ph==='brake'&&st.meth==='dyn'&&st.t>200*TP.v.tau){st.ph='stop'}
     if(!st.cur.length||st.t-st.cur[st.cur.length-1][0]>=0.02||st.ph==='stop'){const I2=st.ph==='stop'?0:Ia(p,st.w);st.cur.push([st.t,rpm(st.w),I2]);st.traj.push([p.K*I2,rpm(st.w)])}
     if(st.ph==='stop'){st.runs.push({m:st.meth0,pts:st.cur.slice()});if(st.runs.length>3)st.runs.shift()}}
    const I=Ia(p,st.w),E=p.K*st.w,T=p.K*I;
    $('#p3R-v').textContent=fm(st.R,3)+' Ω';$('#p3n').textContent=fm(rpm(st.w),1)+' rpm';$('#p3E').textContent=fm(E,1)+' V';
-   $('#p3VR').textContent=st.ph==='brake'?fm(Math.abs(I)*p.Rt,1)+' V':'—';$('#p3I').textContent=fm(I,1)+' A';$('#p3T').textContent=fm(T,1)+' Nm';$('#p3t').textContent=fm(st.t,2)+' s';
+   $('#p3VR').textContent=st.ph==='brake'?fm(Math.abs(I)*p.RtA,1)+' V':'—';$('#p3I').textContent=fm(I,1)+' A';$('#p3T').textContent=fm(T,1)+' Nm';$('#p3t').textContent=fm(st.t,2)+' s';
    const ch=$('#p3chip');if(st.ph==='run'){ch.className='ed-chip ld';ch.textContent='تشغيل عادي بالحمل الكامل'}else if(st.ph==='stop'){ch.className='ed-chip ok';ch.textContent=st.rev?'دار عكسياً!':'توقف وفُصل التيار'}else if(st.rev){ch.className='ed-chip warn';ch.textContent='يدور عكسياً — لم يُفصل المصدر'}else if(st.warn){ch.className='ed-chip warn';ch.textContent='تيار ابتدائي خطير: '+fm(Math.abs(st.I0),0)+' A'}else{ch.className='ed-chip hot';ch.textContent=st.meth==='plug'?'فرملة بالتبديل':'فرملة ديناميكية'}
    $('#p3cap').innerHTML=`الآلة: <span class="ltr">${st.V} V</span>، تيار الحمل الكامل <span class="ltr">${st.IFL} A</span>، <span class="ltr">R<sub>a</sub> = ${st.Ra} Ω</span>، <span class="ltr">${st.n} rpm</span>؛ ومنها <span class="ltr">E<sub>b</sub> = ${fm(p.Eb,1)} V</span> من (6-6) و <span class="ltr">Kϕ = ${fm(p.K,3)} V·s/rad</span>. العزم هنا هو العزم الكهرومغناطيسي <span class="ltr">Kϕ·I<sub>a</sub></span>${st.pre==='p63'?'؛ لذلك يخرج عزم الفرملة الابتدائي ≈ <span class="ltr">'+fm(p.K*st.Ib,0)+' Nm</span> أكبر من رقم الكتاب 401 Nm الذي بُني على القدرة الخارجة 18.4 kW':''}.`;
    if(st.half){const e=$('#p3half');e.style.display='';e.innerHTML=`<b>عند نصف السرعة</b> (<span class="ltr">${fm(st.n/2,0)} rpm</span>): التيار <b class="ltr">${fm(Math.abs(st.half.I),1)} A</b> والعزم <span class="ltr">${fm(Math.abs(st.half.T),0)} Nm</span>${st.meth0==='plug'?'':' (فرملة ديناميكية)'}.`}

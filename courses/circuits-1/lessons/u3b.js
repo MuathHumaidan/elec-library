@@ -2,6 +2,10 @@
    Lessons u3-l7 … u3-l12. (u3-l1 … u3-l6 are in u3.js; course.js registers the unit — no B.unit here.) */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -554,19 +558,23 @@ B.lesson({
   segBind(el,'pr',preset);
   $('#l7E').oninput=e=>{E=+e.target.value;upd()};
   br.forEach((b,k)=>{$('#l7r'+k).oninput=e=>{b.r=+e.target.value;upd()};$('#l7s'+k).onclick=()=>{b.on=b.on?0:1;$('#l7s'+k).setAttribute('aria-pressed',b.on?'true':'false');upd()}});
+  /* أعطال مخفية (وضع التحدي فقط): فرع R2 مقطوع رغم أن مفتاحه موصل، R1 تضاعفت قيمتها، البطارية ضعيفة (مقاومة داخلية 1 Ω).
+     chA = القراءات الفعلية: جهد الأطراف V وموصلية كل فرع g وتيار المنبع IS */
+  const chX=()=>chF('b2open')||chF('r1drift')||chF('weak');let chA=null;
+  const chPar=()=>{const g=br.map((b,k)=>!b.on?0:k===1&&chF('b2open')?0:1/(k===0&&chF('r1drift')?2*b.r:b.r)),Gs=g.reduce((a,b)=>a+b,0),V=E/(1+(chF('weak')?1:0)*Gs);return {g,V,IS:V*Gs}};
   const draw=(G,IS)=>{const yt=50,yb=214,live=E>0&&G>0;let s=Bv(52,yt,yb,'E = '+fm(E)+' V',{side:'r',cls:live?'live':''});
     const xs=br.map((b,k)=>176+k*96);s+=W([[52,yt],[xs[4],yt]],live?'flow':'')+W([[xs[4],yb],[52,yb]],live?'flow':'');
     if(live)s+=CA(118,yt,'r','I_S = '+fm(sig(IS,4))+' A',{len:18});
-    br.forEach((b,k)=>{const x=xs[k],c=b.on&&E>0?'flow':'';const I=b.on?E/b.r:0;
+    br.forEach((b,k)=>{const I=chA?chA.V*chA.g[k]:b.on?E/b.r:0,x=xs[k],c=b.on&&E>0&&(!chA||I>0)?'flow':'';
      s+=W([[x,yt],[x,64]],c)+SwV(x,64,90,b.on,c)+W([[x,90],[x,100]],c)+zz(x,100,x,176,c)+W([[x,176],[x,yb]],c)+Dot(x,yt)+Dot(x,yb);
      s+=T(x+16,124,'R_'+(k+1),{a:'start',fs:11})+T(x+16,138,fm(b.r)+' Ω',{a:'start',fs:11})+(b.on?T(x+16,156,fm(sig(I,4))+' A',{a:'start',fs:11,c:'b'}):arT(x+16,156,'مفصول',{a:'end',fs:11,col:'--muted'}));
      if(b.on&&E>0)s+=CA(x,190,'d','',{len:14,col:'--live'})});
     $('#l7svg').innerHTML=svg(680,236,s,'بطارية وخمسة فروع على التوازي')};
-  const upd=()=>{const L=on();const G=L.reduce((s,[b])=>s+1/b.r,0),R=G>0?1/G:Infinity,IS=E*G;
+  const upd=()=>{const L=on();chA=chX()?chPar():null;const G=L.reduce((s,[b])=>s+1/b.r,0),R=G>0?1/G:Infinity,IS=chA?chA.IS:E*G;
     $('#l7E-v').textContent=fm(E)+' V';
-    br.forEach((b,k)=>{$('#l7r'+k+'-v').textContent=fm(b.r)+' Ω';$('#l7c'+k).classList.toggle('off',!b.on);$('#l7o'+k).innerHTML=b.on?`V = ${fm(E)} V · I = ${fm(sig(E/b.r,4))} A · P = ${fm(sig(E*E/b.r,4))} W`:'الفرع مفصول: لا تيار'});
+    br.forEach((b,k)=>{$('#l7r'+k+'-v').textContent=fm(b.r)+' Ω';$('#l7c'+k).classList.toggle('off',!b.on);$('#l7o'+k).innerHTML=b.on?(chA?`V = ${fm(sig(chA.V,4))} V · I = ${fm(sig(chA.V*chA.g[k],4))} A · P = ${fm(sig(chA.V*chA.V*chA.g[k],4))} W`:`V = ${fm(E)} V · I = ${fm(sig(E/b.r,4))} A · P = ${fm(sig(E*E/b.r,4))} W`):'الفرع مفصول: لا تيار'});
     $('#l7G').textContent=fm(sig(G,5))+' S';$('#l7R').textContent=isFinite(R)?fm(sig(R,5))+' Ω':'∞ (لا فروع)';$('#l7I').textContent=fm(sig(IS,5))+' A';
-    $('#l7sI').textContent=fm(sig(L.reduce((s,[b])=>s+E/b.r,0),5))+' A';$('#l7P').textContent=fm(sig(E*IS,5))+' W';$('#l7sP').textContent=fm(sig(L.reduce((s,[b])=>s+E*E/b.r,0),5))+' W';
+    $('#l7sI').textContent=fm(sig(chA?chA.IS:L.reduce((s,[b])=>s+E/b.r,0),5))+' A';$('#l7P').textContent=fm(sig((chA?chA.V:E)*IS,5))+' W';$('#l7sP').textContent=fm(sig(chA?chA.V*chA.IS:L.reduce((s,[b])=>s+E*E/b.r,0),5))+' W';
     const ch=$('#l7chip');if(!L.length){ch.className='cb-chip warn';ch.innerHTML='كل الفروع مفصولة: الدائرة مفتوحة، I<sub>S</sub> = 0'}else{const mn=Math.min(...L.map(([b])=>b.r));const eq=L.every(([b])=>b.r===L[0][0].r);ch.className='cb-chip ok';ch.innerHTML=eq&&L.length>1?`مقاومات متساوية: R<sub>T</sub> = R/N = ${fm(L[0][0].r)}/${L.length} = ${fm(sig(R,5))} Ω`:`R<sub>T</sub> = ${fm(sig(R,4))} Ω أصغر من أصغر مقاومة موصولة (${fm(mn)} Ω)`}
     draw(G,IS);steps.check()};
   const steps=stepsUI($('#l7st'),[
@@ -883,7 +891,7 @@ B.lesson({
   ['a','b','c'].forEach((k,j)=>$('#l8'+k).oninput=e=>{const v=+e.target.value;if(j===0)I1=v;else if(j===1)I2=v;else I4=v;kcl()});
   const on=()=>br.filter(b=>b.on);
   const div=()=>{const L=on(),G=L.reduce((s,b)=>s+1/b.r,0),RT=1/G,V=I*RT,u=unit,vu=unit==='mA'?'mV':'V';
-   $('#l8I-v').textContent=fm(I)+' '+u;br.forEach((b,k)=>{$('#l8r'+k+'-v').textContent=fm(b.r)+' Ω';$('#l8c'+k).classList.toggle('off',!b.on);$('#l8o'+k).innerHTML=b.on?`I<sub>${k+1}</sub> = (R<sub>T</sub>/R<sub>${k+1}</sub>)·I = ${fm(sig(RT/b.r*I,5))} ${u}`:'مفصول'});
+   chOut(el,'l8ch',br.map((b,k)=>['I'+(k+1),b.on?RT/b.r*I/(u==='mA'?1000:1):0]));$('#l8I-v').textContent=fm(I)+' '+u;br.forEach((b,k)=>{$('#l8r'+k+'-v').textContent=fm(b.r)+' Ω';$('#l8c'+k).classList.toggle('off',!b.on);$('#l8o'+k).innerHTML=b.on?`I<sub>${k+1}</sub> = (R<sub>T</sub>/R<sub>${k+1}</sub>)·I = ${fm(sig(RT/b.r*I,5))} ${u}`:'مفصول'});
    $('#l8RT').textContent=fm(sig(RT,5))+' Ω';$('#l8V').textContent=fm(sig(V,5))+' '+vu;$('#l8sum').textContent=fm(sig(L.reduce((s,b)=>s+RT/b.r*I,0),5))+' '+u;
    const rows=br.map((b,k)=>b.on?{l:`I<sub>${k+1}</sub> (R = ${fm(b.r)} Ω)`,v:RT/b.r*I,t:fm(sig(RT/b.r*I,4))+' '+u}:null).filter(Boolean);
    $('#l8bars').innerHTML=barsHTML([{l:'I الكلي',v:I,t:fm(I)+' '+u,src:1}].concat(rows),I);
@@ -1541,13 +1549,17 @@ B.lesson({
   const TXT=['الدائرة الأصلية — الشكل (3-42أ)','الخطوة 1: 3 Ω و 6 Ω على التوازي','الخطوة 2: 2 Ω و 4 Ω على التوالي — الشكل (3-42ب)','الخطوة 3: الفرعان على التوازي','الخطوة 4: مع 1 Ω على التوالي = R<sub>T</sub>'];
   const sliders=()=>{if(mode==='f42'){$('#l10sl').innerHTML=Object.keys(v).map(k=>sl('l10'+k,NM[k],k==='E'?0:0.5,k==='E'?60:20,0.5,v[k])).join('');Object.keys(v).forEach(k=>{$('#l10'+k).oninput=e=>{v[k]=+e.target.value;upd()}})}
     else{$('#l10sl').innerHTML=sl('l10E41','جهد المنبع',0,150,1,E41)+sl('l10R41','المقاومة R',0,20,0.1,R41)+'<p class="sub">ابحث عن R التي تجعل القدرة في المقاومة 3 Ω تساوي 300 W.</p>';$('#l10E41').oninput=e=>{E41=+e.target.value;upd()};$('#l10R41').oninput=e=>{R41=+e.target.value;upd()}}};
+  /* أعطال مخفية في دائرة الشكل (3-42) (وضع التحدي فقط): المقاومة 6 Ω مفتوحة، 2 Ω مقصورة، 3 Ω تضاعفت قيمتها، 1 Ω مقصورة.
+     الرسم والمقاومات وخطوات الاختزال بالقيم المكتوبة، والتيارات والقدرات هي القراءات الفعلية */
+  const chX=()=>chF('c6open')||chF('d2short')||chF('b3drift')||chF('a1short');
+  const chV=()=>Object.assign({},v,chF('c6open')?{c:1e12}:chF('d2short')?{d:0}:chF('b3drift')?{b:2*v.b}:{a:0});
   const upd=()=>{let rows,PS,PR,RT,I;
    if(mode==='f42'){Object.keys(v).forEach(k=>{const o=$('#l10'+k+'-v');if(o)o.textContent=fm(v[k])+(k==='E'?' V':' Ω')});
-    const r=s335(v,{round:(x)=>x});RT=r.RT;I=r.I;const L={I:r.I,I1:r.I1,I2:r.I2,I3:r.I3,I4:r.I4};
+    const r0=s335(v,{round:(x)=>x}),vv=chX()?chV():v,r=chX()?s335(vv,{round:(x)=>x}):r0;RT=r.RT;I=r.I;const L={I:r.I,I1:r.I1,I2:r.I2,I3:r.I3,I4:r.I4};
     $('#l10h').innerHTML=TXT[st];$('#l10c').innerHTML=fig342(st,v,L);
-    const ex=[`\\(\\frac{${fm(v.b)}\\times${fm(v.c)}}{${fm(v.b)}+${fm(v.c)}}=${fm(sig(r.P,4))}\\ \\Omega\\)`,`\\(${fm(v.d)}+${fm(v.e)}=${fm(r.Sr)}\\ \\Omega\\)`,`\\(\\frac{${fm(sig(r.P,4))}\\times${fm(r.Sr)}}{${fm(sig(r.P,4))}+${fm(r.Sr)}}=${fm(sig(r.P*r.Sr/(r.P+r.Sr),4))}\\ \\Omega\\)`,`\\(R_T=${fm(v.a)}+${fm(sig(r.P*r.Sr/(r.P+r.Sr),4))}=${fm(sig(r.RT,4))}\\ \\Omega\\)، و \\(I=E/R_T=${fm(sig(r.I,4))}\\) A`];
+    const ex=[`\\(\\frac{${fm(v.b)}\\times${fm(v.c)}}{${fm(v.b)}+${fm(v.c)}}=${fm(sig(r0.P,4))}\\ \\Omega\\)`,`\\(${fm(v.d)}+${fm(v.e)}=${fm(r0.Sr)}\\ \\Omega\\)`,`\\(\\frac{${fm(sig(r0.P,4))}\\times${fm(r0.Sr)}}{${fm(sig(r0.P,4))}+${fm(r0.Sr)}}=${fm(sig(r0.P*r0.Sr/(r0.P+r0.Sr),4))}\\ \\Omega\\)`,`\\(R_T=${fm(v.a)}+${fm(sig(r0.P*r0.Sr/(r0.P+r0.Sr),4))}=${fm(sig(r0.RT,4))}\\ \\Omega\\)، و \\(I=E/R_T=${fm(sig(r0.I,4))}\\) A`];
     $('#l10s').innerHTML=`<ol class="cb-try">${ex.slice(0,st).map(x=>`<li>${x}</li>`).join('')}</ol>`+(st===4?'<div class="callout">الآن نرجع للخلف: التيارات على الرسم (الخطوة 0) محسوبة بقاعدة توزيع التيار من I.</div>':'');B.math($('#l10s'));
-    rows=[['1 Ω',v.a,r.I],['3 Ω',v.b,r.I3],['6 Ω',v.c,r.I4],['2 Ω',v.d,r.I2],['4 Ω',v.e,r.I2]].map(([n,R,i])=>({l:`<span class="ltr">${n.replace(/^\d+/,fm(R))} (I = ${fm(sig(i,4))} A)</span>`,v:i*i*R,t:fm(sig(i*i*R,4))+' W'}));PS=v.E*I}
+    rows=[['1 Ω',v.a,r.I,vv.a],['3 Ω',v.b,r.I3,vv.b],['6 Ω',v.c,r.I4,vv.c],['2 Ω',v.d,r.I2,vv.d],['4 Ω',v.e,r.I2,vv.e]].map(([n,R,i,Ra])=>({l:`<span class="ltr">${n.replace(/^\d+/,fm(R))} (I = ${fm(sig(i,4))} A)</span>`,v:i*i*Ra,t:fm(sig(i*i*Ra,4))+' W'}));PS=v.E*I}
    else{$('#l10E41-v').textContent=fm(E41)+' V';$('#l10R41-v').textContent=fm(R41)+' Ω';const Rp=2;RT=1+R41+Rp;I=E41/RT;const V3=I*Rp,I3=V3/3,I6=V3/6;
     $('#l10h').innerHTML='الشكل (3-41)';$('#l10c').innerHTML=fig341({R:'R = '+fm(R41)+' Ω',live:{E:E41,I,I3,I6}});
     const P3=V3*V3/3;$('#l10s').innerHTML=`<div class="callout ${Math.abs(P3-300)<0.5?'':'err'}">القدرة في المقاومة 3 Ω: <b class="ltr">${fm(sig(P3,4))} W</b> ${Math.abs(P3-300)<0.5?'— وصلت إلى 300 W كما يطلب مثال (3-33).':'(المطلوب 300 W)'}</div>`;

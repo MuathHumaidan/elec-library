@@ -8,6 +8,9 @@ const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
+
 /* ---------- styles used only by this course's lesson files (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('ed1-css'))return;const s=document.createElement('style');s.id='ed1-css';s.textContent=`
 .ed-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
@@ -305,7 +308,10 @@ B.lesson({
    {k:'Tf',label:'عزم المفاقيد الميكانيكية (احتكاك + هواء)',unit:'N·m',value:2,min:0,max:10000},
    {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1,min:0.05,max:30,step:0.05}],()=>{sliders();steps.redraw()});
   const P=()=>TP.v,ws=()=>2*PI*P().ns/60,Tst=()=>kloss(0,ws(),P().Tmax,P().sm);
-  const Tmot=x=>on?kloss(x,ws(),P().Tmax,P().sm):0;
+  const Tmot=x=>{if(!on)return 0;const W=ws(),Tm=P().Tmax,m=P().sm;
+   /* عطل مخفي: فقد أحد الأوجه (مجالان دواران متعاكسان، لا عزم عند السكون) / قضبان العضو الدوار مكسورة / جهد منخفض 80% */
+   if(chF('ph1'))return 0.6*(kloss(x,W,Tm,m)-kloss(-x,W,Tm,m));if(chF('rotor'))return kloss(x,W,0.75*Tm,1.5*m);
+   return (chF('lowV')?0.64:1)*kloss(x,W,Tm,m)};
   const Tload=x=>{const Tm=P().Tmax,W=ws();switch(ld){case 'A':return f.A*Tm*W/Math.max(x,0.15*W);case 'B':return f.B*Tm;case 'C':return f.C0*Tm+f.C1*Tm/W*x;case 'D':return f.D*1.6*Tm/(W*W)*x*x;default:return 0}};
   const Tlos=x=>fr?P().Tf:0;
   const Tres=x=>Tload(x)+Tlos(x);

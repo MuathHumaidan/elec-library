@@ -2,6 +2,10 @@
    Lessons u3-l1 … u3-l6 (source: c1_b.md). Lessons u3-l7 … are in u3b.js. B.unit is called in course.js. */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
@@ -596,16 +600,20 @@ B.lesson({
    {k:'fe',label:'المقاومة النوعية للحديد بوحدة 10⁻⁸ Ω·m',unit:'× 10⁻⁸ Ω·m',value:10,min:0.1,max:1000,step:0.1},
    {k:'nc',label:'المقاومة النوعية للنيكروم بوحدة 10⁻⁸ Ω·m',unit:'× 10⁻⁸ Ω·m',value:110,min:0.1,max:1000,step:1}],()=>{drawW()});
   const rho8=()=>mat==='cu'?1.72:TP.v[mat];
-  const drawO=()=>{const I=V/R;setV(el,'c32V',fm(V,1)+' V');setV(el,'c32R',fm(R,1)+' Ω');
+  /* أعطال مخفية (وضع التحدي فقط): المقاومة تغيرت قيمتها (ضعف المكتوب)، وصلة رخوة (3 Ω على التوالي خارج الفولتميتر)،
+     الأميتر غير مصفّر (+0.3 A)، سلك مقطوع. I و Vm قراءتا الأميتر والفولتميتر */
+  const chX=()=>chF('rdrift')||chF('contact')||chF('zero')||chF('open');
+  const chM=()=>chF('rdrift')?{I:V/(2*R),Vm:V}:chF('contact')?{I:V/(R+3),Vm:V*R/(R+3)}:chF('zero')?{I:V/R+0.3,Vm:V}:{I:0,Vm:0};
+  const drawO=()=>{let I=V/R,Vm=V;if(chX())({I,Vm}=chM());setV(el,'c32V',fm(V,1)+' V');setV(el,'c32R',fm(R,1)+' Ω');
    const sp=loopSpec({w:440,h:250,x0:70,y0:50,x1:300,y1:210,left:[{k:'E',plus:'t',lab:['V = '+fm(V,1)+' V'],side:-1}],top:[{k:'W'},{k:'W'}],right:[{k:'R',plus:'f',lab:['R = '+fm(R,1)+' Ω'],side:1}],bottom:[{k:'W'}]});
-   const fl=V>0?sp.edges.map(()=>1):null;
-   let ex=meterSVG(185,50,'A',fm(I,2)+' A');ex+=`<path class="w" d="M300 80H390V113M390 157V185H300"/><circle cx="300" cy="80" r="3.4" fill="var(--fg)"/><circle cx="300" cy="185" r="3.4" fill="var(--fg)"/>`+meterSVG(390,135,'V',fm(V,1)+' V');
+   const fl=V>0&&I>0?sp.edges.map(()=>1):null;
+   let ex=meterSVG(185,50,'A',fm(I,2)+' A');ex+=`<path class="w" d="M300 80H390V113M390 157V185H300"/><circle cx="300" cy="80" r="3.4" fill="var(--fg)"/><circle cx="300" cy="185" r="3.4" fill="var(--fg)"/>`+meterSVG(390,135,'V',fm(Vm,1)+' V');
    $('#c32c').innerHTML=circ(sp,{flow:fl,extra:ex}).replace('aria-label="دائرة كهربائية"','aria-label="منبع ومقاومة وأميتر وفولتميتر"');
-   $('#c32I').textContent=fm(I,3)+' A';$('#c32Rr').textContent=V>0?fm(V/I,3)+' Ω':'—';$('#c32G').textContent=fm(1/R,4)+' S';
+   $('#c32I').textContent=fm(I,3)+' A';$('#c32Rr').textContent=Vm>0&&I>0?fm(Vm/I,3)+' Ω':'—';$('#c32G').textContent=fm(1/R,4)+' S';
    const ym=Math.max(6,Math.ceil(30/R));const ytk=ym<=6?[0,1,2,3,4,5,6]:ticks(niceMax(ym),5);const y1=ytk[ytk.length-1]*1.08;
    $('#c32p').innerHTML=plotSVG({w:460,h:280,x0:0,x1:32,y0:0,y1,xt:[0,5,10,15,20,25,30],yt:ytk,xl:'V (volts)',yl:'I (amperes)',aria:'منحنى الجهد والتيار',
     series:[{pts:[[0,0],[30,30/R]],col:'--blue',w:2.2,dash:'6 4'}],
-    extra:(X,Y)=>{let s='';rec.forEach(r=>{s+=`<circle cx="${fx(X(r.V))}" cy="${fx(Y(r.I))}" r="5" fill="var(--blue)"/>`});s+=`<path d="M${fx(X(V))} ${fx(Y(I))}V${fx(Y(0))}M${fx(X(V))} ${fx(Y(I))}H${fx(X(0))}" stroke="var(--muted)" stroke-dasharray="4 4"/><circle cx="${fx(X(V))}" cy="${fx(Y(I))}" r="7" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`+S.t(fx(X(31)),fx(Y(0)-10),'R = '+fm(R,1)+' Ω','b','end');return s}});
+    extra:(X,Y)=>{let s='';rec.forEach(r=>{s+=`<circle cx="${fx(X(r.V))}" cy="${fx(Y(r.I))}" r="5" fill="var(--blue)"/>`});s+=`<path d="M${fx(X(Vm))} ${fx(Y(I))}V${fx(Y(0))}M${fx(X(Vm))} ${fx(Y(I))}H${fx(X(0))}" stroke="var(--muted)" stroke-dasharray="4 4"/><circle cx="${fx(X(Vm))}" cy="${fx(Y(I))}" r="7" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`+S.t(fx(X(31)),fx(Y(0)-10),'R = '+fm(R,1)+' Ω','b','end');return s}});
    $('#c32tb').innerHTML=rec.length?rec.map(r=>`<tr><td class="l">${fm(r.V,1)}</td><td class="l">${fm(r.I,3)}</td><td class="l">${fm(r.V/r.I,2)}</td></tr>`).join(''):'<tr><td colspan="3">لا قراءات بعد. اضغط «سجّل القراءة».</td></tr>'};
   const drawW=()=>{setV(el,'c32L',fm(L,1)+' m');setV(el,'c32D',fm(D,1)+' mm');const rho=rho8()*1e-8,A=Math.PI*Math.pow(D*1e-3,2)/4,Rw=rho*L/A;
    $('#c32w').innerHTML=wireSVG(L,D,MATS[mat].col);
@@ -613,7 +621,8 @@ B.lesson({
    $('#c32wn').innerHTML=(mat==='cu'?'المقاومة النوعية للنحاس <span class="ltr">1.72 × 10⁻⁸ Ω·m</span> من مثال (3-1).':`المقاومة النوعية لـ${MATS[mat].n} رقم توضيحي من خارج الكتاب (يغيّره المدرب من «قيم المدرب» أعلاه).`)+' الرسم يكبر مع الطول والقطر لكن ليس بمقياس رسم حقيقي.'};
   const ui=()=>{$('#c32V').value=V;$('#c32R').value=R;$('#c32L').value=L;$('#c32D').value=D;segSet(el,'mt',mat)};
   $('#c32V').oninput=e=>{V=+e.target.value;drawO()};$('#c32R').oninput=e=>{R=+e.target.value;drawO()};
-  $('#c32rec').onclick=()=>{if(V<=0)return;if(!rec.find(r=>near(r.V,V)&&near(r.I,V/R)))rec.push({V,I:V/R,R});rec.sort((a,b)=>a.V-b.V);drawO()};
+  $('#c32rec').onclick=()=>{if(chX()){const m=chM();if(m.I<=0)return;if(!rec.find(r=>near(r.V,m.Vm)&&near(r.I,m.I)))rec.push({V:m.Vm,I:m.I,R});rec.sort((a,b)=>a.V-b.V);drawO();return}
+   if(V<=0)return;if(!rec.find(r=>near(r.V,V)&&near(r.I,V/R)))rec.push({V,I:V/R,R});rec.sort((a,b)=>a.V-b.V);drawO()};
   $('#c32clr').onclick=()=>{rec=[];drawO()};
   segBind(el,'mt',v=>{mat=v;drawW()});$('#c32L').oninput=e=>{L=+e.target.value;drawW()};$('#c32D').oninput=e=>{D=+e.target.value;drawW()};
   $('#c32ex').onclick=()=>{mat='cu';L=5;D=5;ui();drawW()};
@@ -1052,10 +1061,13 @@ B.lesson({
      <div class="c5"><div class="svgbox" id="c34m" style="max-width:220px;margin-inline:auto"></div><p class="sub" style="text-align:center">قرص العداد يدور أسرع كلما زادت القدرة (سرعة الرسم توضيحية).</p></div></div></div>
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="c34st"></ol></div></div>`;
   const $=s=>el.querySelector(s);
-  const calc=()=>{const I=E/(r+RL);const Pi=E*I,Pl=I*I*r,Po=I*I*RL;return {I,Pi,Pl,Po,eta:Pi>0?Po/Pi:NaN}};
+  /* أعطال مخفية (وضع التحدي فقط): وصلة رخوة في الخط (3 Ω زيادة)، عنصر الحمل تغيرت مقاومته (1.5 مرة)، الخط مقطوع */
+  const chX=()=>chF('joint')||chF('heater')||chF('lopen');
+  const calc=()=>{if(chX()){const re=r+(chF('joint')?3:0),RLe=RL*(chF('heater')?1.5:1),I=chF('lopen')?0:E/(re+RLe);const Pi=E*I,Pl=I*I*re,Po=I*I*RLe;return {I,Pi,Pl,Po,eta:Pi>0?Po/Pi:NaN,RLe}}
+   const I=E/(r+RL);const Pi=E*I,Pl=I*I*r,Po=I*I*RL;return {I,Pi,Pl,Po,eta:Pi>0?Po/Pi:NaN}};
   const draw=()=>{setV(el,'c34E',fm(E)+' V');setV(el,'c34r',fm(r,1)+' Ω');setV(el,'c34L',fm(RL)+' Ω');const c=calc();
-   const sp=loopSpec({w:440,h:260,x0:60,y0:50,x1:330,y1:210,left:[{k:'E',plus:'t',lab:['E = '+fm(E)+' V'],side:-1}],top:[{k:'W'},{k:'R',lab:['R/2 = '+fm(r/2,2)+' Ω']}],right:[{k:'R',lab:['RL = '+fm(RL)+' Ω','VL = '+fm(B.round(c.I*RL,2))+' V']}],bottom:[{k:'R',lab:['R/2 = '+fm(r/2,2)+' Ω']}]});
-   $('#c34c').innerHTML=circ(sp,{flow:E>0?sp.edges.map(()=>1):null,extra:meterSVG(127,50,'A',fm(B.round(c.I,3))+' A')});
+   const sp=loopSpec({w:440,h:260,x0:60,y0:50,x1:330,y1:210,left:[{k:'E',plus:'t',lab:['E = '+fm(E)+' V'],side:-1}],top:[{k:'W'},{k:'R',lab:['R/2 = '+fm(r/2,2)+' Ω']}],right:[{k:'R',lab:['RL = '+fm(RL)+' Ω','VL = '+fm(B.round(c.I*(c.RLe!=null?c.RLe:RL),2))+' V']}],bottom:[{k:'R',lab:['R/2 = '+fm(r/2,2)+' Ω']}]});
+   $('#c34c').innerHTML=circ(sp,{flow:E>0&&c.I>0?sp.edges.map(()=>1):null,extra:meterSVG(127,50,'A',fm(B.round(c.I,3))+' A')});
    $('#c34I').textContent=fm(B.round(c.I,3))+' A';$('#c34Pi').textContent=fm(B.round(c.Pi,2))+' W';$('#c34Pl').textContent=fm(B.round(c.Pl,2))+' W';$('#c34Po').textContent=fm(B.round(c.Po,2))+' W';
    $('#c34eta').textContent=isFinite(c.eta)?fm(B.round(c.eta*100,2))+' %':'—';$('#c34hp').textContent=fm(B.round(c.Po/746,3))+' hp';
    const po=c.Pi>0?c.Po/c.Pi*100:0;$('#c34bar').innerHTML=c.Pi>0?`<span style="width:${fx(po)}%;background:var(--on)">Po ${fm(B.round(po,1))}%</span><span style="width:${fx(100-po)}%;background:var(--stop)">${100-po>8?'Ploss '+fm(B.round(100-po,1))+'%':''}</span>`:'';
@@ -1346,14 +1358,19 @@ B.lesson({
    $('#c35rl').innerHTML=res.map((r,i)=>`<div class="c3-item"><b class="n">R${i+1}</b>${sl('c35r'+i,'المقاومة',1,100,1,r)}<span>${res.length>1?`<button class="btn" data-rr="${i}" aria-label="احذف">×</button>`:''}</span></div>`).join('');
    src.forEach((s,i)=>{$('#c35s'+i).oninput=e=>{src[i].v=+e.target.value;draw()}});res.forEach((r,i)=>{$('#c35r'+i).oninput=e=>{res[i]=+e.target.value;draw()}});
    $('#c35as').disabled=src.length>=5;$('#c35ar').disabled=res.length>=6};
-  const draw=()=>{const I=Icur(),u=uk?' kΩ':' Ω',iu=uk?' mA':' A',pu=uk?' mW':' W';
+  /* أعطال مخفية (وضع التحدي فقط): المقاومة R1 مفتوحة، أو مقصورة، أو زادت قيمتها 3 مرات؛ أو المنبع E1 موصل فعلياً بعكس ما في الرسم.
+     الرسم والجهد الكلي والمقاومة الكلية بالقيم المكتوبة، والتيار وجهود المقاومات وقدراتها هي القراءات الفعلية */
+  const chX=()=>chF('r1open')||chF('r1short')||chF('r1drift')||chF('e1rev');
+  const chSer=()=>{const E=ET()-(chF('e1rev')?2*src[0].v*src[0].d:0),ra=res.map((r,i)=>i?r:chF('r1open')?Infinity:chF('r1short')?0:chF('r1drift')?3*r:r);
+    const Rs=ra.reduce((a,b)=>a+b,0),I=!isFinite(Rs)?0:E/Math.max(Rs,0.1),V=ra.map(r=>!isFinite(r)?Math.abs(E):Math.abs(I)*r);return {E,I,V,P:V.map(v=>v*Math.abs(I))}};
+  const draw=()=>{const chA=chX()?chSer():null,I=chA?chA.I:Icur(),u=uk?' kΩ':' Ω',iu=uk?' mA':' A',pu=uk?' mW':' W';
    src.forEach((s,i)=>setV(el,'c35s'+i,fm(s.v)+' V'));res.forEach((r,i)=>setV(el,'c35r'+i,fm(r)+u));
    $('#c35c').innerHTML=seriesSVG(src,res,uk,I);
    $('#c35ET').textContent=fm(ET())+' V';$('#c35RT').textContent=fm(RT())+u;$('#c35I').textContent=(I<0?'−':'')+fm(B.round(Math.abs(I),4))+iu+(I<0?' (عكس عقارب الساعة)':'');
-   const Vs=res.map(r=>Math.abs(I)*r);$('#c35SV').textContent=fm(B.round(Vs.reduce((a,b)=>a+b,0),3))+' V';
-   $('#c35Pd').textContent=fm(B.round(Math.abs(ET()*I),4))+pu;$('#c35SP').textContent=fm(B.round(res.reduce((a,r)=>a+I*I*r,0),4))+pu;
-   const tot=Math.abs(ET());$('#c35bar').innerHTML=tot>0?Vs.map((v,i)=>`<span style="width:${fx(v/tot*100)}%;background:var(${COLS[i%6]})">${v/tot>0.09?'V'+(i+1):''}</span>`).join(''):'';
-   $('#c35tb').innerHTML=res.map((r,i)=>`<tr><td>R${i+1}</td><td>${lt(fm(r)+u)}</td><td>${lt(fm(B.round(Math.abs(I)*r,4))+' V')}</td><td>${lt(fm(B.round(I*I*r,4))+pu)}</td></tr>`).join('')};
+   const Vs=chA?chA.V:res.map(r=>Math.abs(I)*r);$('#c35SV').textContent=fm(B.round(Vs.reduce((a,b)=>a+b,0),3))+' V';
+   $('#c35Pd').textContent=fm(B.round(Math.abs((chA?chA.E:ET())*I),4))+pu;$('#c35SP').textContent=fm(B.round(chA?chA.P.reduce((a,b)=>a+b,0):res.reduce((a,r)=>a+I*I*r,0),4))+pu;
+   const tot=Math.abs(chA?chA.E:ET());$('#c35bar').innerHTML=tot>0?Vs.map((v,i)=>`<span style="width:${fx(v/tot*100)}%;background:var(${COLS[i%6]})">${v/tot>0.09?'V'+(i+1):''}</span>`).join(''):'';
+   $('#c35tb').innerHTML=res.map((r,i)=>`<tr><td>R${i+1}</td><td>${lt(fm(r)+u)}</td><td>${lt(fm(B.round(chA?chA.V[i]:Math.abs(I)*r,4))+' V')}</td><td>${lt(fm(B.round(chA?chA.P[i]:I*I*r,4))+pu)}</td></tr>`).join('')};
   const set=(s,r,k)=>{src=s.map(([v,d])=>({v,d}));res=r.slice();uk=!!k;segSet(el,'uk',uk?'1':'0');lists();draw()};
   const PX={39:[[[20,1]],[2,1,5]],310:[[[50,1]],[7,4,7,7]],311:[[[72,1]],[2,4,6],1],312:[[[50,1],[30,1],[40,1]],[100]],313:[SRC13,[10]]};
   el.querySelectorAll('[data-px]').forEach(b=>b.onclick=()=>{const p=PX[b.dataset.px];set(p[0],p[1],p[2])});
@@ -1646,7 +1663,7 @@ B.lesson({
    const sp=divSpec(dE,dR,V);const n1=sp.nodes.right1,n2=sp.nodes.right2;
    const ex=S.t(fx(sp.nodes.tr[0]+88),fx(sp.nodes.tr[1]+4),fm(B.round(dE,3))+' V','m','start')+S.t(fx(n1[0]+88),fx(n1[1]+4),fm(B.round(V[1]+V[2],3))+' V','m','start')+S.t(fx(n2[0]+88),fx(n2[1]+4),fm(B.round(V[2],3))+' V','m','start')+S.t(fx(sp.nodes.br[0]+88),fx(sp.nodes.br[1]+4),'0 V','m','start');
    $('#c36d').innerHTML=circ(sp,{flow:dE>0?sp.edges.map(()=>1):null,extra:ex});
-   $('#c36RT').textContent=fm(RT)+' kΩ';$('#c36I').textContent=fm(B.round(dE/RT,4))+' mA';$('#c36sum').textContent=fm(B.round(V[0]+V[1]+V[2],3))+' V';
+   chOut(el,'c36ch',[['V1',V[0]],['V2',V[1]],['V3',V[2]]]);$('#c36RT').textContent=fm(RT)+' kΩ';$('#c36I').textContent=fm(B.round(dE/RT,4))+' mA';$('#c36sum').textContent=fm(B.round(V[0]+V[1]+V[2],3))+' V';
    $('#c36deq').innerHTML=V.map((x,i)=>B.tex(`V_${i+1}=\\frac{R_${i+1}\\times E}{R_T}=\\frac{${fm(dR[i])}\\times ${fm(dE)}}{${fm(RT)}}=${fm(B.round(x,3))}\\ \\text{V}`,true)).join('')+'<p class="sub">الأرقام الرمادية يمين الرسم: جهد كل نقطة بالنسبة للأرضي.</p>'};
   ['dE','d1','d2','d3'].forEach((k,i)=>{$('#c36'+k).oninput=e=>{if(i===0)dE=+e.target.value;else dR[i-1]=+e.target.value;drawD()}});
   $('#c36x17').onclick=()=>{dE=45;dR=[2,5,8];$('#c36dE').value=45;$('#c36d1').value=2;$('#c36d2').value=5;$('#c36d3').value=8;drawD()};

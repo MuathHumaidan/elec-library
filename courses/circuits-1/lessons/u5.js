@@ -2,6 +2,10 @@
    Lessons u5-l1 … u5-l5 (source: /home/claude/c4/ex/c1_d.md lessons 1–5). */
 (function(B){
 const {S}=B;
+/* «اكتشف العطل» و«تحدي المحاكاة» (challenge.js): chF و chOn دائماً false خارج وضع التحدي، و chOut لا يفعل شيئاً خارجه
+   chOut: قراءات بوحدات ثابتة في عنصر مخفي يقرؤها نشاط «تحدي المحاكاة» (نفس ما تعرضه أجهزة المختبر) */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
+const chOut=(el,id,rows)=>{if(!chOn())return;let d=el.querySelector('#'+id);if(!d){d=document.createElement('div');d.id=id;d.hidden=true;el.appendChild(d)}d.innerHTML=rows.map(r=>`<div><span>${r[0]}</span><b>${typeof r[1]==='number'&&isFinite(r[1])?r[1].toFixed(6):'—'}</b></div>`).join('')};
 const PI=Math.PI,D=PI/180,MU0=4*PI*1e-7;
 const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
@@ -808,12 +812,12 @@ B.lesson({
    s+=S.t(W-20,22,'B','b','end',16)+arT(90,H-10,`خطوط تعبر السطح: ${n}`,{fs:13});
    $('#f2a').innerHTML=s+'</svg>';const ph=Bm*1e-5*A*Math.cos(t);
    $('#f2B-v').textContent=fm(Bm,1)+' × 10⁻⁵ T';$('#f2A-v').textContent=fm(A,2)+' m²';$('#f2t-v').textContent=th+'°';
-   $('#f2phi').textContent=Math.abs(ph)<1e-12?'0 Wb':sci(ph,3)+' Wb';$('#f2cos').textContent=fm(B.round(Math.cos(t),3),3);$('#f2G').textContent=fm(Bm*1e-5*1e4,3)+' G'};
+   chOut(el,'f2cha',[['phi',ph*1e6]]);$('#f2phi').textContent=Math.abs(ph)<1e-12?'0 Wb':sci(ph,3)+' Wb';$('#f2cos').textContent=fm(B.round(Math.cos(t),3),3);$('#f2G').textContent=fm(Bm*1e-5*1e4,3)+' G'};
   const mu=()=>MATS.find(m=>m[0]===mat)[2];
   const drawS=()=>{const Hv=typ==='sol'?N*I/(len/100):N*I/(2*PI*R/100),B0=MU0*Hv,Bv=B0*mu();
    $('#f2lw').style.display=typ==='sol'?'':'none';$('#f2Rw').style.display=typ==='tor'?'':'none';
    $('#f2N-v').textContent=N;$('#f2I-v').textContent=fm(I,1)+' A';$('#f2l-v').textContent=len+' cm';$('#f2R-v').textContent=fm(R,1)+' cm';
-   $('#f2H').textContent=fm(sig(Hv,4))+' AT/m';$('#f2B0').textContent=sci(B0,4)+' T';$('#f2Bv').textContent=sci(Bv,mat==='al'?7:4)+' T';$('#f2mr').textContent=mat==='al'?'1.000022':fm(mu());const sat=Bv>2?' <span class="mg-chip warn">نموذج خطي: μᵣ ثابتة هنا، والحديد الحقيقي يتشبع قرب 1.5–2 T (الدرس 6.1)</span>':'';
+   chOut(el,'f2chs',[['B',Bv*1e3]]);$('#f2H').textContent=fm(sig(Hv,4))+' AT/m';$('#f2B0').textContent=sci(B0,4)+' T';$('#f2Bv').textContent=sci(Bv,mat==='al'?7:4)+' T';$('#f2mr').textContent=mat==='al'?'1.000022':fm(mu());const sat=Bv>2?' <span class="mg-chip warn">نموذج خطي: μᵣ ثابتة هنا، والحديد الحقيقي يتشبع قرب 1.5–2 T (الدرس 6.1)</span>':'';
    if(typ==='sol'){const o=solenoidSVG({sg,comp:true,core:mat==='air'?'':MATS.find(m=>m[0]===mat)[1],dl:I<=0?1e9:(mat==='fe'?0.8:1.5)});$('#f2s').innerHTML=I<=0?o.svg.replace(/<path d="M[^"]*" fill="none" stroke="var\(--blue\)" stroke-width="1.3"\/>/,''):o.svg;
      $('#f2ev').innerHTML=`<svg viewBox="0 0 640 70" role="img" aria-label="منظر الطرفين">${endView(80,35,sg<0,sg<0?'N':'S')}${arT(200,40,sg<0?'الطرف الأيسر: التيار عكس عقارب الساعة ⇐ شمالي':'الطرف الأيسر: التيار مع عقارب الساعة ⇐ جنوبي',{fs:12.5})}${endView(560,35,sg>0,sg>0?'N':'S')}${arT(440,40,sg>0?'الطرف الأيمن: عكس عقارب الساعة ⇐ شمالي':'الطرف الأيمن: مع عقارب الساعة ⇐ جنوبي',{fs:12.5})}</svg>${sat}<p class="sub">كل طرف كما يراه شخص ينظر إليه من الخارج (قاعدة تحديد القطبين ص 132). المعادلة \\(B=\\mu_0\\mu_r N I/\\ell\\) هي (5-17) ص 145 للملف الطويل.</p>`;B.math($('#f2ev'));$('#f2tor').innerHTML=''}
    else{$('#f2s').innerHTML=toroidSVG({R:80+(R-8)/5*50,dir:sg,W:340,H:320}).replace('<svg ','<svg style="max-width:340px;display:block;margin:auto" ');$('#f2ev').innerHTML=sat+'<p class="sub">الخطوط محصورة داخل الحلقة (لا مجال خارجها). اسحب «R» لتنقل النقطة p بين الحافة الداخلية والخارجية.</p>';
@@ -1465,7 +1469,7 @@ B.lesson({
    s+=`<path d="M${x0-26} ${yc-dp/2}V${yc+dp/2}" stroke="var(--fg)"/>`+S.t(x0-32,yc+4,'d = '+fm(d)+' mm','','end');
    s+=arT(W/2,22,N>nT?`مرسوم ${nT} لفة فقط من ${N}`:`${N} لفة`,{fs:12,col:'--muted'});
    $('#f4a').innerHTML=s+'</svg>';$('#f4N-v').textContent=N;$('#f4d-v').textContent=fm(d)+' mm';$('#f4l-v').textContent=len+' cm';
-   $('#f4A').textContent=sci(A,3)+' m²';$('#f4L').textContent=eng(L,'H',4);$('#f4warn').textContent=len*10<d*3?'تنبيه: المعادلة (5-19) تصح للملف الطويل (طوله أكبر بكثير من قطره).':''};
+   $('#f4A').textContent=sci(A,3)+' m²';$('#f4L').textContent=eng(L,'H',4);chOut(el,'f4ch',[['L',L*1e3]]);$('#f4warn').textContent=len*10<d*3?'تنبيه: المعادلة (5-19) تصح للملف الطويل (طوله أكبر بكثير من قطره).':''};
   const M=()=>K*Math.sqrt(L1*L2);
   const Leq=()=>cn==='aid'?L1+L2+2*M():cn==='opp'?L1+L2-2*M():(K===0?1/(1/L1+1/L2):(L1*L2-M()*M())/(L1+L2-2*M()));
   const drawB=()=>{const W=560,gap=20+(1-K)*140;let s='';
@@ -1732,7 +1736,10 @@ B.lesson({
   const CX=300,a=5; // loop x (px); loop radius a (cm) — drawing scale 10 px = 1 cm
   const dist=()=>Math.max(0,(xm-60-CX-14)/10); // cm from loop to facing pole
   const phi=()=>(flip?-1:1)*TP.v.Phi0*1e-3/Math.pow(1+Math.pow(dist()/a,2),1.5);
-  const drawA=()=>{const W=640,H=260,cy=130;const i=emf/TP.v.R,ang=clamp(-i*1000/TP.v.G*50,-58,58);
+  /* أعطال مخفية (وضع التحدي فقط): دائرة الحلقة مقطوعة (لا تيار)، طرفا الجلفانومتر معكوسان (المؤشر وقراءته بالعكس)؛
+     والمغناطيس الضعيف ومقاومة الدائرة الكبيرة تغيّر أرقام المحاكاة (p في challenge.js) */
+  const chI=()=>chF('open')?0:emf/TP.v.R,chG=()=>chF('grev')?-1:1;
+  const drawA=()=>{const W=640,H=260,cy=130;const i=chI(),ang=clamp(-chG()*i*1000/TP.v.G*50,-58,58);
    let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="مغناطيس وحلقة وجلفانومتر">`+galvSVG(90,cy-6,ang);
    s+=`<path class="w ${Math.abs(i)>1e-6?'flow':''}" d="M136 ${cy-20}H${CX}V${cy-74}M136 ${cy+16}H${CX-30}V${cy+74}H${CX}"/>`;
    const ph=phi(),dl=Math.abs(ph)/(TP.v.Phi0*1e-3);for(let k=-3;k<=3;k++){const yy=cy+k*16;const reach=CX+14+(xm-60-CX-14)*(1-Math.abs(k)*0.12);if(dl>0.05)s+=`<path d="M${fx(xm-60)} ${fx(cy+k*6)}C${fx((xm-60+CX)/2)} ${fx(yy)} ${fx(CX+20)} ${fx(yy)} ${fx(CX-60)} ${fx(cy+k*22)}" fill="none" stroke="var(--blue)" stroke-width="1.2" opacity="${fx(clamp(dl*1.5,0.15,0.8))}"/>`}
@@ -1761,12 +1768,12 @@ B.lesson({
   drawA();
   loopOn(el,dt=>{t+=dt;if(auto&&!drag){xm+=auto*v*10*dt;const lo=CX+14+60,hi=630-60;if(xm<=lo){xm=lo;auto=0}if(xm>=hi){xm=hi;auto=0}}
    const ph=phi();let dp=prevPhi==null?0:(ph-prevPhi)/Math.max(dt,1e-3);prevPhi=ph;const e=-N*dp;emf+=(e-emf)*Math.min(1,dt/0.06);emfSign=dp>1e-12?1:dp<-1e-12?-1:0;
-   const i=emf/TP.v.R;const moving=Math.abs(dp)>1e-9;hold=moving?0:hold+dt;
+   const i=chI();const moving=Math.abs(dp)>1e-9;hold=moving?0:hold+dt;
    if(-i*1000/TP.v.G*50>8&&!flip)did.app=1;if(-i*1000/TP.v.G*50<-8&&!flip&&did.app)did.away=1;if(flip&&-i*1000/TP.v.G*50<-8&&auto<=0)did.flipApp=1;
    if(N>=150&&(auto<0||drag)&&v>=40&&moving&&!flip)did.fast=1;
    hist.push([t,emf]);while(hist.length&&hist[0][0]<t-6)hist.shift();
    drawA();$('#f5N-v').textContent=N;$('#f5v-v').textContent=v+' cm/s';
-   $('#f5p').textContent=sci(ph,3)+' Wb';$('#f5e').textContent=eng(emf,'V');$('#f5i').textContent=eng(i,'A');
+   $('#f5p').textContent=sci(ph,3)+' Wb';$('#f5e').textContent=eng(emf,'V');$('#f5i').textContent=eng(chG()*i,'A');chOut(el,'f5ch',[['phi',ph*1e3],['E',emf*1e3],['i',chG()*i*1e3]]);
    const ch=$('#f5chip');if(!moving){ch.className='mg-chip';ch.textContent='لا تغير في الفيض ⇐ لا تيار'}else{ch.className='mg-chip '+(dp*(flip?-1:1)>0?'hot':'ld');ch.textContent=(flip?(dp<0?'S يقترب':'S يبتعد'):(dp>0?'N يقترب':'N يبتعد'))+' ⇐ وجه الحلقة '+(dp>0?'N':'S')+' يعاكس التغير'}
    const ym=nice(Math.max(1e-6,...hist.map(p=>Math.abs(p[1])))*1.1);plot(hist,'#f5plot','E (V)',ym);
    // panel B

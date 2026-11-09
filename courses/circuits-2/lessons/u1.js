@@ -9,6 +9,8 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 /* rounding like a calculator (half away from zero, immune to 204.45 → 204.4 float issues) */
 const rd=(x,dp)=>{if(!isFinite(x))return x;const s=x<0?-1:1;return s*B.round(Math.abs(x)*(1+1e-12)+1e-12,dp)};
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- complex numbers ---------- */
 const Cx=(re,im)=>({re,im:im||0});
@@ -1801,15 +1803,16 @@ lesson({
   ]);
   ui();
   loopOn(el,dt=>{if(rot)ph=(ph+dt*90)%720;
-   const x=X(),I=V/Math.max(x,1e-9),sh=EL[ek].sh,thi=thv+sh;
+   /* عطل مخفي: قيمة العنصر الفعلية غير المكتوبة، أو الدائرة مفتوحة (لا يتغير شيء خارج وضع التحدي) */
+   const x=X(),xA=ek==='R'&&chF('rhot')?x*2:ek==='L'&&chF('lsh')?x*0.6:ek==='C'&&chF('cdry')?x*2:x,kI=chF('open')?0:1,I=kI*V/Math.max(xA,1e-9),sh=EL[ek].sh,thi=thv+sh;
    $('#l5V-v').textContent=V+' V';$('#l5f-v').textContent=f+' Hz';$('#l5th-v').textContent=thv+'°';$('#l5R-v').textContent=fm(R)+' Ω';$('#l5L-v').textContent=fm(Lm)+' mH';$('#l5C-v').textContent=fm(Cu)+' µF';
    $('#l5xl').innerHTML=ek==='R'?'R':ek==='L'?'X<sub>L</sub> = ωL (1-19)':'X<sub>C</sub> = 1/ωC (1-23)';
    $('#l5x').textContent=fm(rd(x,3))+' Ω';$('#l5z').textContent=ek==='R'?fm(rd(x,3))+'∠0° Ω':ek==='L'?'j'+fm(rd(x,3))+' Ω':'−j'+fm(rd(x,3))+' Ω';
    $('#l5i').textContent=fm(rd(I,3))+' A';$('#l5im').textContent=fm(rd(I*SQ2,3))+' A';$('#l5vp').textContent=fPm(V,thv,1,0)+' V';$('#l5ip').textContent=fPm(rd(I,3),thi,null,0)+' A';
    const ch=$('#l5chip');ch.className='ca-chip '+(sh===0?'ok':sh<0?'hot':'ld');ch.textContent=sh===0?'نفس الطور':sh<0?'التيار يتأخر عن الجهد 90°':'التيار يتقدم على الجهد 90°';
-   $('#l5w').innerHTML=viWave(sh,{thv,cid:'l5wc',w:560,extra:(X_,Y_)=>{const a=ph-30>720?720:ph;return `<path d="M${fx(X_(a%720))} 14V${fx(Y_(-1.25))}" stroke="var(--fg)" stroke-width="1.2"/><circle cx="${fx(X_(a%720))}" cy="${fx(Y_(Math.sin((a+thv)*D)))}" r="4.5" fill="var(--live)"/><circle cx="${fx(X_(a%720))}" cy="${fx(Y_(0.6*Math.sin((a+thv+sh)*D)))}" r="4.5" fill="var(--blue)"/>`}});
+   $('#l5w').innerHTML=viWave(sh,{thv,cid:'l5wc',w:560,ki:kI?undefined:1e-9,extra:(X_,Y_)=>{const a=ph-30>720?720:ph;return `<path d="M${fx(X_(a%720))} 14V${fx(Y_(-1.25))}" stroke="var(--fg)" stroke-width="1.2"/><circle cx="${fx(X_(a%720))}" cy="${fx(Y_(Math.sin((a+thv)*D)))}" r="4.5" fill="var(--live)"/><circle cx="${fx(X_(a%720))}" cy="${fx(Y_(kI*0.6*Math.sin((a+thv+sh)*D)))}" r="4.5" fill="var(--blue)"/>`}});
    const pr=rot?ph:0;
-   $('#l5p').innerHTML=phasorSVG({w:300,h:280,vecs:[{x:Math.cos((thv+pr)*D),y:Math.sin((thv+pr)*D),col:'--live',lb:'V'},{x:0.6*Math.cos((thi+pr)*D),y:0.6*Math.sin((thi+pr)*D),col:'--blue',lb:'I',lbN:sh?0:14}],arcs:sh?[{a0:thi+pr,a1:thv+pr,r:30,col:'--fg',lb:'90°'}]:[],axes:['Real','Imag'],fixed:{xmin:-1.15,xmax:1.15,ymin:-1.15,ymax:1.15}});
+   $('#l5p').innerHTML=phasorSVG({w:300,h:280,vecs:[{x:Math.cos((thv+pr)*D),y:Math.sin((thv+pr)*D),col:'--live',lb:'V'},{x:kI*0.6*Math.cos((thi+pr)*D),y:kI*0.6*Math.sin((thi+pr)*D),col:'--blue',lb:'I',lbN:sh?0:14}],arcs:sh?[{a0:thi+pr,a1:thv+pr,r:30,col:'--fg',lb:'90°'}]:[],axes:['Real','Imag'],fixed:{xmin:-1.15,xmax:1.15,ymin:-1.15,ymax:1.15}});
    const xs=Array.from({length:200},(_,i)=>{const ff=1+i;const w=2*PI*ff;return [ff,ek==='R'?R:ek==='L'?w*Lm*1e-3:1/(w*Cu*1e-6)]});const ym=niceMax(Math.min(Math.max(x*2.5,ek==='R'?R*1.5:0,ek==='L'?xs[199][1]*1.05:0,1),ek==='C'?x*4:1e9));
    $('#l5xf').innerHTML=plotSVG({w:760,h:200,x0:0,x1:200,y0:0,y1:ym,xt:[0,50,60,100,150,200],yt:[0,ym/2,ym],yf:v=>fm(rd(v,2)),xl:'f (Hz)',yl:(ek==='R'?'R':ek==='L'?'XL':'XC')+' (Ω)',cid:'l5xc',series:[{pts:xs,col:'--blue',w:2.4}],
     extra:(X_,Y_)=>`<circle cx="${fx(X_(f))}" cy="${fx(Y_(Math.min(x,ym*1.02)))}" r="6" fill="var(--live)"/>`+S.t(fx(X_(f)+8),fx(Y_(Math.min(x,ym))-8),fm(rd(x,2))+' Ω','','start')});
@@ -2127,7 +2130,9 @@ lesson({
   [['l6V',v=>V=v],['l6f',v=>f=v],['l6R',v=>R=v],['l6L',v=>Lm=v],['l6C',v=>Cu=v]].forEach(([i,fn])=>{$('#'+i).oninput=e=>{fn(+e.target.value);mod=1;draw()}});
   let st={};
   function draw(){const w=2*PI*f,XL=inc.L?w*Lm/1000:0,XC=inc.C?1/(w*Cu*1e-6):0,RR=inc.R?R:0;const ZR=Cx(RR),ZL=Cx(0,XL),ZC=Cx(0,-XC),Z=Cx(RR,XL-XC);
-   const Vp=Cx(V),I=cabs(Z)<1e-9?Cx(0):cdiv(Vp,Z),VR=cmul(ZR,I),VL=cmul(ZL,I),VC=cmul(ZC,I);st={Z,I,VR,VL,VC};
+   /* عطل مخفي: القيم الفعلية للعناصر (للتيار والجهود فقط؛ الرسم وشكل المعاوقة بالقيم المكتوبة). خارج وضع التحدي هي نفسها */
+   const RRa=chF('rhot')?RR*2:RR,XLa=chF('lsh')?XL*0.6:XL,XCa=chF('cshort')?0:chF('cdry')?XC*2:XC,Za=Cx(RRa,XLa-XCa);
+   const Vp=Cx(V),I=chF('open')||cabs(Za)<1e-9?Cx(0):cdiv(Vp,Za),VR=cmul(Cx(RRa),I),VL=cmul(Cx(0,XLa),I),VC=cmul(Cx(0,-XCa),I);st={Z,I,VR,VL,VC};
    $('#l6V-v').textContent=V+' V';$('#l6f-v').textContent=f+' Hz';$('#l6R-v').textContent=fm(rd(R,2))+' Ω';$('#l6L-v').textContent=fm(rd(Lm,2))+' mH';$('#l6C-v').textContent=fm(rd(Cu,1))+' µF';
    const hl=k=>div===k||(div==='LC'&&(k==='L'||k==='C'))||(div==='RL'&&(k==='R'||k==='L'));
    const it=[inc.R?{k:'R',top:'R',val:fm(rd(R,2))+' Ω',vl:'VR',hl:hl('R')}:{k:'wire',top:'R'},inc.L?{k:'L',top:'L',val:'j'+fm(rd(XL,2))+' Ω',vl:'VL',hl:hl('L')}:{k:'wire',top:'L'},inc.C?{k:'C',top:'C',val:'−j'+fm(rd(XC,2))+' Ω',vl:'VC',hl:hl('C')}:{k:'wire',top:'C'}];
@@ -2390,7 +2395,8 @@ lesson({
   segBind(el,'pre',v=>load(v));segBind(el,'q',v=>{qty=v});
   $('#l7tune').onclick=()=>{f=fs();$('#l7f').value=f;if(Math.abs(Cu-C0)>0.05)did.retune=1};
   [['l7f',v=>f=v],['l7V',v=>{V=v;mod=1}],['l7Rs',v=>{Rs=v;mod=1}],['l7RL',v=>{RL=v;mod=1}],['l7L',v=>{Lm=v;mod=1}],['l7C',v=>{Cu=v;mod=1}]].forEach(([i,fn])=>{$('#'+i).oninput=e=>fn(+e.target.value)});
-  const calc=ff=>{const w=2*PI*ff,R=Rs+RL,XL=w*Lm/1000,XC=1/(w*Cu*1e-6),Z=Cx(R,XL-XC),I=cabs(Z)<1e-12?0:V/cabs(Z);return {R,XL,XC,Z,I,VR:I*R,VL:I*XL,VC:I*XC}};
+  /* nom = بالقيم المكتوبة دائماً (للرسم وللحساب). عطل مخفي: القيم الفعلية للدائرة — خارج وضع التحدي لا فرق */
+  const calc=(ff,nom)=>{const w=2*PI*ff,R=Rs+RL,Rt=R+(!nom&&chF('rbad')?6:0),XL=w*Lm/1000,XC=!nom&&chF('cshort')?0:1/(w*Cu*(!nom&&chF('cdry')?0.5:1)*1e-6),Z=Cx(Rt,XL-XC),I=(!nom&&chF('open'))||cabs(Z)<1e-12?0:V/cabs(Z);return {R,XL,XC,Z,I,VR:I*R,VL:I*XL,VC:I*XC}};
   const near=()=>Math.abs(f-fs())<0.5;
   const steps=stepsUI($('#l7st'),[
    {t:'الرنين (مثال 1-2-5)',x:'في «مثال 1-2-5» اضغط «اضبط f على تردد الرنين»: \\(X_L=X_C=10\\ \\Omega\\)، و \\(Z_T=R=2\\ \\Omega\\)، والتيار \\(5\\angle0^\\circ\\ \\text{A}\\)، و \\(V_L=V_C=50\\ \\text{V}\\).',done:()=>pre==='e5'&&!mod&&near()},
@@ -2399,13 +2405,13 @@ lesson({
    {t:'مثال 1-2-6',x:'اختر «مثال 1-2-6» ثم اضبط على الرنين: \\(X_C=X_L=30\\ \\Omega\\)، والتيار \\(10\\ \\text{A}\\)، و \\(V_L=V_C=300\\ \\text{V}\\) — ستة أضعاف جهد المصدر.',done:()=>pre==='e6'&&!mod&&near()},
    {t:'غيّر السعة',x:'غيّر السعة C ثم اضغط «اضبط f على تردد الرنين»: يتغير \\(f_s=1/(2\\pi\\sqrt{LC})\\) — هكذا نضبط محطة الراديو بمكثف متغير.',done:()=>did.retune&&near()}
   ]);
-  loopOn(el,()=>{const c=calc(f),fr=fs();
+  loopOn(el,()=>{const c=calc(f),cn=calc(f,1),fr=fs();
    $('#l7f-v').textContent=fm(rd(f,2))+' Hz';$('#l7V-v').textContent=V+' V';$('#l7Rs-v').textContent=fm(Rs)+' Ω';$('#l7RL-v').textContent=fm(RL)+' Ω';$('#l7L-v').textContent=fm(rd(Lm,2))+' mH';$('#l7C-v').textContent=fm(rd(Cu,2))+' µF';
-   $('#l7c').innerHTML=serCkt([{k:'R',top:'Rs',val:fm(Rs)+' Ω',vl:'VRs'},{k:'R',top:'RL',val:fm(RL)+' Ω'},{k:'L',top:'XL',val:fm(rd(c.XL,2))+' Ω',vl:'VL'},{k:'C',top:'XC',val:fm(rd(c.XC,2))+' Ω',vl:'VC'}],{src:fm(V)+'∠0° V',box:[1,2],I:'I = '+fm(rd(c.I,3))+' A'});
-   $('#l7ws').textContent=fm(rd(2*PI*fr,2))+' rad/s';$('#l7fs').textContent=fm(rd(fr,2))+' Hz';$('#l7xl').textContent=fm(rd(c.XL,3))+' Ω';$('#l7xc').textContent=fm(rd(c.XC,3))+' Ω';
-   $('#l7z').textContent=fR(c.Z,2)+' = '+fP(c.Z,2,1)+' Ω';$('#l7i').textContent=fP(cdiv(Cx(V),c.Z.re===0&&c.Z.im===0?Cx(1e-9):c.Z),3,1)+' A';$('#l7vr').textContent=fm(rd(c.VR,2))+' V';$('#l7vl').textContent=fm(rd(c.VL,2))+' V';$('#l7vc').textContent=fm(rd(c.VC,2))+' V';$('#l7k').textContent=fm(rd(c.VL/V,2))+' ×';
+   $('#l7c').innerHTML=serCkt([{k:'R',top:'Rs',val:fm(Rs)+' Ω',vl:'VRs'},{k:'R',top:'RL',val:fm(RL)+' Ω'},{k:'L',top:'XL',val:fm(rd(cn.XL,2))+' Ω',vl:'VL'},{k:'C',top:'XC',val:fm(rd(cn.XC,2))+' Ω',vl:'VC'}],{src:fm(V)+'∠0° V',box:[1,2],I:'I = '+fm(rd(c.I,3))+' A'});
+   $('#l7ws').textContent=fm(rd(2*PI*fr,2))+' rad/s';$('#l7fs').textContent=fm(rd(fr,2))+' Hz';$('#l7xl').textContent=fm(rd(cn.XL,3))+' Ω';$('#l7xc').textContent=fm(rd(cn.XC,3))+' Ω';
+   $('#l7z').textContent=fR(cn.Z,2)+' = '+fP(cn.Z,2,1)+' Ω';$('#l7i').textContent=fP(chF('open')?Cx(0):cdiv(Cx(V),c.Z.re===0&&c.Z.im===0?Cx(1e-9):c.Z),3,1)+' A';$('#l7vr').textContent=fm(rd(c.VR,2))+' V';$('#l7vl').textContent=fm(rd(c.VL,2))+' V';$('#l7vc').textContent=fm(rd(c.VC,2))+' V';$('#l7k').textContent=fm(rd(c.VL/V,2))+' ×';
    const th=cang(c.Z),ch=$('#l7chip');ch.className='ca-chip '+(Math.abs(th)<0.5?'ok':th>0?'hot':'ld');ch.textContent=Math.abs(th)<0.5?'رنين: XL = XC والتيار في طور الجهد':th>0?'فوق الرنين: الدائرة حثية':'تحت الرنين: الدائرة سعوية';
-   const Ip=cdiv(Cx(V),cabs(c.Z)<1e-12?Cx(1e-9):c.Z),VRp=cmul(Cx(c.R),Ip),VLp=cmul(Cx(0,c.XL),Ip),VCp=cmul(Cx(0,-c.XC),Ip);
+   const Ip=chF('open')?Cx(0):cdiv(Cx(V),cabs(c.Z)<1e-12?Cx(1e-9):c.Z),VRp=cmul(Cx(c.R),Ip),VLp=cmul(Cx(0,c.XL),Ip),VCp=cmul(Cx(0,-c.XC),Ip);
    $('#l7p').innerHTML=serPhasor(Cx(V),Ip,VRp,VLp,VCp,{w:320,h:300});
    const fmax=Math.max(120,Math.min(1000,fr*2.5,Math.max(fr*2.5,f*1.2))),N=300,key={I:'I',VR:'VR',VL:'VL',VC:'VC'}[qty];
    const pts=Array.from({length:N+1},(_,i)=>{const ff=Math.max(0.5,i/N*fmax);return [ff,calc(ff)[key]]});const ym=niceMax(Math.max(...pts.map(p=>p[1]),c[key])*1.08||1);

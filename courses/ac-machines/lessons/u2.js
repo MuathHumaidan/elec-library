@@ -8,6 +8,8 @@ const fx=v=>(+v).toFixed(1);
 const lt=s=>`<span class="ltr">${s}</span>`;
 const neg=(v,d)=>(v<0?'−':'')+fm(Math.abs(v),d);          // printable signed number (true minus sign)
 const ltx=(v,d)=>(v<0?'-':'')+fm(Math.abs(v),d);           // signed number for LaTeX
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- styles used only by this unit (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('u2ac-css'))return;const s=document.createElement('style');s.id='u2ac-css';s.textContent=`
@@ -132,7 +134,8 @@ function mkMotor(type){return {type,on:0,n:0,sw:true,L:0.4,kind:'const',k:1,fail
 function motorStep(m,dt,J){J=J||2.2;const k=Math.max(1,Math.ceil(dt*25/J));if(k>1){for(let i=0;i<k;i++)motorStep1(m,dt/k,J);return m}return motorStep1(m,dt,J)}
 function motorStep1(m,dt,J){const c=CUR[m.type];
   if(c.sw!=null){if(m.sw&&m.n>=c.sw)m.sw=false;else if(!m.sw&&m.n<c.sw-0.03)m.sw=true}
-  let T=0;if(m.on){T=(c.both&&m.sw&&!m.fail)?c.both(m.n)*(m.k==null?1:m.k):(m.customMain?m.customMain(m.n):c.main(m.n))}
+  if(m.swFix!=null)m.sw=m.swFix;   // عطل مخفي (وضع التحدي فقط): مفتاح الطرد المركزي عالق
+  let T=0;if(m.on){T=(c.both&&m.sw&&!m.fail&&!m.xf)?c.both(m.n)*(m.k==null?1:m.k):(m.customMain?m.customMain(m.n):c.main(m.n))}
   const TL=m.L*(m.kind==='fan'?m.n*m.n:1),fr=(m.fr==null?0.05:m.fr)*m.n+(m.on?0:0.25*m.n);
   if(m.n<=1e-4&&T<=TL+1e-9){m.n=0;m.stall=m.on?m.stall+dt:0}else{m.stall=0;m.n=clamp(m.n+(T-TL-fr)/J*dt,0,0.999)}
   m.T=T;m.TL=m.n<=1e-4?Math.min(TL,T):TL;m.ang=(m.ang+m.n*240*dt)%360;return m}
@@ -779,6 +782,8 @@ B.lesson({
  ],
  lab:(el)=>{
   const m=mkMotor('split');m.L=0.3;let Rm=1.2,Xm=25,Ra=12,Xa=5,sig='',opened=0,failStall=0,usedEx=0;
+  /* أعطال مخفية (وضع التحدي فقط): auxopen الملف المساعد مقطوع، swopen مفتاح الطرد المركزي عالق مفتوحاً، swclosed عالق مغلقاً */
+  if(chOn()){m.xf=chF('auxopen')?1:0;m.swFix=chF('swopen')?false:chF('swclosed')?true:null}
   const T=tsPlot('split',{op:'l2'});
   el.innerHTML=`<div id="l2tp"></div><div class="grid">
    <div class="panel c7"><h2>دائرة المحرك المشطور الوجه <small>مبنية على الشكل (2-4) ص 79</small></h2><div class="svgbox im-svg" id="l2c"></div>
@@ -958,6 +963,9 @@ B.lesson({
  ],
  lab:(el)=>{
   const m=mkMotor('cstart');m.L=1.5;let C=100,sig='',hit90=0,opened=0,big=0,ghost=0,lowC=0;
+  /* أعطال مخفية (وضع التحدي فقط): capopen المكثف مفتوح، capshort المكثف مقصور، capdry المكثف جف (سعته الفعلية 30% من المكتوبة)، swclosed مفتاح الطرد المركزي عالق مغلقاً */
+  if(chOn()){m.xf=chF('capopen')?1:0;m.swFix=chF('swclosed')?true:null}
+  const chC=C=>chF('capshort')?1e12:chF('capdry')?0.3*C:C;
   el.innerHTML=`<div id="l3tp"></div><div class="grid">
    <div class="panel c7"><h2>دائرة المحرك ذي مكثف البدء <small>مبنية على الشكل (2-6) ص 83 وقيم مثال (2-3)</small></h2><div class="svgbox im-svg" id="l3c"></div>
     ${sl('l3C','سعة مكثف البدء C',20,600,1,C)}
@@ -972,7 +980,7 @@ B.lesson({
   B.math(el);const $=s=>el.querySelector(s);let T,r,lastK=-1;
   const TP=B.params($('#l3tp'),'u2-l3',motorDefs(2.2));
   const drawT=()=>{T=tsPlot('cstart',{op:'l3',k:m.k,ghost:ghost?{f:CUR.split.both,to:0.75,l:'split-phase start'}:null});$('#l3t').innerHTML=T.svg};
-  function upd(){r=capCurrents(C);m.k=Math.max(0,Math.sin(r.al*D));
+  function upd(){const Ce=chC(C);r=capCurrents(Ce);if(chF('capopen')){r.Ia=Cx(0);r.al=0}m.k=Math.max(0,Math.sin(r.al*D));if(Ce!==C){const r0=capCurrents(C);m.k*=Math.min(1,cabs(r.Ia)/cabs(r0.Ia));r.Xc=r0.Xc}
    $('#l3p').innerHTML=phasorSVG(r.Im,r.Ia,{alpha:r.al,ok:Math.abs(r.al-90)<1});$('#l3C-v').textContent=fm(C,0)+' µF';$('#l3xc').textContent=fm(r.Xc,2)+' Ω';
    $('#l3Ia').textContent=`${fm(cabs(r.Ia),2)}∠${neg(cang(r.Ia),2)}° A`;$('#l3Im').textContent=`${fm(cabs(r.Im),2)}∠${neg(cang(r.Im),2)}° A`;$('#l3al').textContent=fm(r.al,2)+'°';
    if(Math.abs(r.al-90)<1)hit90=1;if(C<60)lowC=1;
@@ -1263,7 +1271,8 @@ B.lesson({
   // معامل العزم f (تقريب منا): بالقيم الافتراضية f = 1 تماماً (البسط = المقام)
   let f=1;const fOf=()=>{const v=(TP.v.A*Math.sin(TP.v.DEL*D))/(0.8*Math.sin(55*D));return isFinite(v)?clamp(v,0,1.6):0};
   const ringMain=n=>CUR.shaded.main(n)*f+Math.max(0,1-f)*noRing(n);   // f = 0: مجال نابض فقط (لا عزم بدء، لكن الدوار الذي يدور يكمل)
-  const setMain=()=>{m.customMain=ring?(f===1?null:ringMain):noRing};
+  const ringE=()=>ring&&!chF('ringopen');   // عطل مخفي (وضع التحدي فقط): الحلقة المظلِلة مكسورة (مفتوحة) مع أنها موجودة
+  const setMain=()=>{m.customMain=ringE()?(f===1?null:ringMain):noRing};
   const tsTxt=()=>f<1e-3?'بهذه القيم عزم البدء صفر فلا يبدأ الدوار: زد زاوية التأخر أو شدة فيض الجزء المظلل في «قيم المدرب».':`الدوار يبدأ وحده بعزم صغير (حوالي <span class="ltr">${fm(0.5*f,2).replace(/\.?0+$/,'')} pu</span>) — لا يحتاج ملفاً مساعداً ولا مكثفاً.`;
   function upd5(){f=fOf();setMain();$('#l5del').textContent=fm(TP.v.DEL,0)+'°';$('#l5a').textContent=fm(TP.v.A,2).replace(/\.?0+$/,'');$('#l5dw').textContent=TP.trainer?'قيم المدرب':'أرقام توضيحية';
    el.querySelectorAll('.l5tsv').forEach(x=>x.innerHTML=tsTxt())}
@@ -1280,7 +1289,7 @@ B.lesson({
   ]);
   const hist=[];let tt=0,lw=0;
   loopOn(el,dt=>{tt+=dt;m.fr=TP.v.fr;motorStep(m,dt,TP.v.J);
-   if(m.on)ph=(ph+360*fv*dt)%360;const fu=m.on?Math.sin(ph*D):0,fs=m.on?(ring?TP.v.A*Math.sin((ph-TP.v.DEL)*D):fu):0;
+   if(m.on)ph=(ph+360*fv*dt)%360;const fu=m.on?Math.sin(ph*D):0,fs=m.on?(ringE()?TP.v.A*Math.sin((ph-TP.v.DEL)*D):fu):0;
    if(!ring&&m.on&&m.n===0)stallNo+=dt;if(!ring&&m.on&&m.n>0.5)runNo+=dt;
    $('#l5m').innerHTML=shadedSVG({fu,fs,ring,on:m.on,ang:m.ang,id:'l5r'});
    hist.push([tt,fu,fs]);while(hist.length&&tt-hist[0][0]>5)hist.shift();

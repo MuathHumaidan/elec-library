@@ -9,6 +9,9 @@ const R=(x,d)=>B.round(x,d);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
 
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
+
 /* ---------- styles used only by this course's lesson files (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('edu7-css'))return;const s=document.createElement('style');s.id='edu7-css';s.textContent=`
 .ed-sl{display:flex;flex-direction:column;gap:2px;font-size:13.5px;margin-top:10px;min-width:0}
@@ -88,7 +91,8 @@ const DUTY={
  d:{n:'د- المتواصل بفترات تحميل قصيرة الأمد',on:30,off:150,rest:'idle'},
  e:{n:'هـ- المتواصل بفترات تحميل متقطعة',on:10,off:10,rest:'idle'}};
 /* returns {pts:[[t,θ]], segs:[[t0,t1,state]], max, over} ; state 'load'|'idle'|'stop' ; times in minutes */
-function heatRun(P,duty,x,ton,toff,Tend){const rise=P.tmax-P.amb,a=P.a/100,pl=s=>s==='load'?a+(1-a)*x*x:s==='idle'?a:0;
+/* kr/ka/kl: تعديلات «اكتشف العطل» فقط (challenge.js) — غير موجودة خارج وضع التحدي فلا تغيّر شيئاً */
+function heatRun(P,duty,x,ton,toff,Tend){const rise=P.tmax-P.amb,a=P.a/100,kr=P.kr||1,ka=P.ka||0,kl=P.kl||1,pl=s=>s==='load'?(a+(1-a)*x*x*kl)*kr+ka:s==='idle'?a*kr+ka:0;
   const segs=[];if(duty==='a')segs.push([0,Tend,'load']);else{let t=0;while(t<Tend){segs.push([t,Math.min(Tend,t+ton),'load']);t+=ton;if(t>=Tend)break;segs.push([t,Math.min(Tend,t+toff),DUTY[duty].rest]);t+=toff}}
   let th=0;const pts=[[0,P.amb]],dt=Tend/600;let mx=P.amb,tOver=null;
   segs.forEach(([t0,t1,s])=>{const tau=s==='stop'?P.tc:P.th,tgt=rise*pl(s);for(let t=t0;t<t1-1e-9;){const d=Math.min(dt,t1-t);th=tgt+(th-tgt)*Math.exp(-d/tau);t+=d;const T=P.amb+th;pts.push([t,T]);if(T>mx)mx=T;if(tOver==null&&T>P.tmax+0.05)tOver=t}});
@@ -477,7 +481,7 @@ B.lesson(FIXL({
     <div class="svgbox" id="h7p" style="max-width:860px;margin-inline:auto"></div>
     <p class="ed-cap">الشريط أسفل المنحنى: <b style="color:var(--live)">حمل</b> · <b style="color:var(--blue-ink)">دوران بلا حمل</b> · <b style="color:var(--muted)">توقف تام</b>. الخط الأحمر المتقطع = أقصى درجة حرارة صُمم عليها المحرك (حسب مادة العزل).</p>
     <div class="ed-row"><span class="ed-chip" id="h7chip"></span><span class="ed-chip" id="h7tq"></span></div>
-    <div class="facts">${fact('أعلى درجة حرارة بلغها','h7mx')}${fact('الحرارة القصوى المسموحة','h7lim')}${fact('عزم الحمل / عزم الحمل الكامل','h7fx')}${fact('عزم التعثر / عزم الحمل الكامل','h7fs')}</div></div>
+    <div class="facts" id="h7facts">${fact('أعلى درجة حرارة بلغها','h7mx')}${fact('الحرارة القصوى المسموحة','h7lim')}${fact('عزم الحمل / عزم الحمل الكامل','h7fx')}${fact('عزم التعثر / عزم الحمل الكامل','h7fs')}</div></div>
    <div class="panel c6"><h2>الحمل والزمن</h2>
     ${sl('h7x','الحمل (نسبة من الحمل الكامل)',0,250,5,st.x)}<div id="h7tw">${sl('h7on','زمن فترة الحمل',2,120,1,st.ton)}${sl('h7off','زمن الفترة التالية (توقف أو دوران بلا حمل)',2,240,1,st.toff)}</div>
     ${sl('h7s','عزم التعثر (مرة من عزم الحمل الكامل) — الكتاب: من 1.5 إلى 2',1.5,2,0.05,st.stall)}</div>
@@ -497,7 +501,8 @@ B.lesson(FIXL({
    if(stall){res={over:false,stall:true};tq.className='ed-chip warn';tq.textContent='الحمل يطلب عزماً أكبر من عزم التعثر: المحرك يتعثر ولا يستطيع حمله';$('#h7chip').className='ed-chip warn';$('#h7chip').textContent='الحد هنا هو عزم التعثر لا الحرارة (ص 85)';
     $('#h7p').innerHTML=plotSVG({w:860,h:300,cid:'h7c',x0:0,x1:Tend,y0:Math.min(0,P.amb-10),y1:niceMax(P.tmax*1.25),xt:ticks(0,Tend,6),yt:ticks(Math.min(0,P.amb-10),niceMax(P.tmax*1.25),5),xl:'t (min)',yl:'θ (°C)',series:[],extra:(X,Y)=>arT(fx(X(Tend/2)),fx(Y(P.tmax*0.6)),'المحرك متعثر — لا تشغيل',{fs:16,col:'--stop'})});
     $('#h7mx').textContent='—';$('#h7lim').textContent=fm(P.tmax,0)+' °C';$('#h7fx').textContent=fm(x,2)+' ×';$('#h7fs').textContent=fm(st.stall,2)+' ×';steps&&steps.check();return}
-   res=heatRun(P,st.duty,x,st.ton,st.toff,Tend);res.stall=false;
+   /* أعطال مخفية: مروحة التبريد معطلة / محامل تالفة (مفقودات إضافية) / جهد منخفض (مفقودات نحاس أكبر عند الحمل) */
+   res=heatRun(chF('fan')?Object.assign({},P,{kr:1.4}):chF('brg')?Object.assign({},P,{ka:0.3}):chF('lowV')?Object.assign({},P,{kl:1.25}):P,st.duty,x,st.ton,st.toff,Tend);res.stall=false;
    const y0=Math.min(0,Math.floor((P.amb-10)/10)*10),y1=niceMax(Math.max(P.tmax*1.15,res.max*1.05));
    const band=(X,Y)=>res.segs.map(([a,b,s])=>`<rect x="${fx(X(a))}" y="${fx(Y(y0)-10)}" width="${fx(Math.max(0.5,X(b)-X(a)))}" height="8" fill="var(${s==='load'?'--live':s==='idle'?'--blue':'--line'})"/>`).join('');
    $('#h7p').innerHTML=plotSVG({w:860,h:320,cid:'h7c',x0:0,x1:Tend,y0,y1,xt:ticks(0,Tend,6),yt:ticks(y0,y1,5),xl:'t (min)',yl:'θ (°C)',series:[{pts:res.pts,col:res.over?'--stop':'--blue'}],

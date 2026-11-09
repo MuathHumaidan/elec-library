@@ -2,6 +2,8 @@
 (function(B){
 const {S,clamp}=B;
 const D=Math.PI/180;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 const f1=v=>(+v).toFixed(1);
 /* ---------------- small helpers for this unit ---------------- */
 function loopOn(el,fn){let last=performance.now();const f=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now;try{fn(dt)}catch(e){console.error(e);return}requestAnimationFrame(f)};requestAnimationFrame(f)}
@@ -312,7 +314,9 @@ B.lesson({
   loopOn(el,dt=>{
    $('#polBox').style.display=src==='dc'?'':'none';$('#fBox').style.display=src==='ac'?'':'none';
    ph+=2*Math.PI*0.5*dt;
-   const i=!on?0:src==='dc'?pol*0.7071:Math.sin(ph),iF=revF?-i:i,T=iF*i,Tav=!on?0:(revF?-0.5:0.5);
+   /* أعطال مخفية: open دائرة المحرك مفتوحة (فرشة لا تلامس)، frev أطراف ملف المجال معكوسة فعلياً، fshort ملف المجال مقصور (لا فيض) */
+   const fR=!!revF!==chF('frev'),fK=chF('fshort')?0:1;
+   const i=!on||chF('open')?0:src==='dc'?pol*0.7071:Math.sin(ph),iF=(fR?-i:i)*fK,T=iF*i,Tav=!on||chF('open')?0:(fR?-0.5:0.5)*fK;
    w+=(4*T-1.0*w)*dt/TP.v.tau;rot+=w*dt*60;
    rotG.setAttribute('transform',`rotate(${(-rot).toFixed(1)} ${RX} ${RY})`);
    const sk=src+pol;if(sk!==lastSrc){lastSrc=sk;srcG.innerHTML=`<circle cx="60" cy="150" r="26" class="coil"/>`+(src==='ac'?`<path d="M45 150q7.5 -13 15 0t15 0" fill="none" stroke="var(--fg)" stroke-width="1.8"/>`+S.t(60,196,'AC','b'):S.t(60,140,pol>0?'+':'−','',null,18)+S.t(60,170,pol>0?'−':'+','',null,18)+S.t(60,196,'DC','b'))}
@@ -327,13 +331,13 @@ B.lesson({
    s+=S.t(RX+62,RY-RR-8,'T','',null,13);
    dyn.innerHTML=s;
    // waveform plot (two source cycles)
-   const per=1000/f,tc=((ph/(2*Math.PI))%2+2)%2,pts=[],tq=[];const sg=revF?-1:1;
-   for(let k=0;k<=80;k++){const u=k/80*2;const ii=!on?0:src==='dc'?pol*0.7071:Math.sin(u*2*Math.PI);pts.push([u*per,ii]);tq.push([u*per,sg*ii*ii])}
+   const per=1000/f,tc=((ph/(2*Math.PI))%2+2)%2,pts=[],tq=[];const sg=(fR?-1:1)*fK;
+   for(let k=0;k<=80;k++){const u=k/80*2;const ii=!on||chF('open')?0:src==='dc'?pol*0.7071:Math.sin(u*2*Math.PI);pts.push([u*per,ii]);tq.push([u*per,sg*ii*ii])}
    $('#wv').innerHTML=plotSVG({w:420,h:250,x0:0,x1:2*per,y0:-1.15,y1:1.15,xt:[0,per/2,per,1.5*per,2*per],xf:v=>v.toFixed(0),yt:[-1,-0.5,0,0.5,1],yf:v=>v.toFixed(1),xl:'t (ms)',aria:'التيار والعزم',
      series:[{pts,col:'--blue'},{pts:tq,col:'--live',w:2.8},{pts:[[0,Tav],[2*per,Tav]],col:'--stop',w:1.8,dash:'6 4'}],
      extra:(X,Y)=>`<path d="M${fx(X(tc*per))} ${Y(1.15)}V${Y(-1.15)}" stroke="var(--fg)" stroke-width="1.2"/><circle cx="${fx(X(tc*per))}" cy="${fx(Y(T))}" r="4.5" fill="var(--live)"/>`});
    const pm=v=>(v>-0.005?'+':'−')+Math.abs(v).toFixed(2);$('#rI').textContent=pm(i);$('#rT').textContent=pm(T);$('#rA').textContent=pm(Tav);
-   $('#rF').textContent=!on?'—':src==='ac'?(2*f)+' Hz':'0 (ثابت)';$('#rD').textContent=!on?'متوقف':Tav>0?'↺ الاتجاه الأصلي':'↻ معكوس';
+   $('#rF').textContent=!on?'—':src==='ac'?(2*f)+' Hz':'0 (ثابت)';$('#rD').textContent=!on||!Tav?'متوقف':Tav>0?'↺ الاتجاه الأصلي':'↻ معكوس';
    $('#mtxt').innerHTML=!on?'المصدر مفصول: لا تيار ولا عزم.':src==='ac'?(revF?'التيار يتردد، ومجال الأقطاب معكوس التوصيل: العزم سالب دائماً فيدور المحرك في الاتجاه المعاكس.':'التيار يتردد فينقلب المجال وتيار المنتج <b>في نفس اللحظة</b>: العزم ينبض لكنه موجب دائماً.'):(revF?'عكس المجال وحده يقلب العزم فينعكس الدوران.':pol>0?'تيار مستمر: عزم ثابت في اتجاه واحد.':'عكسنا قطبية المصدر فانعكس التياران معاً: العزم بقي في نفس الاتجاه.');
   });
  },
@@ -708,7 +712,8 @@ B.lesson({
   setA(a);
   loopOn(el,dt=>{
    if(anim){anim.t+=dt;const u=clamp((anim.t-0.8)/2.2,0,1);setA(anim.from+(anim.to-anim.from)*u);if(u>=1)anim=null}
-   const T=on?rT(a):0,I=on?rI(a):0;
+   /* أعطال مخفية: nolink وصلة قصر الفرش مقطوعة (لا تيار في الدوار)، shift حامل الفرش مزاح 15° عن علامته، sturn حلقات مقصورة في ملف الثابت */
+   const aE=chF('shift')?a+15:a,T=!on||chF('nolink')?0:rT(aE)*(chF('sturn')?0.6:1),I=!on?0:chF('nolink')?rI(90):rI(aE)*(chF('sturn')?1.5:1);
    w+=(T*3-w)*dt/TP.v.tau;rot+=w*dt*120;
    const sig=a+'|'+on;if(sig!==last){last=sig;mot.innerHTML=repulsionSVG(a);
      const ch=plotSVG({w:420,h:240,x0:-90,x1:90,y0:-1.1,y1:1.1,xt:[-90,-45,0,45,90],yt:[-1,-0.5,0,0.5,1],yf:v=>v.toFixed(1),xl:'α (°)',aria:'العزم والتيار مع الزاوية',

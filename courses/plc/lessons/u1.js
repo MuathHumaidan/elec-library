@@ -1,6 +1,8 @@
 /* Unit 1 — تطبيقات خاصة بأساسيات التحكم المنطقي المبرمج (ص 1–31) */
 (function(B){
 const {S,W}=B;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 const AR_NOTE='<b>توضيح للمتدرب (ليس من نص الكتاب):</b> ';
 
 /* =====================================================================
@@ -232,7 +234,7 @@ function plcDiagram(z){ // z:{psu,run,s1,inMod,pii,rlo,piq,outMod,phase,sel,slow
   // S1 path: +24V -> S1 -> input module
   s+=S.w('M590 216V392',z.inMod?'live':'')+S.vC(590,392,436,{closed:z.s1,btn:1,inC:z.inMod?'live':'',outC:pw,label:'S1',side:'right'})+S.w('M590 436V452',pw)+S.t(560,458,'+24V','m','end');
   // lamp path
-  s+=S.w('M80 216V394',z.outMod?'live':'')+W.lamp(80,412,15,z.outMod,'#ffcc33')+`<path d="M73 405l14 14M87 405l-14 14" stroke="var(--fg)" stroke-width="1.4" opacity=".6"/>`+S.w('M80 427V452','')+S.t(104,416,'H1','','start')+S.t(104,458,'0V','m','start');
+  s+=S.w('M80 216V394',z.outMod?'live':'')+W.lamp(80,412,15,z.outMod&&!chF('lampOpen'),'#ffcc33')+`<path d="M73 405l14 14M87 405l-14 14" stroke="var(--fg)" stroke-width="1.4" opacity=".6"/>`+S.w('M80 427V452','')+S.t(104,416,'H1','','start')+S.t(104,458,'0V','m','start');
   return s+'</svg>';
 }
 B.lesson({
@@ -450,12 +452,13 @@ B.lesson({
   $('#u1slow').onchange=e=>{z.slow=e.target.checked?1:0;pt=0;ph=0};
   info();steps();
   const loop=now=>{if(!document.body.contains(el))return;const dt=Math.min(0.05,(now-last)/1000);last=now;
-    z.inMod=z.psu&&z.s1?1:0;
-    if(z.psu&&z.run){pt+=dt;const dur=z.slow?1.1:0.02;if(pt>=dur){pt=0;
+    const pz=z.psu&&!chF('psu24')?1:0;   // عطل مخفي: خرج 24 V من مصدر القدرة مقطوع
+    z.inMod=pz&&(z.s1&&!chF('inOpen')||chF('inStuck'))?1:0;
+    if(pz&&z.run){pt+=dt;const dur=z.slow?1.1:0.02;if(pt>=dur){pt=0;
         if(ph===0)z.pii=z.inMod;else if(ph===1)z.rlo=z.pii;else{z.piq=z.rlo;z.outMod=z.piq}ph=(ph+1)%3}
       z.phase=z.slow?ph:-1}
-    else{z.phase=-1;z.piq=0;z.outMod=0;if(!z.psu){z.pii=0;z.rlo=0}}
-    const sg=JSON.stringify(z);if(sg!==sig){sig=sg;$('#u1d').innerHTML=plcDiagram(z);
+    else{z.phase=-1;z.piq=0;z.outMod=0;if(!pz){z.pii=0;z.rlo=0}}
+    const sg=JSON.stringify(z);if(sg!==sig){sig=sg;$('#u1d').innerHTML=plcDiagram(pz===z.psu?z:Object.assign({},z,{psu:pz}));
       const P=['قراءة المداخل','تنفيذ البرنامج','كتابة المخارج'];$('#u1scan').innerHTML=P.map((p,i)=>`<span class="ph ${z.phase===i?'cur':''}">${p}</span>`).join('<span class="arr">→</span>')+'<span class="arr loop">↻ يتكرر باستمرار</span>'}
     const cur=STEPS[stepI];if(cur&&cur.done()){stepI++;steps()}
     requestAnimationFrame(loop)};

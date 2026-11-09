@@ -1,6 +1,8 @@
 /* Unit 7 — التطبيق على محرك الخطوة (ص 126–130) */
 (function(B){
 const {S,clamp,W}=B;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* =====================================================================
    Shared material
@@ -141,6 +143,8 @@ const num=(nets)=>nets.map((n,i)=>Object.assign({},n,{title:n.title.replace('Net
 const PROG_RUN=num([INIT_NET,
  {title:'Network — التشغيل والإيقاف M0.0',read:'S1 يثبّت M0.0 (التشغيل)، و S0 يلغيه.',stl:['A I 0.1','S M 0.0','A I 0.0','R M 0.0']},
  ...SEQ_NETS('S5T#300MS'),...OUT_NETS]);
+/* عطل مخفي clk: زمن مولد النبضات في البرنامج S5T#3S بدل S5T#300MS */
+const progRun=()=>chF('clk')?PROG_RUN.map(n=>n.stl.includes('L S5T#300MS')?Object.assign({},n,{stl:n.stl.map(l=>l==='L S5T#300MS'?'L S5T#3S':l)}):n):PROG_RUN;
 const PROG_COUNT=num([
  {title:'Network — تحميل عدد الخطوات المطلوب',read:'عند الضغط على S1 يُحمَّل العداد التنازلي C2 بعدد الخطوات PV المكتوب في MW10، ويُصفَّر العداد التصاعدي C3.',stl:['A I 0.1','L MW 10','S C 2','A I 0.1','R C 3']},
  INIT_NET,
@@ -408,7 +412,7 @@ function stepperLab(el,B){
  let mode='book',view='lad',auto=false,dir=1,acc=0,speed=0.6;
  const m={k:1,steps:0,arrow:arrowOf(1),arrowT:arrowOf(1),shaft:0,shaftT:0,rev:false};       // manual
  const q={k:0,steps:0,arrow:135,arrowT:135,shaft:0,shaftT:0,rev:false,ran:false,stopped:false}; // PLC
- let P=B.createPLC(PROG_RUN);const btn={S0:0,S1:0},sw={S2:0};let stepI=0,lastSig='',lastK=-1,last=performance.now();
+ let P=B.createPLC(progRun());const btn={S0:0,S1:0},sw={S2:0};let stepI=0,lastSig='',lastK=-1,last=performance.now();
  const STEPS=[
   {t:'الخطوة 1',x:'في «تسلسل الكتاب يدوياً» تبدأ من الخطوة 1: الطرفان B و D عليهما جهد (1). لاحظ الصف المظلل في الجدول وعمود الخطوة في المخطط.',ok:()=>true,next:1},
   {t:'نبضة واحدة',x:'اضغط «الخطوة التالية». يتغير نمط الأطراف إلى الخطوة 2 (D فقط) ويدور عمود المحرك 7.5°.',ok:()=>m.steps>=1},
@@ -436,7 +440,7 @@ function stepperLab(el,B){
   el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;lastSig='';lastK=-1;build()});
   el.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{const a=b.dataset.act;if(a==='next')pulse(m,1);if(a==='prev')pulse(m,-1);
    if(a==='reset')Object.assign(m,{k:1,steps:0,arrow:arrowOf(1),arrowT:arrowOf(1),shaft:0,shaftT:0});
-   if(a==='preset'){P=B.createPLC(PROG_RUN);Object.assign(q,{k:0,steps:0,arrow:135,arrowT:135,shaft:0,shaftT:0});sw.S2=0;build()}lastK=-1});
+   if(a==='preset'){P=B.createPLC(progRun());Object.assign(q,{k:0,steps:0,arrow:135,arrowT:135,shaft:0,shaftT:0});sw.S2=0;build()}lastK=-1});
   const au=el.querySelector('#u7auto');if(au)au.onchange=()=>{auto=au.checked;acc=0};
   el.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{dir=+b.dataset.dir;el.querySelectorAll('[data-dir]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
   el.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;el.querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-pressed',x===b));lastSig=''});
@@ -458,7 +462,7 @@ function stepperLab(el,B){
   const dt=Math.min(0.05,(now-last)/1000);last=now;
   let s,bits;
   if(mode==='book'){if(auto){acc+=dt;if(acc>=speed){acc=0;pulse(m,dir)}}s=m;bits=SEQ[m.k-1]}
-  else{P.set('I0.0',btn.S0);P.set('I0.1',btn.S1);P.set('I0.2',sw.S2);P.scan(dt);bits=['Q4.0','Q4.1','Q4.2','Q4.3'].map(a=>P.get(a));
+  else{P.set('I0.0',btn.S0||chF('s0Stuck')?1:0);P.set('I0.1',btn.S1);P.set('I0.2',sw.S2||chF('s2Stuck')?1:0);P.scan(dt);/* أعطال مخفية: مدخل S0 أو S2 ثابت على 1 */bits=['Q4.0','Q4.1','Q4.2','Q4.3'].map(a=>P.get(a));
    const before=q.steps;moveTo(q,kOf(bits));if(q.steps<before)q.rev=true;if(P.get('M0.0'))q.ran=true;if(q.ran&&q.steps!==0&&!P.get('M0.0')&&q.rev)q.stopped=true;s=q}
   animate(s,dt);
   const k=s.k;
