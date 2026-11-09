@@ -717,3 +717,6 @@ body.ch-mode .panel:has(> ol.steps),body.ch-mode .panel:has(> .callout + ol.step
 .ch-ref td{text-align:end;padding:5px 6px;border-top:1px solid var(--line);white-space:nowrap;font-family:var(--mono);font-weight:600}
 .ch-ref .sub{margin:6px 0 0;font-size:12.5px;color:var(--muted)}
 .ch-locknote{margin:0 0 8px;font-size:13px;color:var(--muted)}
+/* وضع التحدي لمختبرات «منضدة البرنامج»: لوحة التشغيل في أعلى الشاشة (لا شريط علوي في هذا الوضع) */
+body.ch-mode .strip.console{top:env(safe-area-inset-top,0px);margin-top:4px}
+body.ch-mode #ch-strip+#custom-lab{margin-top:10px}

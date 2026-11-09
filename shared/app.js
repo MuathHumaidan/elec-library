@@ -23,13 +23,24 @@ B.STUDY={units:{},lessons:{}};B.study=o=>{o=o||{};Object.assign(B.STUDY.units,o.
 B.ERRS={};B.errs=o=>{Object.assign(B.ERRS,o||{})};
 /* «اكتشف العطل» و«تحدي المحاكاة» (courses/<id>/challenge.js، اختياري): لكل درس فيه مختبر
    PLCBOOK.chal({'u2-l1':{outputs:[{k,label,unit,dp,m:'#meters|label'}],inputs:[{k,label,kind:'range'|'switch'|'pick',sel,ctl,...}],
-     faults:[{id,t,sym,how,p:{key:['*',x]|['=',x]},x:'hook flags'}],ref:[{id,keys}],hide:[css],hideFault:[css]}})
+     faults:[{id,t,sym,how,p:{key:['*',x]|['=',x]},x:'hook flags',io:{'I0.1':0|1|'inv','Q4.1':0|1}}],ref:[{id,keys}],hide:[css],hideFault:[css],hideSim:[css],
+     refTitle:'عنوان لوحة المقارنة', variant:'نسخة البرنامج لمختبرات منضدة البرنامج', variants:true}}, {refTitle:'للمقرر كله'})
+   القراءة: m:'حاوية|اسم' أو m:{box,label,exact} أو sel:'css' أو read:(B,root)=>قيمة؛ unit للتحويل من البادئات (انظر chRead / chParse أدناه).
+   io: أعطال عامة لمختبرات «منضدة البرنامج» (انظر chIOmap). المختبرات المخصصة (L.lab) و«منضدة البرنامج» (L.program / L.plant) كلاهما يعمل في وضع التحدي.
    تعمل الأعطال فقط في «وضع التحدي» (الصفحة تُفتح من خادم النشاط بـ ?ch=1)؛ خارجها B.chF() دائماً false فلا يتغير المختبر. */
-B.CHAL={};B.chal=o=>{Object.assign(B.CHAL,o||{})};
+B.CHAL={};B.CHALCFG={};B.chal=(o,cfg)=>{Object.assign(B.CHAL,o||{});if(cfg&&typeof cfg==='object')Object.assign(B.CHALCFG,cfg)};
 const CH={on:false,mode:'',fault:null,defs:{},mv:null,healthy:{}};
 /* قيم الآلة للنشاط (يرسلها خادم النشاط في رسالة init: mv = {معرف B.params: {k: رقم}}، القيم التي غيّرها المدرب فقط) — لكل الجوالات نفسها، ولا تُحفظ على الجهاز */
 const chMV=mv=>{const o={};if(mv&&typeof mv==='object')Object.keys(mv).forEach(id=>{const g=mv[id];if(!g||typeof g!=='object')return;const x={};Object.keys(g).forEach(k=>{const v=+g[k];if(g[k]!==null&&g[k]!==''&&isFinite(v))x[k]=v});if(Object.keys(x).length)o[id]=x});return Object.keys(o).length?o:null};
 B.chOn=()=>CH.on;
+/* أعطال عامة لمختبرات «منضدة البرنامج» (المداخل في لوحة التشغيل + البرنامج الحي)، بلا كود في الدرس:
+   fault.io = {'I0.1':0 | 1 | 'inv', 'Q4.1':0 | 1}
+     مدخل: 0 = عالق على 0 (سلك أو حساس مقطوع)، 1 = عالق على 1 (قصر / حساس عالق)، 'inv' = موصّل N.O. بدل N.C. أو العكس (الإشارة معكوسة)
+     مخرج: 0 = الحمل لا يعمل (ملف المتمم أو اللمبة مقطوع: الـ CPU تكتب 1 والمشغّل لا يعمل)، 1 = يعمل دائماً (تلامس المتمم ملتحم)
+   الـ PLC (البرنامج وجدول المداخل والمخارج) يرى ما يصل إلى مداخله وما يكتبه في مخارجه؛ الجهاز والدائرة الرئيسة ولمبات لوحة التشغيل ترى حالة المشغّل الفعلية. */
+const chIOmap=pre=>{const f=CH.on&&CH.fault&&CH.fault.io;if(!f||typeof f!=='object')return null;const o={};let n=0;
+  Object.keys(f).forEach(k=>{const a=String(k).replace(/\s+/g,'').toUpperCase();if(a[0]!==pre)return;const v=f[k];o[a]=v==='inv'?'inv':v?1:0;n++});return n?o:null};
+const chInIO=()=>chIOmap('I'),chOutIO=()=>chIOmap('Q');
 B.chF=f=>!!(CH.on&&CH.fault&&String(CH.fault.x||'').split(/\s+/).includes(f));
 B.acts=o=>{Object.keys(o||{}).forEach(id=>{const v=o[id]||{},cur=B.ACTS[id]||(B.ACTS[id]={});['open','exit'].forEach(k=>{if(Array.isArray(v[k]))cur[k]=(cur[k]||[]).concat(v[k])})})};
 
@@ -268,20 +279,22 @@ function ioTableHTML(L,P){
 
 /* ---------------- state API passed to lesson functions ---------------- */
 function makeState(L,P,btn,plant,t){
+  /* وضع التحدي: عطل في مخرج (حمل لا يعمل / تلامس ملتحم) — العالم الفعلي (الحمل، الدائرة الرئيسة، الجهاز) يرى حالة المشغّل، والـ PLC (البرنامج وجدول المداخل والمخارج) يرى ما كتبه */
+  const ph=chOutIO(),g=ph?(a=>{a=a.replace(/\s+/g,'');return ph[a]!=null?ph[a]:P.get(a)}):(a=>P.get(a.replace(/\s+/g,'')));
   const st={plc:P,plant,t,btn:id=>btn[id]?1:0,
-    I:a=>P.get(a.replace(/\s+/g,'')),Q:a=>P.get(a.replace(/\s+/g,'')),M:a=>P.get(a.replace(/\s+/g,'')),
+    I:g,Q:g,M:g,
     T:a=>P.tim[a]||{q:0,el:0,tv:0,run:0},C:a=>P.cnt[a]||{v:0},
-    get:a=>P.get(a.replace(/\s+/g,''))};
+    get:g};
   // name resolution for control circuits: lesson.ctrlMap name -> 'btn:ID' | address | fn
   st.name=nm=>{const m=(L.ctrlMap||{})[nm];if(m===undefined){if(btn[nm]!==undefined)return btn[nm]?1:0;return 0}
-    if(typeof m==='function')return m(st)?1:0; if(String(m).startsWith('btn:'))return btn[m.slice(4)]?1:0; return P.get(m)};
+    if(typeof m==='function')return m(st)?1:0; if(String(m).startsWith('btn:'))return btn[m.slice(4)]?1:0; return g(m)};
   st.variant=L._variant;
   return st;
 }
 
 /* ---------------- RUNTIME (lab + plc tabs) ---------------- */
 function createRuntime(L){
-  const R={};let P=createPLC(curProgram(L));R.plc=P;
+  const R={};let P=createPLC(curProgram(L));R.plc=P;const chIn=chInIO(),CHM=()=>mode==='ch';
   L._names={};(L.io||[]).forEach(r=>{if(r.addr)L._names[r.addr.replace(/\s+/g,'')]=r.sym});
   const btn={},latch={},pressT={};(L.inputs||[]).forEach(i=>{btn[i.id]=i.initial?1:0});
   let plant=L.plant&&L.plant.init?L.plant.init():{};
@@ -291,7 +304,9 @@ function createRuntime(L){
   function writeInputs(){
     (L.inputs||[]).forEach(i=>{if(!i.addr)return;let v=(btn[i.id]||latch[i.id])?1:0;
       if(i.type==='sensor'&&i.from){v=i.from(st())?1:0;if(btn['__ovr_'+i.id]!==undefined)v=btn['__ovr_'+i.id]}
-      if(i.invert)v=1-v;P.set(i.addr.replace(/\s+/g,''),v)});
+      if(i.invert)v=1-v;const a=i.addr.replace(/\s+/g,'');
+      if(chIn){const f=chIn[a];if(f!=null)v=f==='inv'?1-v:+f}   /* وضع التحدي: عطل في مدخل (عالق على 0 / على 1 / N.O.↔N.C. معكوس) */
+      P.set(a,v)});
     for(const k in latch)if(!btn[k])latch[k]=0;
   }
   function tick(dt){
@@ -311,16 +326,16 @@ function createRuntime(L){
   R.attach=(m,body,strip)=>{mode=m;el=body;stripEl=strip;build();R.start()};
 
   function build(){
-    stripEl.innerHTML=stripHTML();wireStrip();
-    if(mode==='lab') el.innerHTML=labHTML(); else el.innerHTML=plcHTML();
+    variantSeg.done=0;stripEl.innerHTML=stripHTML();wireStrip();
+    if(mode==='lab') el.innerHTML=labHTML(); else if(mode==='ch') el.innerHTML=labHTML()+plcHTML(); else el.innerHTML=plcHTML();
     wireBody();lastSig='';renderSteps();render(true);
   }
-  function variantSeg(){if(!L.variants)return '';const ks=Object.keys(L.variants).filter(k=>k!=='default'&&k!=='note'&&k!=='title');const cur=L._variant||L.variants.default||ks[0];
+  function variantSeg(){if(!L.variants||(CHM()&&(!CH.varSel||variantSeg.done)))return '';if(CHM())variantSeg.done=1;const ks=Object.keys(L.variants).filter(k=>k!=='default'&&k!=='note'&&k!=='title');const cur=L._variant||L.variants.default||ks[0];
     return `<div class="variant"><span>${L.variants.title||'نسخة البرنامج:'}</span><div class="seg" role="group">${ks.map(k=>`<button data-var="${k}" aria-pressed="${k===cur}">${L.variants[k].label}</button>`).join('')}</div>${L.variants.note?`<p class="sub">${L.variants.note}</p>`:''}${L.variants[cur].note?`<div class="callout err">${L.variants[cur].note}</div>`:''}</div>`}
   function stripHTML(){
     const ins=(L.inputs||[]).filter(i=>i.type!=='sensor'||i.manual);
     const outs=(L.io||[]).filter(r=>r.addr&&/^Q/.test(r.addr.replace(/\s+/g,'')));
-    return `<div class="strip console"><div class="con-head"><span>لوحة التشغيل</span>${L.steps&&L.steps.length?'<span class="task" id="taskNow"></span>':''}</div><div class="wrap-in">
+    return `<div class="strip console"><div class="con-head"><span>لوحة التشغيل</span>${L.steps&&L.steps.length&&!CHM()?'<span class="task" id="taskNow"></span>':''}</div><div class="wrap-in">
       <div class="pbs">${ins.map(i=>{
         if(i.type==='push') return `<button class="pb ${i.color||'black'}" data-in="${i.id}" aria-label="${esc(i.label||i.id)}"><span class="cap">${i.id}</span><small>${i.label||''}</small></button>`;
         if(i.type==='fault') return `<button class="btn warn tg" data-tg="${i.id}" aria-pressed="false">${i.label||('فصل '+i.id)}</button>`;
@@ -349,9 +364,9 @@ function createRuntime(L){
       else h+=`<div id="plantView" class="plant-view"></div>`;
       if(p.chart)h+=`<h3 class="sm">${p.chart.label||''}</h3><div class="chart"><canvas id="plantChart"></canvas></div>${p.chart.legend?`<div class="legend">${p.chart.legend}</div>`:''}`;
       h+=`</div>`}
-    if(L.ctrl) h+=`<div class="panel sheet c7"><h2>دائرة التحكم التقليدية</h2><p class="sub">تابع أين يصل الجهد مع كل ضغطة.</p><div class="svgbox ctrlbox" id="ctrlSvg"></div>${tb(L.ctrlRef)}</div>`;
-    if(L.steps&&L.steps.length) h+=`<div class="panel ${L.ctrl?'c5':'c12'}"><h2>التجربة خطوة بخطوة</h2><p class="sub">استخدم ضواغط لوحة التشغيل. اضغط مطوّلاً أو انقر.</p><ol class="steps" id="steps"></ol></div>`;
-    if(!L.ctrl&&!L.power&&!p) h+=`<div class="panel c12"><h2>البرنامج يعمل الآن</h2><div id="miniLad"></div></div>`;
+    if(L.ctrl&&!CHM()) h+=`<div class="panel sheet c7"><h2>دائرة التحكم التقليدية</h2><p class="sub">تابع أين يصل الجهد مع كل ضغطة.</p><div class="svgbox ctrlbox" id="ctrlSvg"></div>${tb(L.ctrlRef)}</div>`;
+    if(L.steps&&L.steps.length&&!CHM()) h+=`<div class="panel ${L.ctrl?'c5':'c12'}"><h2>التجربة خطوة بخطوة</h2><p class="sub">استخدم ضواغط لوحة التشغيل. اضغط مطوّلاً أو انقر.</p><ol class="steps" id="steps"></ol></div>`;
+    if(!L.ctrl&&!L.power&&!p&&!CHM()) h+=`<div class="panel c12"><h2>البرنامج يعمل الآن</h2><div id="miniLad"></div></div>`;
     return h+'</div>';
   }
   function plcHTML(){
@@ -375,23 +390,25 @@ function createRuntime(L){
   function render(force){
     const s=st();
     // strip lamps & readouts every frame
-    if(stripEl){$$('.lamp',stripEl).forEach(l=>l.classList.toggle('on',!!P.get(l.dataset.q)));
+    if(stripEl){$$('.lamp',stripEl).forEach(l=>l.classList.toggle('on',!!s.Q(l.dataset.q)));
       const rd=$('#reads',stripEl);if(rd&&L.plant&&L.plant.readouts){rd.innerHTML=L.plant.readouts.map(r=>{if(r.chip){const [txt,cls]=r.chip(plant,s);return `<div class="read"><span>${r.l}</span><em class="mode-chip ${cls||''}">${txt}</em></div>`}return `<div class="read"><span>${r.l}</span><b>${r.v(plant,s)}</b></div>`}).join('')}}
     if(!el)return;
-    if(mode==='lab'){
+    const mL=mode==='lab'||mode==='ch',mP=mode==='plc'||mode==='ch';
+    if(mL){
       if(L.plant&&L.plant.view==='motor'){const r=$('#rotor',el);if(r)r.setAttribute('transform',`rotate(${(plant.ang||0).toFixed(1)} 75 75)`)}
       if(L.plant&&L.plant.frame)L.plant.frame($('#plantView',el)||$('#plantExtra',el),s,plant,B);
       if(L.plant&&L.plant.chart){const c=$('#plantChart',el);if(c)W.chart(c,hist,Object.assign({now:t,series:[{key:L.plant.chart.key,color:'--blue'}].concat(L.plant.chart.series||[])},L.plant.chart))}
-      if(L.steps){const cur=L.steps[stepI];if(cur&&cur.done&&cur.done(s)){stepI++;renderSteps()}}
+      if(L.steps&&!CHM()){const cur=L.steps[stepI];if(cur&&cur.done&&cur.done(s)){stepI++;renderSteps()}}
     }
     const sg=sig();if(sg===lastSig&&!force)return;lastSig=sg;
-    if(mode==='lab'){
+    if(mL){
       const pw=$('#powerSvg',el);if(pw&&L.power)pw.innerHTML=L.power(s,B);
       const cs=$('#ctrlSvg',el);if(cs&&L.ctrl)cs.innerHTML=ctrlCircuit(L.ctrl,s.name,L.ctrlCoil?((nm,f)=>L.ctrlCoil(nm,f,s)):null);
       if(L.plant&&L.plant.render){const pv=$('#plantView',el)||$('#plantExtra',el);if(pv)L.plant.render(pv,s,plant,B)}
       const lb=$('#plantLabel',el);if(lb&&L.plant&&L.plant.label)lb.textContent=L.plant.label(plant,s);
       const ml=$('#miniLad',el);if(ml)ml.innerHTML=P.nets.map(n=>`<div class="net"><header><h3>${n.title||'Network '+(n.i+1)}</h3></header><div class="svgbox fixed">${ladNetwork(n,P,L._names)}</div></div>`).join('');
-    } else {
+    }
+    if(mP){
       const N=P.nets.length;const ph=['قراءة المداخل'].concat(P.nets.map((n,i)=>'Network '+(i+1)),['كتابة المخارج']);
       $('#scan',el).innerHTML=ph.map((p,i)=>`<span class="ph ${slow&&phase===i?'cur':''}">${p}</span>`).join('<span class="arr">→</span>')+(slow?'':'<span class="arr loop">↻ يتكرر باستمرار</span>');
       $('#nets',el).innerHTML=P.nets.map((n,i)=>{const cur=slow&&phase===i+1;const body=view==='lad'?`<div class="svgbox fixed">${ladNetwork(n,P,L._names)}</div>`:view==='fbd'?`<div class="svgbox fixed">${fbdNetwork(n,P,L._names)}</div>`:stlTable(n,P);
@@ -501,8 +518,8 @@ const LIVE_ACTS=[
   {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'},
   {k:'errs',t:'اكتشف الخطأ',d:'حل مكتوب لمثال من الدرس بأرقام جديدة، وفيه خطوة واحدة خاطئة. يختار الطلاب من جوالاتهم الخطوة الخاطئة، ثم يظهر سبب الخطأ وتصحيحه.',b:'ابدأ اكتشف الخطأ',type:'errs',only:true,n:L=>(B.ERRS[L.id]||[]).length,unit:n=>AR_N(n,'مثال','مثالان','أمثلة','مثالاً')},
   /* المختبرات فقط (courses/<id>/challenge.js): يفتح كل طالب مختبر الدرس على جواله */
-  {k:'fault',t:'اكتشف العطل',d:'يعمل مختبر الدرس على جوال كل طالب وفيه العطل المخفي نفسه. يفحص الطالب القراءات ويغيّر المدخلات، ثم يختار العطل من قائمة، ثم يظهر العطل وأعراضه وكيف يُكتشف.',b:'ابدأ اكتشف العطل',type:'fault',only:true,n:L=>L.lab&&B.CHAL[L.id]?(B.CHAL[L.id].faults||[]).length:0,unit:n=>AR_N(n,'عطل','عطلان','أعطال','عطلاً')},
-  {k:'sim',t:'تحدي المحاكاة',d:'يحدد المدرب قراءة مستهدفة (مثل سرعة أو جهد) ونسبة سماح، ويضبط كل طالب المختبر على جواله حتى يصل إليها ثم يرسل. تظهر على الشاشة أسماء من وصل وتوزيع القيم.',b:'ابدأ تحدي المحاكاة',type:'sim',only:true,n:L=>L.lab&&B.CHAL[L.id]?(B.CHAL[L.id].outputs||[]).length:0,unit:n=>AR_N(n,'قراءة يمكن استهدافها','قراءتان يمكن استهدافهما','قراءات يمكن استهدافها','قراءة يمكن استهدافها')}];
+  {k:'fault',t:'اكتشف العطل',d:'يعمل مختبر الدرس على جوال كل طالب وفيه العطل المخفي نفسه. يفحص الطالب القراءات ويغيّر المدخلات، ثم يختار العطل من قائمة، ثم يظهر العطل وأعراضه وكيف يُكتشف.',b:'ابدأ اكتشف العطل',type:'fault',only:true,n:L=>B.chLab(L)&&B.CHAL[L.id]?(B.CHAL[L.id].faults||[]).length:0,unit:n=>AR_N(n,'عطل','عطلان','أعطال','عطلاً')},
+  {k:'sim',t:'تحدي المحاكاة',d:'يحدد المدرب قراءة مستهدفة (مثل سرعة أو جهد) ونسبة سماح، ويضبط كل طالب المختبر على جواله حتى يصل إليها ثم يرسل. تظهر على الشاشة أسماء من وصل وتوزيع القيم.',b:'ابدأ تحدي المحاكاة',type:'sim',only:true,n:L=>B.chLab(L)&&B.CHAL[L.id]?(B.CHAL[L.id].outputs||[]).length:0,unit:n=>AR_N(n,'قراءة يمكن استهدافها','قراءتان يمكن استهدافهما','قراءات يمكن استهدافها','قراءة يمكن استهدافها')}];
 const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',exit:'<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/>',
   errs:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8.3 8.3l4.4 4.4M12.7 8.3l-4.4 4.4"/>',
   fault:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
@@ -684,41 +701,101 @@ function studyPrePost(el,L){
    الأب   → {ch:'get',id}  ⇒  المختبر ← {ch:'vals',id,vals:{k:رقم أو null}}   القراءات كما تظهر على أجهزة القياس
  لا شيء من هذا يحدث خارج ?ch=1. */
 const CHQ=(()=>{try{return new URLSearchParams(location.search).get('ch')==='1'}catch(e){return false}})();
-const chNum=t=>{const m=String(t==null?'':t).replace(/[−–]/g,'-').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
-const chNorm=t=>String(t||'').replace(/\s+/g,' ').trim();
-function chRead(o){const [c,lb]=String(o.m||'').split('|');const box=c&&document.querySelector(c);if(!box||lb==null)return null;
-  const ex=lb[0]==='=',want=chNorm(ex?lb.slice(1):lb);
-  for(const mt of box.children){const s=mt.querySelector('span'),b=mt.querySelector('b');if(!s||!b)continue;const t=chNorm(s.textContent);if(ex?t===want:t.startsWith(want))return chNum(b.textContent)}
+/* قراءة رقم كما يظهر على جهاز القياس: أرقام عربية-هندية، فاصلة الآلاف، «× 10ⁿ» و ×10^n و e-notation، ثم البادئة مع الوحدة
+   (p n µ/μ/u m k M G) تُحوَّل إلى وحدة القراءة في challenge.js (unit): «12.5 nF» مع unit:'pF' ⇐ 12500. بلا وحدة مكتوبة أو بوحدة أخرى ⇐ الرقم كما هو. */
+const CH_PFX={p:-12,n:-9,'µ':-6,'μ':-6,u:-6,m:-3,k:3,K:3,M:6,G:9};
+const CH_SUP={'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
+const chClean=t=>String(t==null?'':t).replace(/[‎‏‪-‮⁦-⁩   ]/g,' ').replace(/[−–]/g,'-').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.').replace(/٬/g,',');
+function chParse(t,unit){
+  t=chClean(t);
+  const m=t.match(/(-?)(\d{1,3}(?:,\d{3})+(?!\d)|\d+(?:\.\d+)?|\.\d+)/);if(!m)return null;
+  let v=+(m[2].replace(/,/g,''));if(m[1]==='-')v=-v;
+  let rest=t.slice(m.index+m[0].length);
+  const sup=s=>{let x=0;for(const c of s)x=x*10+CH_SUP[c];return x};
+  let e;
+  if((e=rest.match(/^\s*[×x✕*·]\s*10\s*(?:\^\s*\(?\s*([+-]?)\s*(\d+)\s*\)?|([⁻⁺]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+))/))){const n=e[2]!=null?(e[1]==='-'?-1:1)*+e[2]:(e[3]==='⁻'?-1:1)*sup(e[4]);v*=Math.pow(10,n);rest=rest.slice(e[0].length)}
+  else if((e=rest.match(/^[eE]([+-]?\d+)(?![A-Za-z])/))){v*=Math.pow(10,+e[1]);rest=rest.slice(e[0].length)}
+  else if(m[2]==='10'&&(e=rest.match(/^([⁻⁺]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/))){v=(v<0?-1:1)*Math.pow(10,(e[1]==='⁻'?-1:1)*sup(e[2]));rest=rest.slice(e[0].length)}
+  const u=String(unit==null?'':unit).trim();
+  if(u){const tk=(rest.match(/^\s*([^\s\d()\[\]{},،;:=<>]+)/)||[])[1];
+    if(tk&&tk!==u){const nu=x=>x.replace(/μ/g,'µ'),T=nu(tk),U=nu(u);
+      if(T!==U){const pe=x=>CH_PFX[x[0]]!=null&&x.length>1?[CH_PFX[x[0]],x.slice(1)]:[0,x];
+        const [a,ba]=pe(T),[c,bc]=pe(U);
+        if(ba===bc&&a!==c)v*=Math.pow(10,a-c);
+        else if(ba===U&&a)v*=Math.pow(10,a);          // «2.5 kΩ» ووحدة القراءة Ω
+        else if(T===bc&&c)v*=Math.pow(10,-c)}}}         // «0.025 A» ووحدة القراءة mA
+  return isFinite(v)?+v.toPrecision(12):null}
+const chNum=t=>chParse(t,'');
+const chNorm=t=>String(t||'').replace(/[‎‏⁦-⁩]/g,'').replace(/\s+/g,' ').trim();
+/* مكان القراءة في challenge.js (لكل قراءة واحد منها):
+     m:'حاوية|بداية اسم القراءة'  ('=' أول الاسم للاسم الكامل؛ يُقسم عند أول «|» فقط، فالاسم نفسه قد يحتوي «|»)
+     m:{box,label,exact}         الشكل نفسه كائناً (للأسماء التي فيها رموز)
+     sel:'#id' أو أي CSS          العنصر نفسه (نصه، أو قيمته إن كان حقلاً) — للقراءات التي يتغير اسمها (متقدم/متأخر، أسهم…)
+     read:(B,root)=>رقم|نص       دالة قراءة خاصة بالدرس (الأولوية لها)
+   unit: وحدة القراءة (يُحوَّل إليها «k/m/µ…» المكتوب على الجهاز)، conv:false = بلا تحويل */
+function chRead(o){
+  const root=document.getElementById('view')||document;
+  const val=x=>x==null?null:typeof x==='number'?(isFinite(x)?x:null):chParse(x,o.conv===false?'':o.unit);
+  if(typeof o.read==='function'){try{return val(o.read(B,root))}catch(e){console.error(e);return null}}
+  const txt=el=>el?(/^(INPUT|SELECT|TEXTAREA|OUTPUT)$/.test(el.tagName)?el.value:el.textContent):null;
+  if(o.sel){const el=document.querySelector(o.sel);return el?val(txt(el)):null}
+  let c,lb,ex=false;
+  if(o.m&&typeof o.m==='object'){c=o.m.box;lb=o.m.label;ex=!!o.m.exact}
+  else{const s=String(o.m||''),i=s.indexOf('|');if(i<0)return null;c=s.slice(0,i);lb=s.slice(i+1);if(lb[0]==='='){ex=true;lb=lb.slice(1)}}
+  const box=c&&document.querySelector(c);if(!box||lb==null)return null;
+  const want=chNorm(lb);
+  for(const mt of box.children){const s=mt.querySelector('span'),b=mt.querySelector('b');if(!s||!b)continue;const t=chNorm(s.textContent);if(ex?t===want:t.startsWith(want))return val(b.textContent)}
   return null}
+/* عنوان لوحة المقارنة («بيانات الآلة السليمة»…): refTitle للدرس في challenge.js، أو للمقرر (PLCBOOK.chal({...},{refTitle})), وإلا حسب نوع المقرر */
+const CH_REFT={'circuits-1':'قراءات الدائرة السليمة','circuits-2':'قراءات الدائرة السليمة','control-lab':'قراءات النظام السليم','plc':'قراءات النظام السليم'};
+B.chCourse=()=>(location.pathname.match(/\/courses\/([^/]+)\//)||[])[1]||'';
+B.chRefTitle=id=>{const sp=B.CHAL[id]||{};return sp.refTitle||B.CHALCFG.refTitle||CH_REFT[B.chCourse()]||'بيانات الآلة السليمة'};
+/* المختبر الذي يصلح لوضع التحدي: مختبر مخصص (L.lab) أو «منضدة البرنامج» العامة (البرنامج / الجهاز) */
+B.chLab=L=>!!(L&&(L.lab||L.program||L.plant||L.variants));
 function renderChallenge(L){
   stopRun();document.body.classList.add('ch-mode');document.body.classList.remove('in-lesson');document.body.dataset.tab='lab';
-  const root=$('#view'),spec=L&&L.lab&&B.CHAL[L.id];
+  const root=$('#view'),spec=B.chLab(L)&&B.CHAL[L.id];
   const par=window.parent!==window?window.parent:null;
   const post=(m,o)=>{if(par)try{par.postMessage(m,o||'*')}catch(e){}};
   if(!spec){root.innerHTML='<div class="ch-msg"><b>هذا الدرس ليس له مختبر لهذا النشاط.</b></div>';post({ch:'error',msg:'nolab'});return}
   if(renderChallenge.done)return;renderChallenge.done=true;   // صفحة واحدة لكل نشاط: لا نعيد الرسم عند تغير العنوان
   root.innerHTML=`<div class="ch-msg"><span class="ch-spin" aria-hidden="true"></span>جارٍ تجهيز المختبر…</div>`;
   if(!par){root.innerHTML='<div class="ch-msg"><b>هذه الصفحة تُفتح من نشاط المدرب</b><span>ادخل النشاط برمز من شاشة المدرب.</span></div>';return}
+  const custom=!!L.lab&&!L.program&&!L.plant;
   let started=false;
   const start=(m,origin)=>{
     CH.on=true;CH.mv=chMV(m.mv);CH.mode=m.mode==='fault'?'fault':'sim';CH.fault=CH.mode==='fault'?(spec.faults||[]).find(f=>f.id===m.fault)||null:null;
-    root.innerHTML=`<div class="ch-top"><span class="ch-k">${L.unit}.${L.order}</span><b>${L.title}</b></div><div id="ch-ref"></div><div id="custom-lab"></div>`;
-    const css=[...(spec.hide||[]),...(CH.mode==='fault'?spec.hideFault||[]:[])].map(s=>s+'{display:none!important}');
-    try{L.lab($('#custom-lab'),B)}catch(e){console.error(e)}
+    root.innerHTML=`<div class="ch-top"><span class="ch-k">${L.unit}.${L.order}</span><b>${L.title}</b></div><div id="ch-ref"></div>${custom?'':'<div id="ch-strip"></div>'}<div id="custom-lab"${custom?'':' class="ch-std"'}></div>`;
+    /* hide: في النشاطين · hideFault: في «اكتشف العطل» فقط · hideSim: في «تحدي المحاكاة» فقط */
+    const css=[...(spec.hide||[]),...(CH.mode==='fault'?spec.hideFault||[]:spec.hideSim||[])].map(s=>s+'{display:none!important}');
+    if(custom){try{L.lab($('#custom-lab'),B)}catch(e){console.error(e)}}
+    else{ /* «منضدة البرنامج»: لوحة التشغيل + الجهاز + البرنامج الحي معاً. spec.variant = نسخة البرنامج (مثل المصحح)، spec.variants:true = يبقى اختيار النسخة ظاهراً */
+      if(L.variants){const ks=Object.keys(L.variants).filter(k=>!['default','note','title'].includes(k));if(spec.variant&&ks.includes(spec.variant))L._variant=spec.variant}
+      CH.varSel=!!spec.variants;
+      try{RUN=createRuntime(L);RUN.attach('ch',$('#custom-lab'),$('#ch-strip'))}catch(e){console.error(e)}}
     B.math(root);
     /* بيانات الآلة السليمة للمقارنة: من نموذج المختبر نفسه (CH.healthy = أرقام الآلة قبل العطل) بقيم هذا النشاط */
     const refs=(spec.ref||[]).map(r=>{const D=CH.defs[r.id]||[],H=CH.healthy[r.id]||{};return r.keys.map(k=>D.find(d=>d.k===k)).filter(Boolean).map(d=>({d,v:H[d.k]!=null?H[d.k]:d.value}))}).flat();
-    if(refs.length)$('#ch-ref').innerHTML=`<details class="ch-ref"><summary>بيانات الآلة السليمة (للمقارنة)</summary><table>${refs.map(({d,v})=>`<tr><th>${d.label}</th><td><span class="ltr">${fmtN(v)}${d.unit?' '+d.unit:''}</span></td></tr>`).join('')}</table><p class="sub">${CH.mv?'أرقام حددها المدرب لهذا النشاط: هي أرقام الآلة في المختبر وهي سليمة.':'أرقام توضيحية: هي أرقام الآلة في المختبر وهي سليمة.'}</p></details>`;
-    /* المدخلات الثابتة بقرار المدرب: تُضبط ثم تُقفل */
+    if(refs.length)$('#ch-ref').innerHTML=`<details class="ch-ref"><summary>${esc(B.chRefTitle(L.id))} (للمقارنة)</summary><table>${refs.map(({d,v})=>`<tr><th>${d.label}</th><td><span class="ltr">${fmtN(v)}${d.unit?' '+d.unit:''}</span></td></tr>`).join('')}</table><p class="sub">${CH.mv?'أرقام حددها المدرب لهذا النشاط: هي الأرقام في المختبر وهي سليمة.':'أرقام توضيحية: هي الأرقام في المختبر وهي سليمة.'}</p></details>`;
+    /* المدخلات الثابتة بقرار المدرب: تُضبط ثم تُقفل. الترتيب: الأزرار والاختيارات والمفاتيح أولاً (قد تغيّر حدود المنزلقات أو خطوتها)، ثم المنزلقات والحقول الرقمية،
+       ثم تُعاد المنزلقات والحقول بعد لحظة (إذا أعاد المختبر رسمها أو قصّ قيمتها بعد تغيير الوضع) */
     const lock=(Array.isArray(m.lock)?m.lock:[]).map(x=>({x,inp:(spec.inputs||[]).find(i=>i.k===x.k)})).filter(o=>o.inp);
     const ord={pick:0,switch:1,range:2};
+    const fire=(el,v)=>{if(el.tagName==='SELECT'){el.value=String(v)}else el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))};
+    /* منزلق خطوته في هذا الوضع أكبر من خطوة المدخل في challenge.js (فيقص القيمة الثابتة): نعطيه خطوة challenge.js، ولا نغيّر حدوده */
+    const fitStep=(r,inp,v)=>{if(r.type==='range'&&inp.step&&r.step!=='any'){r.value=v;if(Math.abs(+r.value-+v)>1e-9&&+v>=+(r.min||0)&&+v<=+(r.max||100))r.step=String(inp.step)}};
+    const setRange=(inp,x)=>{const r=$(inp.sel);if(r){fitStep(r,inp,x.v);fire(r,x.v)}};
     lock.sort((a,b)=>(ord[a.inp.kind]||0)-(ord[b.inp.kind]||0)).forEach(({x,inp})=>{try{
       if(inp.noset){}   // مدخل يُقفل على حاله فقط (مثل أزرار عكس الأطراف)
-      else if(inp.kind==='range'){const r=$(inp.sel);if(r){r.value=x.v;r.dispatchEvent(new Event('input',{bubbles:true}))}}
-      else if(inp.kind==='switch'){const b=$(inp.sel);if(b&&(b.getAttribute('aria-pressed')==='true')!==!!x.v)b.click()}
-      else if(inp.kind==='pick'){const b=$(inp.sel.replace('{v}',String(x.v)));if(b)b.click()}
-      css.push(String(inp.ctl||inp.sel).split(',').map(s=>'#custom-lab '+s.trim()).join(',')+'{pointer-events:none!important;opacity:.42;filter:grayscale(1)}');
+      else if(inp.kind==='range')setRange(inp,x);
+      else if(inp.kind==='switch'){const b=$(inp.sel);if(b){if(b.tagName==='INPUT'&&/checkbox|radio/.test(b.type)){if(b.checked!==!!x.v)b.click()}else if((b.getAttribute('aria-pressed')==='true')!==!!x.v)b.click()}}
+      else if(inp.kind==='pick'){const s=String(inp.sel);
+        if(!s.includes('{v}')){const e=$(s);if(e&&(e.tagName==='SELECT'||e.tagName==='INPUT'))fire(e,x.v)}
+        else{const b=$(s.replace('{v}',String(x.v)));if(b){if(b.tagName==='OPTION'){const se=b.closest('select');if(se)fire(se,b.value)}else if(b.tagName==='INPUT'&&/checkbox|radio/.test(b.type)){if(!b.checked)b.click()}else b.click()}}}
+      css.push(String(inp.ctl||inp.sel).split(',').map(s=>'#custom-lab '+s.trim().replace('{v}','')).join(',')+'{pointer-events:none!important;opacity:.42;filter:grayscale(1)}');
     }catch(e){console.error(e)}});
+    const again=()=>lock.filter(o=>o.inp.kind==='range'&&!o.inp.noset).forEach(({x,inp})=>{try{const r=$(inp.sel);if(r&&Math.abs(+r.value-+x.v)>1e-9){fitStep(r,inp,x.v);fire(r,x.v)}}catch(e){console.error(e)}});
+    if(lock.some(o=>o.inp.kind==='range')){setTimeout(again,60);setTimeout(again,400)}
     const st=document.createElement('style');st.textContent=css.join('\n');document.head.appendChild(st);
     if(lock.length){const n=document.createElement('p');n.className='ch-locknote';n.textContent='المدخلات الباهتة ثابتة بقرار المدرب.';$('#custom-lab').prepend(n)}
     post({ch:'ready',outputs:(spec.outputs||[]).map(o=>({k:o.k,label:o.label,unit:o.unit||'',dp:o.dp|0}))},origin);
@@ -728,6 +805,7 @@ function renderChallenge(L){
     else if(m.ch==='get'&&started){const vals={};(spec.outputs||[]).forEach(o=>{const v=chRead(o);vals[o.k]=v!=null&&isFinite(v)?v:null});post({ch:'vals',id:m.id,vals},e.origin)}});
   post({ch:'hello',lesson:L.id});
 }
+B.chParse=chParse;
 
 /* ---------------- ROUTER ---------------- */
 function route(){

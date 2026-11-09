@@ -1547,14 +1547,14 @@ B.lesson({
    <div class="panel c12"><h2>جرّب</h2><ol class="steps" id="l10st"></ol></div></div>`;
   B.math(el);const $=s=>el.querySelector(s);
   const TXT=['الدائرة الأصلية — الشكل (3-42أ)','الخطوة 1: 3 Ω و 6 Ω على التوازي','الخطوة 2: 2 Ω و 4 Ω على التوالي — الشكل (3-42ب)','الخطوة 3: الفرعان على التوازي','الخطوة 4: مع 1 Ω على التوالي = R<sub>T</sub>'];
-  const sliders=()=>{if(mode==='f42'){$('#l10sl').innerHTML=Object.keys(v).map(k=>sl('l10'+k,NM[k],k==='E'?0:0.5,k==='E'?60:20,0.5,v[k])).join('');Object.keys(v).forEach(k=>{$('#l10'+k).oninput=e=>{v[k]=+e.target.value;upd()}})}
+  const sliders=()=>{if(mode==='f42'){$('#l10sl').innerHTML=Object.keys(v).map(k=>sl('l10v'+k,NM[k],k==='E'?0:0.5,k==='E'?60:20,0.5,v[k])).join('');Object.keys(v).forEach(k=>{$('#l10v'+k).oninput=e=>{v[k]=+e.target.value;upd()}})}
     else{$('#l10sl').innerHTML=sl('l10E41','جهد المنبع',0,150,1,E41)+sl('l10R41','المقاومة R',0,20,0.1,R41)+'<p class="sub">ابحث عن R التي تجعل القدرة في المقاومة 3 Ω تساوي 300 W.</p>';$('#l10E41').oninput=e=>{E41=+e.target.value;upd()};$('#l10R41').oninput=e=>{R41=+e.target.value;upd()}}};
   /* أعطال مخفية في دائرة الشكل (3-42) (وضع التحدي فقط): المقاومة 6 Ω مفتوحة، 2 Ω مقصورة، 3 Ω تضاعفت قيمتها، 1 Ω مقصورة.
      الرسم والمقاومات وخطوات الاختزال بالقيم المكتوبة، والتيارات والقدرات هي القراءات الفعلية */
   const chX=()=>chF('c6open')||chF('d2short')||chF('b3drift')||chF('a1short');
   const chV=()=>Object.assign({},v,chF('c6open')?{c:1e12}:chF('d2short')?{d:0}:chF('b3drift')?{b:2*v.b}:{a:0});
   const upd=()=>{let rows,PS,PR,RT,I;
-   if(mode==='f42'){Object.keys(v).forEach(k=>{const o=$('#l10'+k+'-v');if(o)o.textContent=fm(v[k])+(k==='E'?' V':' Ω')});
+   if(mode==='f42'){Object.keys(v).forEach(k=>{const o=$('#l10v'+k+'-v');if(o)o.textContent=fm(v[k])+(k==='E'?' V':' Ω')});
     const r0=s335(v,{round:(x)=>x}),vv=chX()?chV():v,r=chX()?s335(vv,{round:(x)=>x}):r0;RT=r.RT;I=r.I;const L={I:r.I,I1:r.I1,I2:r.I2,I3:r.I3,I4:r.I4};
     $('#l10h').innerHTML=TXT[st];$('#l10c').innerHTML=fig342(st,v,L);
     const ex=[`\\(\\frac{${fm(v.b)}\\times${fm(v.c)}}{${fm(v.b)}+${fm(v.c)}}=${fm(sig(r0.P,4))}\\ \\Omega\\)`,`\\(${fm(v.d)}+${fm(v.e)}=${fm(r0.Sr)}\\ \\Omega\\)`,`\\(\\frac{${fm(sig(r0.P,4))}\\times${fm(r0.Sr)}}{${fm(sig(r0.P,4))}+${fm(r0.Sr)}}=${fm(sig(r0.P*r0.Sr/(r0.P+r0.Sr),4))}\\ \\Omega\\)`,`\\(R_T=${fm(v.a)}+${fm(sig(r0.P*r0.Sr/(r0.P+r0.Sr),4))}=${fm(sig(r0.RT,4))}\\ \\Omega\\)، و \\(I=E/R_T=${fm(sig(r0.I,4))}\\) A`];
