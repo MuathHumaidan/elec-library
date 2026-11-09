@@ -18,7 +18,15 @@ global.window={};eval(fs.readFileSync(path.join(ROOT,'library.js'),'utf8'));cons
     /* «اكتشف الخطأ» (courses/<id>/errors.js): errs = مسائل فيها خطوة واحدة خاطئة. تُضاف فقط إن وُجدت */
     ...(()=>{const v=((PLCBOOK.ERRS||{})[l.id]||[]).filter(x=>x&&typeof x.ask==='string'&&Array.isArray(x.steps)&&x.steps.length>=2&&x.steps.every(s=>s&&typeof s.t==='string'));
       if(!v.length)return {};
-      return {errs:v.map(x=>({ex:x.ex||'',title:x.title||'',given:x.given||'',ask:x.ask,steps:x.steps.map(s=>s.bad?{t:s.t,bad:true,why:s.why||'',fix:s.fix||'',...(Array.isArray(s.reasons)&&s.reasons.length?{reasons:s.reasons.map(String),rc:s.rc}:{})}:{t:s.t}),answer:x.answer||''}))}})()})));
+      return {errs:v.map(x=>({ex:x.ex||'',title:x.title||'',given:x.given||'',ask:x.ask,steps:x.steps.map(s=>s.bad?{t:s.t,bad:true,why:s.why||'',fix:s.fix||'',...(Array.isArray(s.reasons)&&s.reasons.length?{reasons:s.reasons.map(String),rc:s.rc}:{})}:{t:s.t}),answer:x.answer||''}))}})(),
+    /* «اكتشف العطل» و«تحدي المحاكاة» (courses/<id>/challenge.js، للدروس التي لها مختبر): faults = أعطال المختبر المخفية بأعراضها،
+       sim = القراءات التي يمكن استهدافها والمدخلات التي يمكن تثبيتها. تُضاف فقط إن وُجدت */
+    ...(()=>{const c=(PLCBOOK.CHAL||{})[l.id];if(!c||!l.lab)return {};const o={};
+      const f=(c.faults||[]).filter(x=>x&&x.id&&typeof x.t==='string').map(x=>({id:String(x.id),t:x.t,sym:x.sym||'',how:x.how||''}));if(f.length)o.faults=f;
+      const out=(c.outputs||[]).filter(x=>x&&x.k&&x.label&&x.m).map(x=>({k:x.k,label:x.label,unit:x.unit||'',dp:x.dp|0}));
+      if(out.length)o.sim={outputs:out,inputs:(c.inputs||[]).filter(x=>x&&x.k&&x.label&&['range','switch','pick'].includes(x.kind)).map(x=>({k:x.k,label:x.label,kind:x.kind,
+        ...(x.kind==='range'?{unit:x.unit||'',min:x.min,max:x.max,step:x.step,dp:x.dp|0}:{}),...(x.kind==='pick'?{opts:(x.opts||[]).map(p=>[p[0],String(p[1])])}:{}),...(x.noset?{noset:true}:{})}))};
+      return o})()})));
   const units=await p.evaluate(()=>PLCBOOK.UNITS.map(u=>({n:u.n,title:u.title})).sort((a,b)=>a.n-b.n));
   lessons.forEach(l=>{nq+=l.questions.length;l.questions.concat(l.exit||[]).forEach(q=>{if(!(Number.isInteger(q.c)&&q.c>=0&&q.c<q.o.length))throw new Error('bad answer index in '+c.id+'/'+l.id)})});
   lessons.forEach(l=>(l.errs||[]).forEach((x,i)=>{const b=x.steps.filter(s=>s.bad);const w=c.id+'/'+l.id+' errs['+i+']';
@@ -28,8 +36,11 @@ global.window={};eval(fs.readFileSync(path.join(ROOT,'library.js'),'utf8'));cons
   if(errsX.length)console.warn('  تنبيه: في errors.js دروس غير موجودة في',c.id+':',errsX.join(', '));
   const acts=await p.evaluate(()=>Object.keys(PLCBOOK.ACTS||{}).filter(id=>!PLCBOOK.LESSONS.some(l=>l.id===id)));
   if(acts.length)console.warn('  تنبيه: في activities.js دروس غير موجودة في',c.id+':',acts.join(', '));
+  const chX=await p.evaluate(()=>Object.keys(PLCBOOK.CHAL||{}).filter(id=>!PLCBOOK.LESSONS.some(l=>l.id===id&&l.lab)));
+  if(chX.length)console.warn('  تنبيه: في challenge.js دروس غير موجودة أو بلا مختبر في',c.id+':',chX.join(', '));
+  lessons.forEach(l=>(l.faults||[]).forEach((f,i,a)=>{if(a.findIndex(x=>x.id===f.id)!==i)throw new Error('duplicate fault id '+f.id+' in '+c.id+'/'+l.id)}));
   out.courses.push({id:c.id,code:c.code,title:c.title,units,lessons});
-  console.log(c.id,lessons.length,'lessons',lessons.reduce((a,l)=>a+l.questions.length,0),'questions',lessons.reduce((a,l)=>a+(l.open||[]).length,0),'open',lessons.reduce((a,l)=>a+(l.exit||[]).length,0),'exit',lessons.reduce((a,l)=>a+(l.errs||[]).length,0),'errs');
+  console.log(c.id,lessons.length,'lessons',lessons.reduce((a,l)=>a+l.questions.length,0),'questions',lessons.reduce((a,l)=>a+(l.open||[]).length,0),'open',lessons.reduce((a,l)=>a+(l.exit||[]).length,0),'exit',lessons.reduce((a,l)=>a+(l.errs||[]).length,0),'errs',lessons.reduce((a,l)=>a+(l.faults||[]).length,0),'faults',lessons.filter(l=>l.sim).length,'sim');
  }
  fs.writeFileSync(path.join(ROOT,'quiz-bank.json'),JSON.stringify(out));console.log('total',nq,'->',path.join(ROOT,'quiz-bank.json'));await b.close();
 })().catch(e=>{console.error(e);process.exit(1)});

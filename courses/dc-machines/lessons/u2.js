@@ -9,6 +9,8 @@ const fm=(x,d)=>B.fmtN(x,d);
 const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 /* التجربة السابعة: أصغر حمل في جداول الكتاب — يبدأ منه الجدولان بدل T = 0 (قرار المدرب رقم 3) */
 const EXP7_TMIN=0.1;
 
@@ -141,7 +143,7 @@ function motorSub(type,v,s,h){
  const Va=s.arm&&!s.trip?s.Vin:0;
  if(s.arm&&!s.trip){
   if(type!=='series'){k=s.sg*Mod.kphi(v,s.If);Ia=Math.max(0,(Va-k*s.n)/v.Ra);if(Ia>0){const kt=k*60/(2*PI);A=kt*Va/v.Ra;Bc=kt*k/v.Ra}}
-  else{const R=v.Ra+v.Rse;Ia=Mod.seriesIa(v,Va,s.n,R);k=Mod.kphi(v,v.aSe*Ia);if(Ia>0){const kt=k*60/(2*PI);Bc=kt*k/R;A=kt*Ia+Bc*s.n}}
+  else{const R=v.Ra+v.Rse;Ia=Mod.seriesIa(v,Va,s.n,R);k=s.sg*Mod.kphi(v,v.aSe*Ia);if(Ia>0){const kt=k*60/(2*PI);Bc=kt*k/R;A=kt*Ia+Bc*s.n}}
  }
  s.Ia=Ia;s.k=k;s.Te=k*60/(2*PI)*Ia;
  if(s.pkOn)s.peak=Math.max(s.peak,Ia);
@@ -154,7 +156,7 @@ function motorSub(type,v,s,h){
 }
 function motorStep(type,v,s,dt){const N=Math.max(1,Math.ceil(dt/0.004));for(let i=0;i<N;i++)motorSub(type,v,s,dt/N);
  // final electrical values at the new speed (for meters)
- if(s.arm&&!s.trip){const Va=s.Vin;if(type!=='series'){const k=s.sg*Mod.kphi(v,s.If);s.Ia=Math.max(0,(Va-k*s.n)/v.Ra);s.k=k}else{const R=v.Ra+v.Rse;s.Ia=Mod.seriesIa(v,Va,s.n,R);s.k=Mod.kphi(v,v.aSe*s.Ia)}s.Te=s.k*60/(2*PI)*s.Ia}else{s.Ia=0;s.Te=0}}
+ if(s.arm&&!s.trip){const Va=s.Vin;if(type!=='series'){const k=s.sg*Mod.kphi(v,s.If);s.Ia=Math.max(0,(Va-k*s.n)/v.Ra);s.k=k}else{const R=v.Ra+v.Rse;s.Ia=Mod.seriesIa(v,Va,s.n,R);s.k=s.sg*Mod.kphi(v,v.aSe*s.Ia)}s.Te=s.k*60/(2*PI)*s.Ia}else{s.Ia=0;s.Te=0}}
 
 /* =====================================================================
    مخططات التوصيل — الأشكال (5) و(6) و(7) (مرسومة من جديد)
@@ -223,7 +225,7 @@ function tableHTML(t){return `<p class="sub" style="margin-top:12px"><b>${t.cap}
    ===================================================================== */
 function bench(el,cfg){
  const type=cfg.type;const tabs=cfg.tables.map(id=>TB[id]);let sel=0;
- const s={n:0,Ia:0,If:0,Te:0,k:0,arm:0,fld:0,Vin:0,Vf:0,T:cfg.T0||0,rf:0,ra:0,sg:1,fault:0,trip:'',peak:0,pkOn:0,pkT:0,ocT:0,ang:0,dnf:0,t:0,startV:0};
+ const s={n:0,Ia:0,If:0,Te:0,k:0,arm:0,fld:0,Vin:0,Vf:0,T:cfg.T0||0,rf:0,ra:0,sg:chF('arev')?-1:1,fault:0,trip:'',peak:0,pkOn:0,pkT:0,ocT:0,ang:0,dnf:0,t:0,startV:0};
  const did={};const R={};tabs.forEach(t=>R[t.id]={pts:{},free:[]});let startRec=null,msg='',msgCls='',lastSpike=-99,blockMsg=0;
  const P=cfg.prefix;
  const supplyCtl=type==='sep'
@@ -261,7 +263,7 @@ function bench(el,cfg){
  const tpw=()=>{$('#'+P+'tpw').textContent=TP.trainer?'من قيم المدرب':'توضيحية'};tpw();
  const setMsg=(h,c)=>{msg=h;msgCls=c;const m=$('#'+P+'msg');if(m)m.innerHTML=h?`<div class="callout ${c}">${h}</div>`:''};
  /* field current shown on A1 (sep) or computed (shunt) */
- const fieldI=()=>type==='sep'?(s.fld?s.Vf/v().Rf:0):type==='shunt'?(s.arm&&!s.trip&&!s.fault?s.Vin/v().Rf:0):v().aSe*s.Ia;
+ const fieldI=()=>type==='sep'?(s.fld&&!chF('fopen')?s.Vf/v().Rf:0):type==='shunt'?(s.arm&&!s.trip&&!s.fault&&!chF('fopen')?s.Vin/v().Rf:0):v().aSe*s.Ia;
  const cur=k=>k==='Vin'?s.Vin:k==='T'?s.T:fieldI();
  const match=(k,val)=>Math.abs(cur(k)-val)<=TOL[k]+1e-9;
  const running=()=>s.arm&&!s.trip&&Math.abs(s.n)>1;
@@ -288,7 +290,7 @@ function bench(el,cfg){
   if(s.fld){s.fld=0;swSet('fsw',0);if(s.arm&&!s.trip){did.fieldOffFirst=1;setMsg('<b>خطأ في ترتيب الفصل!</b> فصلت المجال والمنتج ما زال موصلاً: يضعف المجال إلى المغناطيسية المتبقية فيزيد التيار وترتفع السرعة بشدة. الكتاب: «قم بفصل دائرة المنتج قبل فصل دائرة المجال» (ص 28).','err')}else if(did.armOffFirst&&!s.arm){did.offOK=1;setMsg('أحسنت: فصلت المنتج أولاً ثم المجال — الترتيب الصحيح (ص 28).','')}}
   else{s.fld=1;swSet('fsw',1);did.armOffFirst=0}};
  const revBtn=(id,key)=>{const b=$('#'+P+id);if(!b)return;b.onclick=()=>{if(s.arm||Math.abs(s.n)>0.5){setMsg('أوقف المحرك أولاً: افصل '+(type==='sep'?'مصدر المنتج':'المصدر')+' وانتظر حتى تصبح السرعة صفراً، ثم اعكس الأطراف (المصدر مفصول).','err');return}
-  s[key]=s[key]?0:1;b.setAttribute('aria-pressed',s[key]?'true':'false');s.sg=(s.rf?-1:1)*(s.ra?-1:1);did.rev=1;
+  s[key]=s[key]?0:1;b.setAttribute('aria-pressed',s[key]?'true':'false');s.sg=(s.rf?-1:1)*(s.ra?-1:1)*(chF('arev')?-1:1);did.rev=1;
   setMsg(s.rf&&s.ra?'عكست أطراف المجال وأطراف المنتج معاً: الاتجاه يرجع كما كان (عكس الاثنين = لا عكس).':(s.rf||s.ra)?'عكست أطراف '+(s.rf?'المجال':'المنتج')+'. شغّل الآن ولاحظ اتجاه الدوران.':'رجعت الأطراف كما كانت.','')}};
  revBtn('rf','rf');revBtn('ra','ra');
  const fb=$('#'+P+'flt');if(fb)fb.onclick=()=>{s.fault=s.fault?0:1;fb.setAttribute('aria-pressed',s.fault?'true':'false');if(s.fault&&running()){did.fault=1;did.faultT=s.T;setMsg(`فصلت ملف المجال فجأة والمحرك يعمل ${s.T>0.005?'وعليه حمل':'بدون حمل'}: يبقى المجال من المغناطيسية المتبقية فقط. راقب التيار والسرعة.`,'err')}else if(!s.fault)setMsg('أعدت توصيل ملف المجال.','')};
@@ -355,7 +357,7 @@ function bench(el,cfg){
  const steps=stepsUI($('#'+P+'st'),cfg.steps({s,v,R,did,full,running,steady,match,fieldI,startRec:()=>startRec}));
  showSl();drawTables();drawConds();drawPlots();
  loopOn(el,dt=>{const vv=v();s.t+=dt;
-  if(type==='sep')s.If=s.fld?s.Vf/vv.Rf:0;else if(type==='shunt')s.If=s.arm&&!s.trip&&!s.fault?s.Vin/vv.Rf:0;
+  if(type==='sep')s.If=s.fld&&!chF('fopen')?s.Vf/vv.Rf:0;else if(type==='shunt')s.If=s.arm&&!s.trip&&!s.fault&&!chF('fopen')?s.Vin/vv.Rf:0;
   const n0=s.n;motorStep(type,vv,s,dt);
   if(s.pkOn){s.pkT+=dt;if(s.pkT>3)s.pkOn=0}
   if(s.peak>vv.IaN*1.5&&s.pkOn)lastSpike=s.t;

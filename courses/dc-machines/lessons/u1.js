@@ -13,6 +13,8 @@ const fx=v=>(+v).toFixed(1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
 const sgn=(v,d)=>(B.round(v,d==null?6:d)<0?'−':'')+fm(Math.abs(v),d);
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f));
 
 /* ---------- styles used only by this file (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('dcu1-css'))return;const s=document.createElement('style');s.id='dcu1-css';s.textContent=`
@@ -891,11 +893,11 @@ B.lesson({
   tables();plots();
   let pt=0;
   loopOn(el,dt=>{const v=TP.v,Mx=mach(v);motorStep(M0,v,dt,{on,Vs,Pg:0});
-   E=Mx.E((rev?-1:1)*If,M0.n);if(rev&&E<-1&&If>0.25)did.revNeg=1;
+   const IfA=chF('fopen')?0:If;E=Mx.E((rev!==chF('frev')?-1:1)*IfA*(chF('kF')?0.55:1),M0.n);if(rev&&E<-1&&If>0.25)did.revNeg=1;
    ang=(ang+M0.n/60*360*dt/25)%360;
    const sg=[on,fm(Vs,1),Math.round(M0.n),fm(If,3),rev,fm(E,1)].join('|');
-   if(sg!==sig){sig=sg;$('#l2c').innerHTML=benchSVG({kind:'nl',on,Vs,ang,If,E,VL:E,n:M0.n,rev});
-    $('#l2m').innerHTML=meter('السرعة n (Tacho)',fm(Math.round(M0.n),0)+' rpm')+meter('تيار المجال I<sub>f</sub> (A1)',fm(If,3)+' A')+meter('الفولتميتر V: E<sub>0</sub>',sgn(E,1)+' V')+meter('جهد مصدر المحرك',on?fm(Vs,1)+' V':'OFF');tables()}
+   if(sg!==sig){sig=sg;$('#l2c').innerHTML=benchSVG({kind:'nl',on,Vs,ang,If:IfA,E,VL:E,n:M0.n,rev});
+    $('#l2m').innerHTML=meter('السرعة n (Tacho)',fm(Math.round(M0.n),0)+' rpm')+meter('تيار المجال I<sub>f</sub> (A1)',fm(IfA,3)+' A')+meter('الفولتميتر V: E<sub>0</sub>',sgn(E,1)+' V')+meter('جهد مصدر المحرك',on?fm(Vs,1)+' V':'OFF');tables()}
    else{const g=el.querySelectorAll('#dcr1,#dcr2');if(g[0])g[0].setAttribute('transform',`rotate(${fx(ang)} 230 166)`);if(g[1])g[1].setAttribute('transform',`rotate(${fx(ang)} 580 166)`)}
    pt+=dt;if(pt>0.25){pt=0;plots()}
    steps.check()});
@@ -1137,12 +1139,12 @@ B.lesson({
   ]);
   redrawT();let pt=0;
   loopOn(el,dt=>{const v=TP.v,Mx=mach(v);
-   G=armSolve(v,{n:M0.n,Isep:If,RL:RLohm(),noAR,noVb});
+   const IfA=chF('fopen')?0:If;G=armSolve(v,{n:M0.n,Isep:(chF('frev')?-1:1)*IfA*(chF('kF')?0.55:1),RL:RLohm(),noAR,noVb});
    motorStep(M0,v,dt,{on,Vs,Pg:G.E*G.Ia});
    ang=(ang+M0.n/60*360*dt/25)%360;
    const sg=[on,fm(Vs,1),Math.round(M0.n),fm(If,3),RLp,fm(G.VL,1),fm(G.IL,2),noAR,noVb].join('|');
-   if(sg!==sig){sig=sg;$('#l3c').innerHTML=benchSVG({kind:'sep',on,Vs,ang,If,E:G.E,VL:G.VL,IL:G.IL,RLp:RLp==='open'?null:RLp,n:M0.n});
-    $('#l3m').innerHTML=meter('السرعة n',fm(Math.round(M0.n),0)+' rpm')+meter('I<sub>f</sub> (A1)',fm(If,3)+' A')+meter('I<sub>L</sub> (A2)',fm(G.IL,2)+' A')+meter('V<sub>L</sub> (V)',fm(G.VL,1)+' V')+meter('R<sub>L</sub>',RLp==='open'?'∞':fm(RLohm(),1)+' Ω');
+   if(sg!==sig){sig=sg;$('#l3c').innerHTML=benchSVG({kind:'sep',on,Vs,ang,If:IfA,E:G.E,VL:G.VL,IL:G.IL,RLp:RLp==='open'?null:RLp,n:M0.n});
+    $('#l3m').innerHTML=meter('السرعة n',fm(Math.round(M0.n),0)+' rpm')+meter('I<sub>f</sub> (A1)',fm(IfA,3)+' A')+meter('I<sub>L</sub> (A2)',fm(G.IL,2)+' A')+meter('V<sub>L</sub> (V)',fm(G.VL,1)+' V')+meter('R<sub>L</sub>',RLp==='open'?'∞':fm(RLohm(),1)+' Ω');
     const Enl=Mx.E(If,M0.n),Ear=Enl-G.E;
     $('#l3why').innerHTML=`<div class="facts"><div class="fact"><span>E بلا حمل (نفس n و I<sub>f</sub>)</span><b>${fm(Enl,1)} V</b></div><div class="fact"><span>− نقص E برد فعل المنتج</span><b>${fm(Ear,1)} V</b></div><div class="fact"><span>− I<sub>a</sub>R<sub>a</sub></span><b>${fm(G.Ia*v.Ra,1)} V</b></div><div class="fact"><span>− هبوط الفرش</span><b>${fm(G.vb,1)} V</b></div><div class="fact"><span>= V<sub>L</sub></span><b>${fm(G.VL,1)} V</b></div></div><p class="sub">تفصيل توضيحي من نموذج الآلة (ليس من الكتاب). في المولد منفصل التغذية \\(I_a=I_L\\).</p>`;B.math($('#l3why'));
     $('#l3w').innerHTML=warnI(G.IL,v.Irat);
@@ -1427,7 +1429,7 @@ B.lesson({
   ]);
   redrawT();let pt=0;
   loopOn(el,dt=>{const v=TP.v;
-   G=armSolve(v,{n:M0.n,Ish,sig:frev?-1:1,RL:RLohm()});
+   G=armSolve(v,{n:M0.n,Ish,sig:frev!==chF('frev')?-1:1,RL:RLohm()});
    const tgt=fopen?0:G.Va/Math.max(v.Rsh,1);G.tgt=tgt;Ish+=(tgt-Ish)*(1-Math.exp(-dt/Math.max(v.Tf,0.01)));
    motorStep(M0,v,dt,{on,Vs,Pg:G.E*G.Ia});
    ang=(ang+M0.n/60*360*dt/25)%360;
@@ -1680,8 +1682,8 @@ B.lesson({
   ]);
   lampTxt();redrawT();let pt=0;
   loopOn(el,dt=>{const v=TP.v,Mx=mach(v);
-   G=armSolve(v,{n:M0.n,Ish,sig:1,RL:RL(),Rse:v.Rse,s:rev?-1:1});
-   const tgt=G.Va/Math.max(v.Rsh+Rfg,1);G.tgt=tgt;Ish+=(tgt-Ish)*(1-Math.exp(-dt/Math.max(v.Tf,0.01)));
+   G=armSolve(v,{n:M0.n,Ish,sig:1,RL:RL(),Rse:v.Rse,s:rev!==chF('serev')?-1:1});
+   const tgt=chF('fopen')?0:G.Va/Math.max(v.Rsh+Rfg,1);G.tgt=tgt;Ish+=(tgt-Ish)*(1-Math.exp(-dt/Math.max(v.Tf,0.01)));
    const onM=dp&&Vs>0.05;Ifm=onM?Vs/(v.Rsh+rfm*v.Rfmmax):0;const I0f=Vs/v.Rsh;
    const phi=onM&&I0f>1e-6?Math.max(Mx.Emag(Ifm),0.05*Mx.Emag(I0f))/Math.max(Mx.Emag(I0f),1e-6):1;
    motorStep(M0,v,dt,{on:dp,Vs,Rst:RstIn?v.Rst:0,phi,Pg:G.E*G.Ia});

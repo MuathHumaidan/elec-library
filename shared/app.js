@@ -21,6 +21,14 @@ B.ACTS={};
 /* self-study data (study.js) and «اكتشف الخطأ» variants (errors.js) per course */
 B.STUDY={units:{},lessons:{}};B.study=o=>{o=o||{};Object.assign(B.STUDY.units,o.units||{});Object.assign(B.STUDY.lessons,o.lessons||{})};
 B.ERRS={};B.errs=o=>{Object.assign(B.ERRS,o||{})};
+/* «اكتشف العطل» و«تحدي المحاكاة» (courses/<id>/challenge.js، اختياري): لكل درس فيه مختبر
+   PLCBOOK.chal({'u2-l1':{outputs:[{k,label,unit,dp,m:'#meters|label'}],inputs:[{k,label,kind:'range'|'switch'|'pick',sel,ctl,...}],
+     faults:[{id,t,sym,how,p:{key:['*',x]|['=',x]},x:'hook flags'}],ref:[{id,keys}],hide:[css],hideFault:[css]}})
+   تعمل الأعطال فقط في «وضع التحدي» (الصفحة تُفتح من خادم النشاط بـ ?ch=1)؛ خارجها B.chF() دائماً false فلا يتغير المختبر. */
+B.CHAL={};B.chal=o=>{Object.assign(B.CHAL,o||{})};
+const CH={on:false,mode:'',fault:null,defs:{}};
+B.chOn=()=>CH.on;
+B.chF=f=>!!(CH.on&&CH.fault&&String(CH.fault.x||'').split(/\s+/).includes(f));
 B.acts=o=>{Object.keys(o||{}).forEach(id=>{const v=o[id]||{},cur=B.ACTS[id]||(B.ACTS[id]={});['open','exit'].forEach(k=>{if(Array.isArray(v[k]))cur[k]=(cur[k]||[]).concat(v[k])})})};
 
 /* ---------------- motor plant helper ----------------
@@ -414,7 +422,10 @@ B.params=function(host,id,defs,onChange){
  const dflt=()=>Object.fromEntries(defs.map(d=>[d.k,d.value]));
  const rng=d=>d.min!=null&&d.max!=null?`المسموح: من <span class="ltr">${fmtN(d.min)}</span> إلى <span class="ltr">${fmtN(d.max)}</span>`:d.min!=null?`المسموح: <span class="ltr">${fmtN(d.min)}</span> فأكثر`:d.max!=null?`المسموح: حتى <span class="ltr">${fmtN(d.max)}</span>`:'';
  const clampD=(d,x)=>{x=+x;if(!isFinite(x))return d.value;if(d.min!=null&&x<d.min)x=d.min;if(d.max!=null&&x>d.max)x=d.max;return x};
- const compute=()=>{P.trainer=!!st.on;P.v=dflt();if(st.on)defs.forEach(d=>{if(st.vals[d.k]!=null)P.v[d.k]=clampD(d,st.vals[d.k])})};
+ const compute=()=>{P.trainer=!!st.on;P.v=dflt();if(st.on)defs.forEach(d=>{if(st.vals[d.k]!=null)P.v[d.k]=clampD(d,st.vals[d.k])});
+  /* وضع التحدي: كل الجوالات بالقيم التوضيحية نفسها، ثم يُطبَّق العطل المخفي (إن وُجد) على أرقام الآلة */
+  if(CH.on){P.trainer=false;P.v=dflt();const p=CH.fault&&CH.fault.p;if(p)Object.keys(p).forEach(k=>{if(!(k in P.v))return;const o=p[k];P.v[k]=o[0]==='*'?P.v[k]*o[1]:o[1]})}};
+ if(CH.on){CH.defs[id]=defs;host.hidden=true;compute();P.warn=()=>{};return P}
  const fire=()=>{compute();store.set(key,st);try{onChange&&onChange(P.v)}catch(e){console.error(e)}};
  const render=()=>{
   host.classList.add('tp');
@@ -484,9 +495,14 @@ const LIVE_ACTS=[
   {k:'quiz',t:'المسابقة',d:'أسئلة اختيار من متعدد على الشاشة، ويجيب الطلاب من جوالاتهم، مع نقاط وترتيب.',b:'ابدأ المسابقة',n:L=>(L.quiz||[]).length,none:'أضف أسئلتك عند البدء'},
   {k:'cloud',t:'سؤال مفتوح وسحابة كلمات',d:'اطرح سؤالاً قصيراً، ويكتب كل طالب إجابته، فتظهر الإجابات على الشاشة سحابة كلمات بلا أسماء.',b:'ابدأ السؤال المفتوح',type:'cloud',n:L=>((B.ACTS[L.id]||{}).open||[]).length,none:'اكتب سؤالك عند البدء'},
   {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'},
-  {k:'errs',t:'اكتشف الخطأ',d:'حل مكتوب لمثال من الدرس بأرقام جديدة، وفيه خطوة واحدة خاطئة. يختار الطلاب من جوالاتهم الخطوة الخاطئة، ثم يظهر سبب الخطأ وتصحيحه.',b:'ابدأ اكتشف الخطأ',type:'errs',only:true,n:L=>(B.ERRS[L.id]||[]).length,unit:n=>AR_N(n,'مثال','مثالان','أمثلة','مثالاً')}];
+  {k:'errs',t:'اكتشف الخطأ',d:'حل مكتوب لمثال من الدرس بأرقام جديدة، وفيه خطوة واحدة خاطئة. يختار الطلاب من جوالاتهم الخطوة الخاطئة، ثم يظهر سبب الخطأ وتصحيحه.',b:'ابدأ اكتشف الخطأ',type:'errs',only:true,n:L=>(B.ERRS[L.id]||[]).length,unit:n=>AR_N(n,'مثال','مثالان','أمثلة','مثالاً')},
+  /* المختبرات فقط (courses/<id>/challenge.js): يفتح كل طالب مختبر الدرس على جواله */
+  {k:'fault',t:'اكتشف العطل',d:'يعمل مختبر الدرس على جوال كل طالب وفيه العطل المخفي نفسه. يفحص الطالب القراءات ويغيّر المدخلات، ثم يختار العطل من قائمة، ثم يظهر العطل وأعراضه وكيف يُكتشف.',b:'ابدأ اكتشف العطل',type:'fault',only:true,n:L=>L.lab&&B.CHAL[L.id]?(B.CHAL[L.id].faults||[]).length:0,unit:n=>AR_N(n,'عطل','عطلان','أعطال','عطلاً')},
+  {k:'sim',t:'تحدي المحاكاة',d:'يحدد المدرب قراءة مستهدفة (مثل سرعة أو جهد) ونسبة سماح، ويضبط كل طالب المختبر على جواله حتى يصل إليها ثم يرسل. تظهر على الشاشة أسماء من وصل وتوزيع القيم.',b:'ابدأ تحدي المحاكاة',type:'sim',only:true,n:L=>L.lab&&B.CHAL[L.id]?(B.CHAL[L.id].outputs||[]).length:0,unit:n=>AR_N(n,'قراءة يمكن استهدافها','قراءتان يمكن استهدافهما','قراءات يمكن استهدافها','قراءة يمكن استهدافها')}];
 const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',exit:'<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/>',
   errs:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8.3 8.3l4.4 4.4M12.7 8.3l-4.4 4.4"/>',
+  fault:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+  sim:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   cards:'<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
   order:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5v3M3.2 18h1.8l-1.8 2.2h1.8M3.5 11.2a.9.9 0 1 1 1.3 1.1L3.2 14h1.8"/>',
   match:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6.5l10 11M7 17.5l10-11"/>',
@@ -655,10 +671,65 @@ function studyPrePost(el,L){
   draw();
 }
 
+/* ---------------- وضع التحدي: المختبر وحده داخل صفحة النشاط على جوال الطالب ----------------
+ تفتحه صفحة الطالب في خادم النشاط داخل iframe: courses/<id>/index.html?ch=1#<lesson>
+ الرسائل (postMessage) بين الصفحتين:
+   المختبر ← {ch:'hello',lesson}            عند التحميل
+   الأب   → {ch:'init',mode:'fault'|'sim',fault:id|null,lock:[{k,v}]}   مرة واحدة: يُرسم المختبر ويُطبَّق العطل والقيم الثابتة
+   المختبر ← {ch:'ready',outputs:[{k,label,unit,dp}]}
+   الأب   → {ch:'get',id}  ⇒  المختبر ← {ch:'vals',id,vals:{k:رقم أو null}}   القراءات كما تظهر على أجهزة القياس
+ لا شيء من هذا يحدث خارج ?ch=1. */
+const CHQ=(()=>{try{return new URLSearchParams(location.search).get('ch')==='1'}catch(e){return false}})();
+const chNum=t=>{const m=String(t==null?'':t).replace(/[−–]/g,'-').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const chNorm=t=>String(t||'').replace(/\s+/g,' ').trim();
+function chRead(o){const [c,lb]=String(o.m||'').split('|');const box=c&&document.querySelector(c);if(!box||lb==null)return null;
+  const ex=lb[0]==='=',want=chNorm(ex?lb.slice(1):lb);
+  for(const mt of box.children){const s=mt.querySelector('span'),b=mt.querySelector('b');if(!s||!b)continue;const t=chNorm(s.textContent);if(ex?t===want:t.startsWith(want))return chNum(b.textContent)}
+  return null}
+function renderChallenge(L){
+  stopRun();document.body.classList.add('ch-mode');document.body.classList.remove('in-lesson');document.body.dataset.tab='lab';
+  const root=$('#view'),spec=L&&L.lab&&B.CHAL[L.id];
+  const par=window.parent!==window?window.parent:null;
+  const post=(m,o)=>{if(par)try{par.postMessage(m,o||'*')}catch(e){}};
+  if(!spec){root.innerHTML='<div class="ch-msg"><b>هذا الدرس ليس له مختبر لهذا النشاط.</b></div>';post({ch:'error',msg:'nolab'});return}
+  if(renderChallenge.done)return;renderChallenge.done=true;   // صفحة واحدة لكل نشاط: لا نعيد الرسم عند تغير العنوان
+  root.innerHTML=`<div class="ch-msg"><span class="ch-spin" aria-hidden="true"></span>جارٍ تجهيز المختبر…</div>`;
+  if(!par){root.innerHTML='<div class="ch-msg"><b>هذه الصفحة تُفتح من نشاط المدرب</b><span>ادخل النشاط برمز من شاشة المدرب.</span></div>';return}
+  let started=false;
+  const start=(m,origin)=>{
+    CH.on=true;CH.mode=m.mode==='fault'?'fault':'sim';CH.fault=CH.mode==='fault'?(spec.faults||[]).find(f=>f.id===m.fault)||null:null;
+    root.innerHTML=`<div class="ch-top"><span class="ch-k">${L.unit}.${L.order}</span><b>${L.title}</b></div><div id="ch-ref"></div><div id="custom-lab"></div>`;
+    const css=[...(spec.hide||[]),...(CH.mode==='fault'?spec.hideFault||[]:[])].map(s=>s+'{display:none!important}');
+    try{L.lab($('#custom-lab'),B)}catch(e){console.error(e)}
+    B.math(root);
+    /* بيانات الآلة السليمة (القيم التوضيحية الافتراضية) للمقارنة */
+    const refs=(spec.ref||[]).map(r=>{const D=CH.defs[r.id]||[];return r.keys.map(k=>D.find(d=>d.k===k)).filter(Boolean)}).flat();
+    if(refs.length)$('#ch-ref').innerHTML=`<details class="ch-ref"><summary>بيانات الآلة السليمة (للمقارنة)</summary><table>${refs.map(d=>`<tr><th>${d.label}</th><td><span class="ltr">${fmtN(d.value)}${d.unit?' '+d.unit:''}</span></td></tr>`).join('')}</table><p class="sub">أرقام توضيحية: هي أرقام الآلة في المختبر وهي سليمة.</p></details>`;
+    /* المدخلات الثابتة بقرار المدرب: تُضبط ثم تُقفل */
+    const lock=(Array.isArray(m.lock)?m.lock:[]).map(x=>({x,inp:(spec.inputs||[]).find(i=>i.k===x.k)})).filter(o=>o.inp);
+    const ord={pick:0,switch:1,range:2};
+    lock.sort((a,b)=>(ord[a.inp.kind]||0)-(ord[b.inp.kind]||0)).forEach(({x,inp})=>{try{
+      if(inp.noset){}   // مدخل يُقفل على حاله فقط (مثل أزرار عكس الأطراف)
+      else if(inp.kind==='range'){const r=$(inp.sel);if(r){r.value=x.v;r.dispatchEvent(new Event('input',{bubbles:true}))}}
+      else if(inp.kind==='switch'){const b=$(inp.sel);if(b&&(b.getAttribute('aria-pressed')==='true')!==!!x.v)b.click()}
+      else if(inp.kind==='pick'){const b=$(inp.sel.replace('{v}',String(x.v)));if(b)b.click()}
+      css.push(String(inp.ctl||inp.sel).split(',').map(s=>'#custom-lab '+s.trim()).join(',')+'{pointer-events:none!important;opacity:.42;filter:grayscale(1)}');
+    }catch(e){console.error(e)}});
+    const st=document.createElement('style');st.textContent=css.join('\n');document.head.appendChild(st);
+    if(lock.length){const n=document.createElement('p');n.className='ch-locknote';n.textContent='المدخلات الباهتة ثابتة بقرار المدرب.';$('#custom-lab').prepend(n)}
+    post({ch:'ready',outputs:(spec.outputs||[]).map(o=>({k:o.k,label:o.label,unit:o.unit||'',dp:o.dp|0}))},origin);
+  };
+  window.addEventListener('message',e=>{if(e.source!==par)return;const m=e.data;if(!m||typeof m!=='object')return;
+    if(m.ch==='init'&&!started){started=true;start(m,e.origin)}
+    else if(m.ch==='get'&&started){const vals={};(spec.outputs||[]).forEach(o=>{const v=chRead(o);vals[o.k]=v!=null&&isFinite(v)?v:null});post({ch:'vals',id:m.id,vals},e.origin)}});
+  post({ch:'hello',lesson:L.id});
+}
+
 /* ---------------- ROUTER ---------------- */
 function route(){
   const h=(location.hash||'').replace('#','');
   const L=B.LESSONS.find(l=>l.id===h);
+  if(CHQ)return renderChallenge(L);
   if(L){renderLesson(L)}else{stopRun();document.body.classList.remove('in-lesson');delete document.body.dataset.tab;renderHome()}
 }
 /* book-vs-corrected inline switch: <div class="seg"><button data-bkfix="k" data-bkv="book">…<button data-bkfix="k" data-bkv="fixed">…</div>; content: class bkb / bkf with data-bk="k" */

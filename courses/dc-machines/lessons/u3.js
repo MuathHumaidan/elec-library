@@ -12,6 +12,8 @@ const fx=v=>(+v).toFixed(1);
 const R=(x,d)=>B.round(x,d);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const lt=s=>`<span class="ltr">${s}</span>`;
+/* أعطال «اكتشف العطل» المخفية (challenge.js): false دائماً خارج وضع التحدي */
+const chF=f=>!!(B.chF&&B.chF(f)),chOn=()=>!!(B.chOn&&B.chOn());
 
 /* ---------- styles used only by this file (CSS variables only) ---------- */
 (function css(){if(typeof document==='undefined'||document.getElementById('dcu3-css'))return;const s=document.createElement('style');s.id='dcu3-css';s.textContent=`
@@ -144,11 +146,11 @@ function trSolve(P,V1,ZLp){const Z1=Cx(P.R1,P.X1),Z2=Cx(P.R2,P.X2);let u=V1/P.V1
   const e=cabs(E),i2=cabs(I2p);
   return {I1:cabs(I1),P1:V1*I1.re,E:e,V2:cabs(V2p)/P.a,I2:i2*P.a,P2:V2p.re*I2p.re+V2p.im*I2p.im,Pfe:e*e/P.Rc,Pcu:cabs(I1)*cabs(I1)*P.R1+i2*i2*P.R2}}
 /* meter readings (rounded like a lab meter) */
-const rdOC=(P,V)=>{const s=trSolve(P,V,null);return {V10:R(V,1),I10:R(s.I1,3),P10:R(s.P1,1),V20:R(s.E/P.a,1)}};
+const rdOC=(P,V)=>{const s=trSolve(P,V,null);return {V10:R(V,1),I10:R(s.I1,3),P10:R(s.P1,1),V20:chF('s2open')?0:R(s.E/P.a,1)}};
 const rdSC=(P,V)=>{const s=trSolve(P,V,Cx(0));return {Vsc:R(V,2),Isc:R(s.I1,2),Psc:R(s.P1,1),I2:R(s.I2,2),raw:s.I1}};
 const ZLsec=(P,x,pf)=>x>0?csc(Cx(pf,Math.sqrt(Math.max(0,1-pf*pf))),V2n(P)/(x*I2n(P))):null;
-const rdLD=(P,on,x,pf)=>{if(!on)return {V1:0,I1:0,P1:0,V2:0,I2:0,x,pf};const Z=ZLsec(P,x/100,pf);const s=trSolve(P,P.V1n,Z?csc(Z,P.a*P.a):null);
-  return {V1:R(P.V1n,1),I1:R(s.I1,2),P1:R(s.P1,1),V2:R(s.V2,1),I2:R(s.I2,2),x,pf}};
+const rdLD=(P,on,x,pf)=>{if(!on)return {V1:0,I1:0,P1:0,V2:0,I2:0,x,pf};const Z=ZLsec(P,x/100,pf);const s=trSolve(P,P.V1n,Z&&!chF('s2open')?csc(Z,P.a*P.a):null);
+  return {V1:R(P.V1n,1),I1:R(s.I1,2),P1:R(s.P1,1),V2:chF('s2open')?0:R(s.V2,1),I2:chF('s2open')?0:R(s.I2,2),x,pf}};
 /* derived quantities of each table */
 const dOC=r=>{const c=r.P10/(r.V10*r.I10),sn=Math.sqrt(Math.max(0,1-c*c)),Ic=r.I10*c,Im=r.I10*sn;return {c,Ic,Im,R0:r.V10/Ic,X0:r.V10/Im,a:r.V10/r.V20}};
 const dSC=r=>{const Req=r.Psc/(r.Isc*r.Isc),Zeq=r.Vsc/r.Isc;return {Req,Zeq,Xeq:Math.sqrt(Math.max(0,Zeq*Zeq-Req*Req)),c:r.Psc/(r.Vsc*r.Isc)}};
@@ -1238,7 +1240,7 @@ B.lesson({
   {err:'<div class="fixnote"><ol style="margin:4px 0 0;padding-inline-start:20px"><li>«الرسم التخطيطي الموضح بشكل (١٣)» ص 49 و«صل الدائرة كما في شكل (١٣)» في الخطوة 2 — والرسم الفعلي معنون الشكل (11) (صُحح في النص).</li><li>لا جدول قراءات ولا منحنيات ولا أسئلة ختامية لهذه التجربة في الكتاب (السؤال الوحيد ضمن الخطوة 8)؛ ولا قيم مقننة للمحولين.</li><li>«محولان أحاديي الوجه متماثلان» — صوابها «أحاديا الوجه» (صُحح في النص).</li></ol></div>'}
  ],
  lab:(el)=>{
-  let on=false,S1=false,S2=false,rev=Math.random()<0.5,big=false,Rv=null,msg='';const rows=[],did={};
+  let on=false,S1=false,S2=false,rev=chOn()?chF('rev'):Math.random()<0.5,big=false,Rv=null,msg='';const rows=[],did={};
   el.innerHTML=`<div id="e11tp"></div><div id="e11tp2"></div><div class="grid tu-lab">
    <div class="panel c12"><h2>محولان على التوازي <small>مبنية على الشكل (11) ص 49</small></h2>
     <div class="svgbox tu-wide" id="e11c" style="max-width:820px;margin-inline:auto"></div>
@@ -1260,7 +1262,9 @@ B.lesson({
   const emf=()=>{const P=TP.v,Q=TP2.v;return [V2n(P),V2n(P)/(1+Q.dA/100)*(rev?-1:1)]};
   const circNL=()=>{const [Z1,Z2]=Zs(),[E1,E2]=emf();return Math.abs(E1-Math.abs(E2))/cabs(cadd(Z1,Z2))};
   const calc=()=>{const z={I1:0,I2:0,IL:0,V1:0,V2:0,V:0};if(!on)return z;const [Z1,Z2]=Zs(),[E1,E2]=emf(),RL=TP2.v.Rf+rv();let I1,I2,IL,Vt,Vb;
-   if(S1){const Y1=cdiv(Cx(1),Z1),Y2=cdiv(Cx(1),Z2),GL=S2?1/RL:0;Vt=cdiv(cadd(csc(Y1,E1),csc(Y2,E2)),cadd(cadd(Y1,Y2),Cx(GL)));I1=cmul(csub(Cx(E1),Vt),Y1);I2=cmul(csub(Cx(E2),Vt),Y2);IL=csc(Vt,GL);Vb=Cx(0)}
+   /* عطل مخفي: ملف ثانوي المحول 2 مقطوع — لا يمر فيه تيار ولا يعطي جهداً */
+   if(chF('open2')){I2=Cx(0);if(S1){I1=S2?cdiv(Cx(E1),cadd(Z1,Cx(RL))):Cx(0);IL=I1;Vt=csub(Cx(E1),cmul(Z1,I1));Vb=Cx(0)}else{I1=Cx(0);IL=Cx(0);Vt=Cx(0);Vb=Cx(E1)}}
+   else if(S1){const Y1=cdiv(Cx(1),Z1),Y2=cdiv(Cx(1),Z2),GL=S2?1/RL:0;Vt=cdiv(cadd(csc(Y1,E1),csc(Y2,E2)),cadd(cadd(Y1,Y2),Cx(GL)));I1=cmul(csub(Cx(E1),Vt),Y1);I2=cmul(csub(Cx(E2),Vt),Y2);IL=csc(Vt,GL);Vb=Cx(0)}
    else{I1=Cx(0);I2=S2?cdiv(Cx(E2),cadd(Z2,Cx(RL))):Cx(0);IL=I2;Vt=csub(Cx(E2),cmul(Z2,I2));Vb=csub(Vt,Cx(E1))}
    return {I1:cabs(I1),I2:cabs(I2),IL:cabs(IL),V1:cabs(csub(Cx(E1),cmul(Z1,I1))),V2:cabs(Vt),V:cabs(Vb)}};
   const rd=c=>({V1:R(c.V1,1),V2:R(c.V2,1),V:R(c.V,1),A1:R(c.I1,2),A2:R(c.I2,2),A:R(c.IL,2)});
@@ -1275,7 +1279,7 @@ B.lesson({
   const upd=()=>{const P=TP.v;let c=calc();const In2=I2n(P),lim=P.kTrip*In2;
    if(on&&Math.max(c.I1,c.I2,c.IL)>lim){const big1=Math.max(c.I1,c.I2,c.IL);on=false;sw('e11on',false);did.trip=1;msg=`<div class="callout err"><b>القاطع فصل المصدر!</b> ${rev&&S1?'أغلقت S<sub>1</sub> والتوصيل معكوس: الجهدان يتجمعان في الحلقة على معاوقتين صغيرتين':'التيار تجاوز حد القاطع'}، والتيار كان سيصل إلى <span class="ltr">${fm(big1,0)} A</span> = <span class="ltr">${fm(big1/In2,0)}</span> ضعف التيار المقنن لكل محول (<span class="ltr">${fm(In2,2)} A</span>). لذلك نتحقق من قراءة V قبل غلق S<sub>1</sub> (الخطوات 5–7).</div>`;c=calc()}
    const r=rd(c);$('#e11r-v').textContent=fm(rv(),1)+' Ω  (R = '+fm(TP2.v.Rf+rv(),1)+' Ω)';
-   $('#e11c').innerHTML=parSVG({on,S1,S2,rev,hide:!rows.some(r=>!r.S1)&&!did.trip&&!did.swap,i1:c.I1>0.005,i2:c.I2>0.005,iL:c.IL>0.005,rv:fm(rv(),0)+' Ω',rd:on?{A1:fm(r.A1,2)+' A',A2:fm(r.A2,2)+' A',A:fm(r.A,2)+' A',V1:fm(r.V1,1)+' V',V2:fm(r.V2,1)+' V',V:fm(r.V,1)+' V'}:{}});
+   $('#e11c').innerHTML=parSVG({on,S1,S2,rev,hide:chOn()||!rows.some(r=>!r.S1)&&!did.trip&&!did.swap,i1:c.I1>0.005,i2:c.I2>0.005,iL:c.IL>0.005,rv:fm(rv(),0)+' Ω',rd:on?{A1:fm(r.A1,2)+' A',A2:fm(r.A2,2)+' A',A:fm(r.A,2)+' A',V1:fm(r.V1,1)+' V',V2:fm(r.V2,1)+' V',V:fm(r.V,1)+' V'}:{}});
    $('#e11m').innerHTML=meters([['V<sub>1</sub>',fm(r.V1,1)+' V'],['V<sub>2</sub>',fm(r.V2,1)+' V'],['V (على S<sub>1</sub>)',fm(r.V,1)+' V',r.V>0.25*V2n(P)],['A<sub>1</sub>',fm(r.A1,2)+' A',r.A1>1.05*In2],['A<sub>2</sub>',fm(r.A2,2)+' A',r.A2>1.05*In2],['A (الحمل)',fm(r.A,2)+' A'],['A<sub>1</sub> + A<sub>2</sub>',fm(R(r.A1+r.A2,2),2)+' A']]);
    const bar=(l,i)=>{const p=i/In2*100;return `<span>${l}</span><div class="tu-bar"><i class="${p>105?'over':''}" style="width:${fx(Math.min(100,p/1.5))}%"></i></div><b>${fm(p,0)}%</b>`};
    $('#e11bars').innerHTML=`<div class="tu-bars">${bar('المحول 1',c.I1)}${bar('المحول 2',c.I2)}</div><p class="sub">النسبة من التيار المقنن لثانوي كل محول (<span class="ltr">${fm(In2,2)} A</span>)؛ العمود الكامل = 150%.</p>`;
@@ -1464,6 +1468,8 @@ B.lesson({
   const $=s=>el.querySelector(s);let steps=null;
   const TP=B.params($('#e12tp'),'u3-tr',TRDEF,()=>{Object.keys(rows).forEach(x=>delete rows[x]);free.length=0;VL=Math.min(VL,vmax());msg='<div class="callout">تغيرت أرقام المحول، فمسحنا الجدول.</div>';ui();upd();if(steps)steps.redraw()});
   const VLr=()=>(pc==='Y'?SQ3:1)*TP.v.V1n,vmax=()=>R(1.15*SQ3*TP.v.V1n,1);
+  /* أعطال مخفية: الابتدائي أو الثانوي موصل فعلياً بغير ما اخترت */
+  const pcE=()=>chF('pD')?(pc==='Y'?'D':'Y'):pc,scE=()=>chF('sY')?(scn==='D'?'Y':'D'):scn;
   const ui=()=>{$('#e12sl').innerHTML=sl('e12v','جهد خط المصدر ثلاثي الأوجه VL<sub>10</sub>',0,vmax(),0.1,VL);$('#e12v').oninput=e=>{VL=+e.target.value;msg='';upd()}};
   const setV=v=>{VL=clamp(R(v,1),0,vmax());$('#e12v').value=VL;msg='';upd()};
   el.addEventListener('click',e=>{const b=e.target.closest('[data-f12]');if(b)setV(VL+ +b.dataset.f12);const q=e.target.closest('[data-sp12]');if(q)setV(+q.dataset.sp12/100*VLr())});
@@ -1471,11 +1477,11 @@ B.lesson({
   segBind(el,'e12p',v=>{pc=v;did['p'+v]=1;clear('<div class="callout">تغير التوصيل، فمسحنا الجدول.</div>');upd()});segBind(el,'e12s',v=>{scn=v;did['s'+v]=1;clear('<div class="callout">تغير التوصيل، فمسحنا الجدول.</div>');upd()});
   segBind(el,'e12md',v=>{mode=v;did['md'+v]=1;upd()});
   $('#e12zero').onclick=()=>setV(0);$('#e12clr').onclick=()=>{clear();upd()};
-  $('#e12rec').onclick=()=>{const r=rd3(TP.v,VL,pc,scn);if(!(r.VL>0)){msg='<div class="callout err">لا توجد قراءة: ارفع الجهد أولاً.</div>';upd();return}
+  $('#e12rec').onclick=()=>{const r=rd3(TP.v,VL,pcE(),scE());if(!(r.VL>0)){msg='<div class="callout err">لا توجد قراءة: ارفع الجهد أولاً.</div>';upd();return}
    const sp=[60,80,100].find(q=>Math.abs(r.VL-q/100*VLr())<=0.006*VLr());if(sp!=null){rows[sp]=r;did['sp'+sp]=1}else{free.push(r);if(free.length>4)free.shift()}
    msg=`<div class="callout">سُجّلت القراءة ${sp!=null?`في عمود <b>${sp}%</b>`:'في عمود «حرة»'}.</div>`;upd()};
   const Pm=r=>mode==='book'?r.W:R(r.W1+r.W2,1);
-  const upd=()=>{const P=TP.v,r=rd3(P,VL,pc,scn),on=VL>0,two=mode==='fixed';
+  const upd=()=>{const P=TP.v,r=rd3(P,VL,pcE(),scE()),on=VL>0,two=mode==='fixed';
    $('#e12v-v').textContent=fm(VL,1)+' V';
    $('#e12c').innerHTML=bankSVG({pc,scn,on,two,rd:on?{W:fm(two?r.W1:r.W,1)+' W',W2:fm(r.W2,1)+' W',A:fm(r.IL,3)+' A',V1:fm(r.VL,1)+' V',V2:fm(r.VL2,1)+' V'}:{}});
    $('#e12m').innerHTML=meters([['VL<sub>10</sub> (V بين B و C)',fm(r.VL,1)+' V'],['I<sub>10</sub> (A في الخط C)',fm(r.IL,3)+' A']].concat(two?[['W<sub>1</sub>',fm(r.W1,1)+' W'],['W<sub>2</sub>',fm(r.W2,1)+' W'],['P<sub>10</sub> = W<sub>1</sub> + W<sub>2</sub>',fm(R(r.W1+r.W2,1),1)+' W']]:[['W',fm(r.W,1)+' W',on&&r.W<0]]).concat([['VL<sub>20</sub> (V بين a و b)',fm(r.VL2,1)+' V'],['Vph<sub>10</sub> جهد ملف الابتدائي (محسوب)',fm(r.Vph,1)+' V',r.Vph>1.05*P.V1n],['Vph<sub>20</sub> جهد ملف الثانوي (محسوب)',fm(r.V2p,1)+' V']]));
