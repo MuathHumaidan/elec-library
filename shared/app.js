@@ -26,7 +26,9 @@ B.ERRS={};B.errs=o=>{Object.assign(B.ERRS,o||{})};
      faults:[{id,t,sym,how,p:{key:['*',x]|['=',x]},x:'hook flags'}],ref:[{id,keys}],hide:[css],hideFault:[css]}})
    تعمل الأعطال فقط في «وضع التحدي» (الصفحة تُفتح من خادم النشاط بـ ?ch=1)؛ خارجها B.chF() دائماً false فلا يتغير المختبر. */
 B.CHAL={};B.chal=o=>{Object.assign(B.CHAL,o||{})};
-const CH={on:false,mode:'',fault:null,defs:{}};
+const CH={on:false,mode:'',fault:null,defs:{},mv:null,healthy:{}};
+/* قيم الآلة للنشاط (يرسلها خادم النشاط في رسالة init: mv = {معرف B.params: {k: رقم}}، القيم التي غيّرها المدرب فقط) — لكل الجوالات نفسها، ولا تُحفظ على الجهاز */
+const chMV=mv=>{const o={};if(mv&&typeof mv==='object')Object.keys(mv).forEach(id=>{const g=mv[id];if(!g||typeof g!=='object')return;const x={};Object.keys(g).forEach(k=>{const v=+g[k];if(g[k]!==null&&g[k]!==''&&isFinite(v))x[k]=v});if(Object.keys(x).length)o[id]=x});return Object.keys(o).length?o:null};
 B.chOn=()=>CH.on;
 B.chF=f=>!!(CH.on&&CH.fault&&String(CH.fault.x||'').split(/\s+/).includes(f));
 B.acts=o=>{Object.keys(o||{}).forEach(id=>{const v=o[id]||{},cur=B.ACTS[id]||(B.ACTS[id]={});['open','exit'].forEach(k=>{if(Array.isArray(v[k]))cur[k]=(cur[k]||[]).concat(v[k])})})};
@@ -423,8 +425,10 @@ B.params=function(host,id,defs,onChange){
  const rng=d=>d.min!=null&&d.max!=null?`المسموح: من <span class="ltr">${fmtN(d.min)}</span> إلى <span class="ltr">${fmtN(d.max)}</span>`:d.min!=null?`المسموح: <span class="ltr">${fmtN(d.min)}</span> فأكثر`:d.max!=null?`المسموح: حتى <span class="ltr">${fmtN(d.max)}</span>`:'';
  const clampD=(d,x)=>{x=+x;if(!isFinite(x))return d.value;if(d.min!=null&&x<d.min)x=d.min;if(d.max!=null&&x>d.max)x=d.max;return x};
  const compute=()=>{P.trainer=!!st.on;P.v=dflt();if(st.on)defs.forEach(d=>{if(st.vals[d.k]!=null)P.v[d.k]=clampD(d,st.vals[d.k])});
-  /* وضع التحدي: كل الجوالات بالقيم التوضيحية نفسها، ثم يُطبَّق العطل المخفي (إن وُجد) على أرقام الآلة */
-  if(CH.on){P.trainer=false;P.v=dflt();const p=CH.fault&&CH.fault.p;if(p)Object.keys(p).forEach(k=>{if(!(k in P.v))return;const o=p[k];P.v[k]=o[0]==='*'?P.v[k]*o[1]:o[1]})}};
+  /* وضع التحدي: كل الجوالات بالقيم نفسها — التوضيحية، أو قيم الآلة التي حددها المدرب لهذا النشاط (CH.mv، بالحدود نفسها) —
+     وهي «الآلة السليمة» (CH.healthy)، ثم يُطبَّق العطل المخفي (إن وُجد) على أرقام الآلة */
+  if(CH.on){P.trainer=false;P.v=dflt();const m=CH.mv&&CH.mv[id];if(m)defs.forEach(d=>{if(m[d.k]!=null)P.v[d.k]=clampD(d,m[d.k])});CH.healthy[id]=Object.assign({},P.v);
+   const p=CH.fault&&CH.fault.p;if(p)Object.keys(p).forEach(k=>{if(!(k in P.v))return;const o=p[k];P.v[k]=o[0]==='*'?P.v[k]*o[1]:o[1]})}};
  if(CH.on){CH.defs[id]=defs;host.hidden=true;compute();P.warn=()=>{};return P}
  const fire=()=>{compute();store.set(key,st);try{onChange&&onChange(P.v)}catch(e){console.error(e)}};
  const render=()=>{
@@ -675,7 +679,7 @@ function studyPrePost(el,L){
  تفتحه صفحة الطالب في خادم النشاط داخل iframe: courses/<id>/index.html?ch=1#<lesson>
  الرسائل (postMessage) بين الصفحتين:
    المختبر ← {ch:'hello',lesson}            عند التحميل
-   الأب   → {ch:'init',mode:'fault'|'sim',fault:id|null,lock:[{k,v}]}   مرة واحدة: يُرسم المختبر ويُطبَّق العطل والقيم الثابتة
+   الأب   → {ch:'init',mode:'fault'|'sim',fault:id|null,lock:[{k,v}],mv:{معرف:{k:رقم}}|null}   مرة واحدة: يُرسم المختبر بقيم الآلة (mv: ما غيّره المدرب، وإلا القيم التوضيحية) ويُطبَّق العطل والقيم الثابتة
    المختبر ← {ch:'ready',outputs:[{k,label,unit,dp}]}
    الأب   → {ch:'get',id}  ⇒  المختبر ← {ch:'vals',id,vals:{k:رقم أو null}}   القراءات كما تظهر على أجهزة القياس
  لا شيء من هذا يحدث خارج ?ch=1. */
@@ -697,14 +701,14 @@ function renderChallenge(L){
   if(!par){root.innerHTML='<div class="ch-msg"><b>هذه الصفحة تُفتح من نشاط المدرب</b><span>ادخل النشاط برمز من شاشة المدرب.</span></div>';return}
   let started=false;
   const start=(m,origin)=>{
-    CH.on=true;CH.mode=m.mode==='fault'?'fault':'sim';CH.fault=CH.mode==='fault'?(spec.faults||[]).find(f=>f.id===m.fault)||null:null;
+    CH.on=true;CH.mv=chMV(m.mv);CH.mode=m.mode==='fault'?'fault':'sim';CH.fault=CH.mode==='fault'?(spec.faults||[]).find(f=>f.id===m.fault)||null:null;
     root.innerHTML=`<div class="ch-top"><span class="ch-k">${L.unit}.${L.order}</span><b>${L.title}</b></div><div id="ch-ref"></div><div id="custom-lab"></div>`;
     const css=[...(spec.hide||[]),...(CH.mode==='fault'?spec.hideFault||[]:[])].map(s=>s+'{display:none!important}');
     try{L.lab($('#custom-lab'),B)}catch(e){console.error(e)}
     B.math(root);
-    /* بيانات الآلة السليمة (القيم التوضيحية الافتراضية) للمقارنة */
-    const refs=(spec.ref||[]).map(r=>{const D=CH.defs[r.id]||[];return r.keys.map(k=>D.find(d=>d.k===k)).filter(Boolean)}).flat();
-    if(refs.length)$('#ch-ref').innerHTML=`<details class="ch-ref"><summary>بيانات الآلة السليمة (للمقارنة)</summary><table>${refs.map(d=>`<tr><th>${d.label}</th><td><span class="ltr">${fmtN(d.value)}${d.unit?' '+d.unit:''}</span></td></tr>`).join('')}</table><p class="sub">أرقام توضيحية: هي أرقام الآلة في المختبر وهي سليمة.</p></details>`;
+    /* بيانات الآلة السليمة للمقارنة: من نموذج المختبر نفسه (CH.healthy = أرقام الآلة قبل العطل) بقيم هذا النشاط */
+    const refs=(spec.ref||[]).map(r=>{const D=CH.defs[r.id]||[],H=CH.healthy[r.id]||{};return r.keys.map(k=>D.find(d=>d.k===k)).filter(Boolean).map(d=>({d,v:H[d.k]!=null?H[d.k]:d.value}))}).flat();
+    if(refs.length)$('#ch-ref').innerHTML=`<details class="ch-ref"><summary>بيانات الآلة السليمة (للمقارنة)</summary><table>${refs.map(({d,v})=>`<tr><th>${d.label}</th><td><span class="ltr">${fmtN(v)}${d.unit?' '+d.unit:''}</span></td></tr>`).join('')}</table><p class="sub">${CH.mv?'أرقام حددها المدرب لهذا النشاط: هي أرقام الآلة في المختبر وهي سليمة.':'أرقام توضيحية: هي أرقام الآلة في المختبر وهي سليمة.'}</p></details>`;
     /* المدخلات الثابتة بقرار المدرب: تُضبط ثم تُقفل */
     const lock=(Array.isArray(m.lock)?m.lock:[]).map(x=>({x,inp:(spec.inputs||[]).find(i=>i.k===x.k)})).filter(o=>o.inp);
     const ord={pick:0,switch:1,range:2};
