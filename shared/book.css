@@ -594,6 +594,23 @@ html[data-hidefix] div.fx-chip{display:block}
 html[data-hidefix] .fx-chip.bkf{display:none}
 .fx-chip{background:none!important;padding:0!important}
 /* مسابقة الصف (للمدرب) — مربع صغير أسفل «اختبر نفسك» */
-.classquiz{margin-top:26px;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--muted)}
-.classquiz b{color:var(--fg);font-weight:600;margin-inline-end:8px}
-.classquiz a.btn{text-decoration:none}
+
+/* ---------- الأنشطة التفاعلية ---------- */
+.acts{display:flex;flex-direction:column;gap:26px;margin-top:6px}
+.acts-h h2{font-size:20px}
+.acts-h h2 small{font-size:14px;font-weight:500;color:var(--muted)}
+.acts-h .sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
+.act-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.act-card p{margin:0;font-size:14.5px;line-height:1.75}
+.act-top{display:flex;align-items:center;gap:10px}
+.act-top h3{font-size:17px;margin:0;line-height:1.4}
+.act-ic{width:38px;height:38px;border-radius:10px;background:var(--blue-soft);color:var(--blue-ink);display:grid;place-items:center;flex:none}
+.act-ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.act-card .act-ready{font-size:13px;color:var(--muted);margin-top:auto}
+.act-card .act-ready b{color:var(--blue-ink)}
+.act-card .btn{text-decoration:none;text-align:center;font-size:14px;padding:8px 12px;align-self:stretch}
+.act-join{margin:12px 0 0;font-size:14px;color:var(--muted)}
+.act-join a{font-weight:600}
+.act-soon{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:var(--muted);font-size:14.5px}
+.act-soon b{color:var(--fg);background:var(--surface-2);border-radius:999px;padding:1px 12px;font-size:13px}

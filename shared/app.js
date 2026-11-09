@@ -14,6 +14,14 @@ B.course=c=>{Object.assign(B.COURSE,c)};
 const KK=n=>B.COURSE.key+'-'+n;
 B.unit=u=>{B.UNITS.push(u)};
 B.lesson=L=>{B.LESSONS.push(L)};
+/* محتوى «الأنشطة التفاعلية» الجاهز لكل درس (ملف courses/<id>/activities.js، اختياري):
+   PLCBOOK.acts({'u1-l1':{open:['سؤال مفتوح',…], exit:[{q,o:[4 خيارات],c,e},…]}, …})
+   يُدمج حسب رقم الدرس؛ المقرر الذي ليس له ملف لا يكون فيه محتوى جاهز. */
+B.ACTS={};
+/* self-study data (study.js) and «اكتشف الخطأ» variants (errors.js) per course */
+B.STUDY={units:{},lessons:{}};B.study=o=>{o=o||{};Object.assign(B.STUDY.units,o.units||{});Object.assign(B.STUDY.lessons,o.lessons||{})};
+B.ERRS={};B.errs=o=>{Object.assign(B.ERRS,o||{})};
+B.acts=o=>{Object.keys(o||{}).forEach(id=>{const v=o[id]||{},cur=B.ACTS[id]||(B.ACTS[id]={});['open','exit'].forEach(k=>{if(Array.isArray(v[k]))cur[k]=(cur[k]||[]).concat(v[k])})})};
 
 /* ---------------- motor plant helper ----------------
    B.motorPlant(fn) : fn(st) -> {target: rpm signed, tau, I: (n)=>current} | null (no supply) */
@@ -85,11 +93,11 @@ function renderLesson(L,tab){
   const all=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order);const i=all.indexOf(L);
   const prev=all[i-1],next=all[i+1];
   const hasLab=!!(L.program||L.lab||L.plant);const hasProg=!!(L.program||L.variants);
-  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.examples&&L.examples.length&&['examples','الأمثلة المحلولة'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك']].filter(Boolean);
+  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.examples&&L.examples.length&&['examples','الأمثلة المحلولة'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك'],['acts','الأنشطة التفاعلية']].filter(Boolean);
   tab=tabs.find(t=>t[0]===tab)?tab:'theory';
   const seen=store.get(KK('seen'),{});const done=store.get(KK('done'),{});
   const ul=all.filter(x=>x.unit===L.unit);
-  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',examples:'<path d="M5 3h14v18H5zM8 7h8M8 11h3M13 11h3M8 15h3M13 15h3"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
+  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',examples:'<path d="M5 3h14v18H5zM8 7h8M8 11h3M13 11h3M8 15h3M13 15h3"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',acts:'<path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/>'};
   root.innerHTML=`<div class="lesson-layout">
    <aside class="lside" aria-label="دروس الوحدة"><a class="lside-back" href="#home">‹ فهرس المقرر</a>
     <div class="lside-unit"><span class="unum sm">${L.unit}</span><div><small>الوحدة ${AR[L.unit]}</small><b>${u.title}</b></div></div>
@@ -105,7 +113,7 @@ function renderLesson(L,tab){
    <div class="finish"><button class="fin-btn" id="finBtn" aria-pressed="${done[L.id]?'true':'false'}"></button><p class="sub" id="finNote"></p></div>
    <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>
    </div></div>
-   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[0]==='examples'?'الأمثلة':t[1]}</button>`).join('')}</nav>`;
+   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[0]==='acts'?'الأنشطة':t[0]==='examples'?'الأمثلة':t[1]}</button>`).join('')}</nav>`;
   document.body.classList.add('in-lesson');
   const fb=$('#finBtn',root),fn=$('#finNote',root);
   const paint=()=>{const d=!!store.get(KK('done'),{})[L.id];fb.setAttribute('aria-pressed',d);fb.innerHTML=d?'✓ أنجزت هذا الدرس':'أنهيت الدرس';fn.textContent=d?'يُحسب في نسبة إنجازك. اضغط مرة أخرى للتراجع.':'اضغطه بعد ما تقرأ الشرح وتجرّب المختبر وتحل الأسئلة.';
@@ -124,6 +132,7 @@ function renderLesson(L,tab){
     else if(t==='lab'){if(L.lab&&!L.program&&!L.plant){body.innerHTML='<div id="custom-lab"></div>';L.lab($('#custom-lab'),B)}else{RUN.attach('lab',body,strip)}}
     else if(t==='plc'){RUN.attach('plc',body,strip)}
     else if(t==='quiz')renderQuiz(L,body);
+    else if(t==='acts')renderActs(L,body);
     else if(t==='examples')renderExamples(L,body);
     B.math(body);
   };
@@ -453,19 +462,44 @@ function renderExamples(L,body){
 }
 
 /* ---------------- QUIZ ---------------- */
-/* مسابقة الصف (للمدرب): تظهر فقط إذا وُضع رابط الخادم في shared/quiz-config.js */
-function classQuizBox(L){const u=String(G.QUIZ_URL||'').trim().replace(/\/+$/,'');if(!u)return '';
-  const cid=(location.pathname.match(/\/courses\/([^/]+)\//)||[])[1];if(!cid)return '';
-  return `<div class="classquiz"><div><b>مسابقة الصف (للمدرب)</b><span>اعرض أسئلة هذا الدرس على الشاشة، ويجيب الطلاب من جوالاتهم.</span></div><a class="btn" target="_blank" rel="noopener" href="${esc(u+'/host?course='+encodeURIComponent(cid)+'&lesson='+encodeURIComponent(L.id))}">ابدأ مسابقة من أسئلة هذا الدرس</a></div>`}
 function renderQuiz(L,body){
   let ans={};
   const draw=()=>{const sc=Object.entries(ans).filter(([i,a])=>L.quiz[i].c===a).length;
     body.innerHTML=`<div class="viewseg"><h2 class="qtitle">اختبر فهمك للدرس</h2><div><span class="score">${sc} / ${L.quiz.length}</span> <button class="btn" id="qreset">إعادة</button></div></div><div class="quiz">`+
     L.quiz.map((q,i)=>{const a=ans[i];return `<div class="qq"><h3>${i+1}. ${B.ltrU(q.q)}</h3><div class="opts">`+q.o.map((o,j)=>{let c='';if(a!=null){if(j===q.c)c='right';else if(j===a)c='wrong'}
-      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${B.ltrU(o)}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>'+classQuizBox(L);
+      return `<button class="opt ${c}" data-q="${i}" data-o="${j}" ${a!=null?'disabled':''}>${B.ltrU(o)}</button>`}).join('')+`</div><div class="fb ${a!=null?'show':''}">${a!=null?(a===q.c?'<b class="ok">إجابة صحيحة.</b> ':'<b class="no">ليست هذه.</b> ')+(q.e||''):''}</div></div>`}).join('')+'</div>';
     $$('.opt',body).forEach(b=>b.addEventListener('click',()=>{ans[b.dataset.q]=+b.dataset.o;draw()}));
     $('#qreset',body).addEventListener('click',()=>{ans={};draw()});B.math(body);};
   draw();
+}
+
+/* ---------------- الأنشطة التفاعلية ----------------
+ القسم 1 «داخل المحاضرة»: أنشطة حية على خادم المسابقة (shared/quiz-config.js) يطلقها المدرب، ويدخل الطلاب برمز من الشاشة.
+ القسم 2 «للمذاكرة الذاتية»: أنشطة داخل الكتاب نفسه (لاحقاً).
+ إخفاء نشاط من الموقع كله: shared/activities-config.js (window.ACT_OFF). */
+const LIVE_ACTS=[
+  {k:'quiz',t:'المسابقة',d:'أسئلة اختيار من متعدد على الشاشة، ويجيب الطلاب من جوالاتهم، مع نقاط وترتيب.',b:'ابدأ المسابقة',n:L=>(L.quiz||[]).length,none:'أضف أسئلتك عند البدء'},
+  {k:'cloud',t:'سؤال مفتوح وسحابة كلمات',d:'اطرح سؤالاً قصيراً، ويكتب كل طالب إجابته، فتظهر الإجابات على الشاشة سحابة كلمات بلا أسماء.',b:'ابدأ السؤال المفتوح',type:'cloud',n:L=>((B.ACTS[L.id]||{}).open||[]).length,none:'اكتب سؤالك عند البدء'},
+  {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'}];
+const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',exit:'<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/>'};
+function renderActs(L,body){
+  const off=new Set((Array.isArray(G.ACT_OFF)?G.ACT_OFF:[]).map(String));
+  const u=String(G.QUIZ_URL||'').trim().replace(/\/+$/,'');
+  const cid=(location.pathname.match(/\/courses\/([^/]+)\//)||[])[1];
+  const live=u&&cid?LIVE_ACTS.filter(a=>!off.has(a.k)):[];
+  const join=u&&!off.has('join');
+  const href=a=>u+'/host?'+(a.type?'type='+a.type+'&':'')+'course='+encodeURIComponent(cid)+'&lesson='+encodeURIComponent(L.id);
+  let h='<div class="acts">';
+  if(live.length||join){
+    h+=`<section class="acts-sec"><header class="acts-h"><h2>داخل المحاضرة <small>(يطلقها المدرب)</small></h2><p class="sub">تُفتح على شاشة العرض من حساب المدرب، ويدخل الطلاب من جوالاتهم برمز يظهر على الشاشة.</p></header>`;
+    if(live.length)h+=`<div class="act-grid">${live.map(a=>{const n=a.n(L);return `<article class="act-card" data-act="${a.k}"><div class="act-top"><span class="act-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ACT_ICON[a.k]}</svg></span><h3>${a.t}</h3></div>
+      <p>${a.d}</p><p class="act-ready">${n?`جاهز لهذا الدرس: <b>${n}</b> ${n===1?'سؤال':n===2?'سؤالان':n<=10?'أسئلة':'سؤالاً'}`:a.none}</p>
+      <a class="btn primary" target="_blank" rel="noopener" href="${esc(href(a))}">${a.b}</a></article>`}).join('')}</div>`;
+    if(join)h+=`<p class="act-join">أنت طالب؟ <a target="_blank" rel="noopener" href="${esc(u+'/play')}">دخول نشاط برمز</a></p>`;
+    h+='</section>';
+  }
+  h+=`<section class="acts-sec"><header class="acts-h"><h2>للمذاكرة الذاتية</h2></header><div class="act-soon"><b>قريباً</b><span>أنشطة تذاكر بها وحدك داخل الكتاب.</span></div></section></div>`;
+  body.innerHTML=h;
 }
 
 /* ---------------- ROUTER ---------------- */
