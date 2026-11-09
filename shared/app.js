@@ -475,31 +475,184 @@ function renderQuiz(L,body){
 
 /* ---------------- الأنشطة التفاعلية ----------------
  القسم 1 «داخل المحاضرة»: أنشطة حية على خادم المسابقة (shared/quiz-config.js) يطلقها المدرب، ويدخل الطلاب برمز من الشاشة.
- القسم 2 «للمذاكرة الذاتية»: أنشطة داخل الكتاب نفسه (لاحقاً).
+ القسم 2 «للمذاكرة الذاتية»: أنشطة داخل الكتاب نفسه، بلا خادم وبلا إنترنت؛ التقدم محفوظ على هذا الجهاز فقط (localStorage).
+   بطاقات المراجعة (study.js → units[<وحدة>].cards) · رتّب خطوات التجربة (lessons[<درس>].order) · وصّل أطراف الدائرة (lessons[<درس>].match)
+   · اختبار قبل وبعد الدرس (أول 5 أسئلة من L.quiz، الأسئلة نفسها قبل وبعد).
  إخفاء نشاط من الموقع كله: shared/activities-config.js (window.ACT_OFF). */
+const AR_N=(n,one,two,few,many)=>n===1?one:n===2?two:n<=10?few:many;
 const LIVE_ACTS=[
   {k:'quiz',t:'المسابقة',d:'أسئلة اختيار من متعدد على الشاشة، ويجيب الطلاب من جوالاتهم، مع نقاط وترتيب.',b:'ابدأ المسابقة',n:L=>(L.quiz||[]).length,none:'أضف أسئلتك عند البدء'},
   {k:'cloud',t:'سؤال مفتوح وسحابة كلمات',d:'اطرح سؤالاً قصيراً، ويكتب كل طالب إجابته، فتظهر الإجابات على الشاشة سحابة كلمات بلا أسماء.',b:'ابدأ السؤال المفتوح',type:'cloud',n:L=>((B.ACTS[L.id]||{}).open||[]).length,none:'اكتب سؤالك عند البدء'},
-  {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'}];
-const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',exit:'<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/>'};
+  {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'},
+  {k:'errs',t:'اكتشف الخطأ',d:'حل مكتوب لمثال من الدرس بأرقام جديدة، وفيه خطوة واحدة خاطئة. يختار الطلاب من جوالاتهم الخطوة الخاطئة، ثم يظهر سبب الخطأ وتصحيحه.',b:'ابدأ اكتشف الخطأ',type:'errs',only:true,n:L=>(B.ERRS[L.id]||[]).length,unit:n=>AR_N(n,'مثال','مثالان','أمثلة','مثالاً')}];
+const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',cloud:'<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',exit:'<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/>',
+  errs:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8.3 8.3l4.4 4.4M12.7 8.3l-4.4 4.4"/>',
+  cards:'<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
+  order:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5v3M3.2 18h1.8l-1.8 2.2h1.8M3.5 11.2a.9.9 0 1 1 1.3 1.1L3.2 14h1.8"/>',
+  match:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6.5l10 11M7 17.5l10-11"/>',
+  prepost:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'};
 function renderActs(L,body){
   const off=new Set((Array.isArray(G.ACT_OFF)?G.ACT_OFF:[]).map(String));
   const u=String(G.QUIZ_URL||'').trim().replace(/\/+$/,'');
   const cid=(location.pathname.match(/\/courses\/([^/]+)\//)||[])[1];
-  const live=u&&cid?LIVE_ACTS.filter(a=>!off.has(a.k)):[];
+  const live=u&&cid?LIVE_ACTS.filter(a=>!off.has(a.k)&&!(a.only&&!a.n(L))):[];
   const join=u&&!off.has('join');
-  const href=a=>u+'/host?'+(a.type?'type='+a.type+'&':'')+'course='+encodeURIComponent(cid)+'&lesson='+encodeURIComponent(L.id);
+  const href=a=>u+'/host?course='+encodeURIComponent(cid)+'&lesson='+encodeURIComponent(L.id)+(a.type?'&type='+a.type:'');
   let h='<div class="acts">';
   if(live.length||join){
     h+=`<section class="acts-sec"><header class="acts-h"><h2>داخل المحاضرة <small>(يطلقها المدرب)</small></h2><p class="sub">تُفتح على شاشة العرض من حساب المدرب، ويدخل الطلاب من جوالاتهم برمز يظهر على الشاشة.</p></header>`;
     if(live.length)h+=`<div class="act-grid">${live.map(a=>{const n=a.n(L);return `<article class="act-card" data-act="${a.k}"><div class="act-top"><span class="act-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ACT_ICON[a.k]}</svg></span><h3>${a.t}</h3></div>
-      <p>${a.d}</p><p class="act-ready">${n?`جاهز لهذا الدرس: <b>${n}</b> ${n===1?'سؤال':n===2?'سؤالان':n<=10?'أسئلة':'سؤالاً'}`:a.none}</p>
+      <p>${a.d}</p><p class="act-ready">${n?`جاهز لهذا الدرس: <b>${n}</b> ${a.unit?a.unit(n):AR_N(n,'سؤال','سؤالان','أسئلة','سؤالاً')}`:a.none}</p>
       <a class="btn primary" target="_blank" rel="noopener" href="${esc(href(a))}">${a.b}</a></article>`}).join('')}</div>`;
     if(join)h+=`<p class="act-join">أنت طالب؟ <a target="_blank" rel="noopener" href="${esc(u+'/play')}">دخول نشاط برمز</a></p>`;
     h+='</section>';
   }
-  h+=`<section class="acts-sec"><header class="acts-h"><h2>للمذاكرة الذاتية</h2></header><div class="act-soon"><b>قريباً</b><span>أنشطة تذاكر بها وحدك داخل الكتاب.</span></div></section></div>`;
+  /* ---- للمذاكرة الذاتية ---- */
+  const SD=B.STUDY||{units:{},lessons:{}},uid=studyUnit(L.id),U=(SD.units||{})[uid],SL=(SD.lessons||{})[L.id]||{};
+  const blocks=[];
+  if(!off.has('cards')&&U&&Array.isArray(U.cards)&&U.cards.length)blocks.push({k:'cards',t:'بطاقات المراجعة',d:`بطاقات الوحدة${U.title?`: ${U.title}`:''}. اقرأ الوجه، وتذكّر الجواب، ثم اقلب البطاقة.`});
+  if(!off.has('order')&&Array.isArray(SL.order)&&SL.order.length)blocks.push({k:'order',t:'رتّب خطوات التجربة',d:'رتّب الخطوات كما يجب أن تُنفَّذ، ثم اضغط «تحقّق».'});
+  if(!off.has('match')&&Array.isArray(SL.match)&&SL.match.length)blocks.push({k:'match',t:'وصّل أطراف الدائرة',d:'صِل كل عنصر في العمود الأول بما يقابله في العمود الثاني.'});
+  if(!off.has('prepost')&&Array.isArray(L.quiz)&&L.quiz.length)blocks.push({k:'prepost',t:'اختبار قبل وبعد الدرس',d:'اختياري: نفس الأسئلة قبل الدرس وبعده، لترى كم تحسّن فهمك.',side:1});
+  h+=`<section class="acts-sec study"><header class="acts-h"><h2>للمذاكرة الذاتية</h2>${blocks.length?'<p class="sub">تعمل بدون إنترنت، وتقدّمك محفوظ على هذا الجهاز فقط.</p>':''}</header>`;
+  if(blocks.length)h+=blocks.map(b=>`<div class="stb${b.side?' side':''}" data-sb="${b.k}"><header class="stb-h"><span class="act-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ACT_ICON[b.k]}</svg></span><div><h3>${b.t}</h3><p class="sub">${B.ltrU(b.d)}</p></div></header><div class="stb-body"></div></div>`).join('');
+  else h+='<div class="act-soon"><b>قريباً</b><span>أنشطة تذاكر بها وحدك داخل الكتاب.</span></div>';
+  h+='</section></div>';
   body.innerHTML=h;
+  const host=k=>$(`[data-sb="${k}"] .stb-body`,body);
+  const run=(k,f)=>{const el=host(k);if(el)try{f(el)}catch(e){console.error(e)}};
+  run('cards',el=>studyCards(el,uid,U));
+  run('order',el=>SL.order.forEach(it=>{const d=document.createElement('div');d.className='stb-item';el.appendChild(d);studyOrder(d,it,SL.order.length>1)}));
+  run('match',el=>SL.match.forEach(it=>{const d=document.createElement('div');d.className='stb-item';el.appendChild(d);studyMatch(d,it,SL.match.length>1)}));
+  run('prepost',el=>studyPrePost(el,L));
+}
+/* رقم الوحدة من رقم الدرس: 'u1-l3' → 'u1'، 'u3b-l1' → 'u3b' */
+const studyUnit=id=>{const m=String(id).match(/^(.+?)-l\d+/);return m?m[1]:String(id).split('-')[0]};
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+/* خلط لا يعطي الترتيب الأصلي (إذا كان هناك أكثر من عنصر) */
+const shufNew=n=>{const id=[...Array(n).keys()];if(n<2)return id;let a;do{a=shuf(id)}while(a.every((x,i)=>x===i));return a};
+/* نص الأنشطة: كل مقطع لاتيني/رقمي فيه رقم (مثل «0-240V / 0-6A» أو «1000 rpm») يُثبَّت LTR كقطعة واحدة؛ لا يلمس SVG ولا المعادلات ولا الوسوم */
+const T=s=>String(s==null?'':s).split(/(<svg[\s\S]*?<\/svg>|\$\$[\s\S]*?\$\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|<[^>]*>)/).map((p,i)=>i%2?p:p.replace(/[A-Za-z0-9(][A-Za-z0-9 .,\/\-–+×()Ω%~]*[A-Za-z0-9)Ω%]/g,m=>/\d/.test(m)&&!/^\(\d+-\d+\)$/.test(m)||/^\(\d+-\d+\)$/.test(m)?`<span class="ltr">${m}</span>`:m)).join('');
+const FC_KINDS=[['law','قوانين','قانون'],['symbol','رموز','رمز'],['def','تعاريف','تعريف'],['circuit','رموز دوائر','رمز دائرة']];
+
+/* ---- 6. بطاقات المراجعة ---- */
+function studyCards(el,uid,U){
+  const KEY=KK('cards-'+uid);
+  const cards=U.cards.map(c=>Object.assign({id:(c.k||'')+'|'+c.f},c));
+  const kinds=FC_KINDS.filter(([k])=>cards.some(c=>c.k===k));
+  let known=new Set((store.get(KEY,[])||[]).filter(x=>typeof x==='string'));
+  let filt='all',queue=[],cur=null,flipped=false,armed=0,fresh=false;
+  const pool=()=>cards.filter(c=>filt==='all'||c.k===filt);
+  const save=()=>store.set(KEY,[...known]);
+  const build=()=>{queue=pool().filter(c=>!known.has(c.id));cur=queue.shift()||null;flipped=false};
+  const kname=k=>(FC_KINDS.find(x=>x[0]===k)||[])[2]||'';
+  const draw=focus=>{
+    const P=pool(),nk=P.filter(c=>known.has(c.id)).length,pct=P.length?Math.round(nk/P.length*100):0;
+    let h=`<div class="fc">`;
+    if(kinds.length>1)h+=`<div class="fc-chips" role="group" aria-label="نوع البطاقات">${[['all','الكل']].concat(kinds).map(([k,t])=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${filt===k}">${t} <small>${k==='all'?cards.length:cards.filter(c=>c.k===k).length}</small></button>`).join('')}</div>`;
+    h+=`<div class="fc-prog" aria-live="polite"><span>عرفت <b>${nk}</b> من ${P.length}</span><span class="pbar"><i style="width:${pct}%"></i></span></div>`;
+    if(cur){
+      h+=`<div class="fc-card${flipped?' back':''}${fresh?' anim':''}" role="button" tabindex="0" aria-label="${flipped?'الوجه الخلفي للبطاقة':'بطاقة: اضغط لقلبها'}">
+        <div class="fc-face"><div class="fc-meta"><span class="fc-k">${kname(cur.k)}</span>${flipped&&cur.ref?`<span class="ref">${esc(cur.ref)}</span>`:''}</div>
+        ${flipped?`<div class="fc-q">${T(cur.f)}</div><div class="fc-b">${T(cur.b)}</div>`:`<div class="fc-f">${T(cur.f)}</div><p class="fc-hint">اضغط البطاقة (أو مسافة) لترى الجواب</p>`}</div></div>
+        <div class="fc-acts">${flipped?`<button type="button" class="btn no" data-a="no">ما عرفتها</button><button type="button" class="btn yes" data-a="yes">عرفتها</button>`:`<button type="button" class="btn primary" data-a="flip">اقلب البطاقة</button>`}</div>
+        <p class="fc-left">باقي في هذه الجولة: ${queue.length+1}</p>`;
+    } else if(P.length) h+=`<div class="fc-done"><b>أحسنت، عرفت كل البطاقات${filt==='all'?'':' في هذا النوع'}.</b><span>اضغط «ابدأ من جديد» لتراجعها مرة أخرى.</span></div>`;
+    h+=`<div class="fc-foot"><button type="button" class="btn" data-a="reset">${armed?'متأكد؟ اضغط مرة ثانية':'ابدأ من جديد'}</button></div></div>`;
+    el.innerHTML=h;B.math(el);fresh=false;
+    if(focus){const c=$('.fc-card',el)||$('[data-a="reset"]',el);if(c)c.focus({preventScroll:true})}
+  };
+  const flip=()=>{if(!cur)return;flipped=!flipped;fresh=true;draw(true)};
+  const answer=ok=>{if(!cur)return;if(ok){known.add(cur.id);save()}else queue.splice(Math.min(3,queue.length),0,cur);cur=queue.shift()||null;flipped=false;fresh=true;draw(true)};
+  el.addEventListener('click',e=>{const t=e.target.closest('[data-k],[data-a],.fc-card');if(!t||!el.contains(t))return;
+    if(t.dataset.k){filt=t.dataset.k;armed=0;build();draw();return}
+    const a=t.dataset.a;
+    if(a==='reset'){if(!armed){armed=1;draw();setTimeout(()=>{if(armed){armed=0;if(el.isConnected)draw()}},3500);return}
+      armed=0;pool().forEach(c=>known.delete(c.id));save();build();draw(true);return}
+    if(a==='yes')return answer(true);if(a==='no')return answer(false);
+    if(a==='flip'||t.classList.contains('fc-card'))flip()});
+  el.addEventListener('keydown',e=>{const c=e.target.closest&&e.target.closest('.fc-card');if(c&&(e.key===' '||e.key==='Enter')){e.preventDefault();flip()}});
+  build();draw();
+}
+
+/* ---- 7أ. رتّب خطوات التجربة ---- */
+function studyOrder(el,it,showTitle){
+  const S=it.steps||[],n=S.length;let cur=shufNew(n),sel=-1,marks=null,msg='',drag=-1;
+  const move=(a,b)=>{if(a===b||a<0||b<0||b>=n)return;const x=cur.splice(a,1)[0];cur.splice(b,0,x);marks=null;msg=''};
+  const draw=fp=>{
+    el.innerHTML=`${showTitle||it.title?`<h4 class="stb-t">${T(it.title||'')}</h4>`:''}<p class="stb-hint">اضغط خطوة ثم اضغط المكان الذي تريده لها، أو استخدم السهمين<span class="hide-touch">، أو اسحبها بالفأرة</span>.</p>
+     <ol class="ord">${cur.map((si,p)=>`<li class="ord-i${sel===p?' sel':''}${marks?marks[p]?' ok':' bad':''}" draggable="true" data-p="${p}">
+      <span class="ord-n" aria-hidden="true">${marks?marks[p]?'✓':'✗':p+1}</span><button type="button" class="ord-t" data-p="${p}" aria-pressed="${sel===p}">${T(S[si])}</button>
+      <span class="ord-mv"><button type="button" class="ib" data-up="${p}" aria-label="انقلها خطوة لأعلى" ${p===0?'disabled':''}><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button><button type="button" class="ib" data-dn="${p}" aria-label="انقلها خطوة لأسفل" ${p===n-1?'disabled':''}><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></span></li>`).join('')}</ol>
+     <div class="stb-acts"><button type="button" class="btn primary" data-a="check">تحقّق</button><button type="button" class="btn" data-a="show">أظهر الترتيب الصحيح</button><button type="button" class="btn" data-a="mix">أعد الخلط</button></div>
+     <p class="stb-msg" aria-live="polite">${msg}</p>`;
+    B.math(el);
+    if(fp!=null){const b=el.querySelector(fp);if(b)b.focus({preventScroll:true})}
+  };
+  el.addEventListener('click',e=>{const t=e.target.closest('button');if(!t||!el.contains(t))return;
+    if(t.dataset.up!=null){const p=+t.dataset.up;move(p,p-1);sel=-1;draw(`[data-up="${Math.max(1,p-1)}"]`);return}
+    if(t.dataset.dn!=null){const p=+t.dataset.dn;move(p,p+1);sel=-1;draw(`[data-dn="${Math.min(n-2,p+1)}"]`);return}
+    if(t.classList.contains('ord-t')){const p=+t.dataset.p;if(sel<0)sel=p;else if(sel===p)sel=-1;else{move(sel,p);sel=-1}draw(`.ord-t[data-p="${p}"]`);return}
+    const a=t.dataset.a;
+    if(a==='check'){marks=cur.map((x,p)=>x===p);const k=marks.filter(Boolean).length;msg=k===n?'<b class="ok">ممتاز، الترتيب كله صحيح.</b>':`<b>${k} من ${n}</b> في مكانها الصحيح. الخطوات المعلّمة بـ ✗ في غير مكانها.`;sel=-1;draw()}
+    else if(a==='show'){cur=[...Array(n).keys()];marks=cur.map(()=>true);msg='هذا هو الترتيب الصحيح.';sel=-1;draw()}
+    else if(a==='mix'){cur=shufNew(n);marks=null;msg='';sel=-1;draw()}});
+  el.addEventListener('dragstart',e=>{const li=e.target.closest&&e.target.closest('.ord-i');if(!li)return;drag=+li.dataset.p;li.classList.add('drag');try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(drag))}catch(x){}});
+  el.addEventListener('dragover',e=>{const li=e.target.closest&&e.target.closest('.ord-i');if(li&&drag>=0){e.preventDefault();$$('.ord-i',el).forEach(x=>x.classList.toggle('over',x===li))}});
+  el.addEventListener('drop',e=>{const li=e.target.closest&&e.target.closest('.ord-i');if(li&&drag>=0){e.preventDefault();move(drag,+li.dataset.p);drag=-1;sel=-1;draw()}});
+  el.addEventListener('dragend',()=>{drag=-1;$$('.ord-i',el).forEach(x=>x.classList.remove('drag','over'))});
+  draw();
+}
+
+/* ---- 7ب. وصّل أطراف الدائرة ---- */
+const MC=['#2f7dd1','#d9801a','#8a4fd0','#1d9460','#c8372d','#0f8f9a','#a8761b','#c2447a'];
+function studyMatch(el,it,showTitle){
+  const P=it.pairs||[],n=P.length;let right=shufNew(n),link={},selL=-1,selR=-1,marks=null,msg='';
+  const owner=j=>{for(const i in link)if(link[i]===j)return +i;return -1};
+  const connect=(i,j)=>{const o=owner(j);if(o>=0)delete link[o];if(link[i]===j&&o===i){delete link[i]}else link[i]=j;selL=selR=-1;marks=null;msg=''};
+  const draw=fp=>{const nl=Object.keys(link).length;
+    el.innerHTML=`${showTitle||it.title?`<h4 class="stb-t">${T(it.title||'')}</h4>`:''}<p class="stb-hint">اضغط عنصراً من العمود الأول، ثم ما يقابله في العمود الثاني. تأخذ القطعتان المتصلتان اللون والرقم نفسيهما.</p>
+     <div class="mt"><div class="mt-col">${P.map((p,i)=>{const j=link[i];const on=j!=null;return `<button type="button" class="mt-i${selL===i?' sel':''}${on?' on':''}${marks?marks[i]?' ok':' bad':''}" data-l="${i}" aria-pressed="${selL===i}" ${on?`style="--mc:${MC[i%MC.length]}"`:''}><span class="mt-n">${i+1}</span><span>${T(p[0])}</span></button>`}).join('')}</div>
+     <div class="mt-col">${right.map(j=>{const o=owner(j);const on=o>=0;return `<button type="button" class="mt-i${selR===j?' sel':''}${on?' on':''}" data-r="${j}" aria-pressed="${selR===j}" ${on?`style="--mc:${MC[o%MC.length]}"`:''}><span class="mt-n">${on?o+1:''}</span><span>${T(P[j][1])}</span></button>`}).join('')}</div></div>
+     <div class="stb-acts"><button type="button" class="btn primary" data-a="check" ${nl?'':'disabled'}>تحقّق</button><button type="button" class="btn" data-a="reset">إعادة</button><span class="stb-cnt">وصّلت ${nl} من ${n}</span></div>
+     <p class="stb-msg" aria-live="polite">${msg}</p>`;
+    B.math(el);if(fp){const b=el.querySelector(fp);if(b)b.focus({preventScroll:true})}};
+  el.addEventListener('click',e=>{const t=e.target.closest('button');if(!t||!el.contains(t))return;
+    if(t.dataset.l!=null){const i=+t.dataset.l;if(selR>=0)connect(i,selR);else selL=selL===i?-1:i;draw(`[data-l="${i}"]`);return}
+    if(t.dataset.r!=null){const j=+t.dataset.r;if(selL>=0)connect(selL,j);else selR=selR===j?-1:j;draw(`[data-r="${j}"]`);return}
+    if(t.dataset.a==='check'){marks=P.map((p,i)=>link[i]===i);const k=marks.filter(Boolean).length;
+      msg=k===n?'<b class="ok">ممتاز، كل التوصيلات صحيحة.</b>':`<b>${k} من ${n}</b> صحيحة.${Object.keys(link).length<n?' بقيت عناصر لم توصلها.':''} العناصر المعلّمة بالأحمر تحتاج تصحيحاً: اضغطها ثم اختر ما يقابلها.`;draw()}
+    else if(t.dataset.a==='reset'){link={};selL=selR=-1;marks=null;msg='';right=shufNew(n);draw()}});
+  draw();
+}
+
+/* ---- 8. اختبار قبل وبعد الدرس ---- */
+function studyPrePost(el,L){
+  const Q=L.quiz.slice(0,5),N=Q.length,KEY=KK('prepost-'+L.id);
+  let st=store.get(KEY,{})||{},mode=null,ans={},done=false;
+  const bar=(lab,r)=>`<div class="pp-row"><span class="pp-l">${lab}</span><span class="pbar"><i style="width:${Math.round(r.s/r.n*100)}%"></i></span><b class="pp-s">${r.s} من ${r.n}</b></div>`;
+  const draw=()=>{let h='';
+    if(!mode){
+      if(st.pre||st.post){h+=`<div class="pp-res">${st.pre&&st.post?`<p class="pp-sum">قبل: ${st.pre.s} من ${st.pre.n} — بعد: ${st.post.s} من ${st.post.n}</p>`:''}${st.pre?bar('قبل الدرس',st.pre):''}${st.post?bar('بعد الدرس',st.post):''}
+        ${st.pre&&st.post?`<p class="sub">${st.post.s>st.pre.s?`تحسّنت ${(d=>d===1?'بسؤال واحد':d===2?'بسؤالين':`بـ ${d} ${AR_N(d,'','','أسئلة','سؤالاً')}`)(st.post.s-st.pre.s)}.`:st.post.s===st.pre.s?'النتيجة نفسها. راجع الشرح ثم أعد «بعد الدرس».':'النتيجة أقل من قبل. راجع الشرح ثم أعد «بعد الدرس».'}</p>`:st.pre?'<p class="sub">اقرأ الدرس، ثم ارجع هنا وحل «بعد الدرس»: الأسئلة نفسها.</p>':'<p class="sub">لم تحل «قبل الدرس»، فلا توجد مقارنة.</p>'}</div>`}
+      else h+=`<p class="pp-intro">${N} ${AR_N(N,'سؤال','سؤالان','أسئلة','سؤالاً')} من «اختبر نفسك». حلها قبل أن تقرأ الدرس، ثم حل الأسئلة نفسها بعد ما تنتهي. لا تظهر الإجابات الصحيحة في «قبل الدرس».</p>`;
+      h+=`<div class="stb-acts"><button type="button" class="btn${st.pre?'':' primary'}" data-m="pre">${st.pre?'أعد «قبل الدرس»':'ابدأ: قبل الدرس'}</button><button type="button" class="btn${st.pre&&!st.post?' primary':''}" data-m="post">${st.post?'أعد «بعد الدرس»':'بعد الدرس'}</button>${st.pre||st.post?'<button type="button" class="btn" data-a="clear">امسح النتائج</button>':''}</div>`;
+    } else {
+      const sc=Q.filter((q,i)=>ans[i]===q.c).length,all=Object.keys(ans).length===N,rev=done&&mode==='post';
+      h+=`<p class="pp-mode"><b>${mode==='pre'?'قبل الدرس':'بعد الدرس'}</b> · أجبت ${Object.keys(ans).length} من ${N}</p><div class="quiz pp-q">`+Q.map((q,i)=>`<div class="qq"><h3>${i+1}. ${T(q.q)}</h3><div class="opts">${q.o.map((o,j)=>{let c='';if(rev){if(j===q.c)c=' right';else if(j===ans[i])c=' wrong'}else if(ans[i]===j)c=' picked';
+        return `<button type="button" class="opt${c}" data-q="${i}" data-o="${j}" aria-pressed="${ans[i]===j}" ${done?'disabled':''}>${T(o)}</button>`}).join('')}</div>${rev?`<div class="fb show">${ans[i]===q.c?'<b class="ok">صحيحة.</b> ':'<b class="no">ليست هذه.</b> '}${T(q.e||'')}</div>`:''}</div>`).join('')+'</div>';
+      if(!done)h+=`<div class="stb-acts"><button type="button" class="btn primary" data-a="submit" ${all?'':'disabled'}>أنهِ وأظهر النتيجة</button><button type="button" class="btn" data-a="cancel">إلغاء</button></div>`;
+      else h+=`<div class="pp-res">${mode==='pre'?`<p class="pp-sum">نتيجتك قبل الدرس: ${sc} من ${N}</p><p class="sub">لن نعرض الإجابات الآن حتى تبقى المقارنة صادقة. اقرأ الدرس ثم حل «بعد الدرس».</p>`:`${st.pre?`<p class="pp-sum">قبل: ${st.pre.s} من ${st.pre.n} — بعد: ${sc} من ${N}</p>${bar('قبل الدرس',st.pre)}`:''}${bar('بعد الدرس',{s:sc,n:N})}`}</div><div class="stb-acts"><button type="button" class="btn primary" data-a="back">تم</button></div>`;
+    }
+    el.innerHTML=h;B.math(el)};
+  el.addEventListener('click',e=>{const t=e.target.closest('button');if(!t||!el.contains(t))return;
+    if(t.dataset.m){mode=t.dataset.m;ans={};done=false;draw();el.closest('.stb').scrollIntoView({block:'start',behavior:'smooth'});return}
+    if(t.dataset.q!=null){ans[+t.dataset.q]=+t.dataset.o;draw();return}
+    const a=t.dataset.a;
+    if(a==='submit'){const sc=Q.filter((q,i)=>ans[i]===q.c).length;st[mode]={s:sc,n:N,t:Date.now()};store.set(KEY,st);done=true;draw()}
+    else if(a==='cancel'||a==='back'){mode=null;done=false;draw()}
+    else if(a==='clear'){st={};store.set(KEY,st);draw()}});
+  draw();
 }
 
 /* ---------------- ROUTER ---------------- */
