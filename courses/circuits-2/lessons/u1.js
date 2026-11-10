@@ -196,7 +196,183 @@ lesson({
  title:'التيار المتردد: تعريفه وتوليده وموجته وتردده',
  summary:'ما هو التيار المتردد، وكيف يولده ملف يدور في مجال مغناطيسي، وشكل الموجة الجيبية ونصفاها الموجب والسالب، والتحويل بين الدرجات والراديان، والتردد f والزمن الدوري T = 1/f. مع مقدمة الحقيبة وتمهيدها وأهداف الوحدة الأولى.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'مقدمة الحقيبة',title:'مقدمة الحقيبة: لمن كُتبت هذه الحقيبة؟',ref:'ص 1',
    q:'هذه الحقيبة تُدرَّس لأكثر من تخصص. ما هذه التخصصات، ولماذا يحتاجها كل منها؟',
@@ -214,7 +390,11 @@ lesson({
      <p>وقد خطت الإدارة العامة لتصميم وتطوير المناهج خطوة إيجابية تتفق مع التجارب الدولية المتقدمة في بناء البرامج التدريبية، وفق أساليب علمية حديثة تحاكي متطلبات سوق العمل بكافة تخصصاته لتلبي متطلباته، وقد تمثلت هذه الخطوة في مشروع إعداد <b>المعايير المهنية الوطنية</b> الذي يمثل الركيزة الأساسية في بناء البرامج التدريبية، إذ تعتمد المعايير في بنائها على تشكيل لجان تخصصية تمثل سوق العمل والمؤسسة العامة للتدريب التقني والمهني بحيث تتوافق الرؤية العلمية مع الواقع العملي الذي تفرضه متطلبات سوق العمل، لتخرج هذه اللجان في النهاية بنظرة متكاملة لبرنامج تدريبي أكثر التصاقاً بسوق العمل، وأكثر واقعية في تحقيق متطلباته الأساسية.</p>
      <p>وتتناول هذه الحقيبة التدريبية " دوائر كهربائية - 2 " لمتدربي تخصصات " <b>الآلات والمعدات الكهربائية والقوى الكهربائية ومشغل لوحة التحكم</b> " للكليات التقنية موضوعات حيوية تتناول كيفية اكتساب المهارات اللازمة لهذا التخصص.</p>
      <p>والإدارة العامة لتصميم وتطوير المناهج وهي تضع بين يديك هذه الحقيبة التدريبية تأمل من الله عز وجل أن تسهم بشكل مباشر في تأصيل المهارات الضرورية اللازمة، بأسلوب مبسط يخلو من التعقيد، مدعم بالتطبيقات والأشكال التي تدعم عملية اكتساب هذه المهارات.</p>`,ref:'ص 1'},
-    {tip:String.raw`<p>الفكرة باختصار: هذه الحقيبة بُنيت على <b>المعايير المهنية الوطنية</b>، أي على ما يطلبه سوق العمل فعلاً من الفني الكهربائي. والتيار المتردد هو ما ستتعامل معه في المحركات واللوحات والشبكات، لذلك يحتاجه التخصصات الثلاثة.</p>`}
+    {tip:String.raw`<p>الفكرة باختصار: هذه الحقيبة بُنيت على <b>المعايير المهنية الوطنية</b>، أي على ما يطلبه سوق العمل فعلاً من الفني الكهربائي. والتيار المتردد هو ما ستتعامل معه في المحركات واللوحات والشبكات، لذلك يحتاجه التخصصات الثلاثة.</p>`},
+    {title:'تحقق سريع: مقدمة الحقيبة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص المقدمة (ص 1).',items:[
+     ['هذه الحقيبة تُدرَّس لمتدربي ثلاثة تخصصات: الآلات والمعدات الكهربائية، والقوى الكهربائية، ومشغل لوحة التحكم.',true,'هذه هي التخصصات الثلاثة المذكورة في المقدمة.'],
+     ['المعايير المهنية الوطنية تُبنى بلجان تخصصية تمثل سوق العمل والمؤسسة العامة للتدريب التقني والمهني معاً.',true,'نص المقدمة: «تشكيل لجان تخصصية تمثل سوق العمل والمؤسسة العامة للتدريب التقني والمهني».'],
+     ['الحقيبة كُتبت لتخصص واحد فقط هو الإلكترونيات.',false,'المقدمة ذكرت ثلاثة تخصصات، وليس منها الإلكترونيات.']]})}
    ]},
 
   {st:2,short:'تمهيد',title:'تمهيد: ماذا ستدرس في هذا المقرر؟',ref:'ص 5',
@@ -234,7 +414,14 @@ lesson({
      <p><b>الوحدة الأولى:</b> تعنى الوحدة الأولى بدراسة مبادئ التيار المتردد وتحليل دوائره، وقد قسمت إلى ثلاثة فصول: الفصل الأول يتطرق إلى تعريف التيار المتردد وشرح خصائصه، فنعرف الدورة والتردد والقيمة اللحظية والقيمة الفعالة. الفصل الثاني ومنه سنعرف الأنواع المختلفة للمعاوقات كما نعرف مفهوم المطاور الذي يسهل كثيراً تحليل دوائر التيار المتردد. بعد ذلك سنشرح التوصيلات المختلفة للمعاوقات (التوصيل على التوالي، والتوصيل على التوازي، والتوصيل على التوالي والتوازي)، وسنبين بالأمثلة الخطوات المستعملة في التحليل.</p>
      <p>أما الفصل الثالث فإنه يعنى بتعريف الأنواع المختلفة للقدرة الكهربائية في دوائر التيار المتردد وبتعريف معامل القدرة ذي الأهمية الكبرى في التقنية الكهربائية. كما سندرس الواتميتر المستعمل لقياس القدرة الفعالة.</p>
      <p><b>الوحدة الثانية</b> فسندرس فيها دوائر التيار المتردد ثلاثية الأوجه والتوصيلات المختلفة المستعملة في هذه الدوائر. وقد قسمت إلى فصلين: في الفصل الأول سنقوم بوصف نظام التيار المتردد ثلاثي الأطوار مع ذكر طريقة توليد هذا النظام وتتابع الأطوار وكذلك سنتطرق إلى دراسة التوصيل على شكل نجمة ودلتا والعلاقة بين قيم الخط وقيم الوجه للتيار والجهد في حالتي التوصيلتين السابقتين. وفي الفصل الأخير القدرة في الدوائر ثلاثية الأوجه كما سنشرح طريقة قياس القدرة باستعمال جهازي الواتميتر.</p>`,ref:'ص 5'},
-    {tip:String.raw`<p>الدروس السبعة الأولى في هذا الموقع تغطي <b>الفصل الأول كاملاً</b> (التيار المتردد وخصائصه) و<b>بداية الفصل الثاني</b> حتى الرنين في دوائر التوالي.</p>`}
+    {tip:String.raw`<p>الدروس السبعة الأولى في هذا الموقع تغطي <b>الفصل الأول كاملاً</b> (التيار المتردد وخصائصه) و<b>بداية الفصل الثاني</b> حتى الرنين في دوائر التوالي.</p>`},
+    {title:'مختبر مصغّر: أين يُدرَّس هذا الموضوع؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل موضوع اضغط مكانه في الحقيبة بحسب نص التمهيد (ص 5).',cats:['الوحدة الأولى: الفصل الأول','الوحدة الأولى: الفصل الثاني','الوحدة الأولى: الفصل الثالث','الوحدة الثانية'],items:[
+     ['الدورة والتردد والقيمة اللحظية والقيمة الفعالة',0,'التمهيد: «الفصل الأول يتطرق إلى تعريف التيار المتردد وشرح خصائصه، فنعرف الدورة والتردد والقيمة اللحظية والقيمة الفعالة».'],
+     ['التوصيل على التوالي والتوازي والتوالي والتوازي معاً',1,'هذه «التوصيلات المختلفة للمعاوقات» في الفصل الثاني.'],
+     ['معامل القدرة والواتميتر',2,'الفصل الثالث «يعنى بتعريف الأنواع المختلفة للقدرة… وبتعريف معامل القدرة… كما سندرس الواتميتر».'],
+     ['التوصيل على شكل نجمة ودلتا وتتابع الأطوار',3,'هذه من موضوعات الوحدة الثانية (دوائر التيار المتردد ثلاثية الأوجه).'],
+     ['الأنواع المختلفة للمعاوقات',1,'التمهيد: «الفصل الثاني ومنه سنعرف الأنواع المختلفة للمعاوقات».'],
+     ['قياس القدرة باستعمال جهازي الواتميتر',3,'آخر ما يذكره التمهيد عن الوحدة الثانية.']]})}
    ]},
 
   {st:3,short:'أهداف الوحدة',title:'الوحدة الأولى: الهدف العام والأهداف التفصيلية',ref:'ص 7',
@@ -251,7 +438,12 @@ lesson({
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة الخطوات المستعملة لتحليل دوائر التيار المتردد البسيطة.</p>
      <p><b>الأهداف التفصيلية:</b></p>
      <ol><li>أن يلم المتدرب بخواص التيار المتردد وكيفية توليده.</li><li>أن يلم المتدرب بتعريف الموجة – الزمن الدوري – التردد.</li><li>أن يلم المتدرب بالممانعات الحثية والسعوية.</li><li>أن يلم المتدرب بدوائر الرنين.</li><li>أن يلم المتدرب بتعريف القدرة الظاهرية والفعالة وغير الفعالة.</li></ol>`,ref:'ص 7'},
-    {tip:String.raw`<p>الهدفان 1 و2 في الفصل الأول (هذا الدرس والدروس <span class="ltr">2–4</span>)، والهدف 3 في الدرس الخامس، والهدف 4 يبدأ في الدرس السابع (الرنين على التوالي). أما الهدف 5 فهو في الفصل الثالث.</p>`}
+    {tip:String.raw`<p>الهدفان 1 و2 في الفصل الأول (هذا الدرس والدروس <span class="ltr">2–4</span>)، والهدف 3 في الدرس الخامس، والهدف 4 يبدأ في الدرس السابع (الرنين على التوالي). أما الهدف 5 فهو في الفصل الثالث.</p>`},
+    {title:'تحقق سريع: أهداف الوحدة الأولى',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['عدد الأهداف التفصيلية للوحدة الأولى خمسة.',true,'القائمة في ص 7 فيها خمسة أهداف.'],
+     ['الإلمام بدوائر الرنين من الأهداف التفصيلية للوحدة الأولى.',true,'هذا الهدف الرابع.'],
+     ['تعريف القدرة الظاهرية والفعالة وغير الفعالة ليس من أهداف الوحدة الأولى.',false,'هو الهدف الخامس للوحدة الأولى، ويُدرس في الفصل الثالث.'],
+     ['الهدف العام للوحدة: تصميم دوائر التيار المتردد.',false,'الهدف العام: «معرفة الخطوات المستعملة لتحليل دوائر التيار المتردد البسيطة».']]})}
    ]},
 
   {st:4,short:'الفصل الأول',title:'الفصل الأول: التيار المتردد',ref:'ص 8',
@@ -267,7 +459,11 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>التيار المتردد هو الأكثر استعمالاً في كل مجالات التقنية الكهربائية، ولهذا يجب فهم خصائصه جيداً. وسنحاول شرح هذه الخصائص في هذا الفصل بإيجاز غير مخل.</p>`,ref:'ص 8'},
-    {tip:String.raw`<p>خصائص التيار المتردد التي ستدرسها في هذا الفصل: تعريفه وتوليده، شكل موجته، التردد والزمن الدوري، القيمة اللحظية، القيمة المتوسطة والفعالة، ثم تمثيله بالمتجهات (المطاور).</p>`}
+    {tip:String.raw`<p>خصائص التيار المتردد التي ستدرسها في هذا الفصل: تعريفه وتوليده، شكل موجته، التردد والزمن الدوري، القيمة اللحظية، القيمة المتوسطة والفعالة، ثم تمثيله بالمتجهات (المطاور).</p>`},
+    {title:'تحقق سريع: لماذا التيار المتردد؟',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['يصف الكتاب التيار المتردد بأنه الأكثر استعمالاً في كل مجالات التقنية الكهربائية.',true,'نص الكتاب في ص 8.'],
+     ['الكهرباء التي تصل إلى المنازل والمصانع من الشبكة تيار مستمر.',false,'هي تيار متردد، وعليه تعمل المحركات والمكيفات والإنارة (الإضافة أعلاه).'],
+     ['البطارية تعطي تياراً مستمراً لا متردداً.',true,'لذلك درستها في دوائر كهربائية-1 مع التيار المستمر.']]})}
    ]},
 
   {st:5,short:'تعريف التيار المتردد',title:'<span class="ltr">1-1-1</span> تعريف التيار المتردد',ref:'ص 8',
@@ -284,7 +480,13 @@ lesson({
    body:[
     {book:String.raw`<p>يكون التيار (أو الجهد) <b>متردداً</b> إذا <b>تغير اتجاهه وقيمته بشكل دوري منتظم مع الزمن</b> \(t\)، بحيث يمر في كل دورة بنفس التغيرات التي مر بها في الدورة السابقة.</p>`,ref:'ص 8'},
     {tip:String.raw`<p>في التعريف شرطان معاً:</p><ul><li><b>يتغير اتجاهه وقيمته:</b> يسير التيار في الدائرة باتجاه، ثم يعكس اتجاهه، وقيمته تكبر وتصغر.</li><li><b>بشكل دوري منتظم:</b> كل دورة نسخة من التي قبلها، فإذا عرفت دورة واحدة عرفت الموجة كلها.</li></ul>`},
-    {watch:String.raw`<p>تيار تتغير قيمته لكن لا يعكس اتجاهه أبداً <b>ليس</b> تياراً متردداً بهذا التعريف.</p>`}
+    {watch:String.raw`<p>تيار تتغير قيمته لكن لا يعكس اتجاهه أبداً <b>ليس</b> تياراً متردداً بهذا التعريف.</p>`},
+    {title:'مختبر مصغّر: متردد أم لا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'طبّق شرطي التعريف (يتغير الاتجاه والقيمة + بشكل دوري منتظم) على كل حالة.',cats:['تيار متردد','ليس متردداً'],items:[
+     ['تيار يسير في اتجاه ثم يعكس اتجاهه، وتتكرر التغيرات نفسها في كل دورة.',0,'تحقق الشرطان معاً: تغير الاتجاه والقيمة، وبشكل دوري منتظم.'],
+     ['تيار بطارية قيمته واتجاهه ثابتان.',1,'لا يتغير اتجاهه ولا قيمته؛ هذا تيار مستمر.'],
+     ['تيار يكبر ويصغر بانتظام لكنه يبقى في الاتجاه نفسه دائماً.',1,'تتغير قيمته فقط ولا يعكس اتجاهه أبداً، فلا ينطبق عليه التعريف (انظر «انتبه»).'],
+     ['جهد الشبكة الكهربائية الذي يرسم موجة جيبية تتكرر كل دورة.',0,'يتغير اتجاهه وقيمته، وكل دورة نسخة من التي قبلها.'],
+     ['تيار انعكس اتجاهه مرة واحدة عند تحريك مفتاح، ثم لم يتكرر ذلك.',1,'تغير الاتجاه هنا ليس «بشكل دوري منتظم»؛ لم تتكرر الدورة.']]})}
    ]},
 
   {st:6,short:'توليد التيار المتردد',title:'<span class="ltr">1-1-2</span> كيفية توليد التيار المتردد',ref:'ص <span class=\"ltr\">8–9</span>',
@@ -342,7 +544,17 @@ lesson({
    body:[
     {book:String.raw`<p>إذا كان تغير التيار (أو الجهد) مع الزمن على شكل <b>دالة جيبية</b> فنقول إن التيار (أو الجهد) <b>متردد جيبي</b>، وهذا الشكل هو الأكثر استعمالاً حيث إن المولدات المستعملة في الشبكات الكهربائية تنتج جهوداً قريبة جداً منه. ويمثل الشكل <span class="ltr">1-3</span> جهداً متردداً جيبياً.</p>`,ref:'ص 10'},
     {tip:String.raw`<p>«دالة جيبية» يعني أن قيمة الجهد تتبع الدالة <span class="ltr">sin</span> التي تعرفها من الآلة الحاسبة: <span class="ltr">sin 0° = 0</span>، و<span class="ltr">sin 90° = 1</span>، و<span class="ltr">sin 180° = 0</span>، و<span class="ltr">sin 270° = −1</span>. لذلك تأخذ الموجة قمتها عند <span class="ltr">90°</span> وقاعها عند <span class="ltr">270°</span>، كما في المولد الذي رأيته في المحطة السابقة.</p>`},
-    {watch:String.raw`<p>في الكتاب طُبع رقم هذا الشكل «<span class="ltr">3-1</span>» تحت الرسم، والمقصود الشكل <span class="ltr">(1-3)</span> كما في النص.</p>`,fix:true}
+    {watch:String.raw`<p>في الكتاب طُبع رقم هذا الشكل «<span class="ltr">3-1</span>» تحت الرسم، والمقصود الشكل <span class="ltr">(1-3)</span> كما في النص.</p>`,fix:true},
+    {title:'مختبر مصغّر: حرّك الزاوية على الموجة الجيبية',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`في الموجة الجيبية تكون قيمة الجهد في كل لحظة جزءاً من القيمة العظمى \(V_m\)، وهذا الجزء هو \(\sin\theta\) (المعادلة الكاملة في <span class="ltr">1-1-6</span>). لا نحتاج أرقاماً: النتيجة نسبة من \(V_m\).`,
+ predict:{q:String.raw`عند الزاوية <span class="ltr">30°</span> كم تكون قيمة الجهد؟`,opts:[
+  [String.raw`\(V_m\) كاملة`,false,String.raw`الجهد يبلغ \(V_m\) عند <span class="ltr">90°</span> فقط.`],
+  [String.raw`ثلث \(V_m\)`,false,String.raw`الموجة ليست خطاً مستقيماً من 0 إلى <span class="ltr">90°</span>؛ القيمة تتبع \(\sin\).`],
+  [String.raw`نصف \(V_m\)`,true,String.raw`\(\sin 30^\circ=0.5\)، فالجهد نصف القيمة العظمى، مع أن الزاوية ثلث المسافة إلى القمة فقط.`]]},
+ ins:[{k:'a',l:'زاوية الطور θ',min:0,max:360,step:15,v:30,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,k=Math.sin(s.a*D),z=Math.abs(k)<1e-9;const kk=z?0:k;
+  const where=z?'الجهد صفر: الموجة تعبر المحور الأفقي.':s.a===90?'القمة: الجهد يساوي القيمة العظمى الموجبة \\(V_m\\).':s.a===270?'القاع: الجهد يساوي القيمة العظمى السالبة \\(-V_m\\).':kk>0?'النصف الموجب من الموجة.':'النصف السالب من الموجة.';
+  return {facts:[['θ',DCML.fm(B,s.a,0)+'°'],['sin θ',DCML.fm(B,kk,3),'hi'],['الجهد v',(z?'0':DCML.fm(B,kk,3)+' Vm'),'hi']],
+   plot:{xr:[0,360],yr:[-1.15,1.15],xt:[0,90,180,270,360],yt:[-1,-0.5,0,0.5,1],xl:'θ (°)',yl:'v ÷ Vm',curves:[{f:x=>Math.sin(x*D)}],cur:[s.a,kk]},msg:where}}})}
    ]},
 
   {st:8,short:'الدرجات والراديان',title:'حالة خاصة: التحويل بين الدرجات والراديان',ref:'ص 10',
@@ -385,7 +597,12 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>هي <b>المسار الذي يرسمه الجهد (أو التيار) بدلالة الزمن</b> أو بدلالة كمية أخرى (كزاوية الطور كما سنرى فيما بعد). ونسمي نصف الموجة فوق المحور الأفقي <b>النصف الموجب</b>، أما النصف الآخر فيسمى <b>النصف السالب</b>.</p>`,ref:'ص 10'},
-    {tip:String.raw`<p>المحور الأفقي في رسم الموجة يمكن أن يكون الزمن \(t\) (بالثواني) أو الزاوية (بالدرجات أو الراديان)؛ والشكل نفسه لا يتغير. في النصف الموجب يسير التيار في اتجاه، وفي النصف السالب يسير في الاتجاه المعاكس.</p>`}
+    {tip:String.raw`<p>المحور الأفقي في رسم الموجة يمكن أن يكون الزمن \(t\) (بالثواني) أو الزاوية (بالدرجات أو الراديان)؛ والشكل نفسه لا يتغير. في النصف الموجب يسير التيار في اتجاه، وفي النصف السالب يسير في الاتجاه المعاكس.</p>`},
+    {title:'تحقق سريع: الموجة ونصفاها',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['الموجة هي المسار الذي يرسمه الجهد (أو التيار) بدلالة الزمن.',true,'هذا تعريف الكتاب في ص 10.'],
+     ['يمكن أن يكون المحور الأفقي للموجة زاوية الطور بدلاً من الزمن.',true,'الكتاب: «أو بدلالة كمية أخرى (كزاوية الطور كما سنرى فيما بعد)».'],
+     ['النصف الموجب هو الجزء من الموجة الذي يقع تحت المحور الأفقي.',false,'النصف الموجب فوق المحور الأفقي، والسالب تحته.'],
+     ['في النصف السالب يسير التيار في الاتجاه المعاكس لاتجاهه في النصف الموجب.',true,'الإشارة السالبة تعني الاتجاه المعاكس.']]})}
    ]},
 
   {st:10,short:'التردد والزمن الدوري',title:'<span class="ltr">1-1-5</span> التردد <span class="ltr">(f)</span> والزمن الدوري <span class="ltr">(T)</span>',ref:'ص 11',
@@ -402,7 +619,17 @@ lesson({
     {book:String.raw`<p><b>التردد <span class="ltr">(f)</span></b> هو عدد الدورات التي ترسمها الموجة في زمن معين، ووحدته <b>الهرتز</b> <span class="ltr">Hertz</span> ورمزه <span class="ltr">Hz</span> وهو يمثل عدد الدورات في الثانية. والزمن اللازم لإكمال موجة كاملة يسمى <b>الزمن الدوري</b> أو زمن الدورة \((T)\) وبما أنه كلما قصر زمن الدورة ازداد التردد بنفس النسبة أي أن العلاقة بين الزمن الدوري والتردد علاقة عكسية، نستخلص أن</p>
      <div class="eq">$$T=\frac{1}{f}$$<span class="eqno"><span class="ltr">(1-1)</span></span></div>`,ref:'ص 11'},
     {tip:String.raw`<p>إذا عرفت عدد الدورات \(N\) التي تكملها الموجة في زمن \(t\) فإن زمن الدورة الواحدة \(T=t/N\)، والتردد \(f=N/t\). وستحتاج هذا في مثال <span class="ltr">1-1-2</span> وفي مسائل الفصل.</p>`,title:'من عدد الدورات إلى T و f'},
-    {tip:String.raw`<p>البادئات التي ستقابلها: <span class="ltr">ms</span> ملّي \(=10^{-3}\)، <span class="ltr">µs</span> ميكرو \(=10^{-6}\)، <span class="ltr">kHz</span> كيلو \(=10^{3}\)، <span class="ltr">MHz</span> ميغا \(=10^{6}\).</p>`,title:'البادئات'}
+    {tip:String.raw`<p>البادئات التي ستقابلها: <span class="ltr">ms</span> ملّي \(=10^{-3}\)، <span class="ltr">µs</span> ميكرو \(=10^{-6}\)، <span class="ltr">kHz</span> كيلو \(=10^{3}\)، <span class="ltr">MHz</span> ميغا \(=10^{6}\).</p>`,title:'البادئات'},
+    {title:'مختبر مصغّر: غيّر التردد وعدّ الدورات',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`الرسم يعرض ثانية واحدة فقط. حرّك التردد وعُدّ الدورات، وراقب زمن الدورة الواحدة \(T\). الترددات هنا <b>أرقام تختارها أنت</b> (صغيرة حتى تستطيع عدّ الدورات بعينك).`,
+ predict:{q:String.raw`رفعت التردد من <span class="ltr">2 Hz</span> إلى <span class="ltr">4 Hz</span>. ماذا يحدث للزمن الدوري \(T\)؟`,opts:[
+  ['يتضاعف',false,'التردد والزمن الدوري علاقتهما عكسية لا طردية.'],
+  ['يقل إلى النصف',true,String.raw`\(T=\frac{1}{f}\): من <span class="ltr">0.5 s</span> إلى <span class="ltr">0.25 s</span>، لأن الثانية نفسها صارت تتسع لضعف عدد الدورات.`],
+  ['لا يتغير',false,String.raw`\(T\) يتغير مع \(f\) حسب المعادلة <span class="ltr">(1-1)</span>.`]]},
+ ins:[{k:'f',l:'التردد f',u:'Hz',min:1,max:8,step:1,v:2,dp:0}],
+ calc:(s,P,B)=>{const T=1/s.f;
+  return {facts:[['عدد الدورات في الثانية',DCML.fm(B,s.f,0)],['<span class="ltr">T = 1 ÷ f</span>',DCML.fm(B,T,3)+' s','hi'],['T بالملّي ثانية',DCML.fm(B,T*1000,1)+' ms']],
+   plot:{xr:[0,1],yr:[-1.15,1.15],xt:[0,0.25,0.5,0.75,1],yt:[-1,0,1],noYt:true,xl:'t (s)',yl:'v',curves:[{f:t=>Math.sin(2*Math.PI*s.f*t),n:480}],dots:[[T,0,'--stop']]},
+   msg:String.raw`النقطة الحمراء نهاية الدورة الأولى عند \(t=T=${DCML.fm(B,T,3)}\ \text{s}\). كل دورة تالية تأخذ الزمن نفسه، لذلك \(f\times T=1\).`}}})}
    ]},
 
   {st:11,short:'مثال <span class="ltr">1-1-1</span>',title:'مثال <span class="ltr">1-1-1</span>: زمن دورة الشبكة',ref:'ص 11',
@@ -676,7 +903,18 @@ lesson({
      <div class="eq">$$v(t)=V_m\sin\alpha=V_m\sin(\omega t+\theta_v)=V_m\sin(2\pi ft+\theta_v)$$<span class="eqno"><span class="ltr">(1-4)</span></span></div>
      <p>ونمثل موجة الجهد (أو التيار) بدلالة الزاوية \(\alpha\) كما في الشكل <span class="ltr">1-5</span></p>`,ref:'ص <span class=\"ltr\">12–13</span>'},
     {tip:String.raw`<p>كيف تقرأ معادلة موجة مثل \(v=100\sin(377t+\pi/6)\)؟</p><ul><li>الرقم أمام <span class="ltr">sin</span> هو القيمة العظمى \(V_m\).</li><li>الرقم المضروب في \(t\) هو \(\omega\)، ومنه \(f=\omega/2\pi\).</li><li>الزاوية المضافة هي \(\theta_v\).</li></ul>`,title:'قراءة معادلة الموجة'},
-    {watch:String.raw`<p>\(\omega t\) تخرج بالراديان، فإذا كانت \(\theta_v\) بالدرجات حوّل إحداهما قبل الجمع، واضبط الآلة الحاسبة على الوحدة نفسها.</p>`}
+    {watch:String.raw`<p>\(\omega t\) تخرج بالراديان، فإذا كانت \(\theta_v\) بالدرجات حوّل إحداهما قبل الجمع، واضبط الآلة الحاسبة على الوحدة نفسها.</p>`},
+    {title:'مختبر مصغّر: ابنِ المعادلة (1-4) وحرّك الزمن',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`اختر التردد وزاوية الطور الابتدائية \(\theta_v\)، ثم حرّك الزمن \(t\). الترددان من مثال <span class="ltr">1-1-1</span>، و<span class="ltr">30°</span> (أي \(\pi/6\)) من مثال <span class="ltr">1-1-4</span>. النتيجة نسبة من \(V_m\) فلا نحتاج قيمة له.`,
+ predict:{q:String.raw`إذا كانت \(\theta_v=30^\circ\)، فكم يكون الجهد عند \(t=0\)؟`,opts:[
+  ['صفر، لأن الزمن صفر',false,String.raw`عند \(t=0\) يبقى في القوس \(\theta_v\)، فالجهد \(V_m\sin\theta_v\) وليس صفراً إلا إذا كانت \(\theta_v=0\).`],
+  [String.raw`نصف \(V_m\)`,true,String.raw`\(v(0)=V_m\sin(0+30^\circ)=0.5\,V_m\): الموجة تبدأ من فوق المحور.`],
+  [String.raw`\(V_m\) كاملة`,false,String.raw`هذا يحدث لو كانت \(\theta_v=90^\circ\).`]]},
+ ins:[{k:'f',l:'التردد f',seg:[[50,'<span class="ltr">50 Hz</span>'],[60,'<span class="ltr">60 Hz</span>']],v:60},{k:'th',l:'زاوية الطور في بداية الزمن θ<sub>v</sub>',seg:[[0,'<span class="ltr">0°</span>'],[30,'<span class="ltr">30° = π/6</span>'],[90,'<span class="ltr">90° = π/2</span>']],v:30},
+  {k:'t',l:'الزمن t',u:'ms',min:0,max:40,step:0.5,v:0,dp:1}],
+ calc:(s,P,B)=>{const D=Math.PI/180,w=2*Math.PI*s.f,t=s.t/1000,al=w*t*180/Math.PI+s.th,k=Math.sin(al*D),kk=Math.abs(k)<1e-9?0:k;
+  return {facts:[['<span class="ltr">ω = 2πf (1-3)</span>',DCML.fm(B,w,1)+' rad/s'],['<span class="ltr">α = ωt + θv (1-2)</span>',DCML.fm(B,al,1)+'°'],['<span class="ltr">v = Vm sin α (1-4)</span>',DCML.fm(B,kk,3)+' Vm','hi']],
+   plot:{xr:[0,40],yr:[-1.15,1.15],xt:[0,10,20,30,40],yt:[-1,0,1],xl:'t (ms)',yl:'v ÷ Vm',curves:[{f:x=>Math.sin(w*x/1000+s.th*D),n:240}],cur:[s.t,kk]},
+   msg:String.raw`عند \(t=0\) يبدأ الجهد من \(V_m\sin${s.th}^\circ=${DCML.fm(B,Math.sin(s.th*D),3)}\,V_m\). وفي \(${DCML.fm(B,40,0)}\ \text{ms}\) تكمل الموجة \(${DCML.fm(B,s.f*0.04,1)}\) دورة.`}}})}
    ]},
 
   {st:3,short:'مثال <span class="ltr">1-1-3</span>',title:'مثال <span class="ltr">1-1-3</span>: التردد الزاوي لموجة <span class="ltr">60 Hz</span>',ref:'ص 13',
@@ -692,7 +930,16 @@ lesson({
    body:[
     {book:String.raw`<p><b>مثال <span class="ltr">1-1-3</span>:</b> احسب التردد الزاوي لموجة مترددة ترددها <span class="ltr">60 Hz</span></p>
      <p><b>الحل:</b></p>$$\omega=2\pi f=2\pi\times60=377\ \text{rad/s}$$`,ref:'ص 13'},
-    {tip:String.raw`<p>الرقم <span class="ltr">377</span> ستراه كثيراً في هذا المقرر: هو التردد الزاوي لشبكة <span class="ltr">60 Hz</span>، ولذلك تُكتب معادلات الجهد في الأمثلة بالشكل \(\sin(377t)\).</p>`}
+    {tip:String.raw`<p>الرقم <span class="ltr">377</span> ستراه كثيراً في هذا المقرر: هو التردد الزاوي لشبكة <span class="ltr">60 Hz</span>، ولذلك تُكتب معادلات الجهد في الأمثلة بالشكل \(\sin(377t)\).</p>`},
+    {title:'مختبر مصغّر: من f إلى ω',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر أحد ترددي الشبكات في مثال <span class="ltr">1-1-1</span> واقرأ التردد الزاوي. كل دورة تمسح فيها النقطة الدوارة <span class="ltr">2π</span> راديان.',
+ predict:{q:'كم يكون التردد الزاوي لشبكة <span class="ltr">50 Hz</span>؟',opts:[
+  ['<span class="ltr">377 rad/s</span>',false,'هذا لشبكة <span class="ltr">60 Hz</span>.'],
+  ['<span class="ltr">50 rad/s</span>',false,String.raw`نسيت الضرب في \(2\pi\).`],
+  ['<span class="ltr">314 rad/s</span>',true,String.raw`\(\omega=2\pi\times50\approx314\ \text{rad/s}\).`]]},
+ ins:[{k:'f',l:'التردد f',seg:[[50,'<span class="ltr">50 Hz</span>'],[60,'60 Hz (المثال)']],v:60}],
+ calc:(s,P,B)=>{const w=2*Math.PI*s.f;
+  return {facts:[['عدد الدورات في الثانية',DCML.fm(B,s.f,0)],['الزاوية في الدورة','2π rad'],['<span class="ltr">ω = 2πf</span>',DCML.fm(B,w,1)+' rad/s','hi'],['بالدرجات في الثانية',DCML.fm(B,360*s.f,0)+'°/s']],
+   msg:String.raw`\(\omega=2\pi\times${s.f}=${DCML.fm(B,w,1)}\ \text{rad/s}\)${s.f===60?'، كما في حل الكتاب (يُقرَّب إلى <span class="ltr">377</span>).':'.'}`}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">1-1-4</span>',title:'مثال <span class="ltr">1-1-4</span>: من معادلة الموجة إلى القيمة اللحظية',ref:'ص <span class=\"ltr\">13–14</span>',
@@ -873,7 +1120,22 @@ lesson({
     {book:String.raw`<p>تعرف القيمة المتوسطة خلال الفترة الزمنية \(T_0\) لأي دالة \(a(t)\) تتغير مع الزمن بالمعادلة</p>
      <div class="eq">$$A_{av}=\frac{1}{T_0}\int_0^{T_0}a(t)\,dt$$<span class="eqno"><span class="ltr">(1-5)</span></span></div>
      <p>وهي <b>المساحة المحصورة بين منحنى الدالة \(a(t)\) والمحور الأفقي مقسومة على الفترة الزمنية</b> التي نحسب خلالها هذه القيمة المتوسطة. وتجدر الإشارة إلى أن المساحة تعتبر <b>موجبة</b> إذا كان المنحنى فوق المحور الأفقي وتعتبر <b>سالبة</b> إذا كان المنحنى تحت المحور الأفقي.</p>`,ref:'ص 14'},
-    {tip:String.raw`<p>لا تخف من علامة التكامل \(\int\): معناها هنا «المساحة تحت المنحنى». فالقيمة المتوسطة = <b>المساحة ÷ الزمن</b>، تماماً كما تحسب متوسط سرعة سيارة: المسافة الكلية ÷ الزمن الكلي.</p>`}
+    {tip:String.raw`<p>لا تخف من علامة التكامل \(\int\): معناها هنا «المساحة تحت المنحنى». فالقيمة المتوسطة = <b>المساحة ÷ الزمن</b>، تماماً كما تحسب متوسط سرعة سيارة: المسافة الكلية ÷ الزمن الكلي.</p>`},
+    {title:'مختبر مصغّر: مدّ الفترة وراقب المتوسط',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`الموجة جيبية تبدأ من الصفر. حرّك نهاية الفترة \(T_0\) (بالدرجات) وراقب المساحتين بإشارتيهما، ثم القيمة المتوسطة = المساحة الصافية ÷ طول الفترة <span class="ltr">(1-5)</span>. النتائج نسبة من \(V_m\).`,
+ predict:{q:'إذا امتدت الفترة إلى ثلاثة أرباع دورة، أي <span class="ltr">270°</span>، فما إشارة القيمة المتوسطة؟',opts:[
+  ['سالبة، لأن الفترة تنتهي تحت المحور',false,'المهم المساحة الصافية لا موضع النهاية: المساحة الموجبة (نصف دورة كامل) أكبر من السالبة (ربع دورة).'],
+  ['موجبة',true,'المساحة الموجبة لنصف الدورة أكبر من المساحة السالبة لربع الدورة، فالصافي موجب.'],
+  ['صفر',false,'الصافي يصير صفراً عند دورة كاملة فقط (<span class="ltr">360°</span>).']]},
+ ins:[{k:'x',l:'نهاية الفترة T<sub>0</sub>',min:30,max:360,step:15,v:180,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180;let pos=0,neg=0;const N=720;for(let i=0;i<N;i++){const a=(i+0.5)/N*s.x*D,v=Math.sin(a)*s.x*D/N;if(v>0)pos+=v;else neg+=v}
+  const net=pos+neg,avg=net/(s.x*D),z=v=>Math.abs(v)<5e-4?0:v,f1=v=>(+v).toFixed(1);
+  const X=d=>30+d*0.8,Y=v=>80-v*55;let pp='',pn='',c='';
+  for(let d=0;d<=360;d+=4)c+=(d?'L':'M')+f1(X(d))+' '+f1(Y(Math.sin(d*D)));
+  const area=(a,b)=>{if(b<=a)return '';let p=`M${f1(X(a))} 80`;for(let d=a;d<=b;d+=2)p+=`L${f1(X(d))} ${f1(Y(Math.sin(d*D)))}`;return p+`L${f1(X(b))} ${f1(Y(Math.sin(b*D)))}L${f1(X(b))} 80Z`};
+  pp=area(0,Math.min(180,s.x));pn=s.x>180?area(180,s.x):'';
+  const pic=`<svg viewBox="0 0 340 150" role="img" aria-label="المساحتان الموجبة والسالبة" style="font-family:var(--font)" direction="ltr"><path d="${pp}" fill="var(--on-soft)" stroke="none"/><path d="${pn}" fill="var(--stop-soft)" stroke="none"/><line x1="30" y1="80" x2="326" y2="80" stroke="var(--fg)" stroke-width="1.4"/><path d="${c}" fill="none" stroke="var(--blue)" stroke-width="2.4"/><line x1="${f1(X(s.x))}" y1="16" x2="${f1(X(s.x))}" y2="140" stroke="var(--live)" stroke-width="2" stroke-dasharray="4 3"/><text x="${f1(X(s.x))}" y="12" text-anchor="middle" font-size="11" fill="var(--live)" font-family="var(--mono)">T0</text><text x="${X(90)}" y="72" text-anchor="middle" font-size="16" fill="var(--on)" font-weight="700">+</text>${s.x>200?`<text x="${X(Math.min(270,(180+s.x)/2))}" y="98" text-anchor="middle" font-size="16" fill="var(--stop)" font-weight="700">−</text>`:''}</svg>`;
+  return {pic,facts:[['المساحة الموجبة',DCML.fm(B,pos,3)],['المساحة السالبة',DCML.fm(B,z(neg),3),neg<-5e-4?'bad':''],['المساحة الصافية',DCML.fm(B,z(net),3)],['<span class="ltr">A av ÷ Vm</span>',DCML.fm(B,z(avg),3),'hi']],
+   msg:s.x===180?String.raw`نصف دورة: \(A_{av}=\frac{2}{\pi}V_m\approx0.637\,V_m\) (مثال <span class="ltr">1-1-5</span>).`:s.x===360?'دورة كاملة: المساحة السالبة ألغت الموجبة، فالمتوسط صفر.':'المساحات بوحدة «\\(V_m\\times\\) راديان»، والقسمة على طول الفترة بالراديان.'}}})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">1-1-5</span>',title:'مثال <span class="ltr">1-1-5</span>: متوسط الجهد الجيبي',ref:'ص 14',
@@ -932,7 +1194,18 @@ lesson({
      <p>وكذلك نكتب</p>
      <div class="eq">$$I_{rms}=\frac{I_m}{\sqrt2}=0.707\,I_m$$<span class="eqno"><span class="ltr">(1-9)</span></span></div>`,ref:'ص <span class=\"ltr\">14–15</span>'},
     {tip:String.raw`<p>اقرأ الاسم <span class="ltr">Root Mean Square</span> من آخره: <b>Square</b> نربّع قيم التيار، ثم <b>Mean</b> نأخذ متوسطها، ثم <b>Root</b> نأخذ الجذر التربيعي. التربيع يجعل النصف السالب موجباً، لذلك لا تكون القيمة الفعالة صفراً مثل المتوسط.</p>`,title:'معنى rms'},
-    {add:String.raw`<p>عندما يُكتب جهد أو تيار متردد على لوحة بيانات جهاز، أو تقرؤه بجهاز قياس عادي، فالمقصود عادة <b>القيمة الفعالة</b>، والقيمة العظمى أكبر منها بـ \(\sqrt2\) مرة.</p>`}
+    {add:String.raw`<p>عندما يُكتب جهد أو تيار متردد على لوحة بيانات جهاز، أو تقرؤه بجهاز قياس عادي، فالمقصود عادة <b>القيمة الفعالة</b>، والقيمة العظمى أكبر منها بـ \(\sqrt2\) مرة.</p>`},
+    {title:'مختبر مصغّر: ربّع ← متوسط ← جذر',widget:(el,B)=>DCML.lab(el,B,{intro:'اضغط المراحل الثلاث لاسم <span class="ltr">Root Mean Square</span> بالترتيب، وراقب ما يحدث للموجة. القيم نسبة من \\(V_m\\).',
+ predict:{q:String.raw`بعد تربيع الموجة الجيبية، كم يكون متوسط \(v^2\) خلال دورة كاملة؟`,opts:[
+  ['صفر، مثل متوسط الموجة نفسها',false,String.raw`التربيع جعل النصف السالب موجباً، فلا شيء يلغي شيئاً.`],
+  [String.raw`\(V_m^2\)`,false,String.raw`\(v^2\) يبلغ \(V_m^2\) عند القمة فقط، وينزل إلى الصفر مرتين في الدورة.`],
+  [String.raw`نصف \(V_m^2\)`,true,String.raw`متوسط \(\sin^2\) خلال دورة \(=\frac12\)، وجذره \(\frac{1}{\sqrt2}\) أي <span class="ltr">0.707</span>: المعادلة <span class="ltr">(1-8)</span>.`]]},
+ ins:[{k:'k',l:'المرحلة',seg:[[0,'الموجة v'],[1,'ربّع v²'],[2,'متوسط'],[3,'جذر']],v:0}],
+ calc:(s,P,B)=>{const D=Math.PI/180,k=s.k;const cv=[{f:x=>Math.sin(x*D),col:k?'--line':'--blue',w:k?1.6:2.6}];
+  if(k>=1)cv.push({f:x=>Math.sin(x*D)**2,col:'--live'});if(k>=2)cv.push({pts:[[0,0.5],[360,0.5]],col:'--on',dash:'6 4'});if(k>=3)cv.push({pts:[[0,Math.SQRT1_2],[360,Math.SQRT1_2]],col:'--stop',w:3});
+  const msg=['النصف السالب يلغي النصف الموجب في المتوسط؛ لذلك نبدأ بالتربيع.','\\(v^2\\) موجب كله (البرتقالي)، وقمته \\(V_m^2\\).','متوسط \\(v^2\\) خلال الدورة = \\(\\frac12V_m^2\\) (الخط الأخضر المتقطع).','\\(V_{rms}=\\sqrt{\\tfrac12V_m^2}=\\frac{V_m}{\\sqrt2}=0.707\\,V_m\\) (الخط الأحمر) <span class="ltr">(1-8)</span>.'][k];
+  return {facts:[['متوسط v خلال دورة','0'],['متوسط <span class="ltr">v² ÷ Vm²</span>',k>=2?'0.5':'؟',k===2?'hi':''],['<span class="ltr">V rms ÷ Vm</span>',k>=3?'0.707':'؟',k===3?'hi':'']],
+   plot:{xr:[0,360],yr:[-1.1,1.1],xt:[0,90,180,270,360],yt:[-1,-0.5,0,0.5,0.707,1],fy:v=>v===0.707?'0.707':DCML.fm(B,v),xl:'θ (°)',yl:'÷ Vm',curves:cv},msg}}})}
    ]},
 
   {st:4,short:'تجربة القياس',title:'تجربة قياس القيمة الفعالة — الشكل <span class="ltr">(1-6)</span>',ref:'ص <span class=\"ltr\">15–16</span>',
@@ -955,7 +1228,16 @@ lesson({
       el.querySelector('[data-go]').onclick=()=>{rs();ks.forEach((k,i)=>tm.push(setTimeout(()=>k.classList.add('on'),i*600)))};
       el.querySelector('[data-rs]').onclick=rs;
     }},
-    {tip:String.raw`<p>الفكرة: الحرارة «حَكَم» محايد. إذا سخّن التياران الماء بالقدر نفسه فهما متساويان في الأثر، فالقيمة الفعالة للمتردد = التيار المستمر I. ومن المعادلة <span class="ltr">(1-9)</span>: \(I=0.707\,I_m\)، إذن \(I_m=I/0.707\).</p>`}
+    {tip:String.raw`<p>الفكرة: الحرارة «حَكَم» محايد. إذا سخّن التياران الماء بالقدر نفسه فهما متساويان في الأثر، فالقيمة الفعالة للمتردد = التيار المستمر I. ومن المعادلة <span class="ltr">(1-9)</span>: \(I=0.707\,I_m\)، إذن \(I_m=I/0.707\).</p>`},
+    {title:'مختبر مصغّر: ماذا لو تخطّيت خطوة؟',widget:(el,B)=>DCML.cases(el,B,{intro:'موقفان من تجربة الشكل <span class="ltr">(1-6)</span>.',cases:[
+     {q:'بعد تجربة التيار المستمر أغلقت المفتاح 2 مباشرة دون أن تترك الماء يبرد. ماذا يحدث لنتيجتك؟',opts:[
+      ['لا شيء؛ النتيجة صحيحة',false,'الماء بدأ ساخناً، فسيصل إلى الحرارة المطلوبة بتسخين أقل من المتردد.'],
+      ['تخرج القيمة العظمى للمتردد أصغر من حقيقتها',true,'الماء الساخن أصلاً يبلغ «نفس القيمة» بتسخين أقل، فتتوقف عند جهد متردد أقل. لذلك يطلب الكتاب أن «يرجع إلى حرارته قبل بدء التجربة».'],
+      ['تحترق المقاومة',false,'الكتاب لا يذكر هذا، والمشكلة هنا في عدل المقارنة.']]},
+     {q:'ما الذي تزيده بعد غلق المفتاح 2 حتى تصل الحرارة إلى القيمة السابقة؟',opts:[
+      ['قيمة المقاومة R',false,'المقاومة نفسها في التجربتين، وإلا لم تصح المقارنة.'],
+      ['القيمة العظمى لجهد مصدر التيار المتردد',true,'نص الكتاب: «ونزيد في القيمة العظمى لجهد مصدر التيار المتردد حتى تصل درجة حرارة الماء إلى نفس القيمة».'],
+      ['جهد مصدر التيار المستمر',false,'المفتاح 1 مفتوح الآن، فمصدر التيار المستمر خارج الدائرة.']]}]})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">1-1-6</span>',title:'مثال <span class="ltr">1-1-6</span>: القيمة العظمى والقدرة في تجربة الماء',ref:'ص 16',
@@ -975,7 +1257,17 @@ lesson({
      <p>القيمة الفعالة للتيار المتردد \(I_{rms}\) تساوي قيمة التيار المستمر الذي يعطي نفس القدرة في المقاومة، أي</p>$$I_{rms}=I_{dc}=4.4\ \text{A}$$
      <p>القيمة العظمى للتيار المتردد تحسب باستعمال المعادلة <span class="ltr">1-9</span>:</p>$$I_m=\sqrt2\,I_{rms}=\sqrt2\times4.4=6.2\ \text{A}$$
      <p>القدرة الحرارية الناتجة في المقاومة:</p>$$P=R\,I^2=50\times4.4^2=968\ \text{W}$$`,ref:'ص 16'},
-    {tip:String.raw`<p>\(\sqrt2\times4.4=6.22\)، والكتاب قرّبها إلى <span class="ltr">6.2 A</span>. ولاحظ أن القدرة حُسبت بالقيمة الفعالة \(I=4.4\)، لا بالقيمة العظمى؛ لهذا نستعمل القيم الفعالة في حساب القدرة.</p>`}
+    {tip:String.raw`<p>\(\sqrt2\times4.4=6.22\)، والكتاب قرّبها إلى <span class="ltr">6.2 A</span>. ولاحظ أن القدرة حُسبت بالقيمة الفعالة \(I=4.4\)، لا بالقيمة العظمى؛ لهذا نستعمل القيم الفعالة في حساب القدرة.</p>`},
+    {title:'مختبر مصغّر: أي تيار تضعه في P = R I²؟',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام المثال من الكتاب: <span class="ltr">R = 50 Ω</span> و<span class="ltr">V<sub>dc</sub> = 220 V</span>. القدرة بالتيار المستمر <span class="ltr">968 W</span>. اختر أي قيمة للتيار المتردد تضعها في قانون القدرة، وقارن.',
+ predict:{q:'لو وضعت القيمة العظمى <span class="ltr">I<sub>m</sub> = 6.2 A</span> في \\(P=RI^2\\)، ماذا تحصل؟',opts:[
+  ['القدرة الصحيحة <span class="ltr">968 W</span>',false,'القدرة الصحيحة تُحسب بالقيمة الفعالة.'],
+  ['تقريباً ضعف القدرة الحقيقية',true,String.raw`\(I_m^2=2I_{rms}^2\)، فتخرج القدرة \(\approx2\times968\): خطأ شائع.`],
+  ['نصف القدرة الحقيقية',false,String.raw`\(I_m\) أكبر من \(I_{rms}\)، فالناتج أكبر لا أصغر.`]]},
+ ins:[{k:'w',l:'التيار المستعمل في القانون',seg:[['rms','<span class="ltr">I<sub>rms</sub> = 4.4 A</span>'],['m','<span class="ltr">I<sub>m</sub> = 6.2 A</span>']],v:'rms'}],
+ calc:(s,P,B)=>{const I=s.w==='rms'?4.4:6.2,Pw=50*I*I,ok=s.w==='rms';
+  return {facts:[['<span class="ltr">I<sub>dc</sub> = 220 ÷ 50</span>','4.4 A'],['P بالتيار المستمر','968 W'],['<span class="ltr">P = 50 × I²</span>',DCML.fm(B,Pw,0)+' W',ok?'hi':'bad']],
+   bars:[{l:'القدرة بالتيار المستمر',v:968,max:2000,u:'W',dp:0,col:'--blue'},{l:'القدرة المحسوبة الآن',v:Pw,max:2000,u:'W',dp:0,col:ok?'--on':'--stop'}],
+   msg:ok?'مطابقة: القيمة الفعالة هي التي تعطي القدرة نفسها، كما في حل الكتاب.':'ليست مطابقة: القيمة العظمى لحظة واحدة من الدورة، لا تمثل أثر التيار طوال الدورة.',cls:ok?'':'bad'}}})}
    ]},
 
   {st:6,short:'معامل الشكل والقيمة العظمى',title:'<span class="ltr">1-1-8</span> معامل الشكل ومعامل القيمة العظمى',ref:'ص 17',
@@ -996,7 +1288,13 @@ lesson({
      $$PR=\frac{V_m}{V_{rms}}$$`,ref:'ص 17'},
     {tip:String.raw`<p>المعادلتان بلا رقم في الكتاب. احفظهما بالحرف الأول: <b>F</b>orm Factor = <span class="ltr">rms ÷ av</span>، و<b>P</b>eak Factor = <span class="ltr">max ÷ rms</span>.</p>`},
     {add:String.raw`<p>الكتاب لم يحسب معامل الشكل لأي موجة. للموجة الجيبية من أرقام هذا الدرس: \(FR=\frac{0.707\,V_m}{0.637\,V_m}\approx1.11\)، و \(PR=\frac{V_m}{0.707\,V_m}=\sqrt2\approx1.414\).</p>`,title:'معامل الشكل للموجة الجيبية'},
-    {add:String.raw`<p>من أسباب تشوه الموجات في الواقع: الأجهزة الإلكترونية (كالشواحن ومنظمات السرعة) التي تسحب تياراً غير جيبي من الشبكة.</p>`}
+    {add:String.raw`<p>من أسباب تشوه الموجات في الواقع: الأجهزة الإلكترونية (كالشواحن ومنظمات السرعة) التي تسحب تياراً غير جيبي من الشبكة.</p>`},
+    {title:'مختبر مصغّر: معامل الشكل أم معامل القيمة العظمى؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عبارة اضغط المعامل الذي تصفه.',cats:['معامل الشكل FR','معامل القيمة العظمى PR'],items:[
+     [String.raw`النسبة \(V_m\div V_{rms}\)`,1,'الكتاب: «النسبة بين القيمة العظمى والقيمة الفعالة».'],
+     [String.raw`النسبة \(V_{rms}\div V_{av}\)`,0,'الكتاب: «النسبة بين القيمة الفعالة والقيمة المتوسطة».'],
+     ['قيمته للموجة الجيبية \\(\\sqrt2\\approx1.414\\)',1,'\\(V_m\\div0.707V_m=\\sqrt2\\)، وهو في الجدول <span class="ltr">1-1</span>.'],
+     ['قيمته للموجة الجيبية تقريباً <span class="ltr">1.11</span>',0,'\\(0.707\\div0.637\\approx1.11\\) (الإضافة أعلاه).'],
+     ['يخبرك كم تبعد قمة الموجة عن قيمتها الفعالة',1,'كلما كبر \\(PR\\) كانت القمة أبعد عن القيمة الفعالة.']]})}
    ]},
 
   {st:7,short:'الجدول <span class="ltr">1-1</span>',title:'الجدول <span class="ltr">1-1</span>: معامل القيمة العظمى لبعض الموجات',ref:'ص 18',
@@ -1205,7 +1503,20 @@ lesson({
      <p>حيث \(j=\sqrt{-1}\).</p>
      <p>ويسمى المخطط المبين للجهود والتيارات المطاورة في دائرة ما بالشكل المطاور <span class="ltr">(Phasor Diagram)</span>.</p>`,ref:'ص <span class=\"ltr\">18–20</span>'},
     {tip:String.raw`<p>المطاور «صورة ثابتة» للموجة: <b>طوله</b> = القيمة الفعالة، و<b>زاويته</b> = الطور عند بداية الزمن. هو لا يحمل التردد، لذلك يصلح فقط لمقارنة كميات لها <b>نفس التردد</b>. وللرجوع من المطاور إلى الموجة: اضرب الطول في \(\sqrt2\) وأضف \(\omega t\) إلى الزاوية.</p>`},
-    {tip:String.raw`<p>الصيغتان تصفان المتجه نفسه: <b>القطبية</b> \(V\angle\theta_v\) (طول وزاوية)، و<b>المتعامدة</b> \(V\cos\theta_v+jV\sin\theta_v\) (مركبة أفقية ومركبة رأسية). الحرف \(j\) يدل على المحور الرأسي (التخيلي).</p>`,title:'صيغتان لشيء واحد'}
+    {tip:String.raw`<p>الصيغتان تصفان المتجه نفسه: <b>القطبية</b> \(V\angle\theta_v\) (طول وزاوية)، و<b>المتعامدة</b> \(V\cos\theta_v+jV\sin\theta_v\) (مركبة أفقية ومركبة رأسية). الحرف \(j\) يدل على المحور الرأسي (التخيلي).</p>`,title:'صيغتان لشيء واحد'},
+    {title:'مختبر مصغّر: أدِر المتجهين معاً',widget:(el,B)=>DCML.lab(el,B,{intro:'متجه الجهد V ومتجه التيار I يدوران معاً بالسرعة الزاوية \\(\\omega\\). حرّك الزاوية التي دارها النظام \\(\\omega t\\)، وغيّر فرق الطور بينهما. الزوايا هنا <b>أرقام تختارها أنت</b>.',
+ predict:{q:'بعد أن يدور النظام ربع دورة (<span class="ltr">ωt = 90°</span>)، ماذا يحدث للزاوية بين المتجهين؟',opts:[
+  ['تزيد',false,'كلاهما يدور بالسرعة نفسها، فلا يسبق أحدهما الآخر أكثر.'],
+  ['تبقى كما هي',true,'الكتاب: «تبقى الزاوية الفاصلة بين أي متجهين ثابتة بالنسبة للزمن»؛ لذلك يكفي رسمهما عند \\(t=0\\).'],
+  ['تصير صفراً',false,'لا يلتقي المتجهان لأنهما يدوران معاً.']]},
+ ins:[{k:'wt',l:'الزاوية التي دارها النظام ωt',min:0,max:360,step:15,v:0,fmt:v=>v+'°'},{k:'ph',l:'فرق الطور بين الجهد والتيار',min:0,max:90,step:15,v:30,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,cx=110,cy=110,R=86,f1=v=>(+v).toFixed(1);
+  const arr=(a,r,col,lab)=>{const x=cx+r*Math.cos(a*D),y=cy-r*Math.sin(a*D),h=10,b1=(a+155)*D,b2=(a-155)*D;return `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x)},${f1(y)} ${f1(x+h*Math.cos(b1))},${f1(y-h*Math.sin(b1))} ${f1(x+h*Math.cos(b2))},${f1(y-h*Math.sin(b2))}" fill="var(${col})"/><text x="${f1(cx+(r+14)*Math.cos(a*D))}" y="${f1(cy-(r+14)*Math.sin(a*D)+4)}" text-anchor="middle" font-size="13" font-weight="700" fill="var(${col})">${lab}</text>`};
+  const av=s.wt,ai=s.wt-s.ph;
+  const arc=s.ph>0?`<path d="M${f1(cx+40*Math.cos(ai*D))} ${f1(cy-40*Math.sin(ai*D))}A40 40 0 0 0 ${f1(cx+40*Math.cos(av*D))} ${f1(cy-40*Math.sin(av*D))}" fill="none" stroke="var(--stop)" stroke-width="2"/>`:'';
+  const pic=`<svg viewBox="0 0 220 220" role="img" aria-label="متجها الجهد والتيار" style="font-family:var(--font);max-width:260px;display:block;margin-inline:auto" direction="ltr"><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="14" y1="${cy}" x2="206" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="14" x2="${cx}" y2="206" stroke="var(--muted)"/>${arc}${arr(av,R,'--blue','V')}${arr(ai,R*0.7,'--live','I')}</svg>`;
+  const n=v=>((v%360)+360)%360;
+  return {pic,facts:[['زاوية V',DCML.fm(B,n(av),0)+'°'],['زاوية I',DCML.fm(B,n(ai),0)+'°'],['الزاوية بينهما',DCML.fm(B,s.ph,0)+'°','hi']],msg:'مهما دار النظام تبقى الزاوية بينهما ثابتة (القوس الأحمر)؛ لذلك نرسم المطاورات عند بداية الزمن فقط.'}}})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">1-1-7</span>',title:'مثال <span class="ltr">1-1-7</span>: الجهد المطاور',ref:'ص 20',
@@ -1222,7 +1533,14 @@ lesson({
     {book:String.raw`<p><b>مثال <span class="ltr">1-1-7</span>:</b> أوجد الجهد المطاور للجهد المتردد \(v(t)=141.4\sin(377t+30^\circ)\ \text{V}\).</p>
      <p><b>الحل:</b> القيمة الفعالة للجهد تعطى بالمعادلة</p>$$V=\frac{V_m}{\sqrt2}=\frac{141.4}{\sqrt2}=100\ \text{V}$$
      <p>أما الجهد المطاور فهو</p>$$\mathbf{V}=100\angle30^\circ\ \text{V}$$`,ref:'ص 20'},
-    {tip:String.raw`<p>وبالصيغة المتعامدة <span class="ltr">(1-11)</span>: \(\mathbf V=100\cos30^\circ+j100\sin30^\circ=86.6+j50\ \text{V}\).</p>`}
+    {tip:String.raw`<p>وبالصيغة المتعامدة <span class="ltr">(1-11)</span>: \(\mathbf V=100\cos30^\circ+j100\sin30^\circ=86.6+j50\ \text{V}\).</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات التحويل',widget:(el,B)=>DCML.order(el,B,{intro:String.raw`حوّل \(v(t)=141.4\sin(377t+30^\circ)\ \text{V}\) إلى جهد مطاور. اضغط الخطوات بالترتيب.`,steps:[
+     [String.raw`اقرأ القيمة العظمى من المعادلة: \(V_m=141.4\ \text{V}\)`,'نبدأ بقراءة ما في المعادلة قبل أي حساب.'],
+     [String.raw`اقسم على \(\sqrt2\): \(V=141.4/\sqrt2=100\ \text{V}\)`,'طول المطاور هو القيمة الفعالة، وتحتاج \(V_m\) أولاً.'],
+     [String.raw`خذ زاوية الطور كما هي: \(\theta_v=30^\circ\)`,'الزاوية تأتي بعد الطول في كتابة المطاور.'],
+     [String.raw`اكتب الصيغة القطبية: \(\mathbf V=100\angle30^\circ\ \text{V}\)`,'تحتاج الطول والزاوية أولاً.'],
+     [String.raw`وللصيغة المتعامدة: \(100\cos30^\circ+j100\sin30^\circ=86.6+j50\ \text{V}\)`,'نحسب المتعامدة من القطبية.']],
+     done:String.raw`لاحظ أن \(377\) لم يدخل المطاور: المطاور لا يحمل التردد.`})}
    ]},
 
   {st:3,short:'جبر المتجهات',title:'<span class="ltr">1-1-10</span> جبر المتجهات: الصيغتان المتعامدة والقطبية',ref:'ص <span class=\"ltr\">20–21</span>',
@@ -1275,7 +1593,19 @@ lesson({
      $$C=C_1\pm C_2=(A_1\pm A_2)+j(B_1\pm B_2)$$
      <p>ولتسهيل عمليتي الجمع والطرح نستعمل التمثيل المتعامد للأعداد المركبة. ويمثل الشكل <span class="ltr">1-10</span> جمع عددين مركبين بيانياً.</p>`,ref:'ص <span class=\"ltr\">21–22</span>'},
     {watch:String.raw`<p>القاعدة مطبوعة في الكتاب \(C=C_1\pm C_2=(A_1+A_2)\pm j(B_1+B_2)\)، والصحيح \((A_1\pm A_2)+j(B_1\pm B_2)\) كما كتبناها أعلاه، وكما يطبقها الكتاب نفسه في مثال <span class="ltr">1-1-8</span>.</p>`,fix:true},
-    {tip:String.raw`<p>بيانياً: ارسم \(C_2\) يبدأ من رأس \(C_1\)، فالمحصلة من الأصل إلى رأس \(C_2\). وفي الطرح: \(C_1-C_2=C_1+(-C_2)\)، أي نقلب اتجاه \(C_2\) ثم نجمع.</p>`}
+    {tip:String.raw`<p>بيانياً: ارسم \(C_2\) يبدأ من رأس \(C_1\)، فالمحصلة من الأصل إلى رأس \(C_2\). وفي الطرح: \(C_1-C_2=C_1+(-C_2)\)، أي نقلب اتجاه \(C_2\) ثم نجمع.</p>`},
+    {title:'مختبر مصغّر: اجمع واطرح بالرسم',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`العددان من مثال <span class="ltr">1-1-8</span>: \(C_1=5+j23\) و \(C_2=-3.5+j8\). اختر العملية وشاهد الرسم «رأساً بذيل».`,
+ predict:{q:String.raw`لكي نرسم \(C_1-C_2\) بيانياً، ماذا نفعل بالمتجه \(C_2\)؟`,opts:[
+  ['ندير اتجاهه 90°',false,'الدوران 90° هو أثر الضرب في \\(j\\)، لا الطرح.'],
+  ['نطرح طوله من طول \\(C_1\\)',false,'الأطوال لا تُطرح مباشرة لأن المتجهين ليسا على خط واحد.'],
+  ['نقلب اتجاهه (−C<sub>2</sub>) ثم نجمع',true,String.raw`\(C_1-C_2=C_1+(-C_2)\)، كما في التوضيح أعلاه.`]]},
+ ins:[{k:'op',l:'العملية',seg:[['<span class="ltr">+</span>','C<sub>1</sub> + C<sub>2</sub>'],['-','<span class="ltr">C<sub>1</sub> − C<sub>2</sub></span>']],v:'+'}],
+ calc:(s,P,B)=>{const a=[5,23],b=s.op==='+'?[-3.5,8]:[3.5,-8],r=[a[0]+b[0],a[1]+b[1]],f1=v=>(+v).toFixed(1);
+  const X=x=>40+(x+6)*14,Y=y=>210-(y+2)*6;
+  const arr=(p,q,col,lab,dx,dy)=>{const x1=X(p[0]),y1=Y(p[1]),x2=X(q[0]),y2=Y(q[1]),a=Math.atan2(y2-y1,x2-x1),h=10;return `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x2)},${f1(y2)} ${f1(x2-h*Math.cos(a-0.4))},${f1(y2-h*Math.sin(a-0.4))} ${f1(x2-h*Math.cos(a+0.4))},${f1(y2-h*Math.sin(a+0.4))}" fill="var(${col})"/><text x="${f1((x1+x2)/2+dx)}" y="${f1((y1+y2)/2+dy)}" font-size="12.5" font-weight="700" fill="var(${col})" text-anchor="middle">${lab}</text>`};
+  const pic=`<svg viewBox="0 0 330 230" role="img" aria-label="الجمع بالرسم" style="font-family:var(--font)" direction="ltr"><line x1="${X(-6)}" y1="${Y(0)}" x2="${X(14)}" y2="${Y(0)}" stroke="var(--muted)"/><line x1="${X(0)}" y1="${Y(-2)}" x2="${X(0)}" y2="${Y(32)}" stroke="var(--muted)"/><text x="${X(14)-4}" y="${Y(0)+14}" font-size="11" fill="var(--muted)" text-anchor="end">Re</text><text x="${X(0)+6}" y="${Y(32)+10}" font-size="11" fill="var(--muted)">j</text>${arr([0,0],a,'--blue','C1',-14,0)}${arr(a,r,'--live',s.op==='+'?'C2':'−C2',14,0)}${arr([0,0],r,'--on',s.op==='+'?'C1+C2':'C1−C2',s.op==='+'?-22:16,s.op==='+'?0:14)}</svg>`;
+  return {pic,facts:[[`الحقيقي: <span class="ltr">5 ${s.op==='+'?'+':'−'} (−3.5)</span>`,DCML.fm(B,r[0],1)],[`التخيلي: <span class="ltr">23 ${s.op==='+'?'+':'−'} 8</span>`,DCML.fm(B,r[1],0)],['الناتج',`${DCML.fm(B,r[0],1)} + j${DCML.fm(B,r[1],0)}`,'hi']],
+   msg:s.op==='+'?String.raw`\(C_1+C_2=1.5+j31\)، كما في حل الكتاب.`:String.raw`\(C_1-C_2=8.5+j15\)، كما في حل الكتاب.`}}})}
    ]},
 
   {st:5,short:'الضرب والقسمة',title:'ضرب وقسمة الأعداد المركبة',ref:'ص 22',
@@ -1296,7 +1626,18 @@ lesson({
      $$C=\frac{C_1}{C_2}=\frac{|C_1|}{|C_2|}\angle(\theta_1-\theta_2)$$
      <p>ولتسهيل عمليتي الضرب والقسمة نستعمل التمثيل القطبي للأعداد المركبة.</p>`,ref:'ص 22'},
     {tip:String.raw`<p>القاعدة العامة: <b>جمع وطرح ← متعامدة</b>، و<b>ضرب وقسمة ← قطبية</b>. وإذا جاءك العدد بالصيغة الأخرى فحوّله أولاً بالمعادلتين <span class="ltr">(1-14)</span> و<span class="ltr">(1-15)</span>.</p>`},
-    {add:String.raw`<p>الضرب في \(j=1\angle90^\circ\) يدير المتجه \(90^\circ\) دون أن يغير طوله، و \(j\times j=1\angle180^\circ=-1\). ستحتاج هذا في الفصل الثاني مع الملف والمكثف.</p>`}
+    {add:String.raw`<p>الضرب في \(j=1\angle90^\circ\) يدير المتجه \(90^\circ\) دون أن يغير طوله، و \(j\times j=1\angle180^\circ=-1\). ستحتاج هذا في الفصل الثاني مع الملف والمكثف.</p>`},
+    {title:'مختبر مصغّر: اضرب واقسم بالصيغة القطبية',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`من مثال <span class="ltr">1-1-8</span>: \(C_1=23.5\angle77.7^\circ\) و \(C_2=8.7\angle113.6^\circ\). الرسم يبين <b>الاتجاهات</b> فقط (الأطوال مختلفة جداً، فاقرأها من البطاقات).`,
+ predict:{q:'عند ضرب عددين بالصيغة القطبية، زاوية الناتج:',opts:[
+  ['حاصل ضرب الزاويتين',false,'الزوايا لا تُضرب.'],
+  ['مجموع الزاويتين',true,String.raw`\(77.7^\circ+113.6^\circ=191.3^\circ\)، وفي القسمة نطرحهما.`],
+  ['الزاوية الأكبر منهما',false,'الناتج يدور بمقدار زاوية العدد الثاني، فلا يبقى على أي منهما.']]},
+ ins:[{k:'op',l:'العملية',seg:[['x','الضرب C<sub>1</sub>C<sub>2</sub>'],['d','القسمة C<sub>1</sub>/C<sub>2</sub>']],v:'x'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,m=s.op==='x',ang=m?77.7+113.6:77.7-113.6,len=m?23.5*8.7:23.5/8.7,cx=120,cy=110,f1=v=>(+v).toFixed(1);
+  const arr=(a,r,col,lab)=>{const x=cx+r*Math.cos(a*D),y=cy-r*Math.sin(a*D),h=10;return `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x)},${f1(y)} ${f1(x-h*Math.cos((a-22)*D))},${f1(y+h*Math.sin((a-22)*D))} ${f1(x-h*Math.cos((a+22)*D))},${f1(y+h*Math.sin((a+22)*D))}" fill="var(${col})"/><text x="${f1(cx+(r+16)*Math.cos(a*D))}" y="${f1(cy-(r+16)*Math.sin(a*D)+4)}" text-anchor="middle" font-size="12" font-weight="700" fill="var(${col})">${lab}</text>`};
+  const pic=`<svg viewBox="0 0 240 220" role="img" aria-label="اتجاهات الأعداد" style="font-family:var(--font);max-width:280px;display:block;margin-inline:auto" direction="ltr"><line x1="14" y1="${cy}" x2="226" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="10" x2="${cx}" y2="210" stroke="var(--muted)"/>${arr(77.7,80,'--blue','C1')}${arr(113.6,62,'--live','C2')}${arr(ang,88,'--on',m?'C1C2':'C1/C2')}</svg>`;
+  return {pic,facts:[[m?'الطول: <span class="ltr">23.5 × 8.7</span>':'الطول: <span class="ltr">23.5 ÷ 8.7</span>',m?DCML.fm(B,len,1):DCML.fm(B,len,2)],[m?'الزاوية: <span class="ltr">77.7° + 113.6°</span>':'الزاوية: <span class="ltr">77.7° − 113.6°</span>',m?'191.3°':'−35.9°'],['الناتج',m?'204.5∠191.3°':'2.70∠−35.9°','hi']],
+   msg:m?String.raw`بالمتعامدة: \(-200.5-j40.1\) كما في حل الكتاب.`:String.raw`بالمتعامدة: \(2.19-j1.58\) كما في حل الكتاب.`}}})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">1-1-8</span>',title:'مثال <span class="ltr">1-1-8</span>: العمليات الأربع على عددين مركبين',ref:'ص <span class=\"ltr\">23–24</span>',
@@ -1352,7 +1693,11 @@ lesson({
      <li>احسب القيمة القصوى والتردد وكذلك الطور في بداية الزمن للموجات الآتية:<br>\(8.4\sin10000t\) ؛ \(100\cos(754t+45^\circ)\) ؛ \(-30\sin942t\) ؛ \(50\sin(314t+30^\circ)\)</li>
      <li>إذا كانت موجات المسألة الرابعة تمثل جهوداً، احسب القيمة الفعالة لكل منها.</li></ol>`,ref:'ص 25'},
     {watch:String.raw`<p>في السؤال 2 يقول النص «<span class="ltr">100</span> دورة»، بينما الرسم المرفق به يبين <span class="ltr">4</span> دورات في <span class="ltr">20 ms</span>؛ النص والرسم متعارضان. وفي الكتاب صياغة السؤالين 1 و2 «احسب دورة الزمن الدوري (T) مترددة جيبية…» ناقصة، والمقصود ما كتبناه أعلاه.</p>`,fix:true},
-    {tip:String.raw`<p>الكتاب لا يطبع إجابات لهذه المسائل. ستجد إجابات مقترحة وحاسبة لكل سؤال في تبويب «الأمثلة المحلولة». تلميح للسؤال 4: الرقم أمام الدالة هو \(V_m\)، والرقم المضروب في t هو \(\omega\) ومنه \(f=\omega/2\pi\).</p>`}
+    {tip:String.raw`<p>الكتاب لا يطبع إجابات لهذه المسائل. ستجد إجابات مقترحة وحاسبة لكل سؤال في تبويب «الأمثلة المحلولة». تلميح للسؤال 4: الرقم أمام الدالة هو \(V_m\)، والرقم المضروب في t هو \(\omega\) ومنه \(f=\omega/2\pi\).</p>`},
+    {title:'مختبر مصغّر: اقرأ معادلة من السؤال 4',widget:(el,B)=>DCML.cases(el,B,{intro:String.raw`الموجة الأخيرة في السؤال 4: \(50\sin(314t+30^\circ)\). أجب عن الأسئلة الثلاثة.`,cases:[
+     {q:'كم القيمة القصوى؟',opts:[['<span class="ltr">314</span>',false,'هذا الرقم المضروب في t، أي التردد الزاوي.'],['<span class="ltr">50</span>',true,'الرقم أمام الدالة هو القيمة القصوى.'],['<span class="ltr">30</span>',false,'هذا الطور في بداية الزمن.']]},
+     {q:'كم التردد تقريباً؟',opts:[['<span class="ltr">314 Hz</span>',false,String.raw`314 هو \(\omega\) بوحدة rad/s، ولا بد من القسمة على \(2\pi\).`],['<span class="ltr">157 Hz</span>',false,String.raw`القسمة على \(2\pi\) لا على 2.`],['<span class="ltr">50 Hz</span>',true,String.raw`\(f=\omega/2\pi=314/6.28\approx50\ \text{Hz}\) (المعادلة <span class="ltr">(1-3)</span>).`]]},
+     {q:'وفي السؤال 5: كم قيمتها الفعالة؟',opts:[['<span class="ltr">35.4</span>',true,String.raw`\(50/\sqrt2\approx35.4\) (المعادلة <span class="ltr">(1-8)</span>).`],['<span class="ltr">70.7</span>',false,String.raw`هذا \(50\times\sqrt2\)؛ الفعالة أصغر من القصوى.`],['<span class="ltr">31.8</span>',false,String.raw`هذا \(0.637\times50\)، أي القيمة المتوسطة لنصف دورة.`]]}]})}
    ]},
 
   {recap:[
@@ -1548,7 +1893,11 @@ lesson({
    body:[
     {book:String.raw`<p>هناك عدة طرق لتحليل دوائر التيار المتردد مهما تعقدت الدائرة، وكلها تستعمل <b>قانون أوم وقوانين كيرشوف</b>، وفي هذا الفصل سنشرح الخطوات المستعملة لتحليل الدوائر البسيطة فقط. وقبل ذلك نعرف <b>المعاوقة المركبة</b>.</p>`,ref:'ص 26'},
     {watch:String.raw`<p>في الكتاب جملة أخيرة في هذا المدخل: «وفي نهاية الفصل سنتطرق إلى دراسة مقومات التيار المتردد البسيطة»، ولا يوجد في الفصل أي موضوع عن المقومات؛ الفصل ينتهي بقوانين كيرشوف والمسائل. لذلك حذفناها.</p>`,fix:true},
-    {tip:String.raw`<p>في هذا الدرس ستتعرف على العناصر الثلاثة كلٌّ وحده: <b>المقاومة R</b>، و<b>الملف L</b>، و<b>المكثف C</b>؛ ماذا يفعل كل منها بالتيار المتردد، وكيف نكتب «معاوقته» عدداً مركباً. وفي الدرس التالي نصلها معاً.</p>`}
+    {tip:String.raw`<p>في هذا الدرس ستتعرف على العناصر الثلاثة كلٌّ وحده: <b>المقاومة R</b>، و<b>الملف L</b>، و<b>المكثف C</b>؛ ماذا يفعل كل منها بالتيار المتردد، وكيف نكتب «معاوقته» عدداً مركباً. وفي الدرس التالي نصلها معاً.</p>`},
+    {title:'تحقق سريع: مدخل الفصل الثاني',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['يعرّف هذا الفصل المعاوقة المركبة قبل شرح خطوات تحليل الدوائر.',true,'الكتاب: «وقبل ذلك نعرف المعاوقة المركبة».'],
+     ['تحليل دوائر التيار المتردد يستعمل قانون أوم وقوانين كيرشوف.',true,'هذا ما يبينه الرسم أعلاه ونص المدخل.'],
+     ['في هذا الدرس ندرس المقاومة والملف والمكثف معاً في دائرة واحدة.',false,'هنا ندرس كل عنصر وحده؛ التوصيل على التوالي يبدأ في الدرس التالي.']]})}
    ]},
 
   {st:2,short:'المقاومة',title:'<span class="ltr">1-2-1</span> المقاومة المادية في دائرة التيار المتردد',ref:'ص 26',
@@ -1570,7 +1919,17 @@ lesson({
      <p>وباستعمال القيم الفعالة نحصل على العلاقة</p>
      <div class="eq">$$I=\frac{V}{R}$$<span class="eqno"><span class="ltr">(1-16)</span></span></div>
      <p>وكما نرى فإن <b>الجهد والتيار في مقاومة لهما نفس الطور</b>، وهذا موضح في الشكل 1-11b حيث أخذنا \(\theta_v=0\) لتبسيط الرسم.</p>`,ref:'ص 26'},
-    {tip:String.raw`<p>المقاومة «لا تتأخر» في الاستجابة: في كل لحظة \(i=v/R\). فإذا كان الجهد صفراً كان التيار صفراً، وإذا بلغ الجهد قمته بلغ التيار قمته في اللحظة نفسها. لذلك قانون أوم في المقاومة هو نفسه الذي تعرفه من التيار المستمر، لكن بالقيم الفعالة.</p>`}
+    {tip:String.raw`<p>المقاومة «لا تتأخر» في الاستجابة: في كل لحظة \(i=v/R\). فإذا كان الجهد صفراً كان التيار صفراً، وإذا بلغ الجهد قمته بلغ التيار قمته في اللحظة نفسها. لذلك قانون أوم في المقاومة هو نفسه الذي تعرفه من التيار المستمر، لكن بالقيم الفعالة.</p>`},
+    {title:'مختبر مصغّر: الجهد والتيار في المقاومة',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك الزمن (بزاوية الطور \\(\\omega t\\)) وقارن موجة الجهد (البرتقالي) بموجة التيار (الأخضر) في المقاومة. القيم نسبة من القيمة العظمى لكل منهما.',
+ predict:{q:'في اللحظة التي يكون فيها الجهد على المقاومة صفراً، كم يكون التيار؟',opts:[
+  ['في قيمته العظمى',false,'هذا يحدث في الملف والمكثف (فرق <span class="ltr">90°</span>)، لا في المقاومة.'],
+  ['صفراً أيضاً',true,String.raw`في كل لحظة \(i=v/R\)، فإذا كان \(v=0\) كان \(i=0\): الموجتان في طور واحد.`],
+  ['نصف قيمته العظمى',false,'لا يوجد فرق في الطور، فالنسبتان متساويتان دائماً.']]},
+ ins:[{k:'a',l:'زاوية الطور ωt',min:0,max:360,step:15,v:45,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,k=Math.sin(s.a*D),kk=Math.abs(k)<1e-9?0:k;
+  return {facts:[['<span class="ltr">v ÷ V<sub>m</sub></span>',DCML.fm(B,kk,3)],['<span class="ltr">i ÷ I<sub>m</sub></span>',DCML.fm(B,kk,3),'hi'],['فرق الطور','0°']],
+   plot:{xr:[0,360],yr:[-1.15,1.15],xt:[0,90,180,270,360],yt:[-1,0,1],xl:'ωt (°)',yl:'',curves:[{f:x=>Math.sin(x*D),col:'--live',w:4},{f:x=>Math.sin(x*D)*0.999,col:'--on',dash:'7 5'}],cur:[s.a,kk]},
+   msg:'الموجتان فوق بعضهما: تبلغان القمة معاً وتعبران الصفر معاً (الشكل <span class="ltr">(1-11)</span>).'}}})}
    ]},
 
   {st:3,short:'الممانعة الحثية',title:'<span class="ltr">1-2-2</span> الممانعة الحثية في دائرة التيار المتردد',ref:'ص <span class=\"ltr\">27–28</span>',
@@ -1661,7 +2020,18 @@ lesson({
     {book:String.raw`<p><b>المعاوقة المركبة:</b> بما أن معاوقة أي عنصر هي النسبة بين الجهد \(\mathbf V\) بين أطرافها والتيار \(\mathbf I\) المار فيها فإننا نستطيع تمثيلها كذلك بعدد مركب يسمى <b>المعاوقة المركبة \(\mathbf Z\)</b>، وهكذا نكتب قانون أوم كما يلي:</p>
      <div class="eq">$$\mathbf V=\mathbf Z\,\mathbf I$$<span class="eqno"><span class="ltr">(1-25)</span></span></div>
      <p>ويجب أن ننتبه إلى أنه على العكس من الجهود والتيارات المطاورة، فإن المعاوقة \(\mathbf Z\) لا تمثل دالة جيبية. وفيما يلي نطبق مفهوم المعاوقة المركبة على العناصر الأساسية الثلاثة: المقاومة والملف والمكثفة.</p>`,ref:'ص 29'},
-    {tip:String.raw`<p>\(\mathbf Z=\mathbf V/\mathbf I\) بالقسمة القطبية: <b>طول Z</b> = طول V ÷ طول I، و<b>زاوية Z</b> = زاوية V − زاوية I. فزاوية المعاوقة تخبرك كم يسبق الجهدُ التيارَ. وهذا ما ستراه في المحطات الثلاث التالية.</p>`}
+    {tip:String.raw`<p>\(\mathbf Z=\mathbf V/\mathbf I\) بالقسمة القطبية: <b>طول Z</b> = طول V ÷ طول I، و<b>زاوية Z</b> = زاوية V − زاوية I. فزاوية المعاوقة تخبرك كم يسبق الجهدُ التيارَ. وهذا ما ستراه في المحطات الثلاث التالية.</p>`},
+    {title:'مختبر مصغّر: زاوية Z تكشف نوع العنصر',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`اختر زاوية طور الجهد \(\theta_v\) وزاوية طور التيار \(\theta_i\)، فتكون زاوية المعاوقة \(\theta_v-\theta_i\) (قسمة قطبية). الزوايا هنا <b>أرقام تختارها أنت</b>.`,
+ predict:{q:String.raw`إذا كانت \(\theta_v=30^\circ\) و \(\theta_i=-60^\circ\)، فما زاوية المعاوقة \(\mathbf Z\)؟`,opts:[
+  ['<span class="ltr">−30°</span>',false,'هذا مجموع الزاويتين؛ في القسمة نطرح زاوية المقام.'],
+  ['<span class="ltr">90°</span>',true,String.raw`\(30^\circ-(-60^\circ)=90^\circ\): الجهد يسبق التيار بـ \(90^\circ\)، وهذا ملف نقي.`],
+  ['<span class="ltr">−90°</span>',false,String.raw`انتبه لإشارة \(\theta_i\): طرح عدد سالب يعني جمعه.`]]},
+ ins:[{k:'v',l:'زاوية الجهد θ<sub>v</sub>',min:-90,max:90,step:15,v:30,fmt:v=>v+'°'},{k:'i',l:'زاوية التيار θ<sub>i</sub>',min:-90,max:90,step:15,v:-60,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const z=s.v-s.i;let t,c='';
+  if(z===0)t='مقاومة مادية: الجهد والتيار في طور واحد (المحطة التالية).';else if(z===90)t='ممانعة حثية نقية (ملف): الجهد يسبق التيار بـ <span class="ltr">90°</span>.';else if(z===-90)t='ممانعة سعوية نقية (مكثف): التيار يسبق الجهد بـ <span class="ltr">90°</span>.';
+  else if(Math.abs(z)<90)t=z>0?'الجهد يسبق التيار بأقل من <span class="ltr">90°</span>: مقاومة مع ملف معاً (ستراها في التوصيل على التوالي).':'التيار يسبق الجهد بأقل من <span class="ltr">90°</span>: مقاومة مع مكثف معاً (ستراها في التوصيل على التوالي).';
+  else {t='فرق أكبر من <span class="ltr">90°</span> لا يحدث مع المقاومة والملف والمكثف.';c='warn'}
+  return {facts:[['<span class="ltr">θ<sub>v</sub> − θ<sub>i</sub></span>',DCML.fm(B,z,0)+'°','hi']],msg:t,cls:c}}})}
    ]},
 
   {st:6,short:'Z للمقاومة',title:String.raw`المقاومة المادية: \(\mathbf Z_R=R\)`,ref:'ص <span class=\"ltr\">29–30</span>',
@@ -1678,7 +2048,11 @@ lesson({
     {book:String.raw`<p>لقد رأينا أن الجهد بين طرفي المقاومة والتيار المار فيها لهما نفس الطور، فلو كان الجهد المطاور \(\mathbf V=V\angle\theta_v\) فإن التيار المطاور يكون \(\mathbf I=I\angle\theta_v\)، وعليه فإن النسبة بينهما والتي هي المعاوقة المركبة تساوي</p>
      <div class="eq">$$\mathbf Z_R=\frac{V\angle\theta_v}{I\angle\theta_v}=\frac{V}{I}\angle(\theta_v-\theta_v)=R\angle0^\circ=R$$<span class="eqno"><span class="ltr">(1-26)</span></span></div>
      <p>حيث استعملنا المعادلة <span class="ltr">1-16</span>. وهكذا نرى أن المعاوقة المركبة لمقاومة مادية هي <b>عدد حقيقي</b> وقيمتها هي النسبة بين القيم الفعالة للجهد والتيار. ويبين الشكل <span class="ltr">1-14</span> المخطط الاتجاهي لمقاومة مادية.</p>`,ref:'ص <span class=\"ltr\">29–30</span>'},
-    {tip:String.raw`<p>في المخطط الاتجاهي: متجه الجهد ومتجه التيار على <b>خط واحد</b>. الطولان مختلفان (لأن أحدهما فولت والآخر أمبير)، لكن الاتجاه واحد.</p>`}
+    {tip:String.raw`<p>في المخطط الاتجاهي: متجه الجهد ومتجه التيار على <b>خط واحد</b>. الطولان مختلفان (لأن أحدهما فولت والآخر أمبير)، لكن الاتجاه واحد.</p>`},
+    {title:'تحقق سريع: معاوقة المقاومة',widget:(el,B)=>DCML.tf(el,B,{items:[
+     [String.raw`المعاوقة المركبة للمقاومة عدد حقيقي: \(\mathbf Z_R=R\angle0^\circ\).`,true,'المعادلة <span class="ltr">(1-26)</span>.'],
+     ['في المخطط الاتجاهي للمقاومة يكون متجه التيار عمودياً على متجه الجهد.',false,'المتجهان على خط واحد لأنهما في طور واحد (الشكل <span class="ltr">(1-14)</span>).'],
+     ['معاوقة المقاومة تتغير بتغير التردد مثل الملف والمكثف.',false,'المعادلة <span class="ltr">(1-26)</span> لا تحتوي \\(\\omega\\)؛ أما \\(X_L\\) و \\(X_C\\) فتعتمدان على التردد.']]})}
    ]},
 
   {st:7,short:'Z للملف',title:String.raw`الممانعة الحثية <span class="ltr">(X<sub>L</sub>)</span>: \(\mathbf Z_L=jX_L\)`,ref:'ص <span class=\"ltr\">30–31</span>',
@@ -1696,7 +2070,17 @@ lesson({
      <div class="eq">$$\mathbf Z_L=\frac{V\angle\theta_v}{I\angle(\theta_v-90^\circ)}=\frac{V}{I}\angle[\theta_v-(\theta_v-90^\circ)]=X_L\angle90^\circ=jX_L$$<span class="eqno"><span class="ltr">(1-27)</span></span></div>
      <p>حيث استعملنا المعادلة <span class="ltr">1-20</span>، وكما نعلم من درس الأعداد المركبة فإن العدد التخيلي j قيمته المطلقة هي الواحد وإزاحته الزاوية هي <span class="ltr">90°</span>. نستنتج أن المعاوقة المركبة لملف هي <b>عدد تخيلي نقي</b>. ويبين الشكل <span class="ltr">1-15</span> المخطط الاتجاهي لملف.</p>`,ref:'ص <span class=\"ltr\">30–31</span>'},
     {watch:String.raw`<p>كُتبت الزاوية في الكتاب \(\frac{V}{I}\angle\theta_v-(\theta_v-90^\circ)\) بلا أقواس؛ وضعناها بين قوسين \([\ ]\) لأن الطرح يخص الزاوية كلها.</p>`,fix:true},
-    {tip:String.raw`<p>«عدد تخيلي نقي» يعني أن جزأه الحقيقي صفر: \(\mathbf Z_L=0+jX_L\)، فهو على المحور الرأسي الموجب. والضرب في \(j\) يدير المتجه \(90^\circ\)، لذلك \(\mathbf V=jX_L\mathbf I\) يجعل الجهد متقدماً على التيار بزاوية قائمة.</p>`}
+    {tip:String.raw`<p>«عدد تخيلي نقي» يعني أن جزأه الحقيقي صفر: \(\mathbf Z_L=0+jX_L\)، فهو على المحور الرأسي الموجب. والضرب في \(j\) يدير المتجه \(90^\circ\)، لذلك \(\mathbf V=jX_L\mathbf I\) يجعل الجهد متقدماً على التيار بزاوية قائمة.</p>`},
+    {title:'مختبر مصغّر: الضرب في j يدير المتجه',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`في الملف \(\mathbf V=jX_L\,\mathbf I\). أدِر متجه التيار وشاهد أين يقع متجه الجهد. زاوية التيار هنا <b>رقم تختاره أنت</b>.`,
+ predict:{q:String.raw`إذا كانت زاوية التيار في الملف \(0^\circ\)، فأين يقع متجه الجهد؟`,opts:[
+  ['على المحور الأفقي مع التيار',false,'هذا في المقاومة.'],
+  ['عند <span class="ltr">−90°</span> (متأخراً)',false,String.raw`\(-j\) هي التي تدير \(-90^\circ\)، وهذا في المكثف.`],
+  ['عند <span class="ltr">+90°</span> (متقدماً على التيار)',true,String.raw`\(j=1\angle90^\circ\): الضرب فيه يضيف \(90^\circ\) لزاوية التيار.`]]},
+ ins:[{k:'i',l:'زاوية التيار θ<sub>i</sub>',min:-90,max:90,step:15,v:0,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,cx=110,cy=110,f1=v=>(+v).toFixed(1);
+  const arr=(a,r,col,lab)=>{const x=cx+r*Math.cos(a*D),y=cy-r*Math.sin(a*D),h=10;return `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x)},${f1(y)} ${f1(x-h*Math.cos((a-22)*D))},${f1(y+h*Math.sin((a-22)*D))} ${f1(x-h*Math.cos((a+22)*D))},${f1(y+h*Math.sin((a+22)*D))}" fill="var(${col})"/><text x="${f1(cx+(r+15)*Math.cos(a*D))}" y="${f1(cy-(r+15)*Math.sin(a*D)+4)}" text-anchor="middle" font-size="13" font-weight="700" fill="var(${col})">${lab}</text>`};
+  const av=s.i+90;const pic=`<svg viewBox="0 0 220 220" role="img" aria-label="متجها الملف" style="font-family:var(--font);max-width:260px;display:block;margin-inline:auto" direction="ltr"><line x1="14" y1="${cy}" x2="206" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="14" x2="${cx}" y2="206" stroke="var(--muted)"/>${arr(s.i,60,'--on','I')}${arr(av,86,'--live','V')}</svg>`;
+  return {pic,facts:[['θ<sub>i</sub>',DCML.fm(B,s.i,0)+'°'],['<span class="ltr">θ<sub>v</sub> = θ<sub>i</sub> + 90°</span>',DCML.fm(B,av,0)+'°','hi'],['زاوية Z<sub>L</sub>','90°']],msg:'مهما كانت زاوية التيار يبقى الجهد سابقاً له بزاوية قائمة (الشكل <span class="ltr">(1-15)</span>).'}}})}
    ]},
 
   {st:8,short:'Z للمكثف',title:String.raw`الممانعة السعوية <span class="ltr">(X<sub>C</sub>)</span>: \(\mathbf Z_C=-jX_C\)`,ref:'ص 31',
@@ -1717,7 +2101,13 @@ lesson({
      <tr><td>مقاومة</td><td>\(\mathbf Z_R=R\angle0^\circ\)</td><td>\(R\)</td><td>V و I في طور واحد</td></tr>
      <tr><td>ملف</td><td>\(\mathbf Z_L=jX_L\)</td><td>\(X_L=\omega L\)</td><td>I يتأخر <span class="ltr">90°</span></td></tr>
      <tr><td>مكثف</td><td>\(\mathbf Z_C=-jX_C\)</td><td>\(X_C=1/\omega C\)</td><td>I يتقدم <span class="ltr">90°</span></td></tr></tbody></table>`,title:'العناصر الثلاثة في جدول'},
-    {watch:String.raw`<p>\(X_C\) نفسها رقم موجب (بالأوم)، والإشارة السالبة في \(-jX_C\) هي التي تدل على أن المعاوقة سعوية. لا تكتب \(X_C\) سالبة ثم تضع أمامها \(-j\) مرة أخرى.</p>`}
+    {watch:String.raw`<p>\(X_C\) نفسها رقم موجب (بالأوم)، والإشارة السالبة في \(-jX_C\) هي التي تدل على أن المعاوقة سعوية. لا تكتب \(X_C\) سالبة ثم تضع أمامها \(-j\) مرة أخرى.</p>`},
+    {title:'مختبر مصغّر: من صاحب هذه المعاوقة؟',widget:(el,B)=>DCML.sort(el,B,{intro:String.raw`الأرقام من مثالي الدرس التالي: \(X_L=3\ \Omega\) في مثال <span class="ltr">1-2-1</span>، و \(X_C=8\ \Omega\) و \(R=5\ \Omega\) في مثال <span class="ltr">1-2-2</span>. صنّف كل معاوقة.`,cats:['مقاومة R','ملف L','مكثف C'],items:[
+     [String.raw`\(\mathbf Z=j3\ \Omega\)`,1,'عدد تخيلي موجب: \\(jX_L\\).'],
+     [String.raw`\(\mathbf Z=8\angle{-}90^\circ\ \Omega\)`,2,'زاوية \\(-90^\\circ\\) تعني \\(-jX_C\\).'],
+     [String.raw`\(\mathbf Z=5\angle0^\circ\ \Omega\)`,0,'عدد حقيقي زاويته صفر.'],
+     [String.raw`\(\mathbf Z=-j8\ \Omega\)`,2,'عدد تخيلي سالب: سعوي.'],
+     [String.raw`\(\mathbf Z=3\angle90^\circ\ \Omega\)`,1,'هذه هي \\(j3\\) بالصيغة القطبية.']]})}
    ]},
 
   {recap:[
@@ -1931,7 +2321,13 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>ويمكن توضيح المعاوقة في مستوى مركب. ولما كانت المقاومة لا تأخذ قيما سالبة أبداً فإننا نحتاج إلى الربعين الأول والرابع فقط. ونسمي الشكل التوضيحي الناتج <b>بشكل المعاوقة</b> <span class="ltr">(Impedance Diagram)</span>، وكما هو مبين في الشكل <span class="ltr">1-18</span> فإن المقاومة R ترسم على المحور الأفقي، أما الممانعة الحثية \(X_L\) فترسم على محور j الموجب بينما ترسم الممانعة السعوية \(X_C\) على محور j السالب.</p>`,ref:'ص 33'},
-    {tip:String.raw`<p>شكل المعاوقة مثلث قائم: ضلعه الأفقي \(R_T\)، وضلعه الرأسي \(X_T\)، ووتره \(Z_T\)، والزاوية عند الأصل \(\theta\). لذلك المعادلتان <span class="ltr">(1-31)</span> و<span class="ltr">(1-32)</span> هما فيثاغورس والظل في هذا المثلث.</p>`}
+    {tip:String.raw`<p>شكل المعاوقة مثلث قائم: ضلعه الأفقي \(R_T\)، وضلعه الرأسي \(X_T\)، ووتره \(Z_T\)، والزاوية عند الأصل \(\theta\). لذلك المعادلتان <span class="ltr">(1-31)</span> و<span class="ltr">(1-32)</span> هما فيثاغورس والظل في هذا المثلث.</p>`},
+    {title:'مختبر مصغّر: في أي ربع تُرسم؟',widget:(el,B)=>DCML.sort(el,B,{intro:'المعاوقات الأربع الأولى من أمثلة هذا الدرس. ضع كل معاوقة في مكانها من شكل المعاوقة.',cats:['الربع الأول (حثي)','الربع الرابع (سعوي)','لا تُرسم: مقاومة سالبة'],items:[
+     [String.raw`\(7+j3\ \Omega\) (مثال <span class="ltr">1-2-1</span>)`,0,'المقاومة موجبة والممانعة موجبة: فوق المحور الأفقي.'],
+     [String.raw`\(5-j8\ \Omega\) (مثال <span class="ltr">1-2-2</span>)`,1,'الممانعة سالبة (سعوية): تحت المحور الأفقي.'],
+     [String.raw`\(6-j8\ \Omega\) (مثال <span class="ltr">1-2-4</span>)`,1,'\\(X_T=7-15=-8\\): سعوية.'],
+     [String.raw`\(5+j3\ \Omega\) (مثال <span class="ltr">1-2-3</span>)`,0,'\\(X_T=7-4=+3\\): حثية.'],
+     [String.raw`\(-3+j4\ \Omega\)`,2,'الكتاب: «المقاومة لا تأخذ قيماً سالبة أبداً»، لذلك لا نحتاج الربعين الثاني والثالث.']]})}
    ]},
 
   {st:3,short:'مثال <span class="ltr">1-2-1</span>',title:'مثال <span class="ltr">1-2-1</span>: دائرة <span class="ltr">R-L</span> على التوالي',ref:'ص <span class=\"ltr\">33–34</span>',
@@ -1957,7 +2353,22 @@ lesson({
      <p>ويبين الشكل 1-20b المخطط الاتجاهي.</p>
      <p>وعلى العموم فإن التيار يتأخر عن الجهد بزاوية منحصرة بين <span class="ltr">0</span> و<span class="ltr">90°</span> في أي دائرة توالي تحتوي على مقاومات وممانعات حثية (حمل مادي - حثي).</p>`,ref:'ص <span class=\"ltr\">33–34</span>'},
     {tip:String.raw`<p>لاحظ أن \(V_R+V_L=92.4+39.6=132\ \text{V}\) أكبر من جهد المصدر <span class="ltr">100 V</span>! لا تناقض: الجهدان بينهما <span class="ltr">90°</span>، فنجمعهما <b>اتجاهياً</b>: \(\sqrt{92.4^2+39.6^2}\approx100\ \text{V}\).</p>`},
-    {tip:String.raw`<p>القيمة الفعالة للجهد: \(V=V_m/\sqrt2=100\sqrt2/\sqrt2=100\ \text{V}\)، وزاويته صفر لأن المعادلة \(\sin(377t)\) بلا زاوية مضافة؛ لذلك \(\mathbf V=100\angle0^\circ\).</p>`,title:'من أين جاء 100∠0°؟'}
+    {tip:String.raw`<p>القيمة الفعالة للجهد: \(V=V_m/\sqrt2=100\sqrt2/\sqrt2=100\ \text{V}\)، وزاويته صفر لأن المعادلة \(\sin(377t)\) بلا زاوية مضافة؛ لذلك \(\mathbf V=100\angle0^\circ\).</p>`,title:'من أين جاء 100∠0°؟'},
+    {title:'مختبر مصغّر: اجمع V<sub>R</sub> و V<sub>L</sub>',widget:(el,B)=>DCML.lab(el,B,{intro:'من حل المثال: <span class="ltr">V<sub>R</sub> = 92.4∠−23.2° V</span> و<span class="ltr">V<sub>L</sub> = 39.6∠66.8° V</span>. اجمعهما بالطريقتين وقارن بجهد المصدر <span class="ltr">100 V</span>.',
+ predict:{q:'ما مجموع الجهدين الذي يجب أن يساوي جهد المصدر؟',opts:[
+  ['<span class="ltr">132 V</span>',false,'هذا جمع جبري للطولين، وهو لا يساوي جهد المصدر.'],
+  ['<span class="ltr">52.8 V</span>',false,'هذا فرق الطولين، ولا معنى له هنا.'],
+  ['<span class="ltr">100 V</span>',true,String.raw`الجهدان بينهما \(90^\circ\)، فالمجموع الاتجاهي \(\sqrt{92.4^2+39.6^2}\approx100\ \text{V}\).`]]},
+ ins:[{k:'m',l:'طريقة الجمع',seg:[['a','جبري (أطوال فقط)'],['v','اتجاهي (رأساً بذيل)']],v:'a'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,f1=v=>(+v).toFixed(1),sc=2.6,ox=20,oy=62;
+  const P1=[92.4*Math.cos(-23.2*D),92.4*Math.sin(-23.2*D)],P2=[P1[0]+39.6*Math.cos(66.8*D),P1[1]+39.6*Math.sin(66.8*D)];
+  const X=x=>ox+x*sc,Y=y=>oy-y*sc;
+  const arr=(p,q,col,lab,dx,dy)=>{const x1=X(p[0]),y1=Y(p[1]),x2=X(q[0]),y2=Y(q[1]),a=Math.atan2(y2-y1,x2-x1),h=10;return `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x2)},${f1(y2)} ${f1(x2-h*Math.cos(a-0.4))},${f1(y2-h*Math.sin(a-0.4))} ${f1(x2-h*Math.cos(a+0.4))},${f1(y2-h*Math.sin(a+0.4))}" fill="var(${col})"/><text x="${f1((x1+x2)/2+dx)}" y="${f1((y1+y2)/2+dy)}" font-size="12" font-weight="700" fill="var(${col})" text-anchor="middle">${lab}</text>`};
+  let g;if(s.m==='a'){g=arr([0,0],[92.4,0],'--blue','VR',0,-8)+arr([92.4,0],[132,0],'--live','VL',0,-8)+`<line x1="${X(100)}" y1="${oy-30}" x2="${X(100)}" y2="${oy+30}" stroke="var(--on)" stroke-width="2" stroke-dasharray="4 3"/><text x="${X(100)}" y="${oy+44}" font-size="11.5" fill="var(--on)" text-anchor="middle">100 V</text>`}
+  else g=arr([0,0],P1,'--blue','VR',-6,16)+arr(P1,P2,'--live','VL',16,0)+arr([0,0],P2,'--on','V',0,-8);
+  const pic=`<svg viewBox="0 0 370 170" role="img" aria-label="جمع جهدي المقاومة والملف" style="font-family:var(--font)" direction="ltr"><line x1="${ox}" y1="${oy}" x2="364" y2="${oy}" stroke="var(--muted)" stroke-dasharray="3 4"/>${g}</svg>`;
+  return s.m==='a'?{pic,facts:[['<span class="ltr">92.4 + 39.6</span>','132 V','bad'],['جهد المصدر','100 V']],msg:'لا يطابق: الجمع الجبري يهمل أن بين الجهدين <span class="ltr">90°</span>.',cls:'bad'}
+   :{pic,facts:[['المجموع الاتجاهي','100.5∠0° V','hi'],['جهد المصدر','100∠0° V']],msg:'مطابق (الفرق الصغير من تقريب الأرقام): نجمع جهود التيار المتردد جمعاً اتجاهياً.'}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">1-2-2</span>',title:'مثال <span class="ltr">1-2-2</span>: دائرة <span class="ltr">R-C</span> على التوالي',ref:'ص <span class=\"ltr\">34–36</span>',
@@ -1982,7 +2393,17 @@ lesson({
      <p>الجهد بين طرفي المكثفة: \(\mathbf V_C=-jX_C\mathbf I=8\angle-90^\circ\times21.3\angle58^\circ=170.4\angle-32^\circ\ \text{V}\)</p>
      <p>ويبين الشكل 1-22b المخطط الاتجاهي.</p>
      <p>وعلى العموم فإن التيار يتقدم على الجهد بزاوية منحصرة بين <span class="ltr">0</span> و<span class="ltr">90°</span> في أي دائرة توالي تحتوي على مقاومات وممانعات سعوية (حمل مادي - سعوي).</p>`,ref:'ص <span class=\"ltr\">34–36</span>'},
-    {tip:String.raw`<p>قارن المثالين: في <b>R-L</b> زاوية المعاوقة موجبة <span class="ltr">(+23.2°)</span> والتيار متأخر. وفي <b>R-C</b> زاوية المعاوقة سالبة <span class="ltr">(−58°)</span> والتيار متقدم. زاوية التيار دائماً = زاوية الجهد − زاوية المعاوقة.</p>`}
+    {tip:String.raw`<p>قارن المثالين: في <b>R-L</b> زاوية المعاوقة موجبة <span class="ltr">(+23.2°)</span> والتيار متأخر. وفي <b>R-C</b> زاوية المعاوقة سالبة <span class="ltr">(−58°)</span> والتيار متقدم. زاوية التيار دائماً = زاوية الجهد − زاوية المعاوقة.</p>`},
+    {title:'مختبر مصغّر: زاوية التيار في أمثلة الدرس',widget:(el,B)=>DCML.lab(el,B,{intro:'في كل الأمثلة زاوية الجهد صفر. اختر مثالاً واقرأ زاوية التيار = زاوية الجهد − زاوية المعاوقة.',
+ predict:{q:String.raw`في مثال <span class="ltr">1-2-4</span> \(\mathbf Z_T=10\angle{-}53.1^\circ\ \Omega\). التيار:`,opts:[
+  ['متأخر عن الجهد بـ <span class="ltr">53.1°</span>',false,'المعاوقة سعوية (زاويتها سالبة)، فالتيار متقدم.'],
+  ['متقدم على الجهد بـ <span class="ltr">53.1°</span>',true,String.raw`\(0-(-53.1^\circ)=+53.1^\circ\): حمل مادي - سعوي.`],
+  ['في طور الجهد',false,'المعاوقة ليست حقيقية، ففي الدائرة ممانعة.']]},
+ ins:[{k:'e',l:'المثال',seg:[[0,'<span class="ltr">1-2-1</span>'],[1,'<span class="ltr">1-2-2</span>'],[2,'<span class="ltr">1-2-3</span>'],[3,'<span class="ltr">1-2-4</span>']],v:1}],
+ calc:(s,P,B)=>{const E=[['<span class="ltr">7.6∠23.2°</span>',23.2,'R-L'],['<span class="ltr">9.4∠−58°</span>',-58,'R-C'],['<span class="ltr">5.8∠31°</span>',31,'R-L-C'],['<span class="ltr">10∠−53.1°</span>',-53.1,'R-L-C']][s.e],ai=-E[1],D=Math.PI/180,cx=110,cy=100,f1=v=>(+v).toFixed(1);
+  const arr=(a,r,col,lab)=>{const x=cx+r*Math.cos(a*D),y=cy-r*Math.sin(a*D),h=10;return `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x)},${f1(y)} ${f1(x-h*Math.cos((a-22)*D))},${f1(y+h*Math.sin((a-22)*D))} ${f1(x-h*Math.cos((a+22)*D))},${f1(y+h*Math.sin((a+22)*D))}" fill="var(${col})"/><text x="${f1(cx+(r+14)*Math.cos(a*D))}" y="${f1(cy-(r+14)*Math.sin(a*D)+4)}" text-anchor="middle" font-size="13" font-weight="700" fill="var(${col})">${lab}</text>`};
+  const pic=`<svg viewBox="0 0 230 200" role="img" aria-label="الجهد والتيار" style="font-family:var(--font);max-width:260px;display:block;margin-inline:auto" direction="ltr"><line x1="14" y1="${cy}" x2="216" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="10" x2="${cx}" y2="190" stroke="var(--muted)"/>${arr(0,86,'--live','V')}${arr(ai,62,'--on','I')}</svg>`;
+  return {pic,facts:[['الدائرة',E[2]],['Z<sub>T</sub>',E[0]],['زاوية I',DCML.fm(B,ai,1)+'°','hi']],msg:ai<0?'زاوية المعاوقة موجبة (حثية): التيار <b>متأخر</b> عن الجهد.':'زاوية المعاوقة سالبة (سعوية): التيار <b>متقدم</b> على الجهد.'}}})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">1-2-3</span>',title:'مثال <span class="ltr">1-2-3</span>: دائرة <span class="ltr">R-L-C</span> على التوالي',ref:'ص <span class=\"ltr\">36–37</span>',
@@ -2033,7 +2454,12 @@ lesson({
     {book:String.raw`<p>يتوزع الجهد في معاوقات دائرة التوالي حسب القانون التالي</p>
      $$\mathbf V_X=\mathbf V\,\frac{\mathbf Z_X}{\mathbf Z_T}$$
      <p>حيث \(\mathbf V_X\) هو الجهد بين طرفي معاوقات متجاورة معاوقتها المكافئة \(\mathbf Z_X\)؛ \(\mathbf Z_T\) هي المعاوقة المكافئة للدائرة؛ و \(\mathbf V\) هو الجهد المؤثر.</p>`,ref:'ص <span class=\"ltr\">37–38</span>'},
-    {tip:String.raw`<p>القانون (بلا رقم في الكتاب) يأتي من خطوتين تعرفهما: \(\mathbf I=\mathbf V/\mathbf Z_T\) ثم \(\mathbf V_X=\mathbf Z_X\mathbf I\). دمجناهما في سطر واحد. و\(\mathbf Z_X\) قد تكون عنصراً واحداً أو عدة عناصر متجاورة (كما في \(\mathbf V_1\) في المثال التالي).</p>`}
+    {tip:String.raw`<p>القانون (بلا رقم في الكتاب) يأتي من خطوتين تعرفهما: \(\mathbf I=\mathbf V/\mathbf Z_T\) ثم \(\mathbf V_X=\mathbf Z_X\mathbf I\). دمجناهما في سطر واحد. و\(\mathbf Z_X\) قد تكون عنصراً واحداً أو عدة عناصر متجاورة (كما في \(\mathbf V_1\) في المثال التالي).</p>`},
+    {title:'تحقق سريع: قانون توزيع الجهد',widget:(el,B)=>DCML.tf(el,B,{items:[
+     [String.raw`إذا كانت \(\mathbf Z_X\) هي المعاوقة الكلية نفسها فإن \(\mathbf V_X=\mathbf V\).`,true,String.raw`\(\mathbf Z_X/\mathbf Z_T=1\)، فالمعاوقة الكلية تأخذ جهد المصدر كله.`],
+     ['لا بد من حساب التيار أولاً قبل استعمال قانون توزيع الجهد.',false,'القانون يدمج الخطوتين في سطر واحد، فلا نحتاج التيار.'],
+     ['يمكن أن يكون جهد عنصر واحد في دائرة التوالي أكبر من جهد المصدر.',true,'في مثال <span class="ltr">1-2-4</span> جهد المكثف <span class="ltr">150 V</span> وجهد المصدر <span class="ltr">100 V</span>.'],
+     [String.raw`يمكن أن تكون \(\mathbf Z_X\) عدة عناصر متجاورة معاً.`,true,String.raw`نص الكتاب: «معاوقات متجاورة معاوقتها المكافئة \(\mathbf Z_X\)»، مثل \(\mathbf V_1\) في المثال التالي.`]]})}
    ]},
 
   {st:7,short:'مثال <span class="ltr">1-2-4</span>',title:'مثال <span class="ltr">1-2-4</span>: توزيع الجهد في دائرة <span class="ltr">R-L-C</span>',ref:'ص 38',
@@ -2237,7 +2663,17 @@ lesson({
    body:[
     {book:String.raw`<p>دوائر الرنين من الدوائر الضرورية لتشغيل كثير من الأنظمة الكهربائية والإلكترونية، وهي عبارة عن تشكيل من العناصر الأساسية <span class="ltr">R-L-C</span>. يوضح الشكل <span class="ltr">1-26</span> <b>منحنى الاستجابة</b> لدائرة رنين وهي عبارة عن تغير القيمة الفعالة للجهد بين طرفي أحد مكونات الدائرة أو التيار المار فيها بدلالة تردد جهد المصدر. وكما نرى في الشكل <span class="ltr">1-26</span> فإن الاستجابة القصوى تحدث عندما يساوي التردد \(f_r\) وتقل الاستجابة إلى اليمين وإلى اليسار من \(f_r\) بمعنى آخر أن <b>دائرة الرنين تنتقي مدى معيناً من الترددات</b> بحيث تكون الاستجابة قريبة للقيمة القصوى.</p>
      <p>دائرة الاستقبال في جهاز الراديو أو التلفزيون لها منحنى استجابة مشابه للمنحنى الموضح في الشكل <span class="ltr">1-26</span> وبالتالي لا يمكن التقاط أي محطة إلا بعد ضبط التردد على \(f_r\) أو قريباً منها أما المحطات التي ترسل على ترددات بعيدة عن \(f_r\) إلى أقصى اليمين أو أقصى الشمال فإنها لا تلتقط.</p>
-     <p>عندما نحصل على استجابة قصوى نقول إن الدائرة في <b>حالة رنين</b> وهذا يحدث عند <b>تردد الرنين</b> \(f_r\).</p>`,ref:'ص <span class=\"ltr\">38–39</span>'}
+     <p>عندما نحصل على استجابة قصوى نقول إن الدائرة في <b>حالة رنين</b> وهذا يحدث عند <b>تردد الرنين</b> \(f_r\).</p>`,ref:'ص <span class=\"ltr\">38–39</span>'},
+    {title:'مختبر مصغّر: اضبط المحطة على المنحنى',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`المنحنى منحنى استجابة دائرة مثال <span class="ltr">1-2-5</span> (التيار نسبة إلى أعلى قيمة له). المحور الأفقي تردد المحطة نسبة إلى تردد الرنين \(f/f_r\). حرّك تردد المحطة.`,
+ predict:{q:'محطة ترددها ضعف تردد الرنين. هل تلتقطها الدائرة بقوة؟',opts:[
+  ['نعم، لأن ترددها أعلى',false,'الاستجابة القصوى عند \\(f_r\\) لا عند الترددات الأعلى.'],
+  ['لا، استجابة الدائرة لها ضعيفة',true,'الكتاب: المحطات البعيدة عن \\(f_r\\) «إلى أقصى اليمين أو أقصى الشمال» لا تُلتقط.'],
+  ['تلتقطها مثل محطة \\(f_r\\) تماماً',false,'المنحنى ينخفض بسرعة كلما ابتعدنا عن \\(f_r\\).']]},
+ ins:[{k:'k',l:'تردد المحطة f ÷ f<sub>r</sub>',min:0.25,max:3,step:0.05,v:2,dp:2}],
+ calc:(s,P,B)=>{const g=k=>2/Math.hypot(2,10*(k-1/k)),y=g(s.k);
+  return {facts:[['<span class="ltr">f ÷ f<sub>r</sub></span>',DCML.fm(B,s.k,2)],['الاستجابة',DCML.fm(B,y*100,0)+'%','hi']],
+   plot:{xr:[0.25,3],yr:[0,1.05],xt:[0.5,1,1.5,2,2.5,3],yt:[0,0.5,1],fy:v=>DCML.fm(B,v*100,0)+'%',xl:'f ÷ fr',yl:'الاستجابة',curves:[{f:g,n:300}],cur:[s.k,y]},
+   msg:y>0.7?'قريب من \\(f_r\\): المحطة تُلتقط بوضوح.':y>0.3?'متوسط: المحطة ضعيفة.':'بعيد عن \\(f_r\\): الدائرة لا تكاد تستجيب لهذه المحطة.',cls:y>0.3?'':'warn'}}})}
    ]},
 
   {st:2,short:'شرط الرنين',title:'<span class="ltr">1-2-7</span> الرنين في دوائر التوالي (تابع): الدائرة وشرط الرنين',ref:'ص <span class=\"ltr\">39–40</span>',
@@ -2298,7 +2734,19 @@ lesson({
      <p>بما إن نفس التيار يمر خلال الملف والمكثف فإن الجهد عبر كل منهما متساوٍ في المقدار ومختلف في زاوية الطور بمقدار <span class="ltr">180</span> درجة.</p>
      <p>ويمثل الشكل <span class="ltr">1-28</span> المخطط الاتجاهي للجهود والتيار وكما نلاحظ فإن الجهد بين طرفي المقاومة يساوي جهد المصدر عند حدوث الرنين.</p>`,ref:'ص <span class=\"ltr\">40–41</span>'},
     {tip:String.raw`<p>لماذا أعلى تيار؟ لأن \(I=V_s/Z_T\)، وأصغر قيمة ممكنة للمعاوقة هي \(R\) (عند الرنين). ولأن \(\mathbf Z_T=R\) عدد حقيقي، تكون زاوية المعاوقة صفراً، فالتيار في طور جهد المصدر تماماً، كأن الدائرة مقاومة فقط.</p>`},
-    {watch:String.raw`<p>عند الرنين قد يكون جهد الملف وجهد المكثف <b>أكبر بكثير من جهد المصدر</b> (سترى ذلك في المثالين التاليين). لذلك يجب أن يتحمل المكثف هذا الجهد العالي.</p>`}
+    {watch:String.raw`<p>عند الرنين قد يكون جهد الملف وجهد المكثف <b>أكبر بكثير من جهد المصدر</b> (سترى ذلك في المثالين التاليين). لذلك يجب أن يتحمل المكثف هذا الجهد العالي.</p>`},
+    {title:'مختبر مصغّر: اجمع جهود الرنين',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال <span class="ltr">1-2-5</span>: <span class="ltr">V<sub>R</sub> = 10∠0°</span> و<span class="ltr">V<sub>L</sub> = 50∠90°</span> و<span class="ltr">V<sub>C</sub> = 50∠−90° V</span>. أدخل الجهود في المجموع واحداً واحداً.',
+ predict:{q:'إذا جمعنا \\(\\mathbf V_L+\\mathbf V_C\\) فقط، ماذا نحصل؟',opts:[
+  ['<span class="ltr">100 V</span>',false,'هذا جمع جبري للطولين، والجهدان متعاكسان.'],
+  ['صفر',true,'متساويان في المقدار وبينهما <span class="ltr">180°</span>، فيلغي أحدهما الآخر.'],
+  ['<span class="ltr">50 V</span>',false,'كل منهما <span class="ltr">50 V</span>، لكن مجموعهما الاتجاهي صفر.']]},
+ ins:[{k:'r',l:'V<sub>R</sub> في المجموع',sw:true,v:0,on:'V<sub>R</sub>: داخل المجموع',off:'V<sub>R</sub>: خارج المجموع'},{k:'l',l:'V<sub>L</sub>',sw:true,v:1,on:'V<sub>L</sub>: داخل المجموع',off:'V<sub>L</sub>: خارج المجموع'},{k:'c',l:'V<sub>C</sub>',sw:true,v:1,on:'V<sub>C</sub>: داخل المجموع',off:'V<sub>C</sub>: خارج المجموع'}],
+ calc:(s,P,B)=>{const re=s.r?10:0,im=(s.l?50:0)-(s.c?50:0),m=Math.hypot(re,im),a=m?Math.atan2(im,re)*180/Math.PI:0;
+  const cx=110,cy=110,sc=1.6,f1=v=>(+v).toFixed(1);
+  const arr=(x,y,col,lab,w,dash)=>{const X=cx+x*sc,Y=cy-y*sc,an=Math.atan2(Y-cy,X-cx),h=9;if(Math.hypot(x,y)<1)return '';return `<line x1="${cx}" y1="${cy}" x2="${f1(X)}" y2="${f1(Y)}" stroke="var(${col})" stroke-width="${w||3}" ${dash?`stroke-dasharray="${dash}"`:''}/><polygon points="${f1(X)},${f1(Y)} ${f1(X-h*Math.cos(an-0.4))},${f1(Y-h*Math.sin(an-0.4))} ${f1(X-h*Math.cos(an+0.4))},${f1(Y-h*Math.sin(an+0.4))}" fill="var(${col})"/><text x="${f1(X+(x>=0?16:-16)*(Math.abs(y)<1?1:0)+(Math.abs(y)>=1?22:0))}" y="${f1(Y+(Math.abs(y)<1?-8:4))}" font-size="12" font-weight="700" fill="var(${col})" text-anchor="middle">${lab}</text>`};
+  const pic=`<svg viewBox="0 0 220 220" role="img" aria-label="جهود الرنين" style="font-family:var(--font);max-width:260px;display:block;margin-inline:auto" direction="ltr"><line x1="14" y1="${cy}" x2="206" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="14" x2="${cx}" y2="206" stroke="var(--muted)"/>${s.l?arr(0,50,'--live','VL',2,'5 4'):''}${s.c?arr(0,-50,'--stop','VC',2,'5 4'):''}${s.r?arr(10,0,'--fg','VR',2,'5 4'):''}${arr(re,im,'--on','',4)}</svg>`;
+  return {pic,facts:[['المجموع',m<1e-9?'0':DCML.fm(B,m,0)+'∠'+DCML.fm(B,a,0)+'° V','hi'],['جهد المصدر','10∠0° V']],
+   msg:s.r&&s.l&&s.c?'المجموع الكلي = <span class="ltr">10∠0° V</span> = جهد المصدر، وهو نفسه \\(\\mathbf V_R\\) (الشكل <span class="ltr">(1-28)</span>).':(!s.r&&s.l&&s.c)?'جهدا الملف والمكثف يلغي أحدهما الآخر تماماً.':'السهم الأخضر هو المجموع الاتجاهي لما أدخلته.'}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">1-2-5</span>',title:'مثال <span class="ltr">1-2-5</span>: التيار والجهود في دائرة رنين',ref:'ص 41',
@@ -2319,7 +2767,17 @@ lesson({
      $$\mathbf V_R=\mathbf IR=5\angle0^\circ\times2=10\angle0^\circ\ \text{V}$$
      $$\mathbf V_L=\mathbf I\cdot X_L=5\angle0^\circ\times10\angle90^\circ=50\angle90^\circ\ \text{V}$$
      $$\mathbf V_C=\mathbf I\cdot X_C=5\angle0^\circ\times10\angle-90^\circ=50\angle-90^\circ\ \text{V}$$`,ref:'ص 41'},
-    {tip:String.raw`<p>جهد الملف <span class="ltr">50 V</span> وجهد المكثف <span class="ltr">50 V</span>، أي <b>خمسة أضعاف</b> جهد المصدر <span class="ltr">(10 V)</span>! النسبة \(V_L/V_s=X_L/R=10/2=5\). لكنهما متعاكسان \((90^\circ\) و \(-90^\circ)\) فمجموعهما صفر، ويبقى \(\mathbf V_R=\mathbf V_s\).</p>`}
+    {tip:String.raw`<p>جهد الملف <span class="ltr">50 V</span> وجهد المكثف <span class="ltr">50 V</span>، أي <b>خمسة أضعاف</b> جهد المصدر <span class="ltr">(10 V)</span>! النسبة \(V_L/V_s=X_L/R=10/2=5\). لكنهما متعاكسان \((90^\circ\) و \(-90^\circ)\) فمجموعهما صفر، ويبقى \(\mathbf V_R=\mathbf V_s\).</p>`},
+    {title:'مختبر مصغّر: من يحدد تضخيم الجهد؟',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`المصدر <span class="ltr">10 V</span> و \(X_L=X_C=10\ \Omega\) من المثال، والدائرة في رنين. غيّر المقاومة \(R\): القيمة <span class="ltr">2 Ω</span> من الكتاب، والقيم الأخرى <b>أرقام تختارها أنت</b>.`,
+ predict:{q:'لو كانت المقاومة <span class="ltr">4 Ω</span> بدلاً من <span class="ltr">2 Ω</span>، كم يصير جهد الملف؟',opts:[
+  ['<span class="ltr">100 V</span>',false,'المقاومة الأكبر تقلل التيار، لا تزيده.'],
+  ['<span class="ltr">25 V</span>',true,String.raw`\(I=10/4=2.5\ \text{A}\) و \(V_L=2.5\times10=25\ \text{V}\): النصف.`],
+  ['<span class="ltr">50 V</span> كما هو',false,String.raw`\(V_L=I\,X_L\) والتيار عند الرنين \(V_s/R\) يتغير مع \(R\).`]]},
+ ins:[{k:'R',l:'المقاومة R',u:'Ω',min:1,max:10,step:1,v:2,dp:0}],
+ calc:(s,P,B)=>{const I=10/s.R,VL=I*10;
+  return {facts:[['<span class="ltr">I = V<sub>s</sub> ÷ R</span>',DCML.fm(B,I,2)+' A'],['<span class="ltr">V<sub>L</sub> = V<sub>C</sub> = I X<sub>L</sub></span>',DCML.fm(B,VL,1)+' V','hi'],['<span class="ltr">V<sub>L</sub> ÷ V<sub>s</sub> = X<sub>L</sub> ÷ R</span>',DCML.fm(B,10/s.R,2)]],
+   bars:[{l:'جهد المصدر',v:10,max:100,u:'V',dp:0,col:'--blue'},{l:'جهد الملف',v:VL,max:100,u:'V',dp:1,col:VL>10?'--stop':'--on'}],
+   msg:s.R===2?'قيمة الكتاب: <span class="ltr">I = 5 A</span> و<span class="ltr">V<sub>L</sub> = 50 V</span>، خمسة أضعاف المصدر.':'كلما صغرت المقاومة كبر التيار عند الرنين، فكبر جهد الملف والمكثف.'}}})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">1-2-6</span>',title:String.raw`مثال <span class="ltr">1-2-6</span>: إيجاد \(X_C\) عند الرنين`,ref:'ص 42',
@@ -2342,7 +2800,16 @@ lesson({
      $$\mathbf V_R=\mathbf V_s=50\angle0^\circ\ \text{V}$$
      $$\mathbf V_L=\mathbf I\cdot X_L=10\angle0^\circ\times30\angle90^\circ=300\angle90^\circ\ \text{V}$$
      $$\mathbf V_C=\mathbf I\cdot X_C=10\angle0^\circ\times30\angle-90^\circ=300\angle-90^\circ\ \text{V}$$`,ref:'ص 42'},
-    {tip:String.raw`<p>هنا جهد كل من الملف والمكثف <span class="ltr">300 V</span> والمصدر <span class="ltr">50 V</span>: ستة أضعاف \((X_L/R=30/5=6)\). والمثال لا يذكر التردد ولا قيم L و C بالهنري والفاراد؛ يعطي الممانعات عند الرنين فقط، وهذا يكفي للحل.</p>`}
+    {tip:String.raw`<p>هنا جهد كل من الملف والمكثف <span class="ltr">300 V</span> والمصدر <span class="ltr">50 V</span>: ستة أضعاف \((X_L/R=30/5=6)\). والمثال لا يذكر التردد ولا قيم L و C بالهنري والفاراد؛ يعطي الممانعات عند الرنين فقط، وهذا يكفي للحل.</p>`},
+    {title:'مختبر مصغّر: قارن مثالي الرنين',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر المثال واقرأ النتائج من حلول الكتاب.',
+ predict:{q:'في أي المثالين يكون جهد الملف أكبر نسبةً إلى جهد المصدر؟',opts:[
+  ['مثال <span class="ltr">1-2-5</span>',false,'النسبة فيه <span class="ltr">10 ÷ 2 = 5</span>.'],
+  ['مثال <span class="ltr">1-2-6</span>',true,'النسبة \\(X_L/R=30/5=6\\)، أكبر من <span class="ltr">5</span>.'],
+  ['متساويان',false,'النسبة \\(X_L/R\\) تختلف بين المثالين.']]},
+ ins:[{k:'e',l:'المثال',seg:[[5,'<span class="ltr">1-2-5</span>'],[6,'<span class="ltr">1-2-6</span>']],v:6}],
+ calc:(s,P,B)=>{const E=s.e===5?{R:2,X:10,V:10}:{R:5,X:30,V:50},I=E.V/E.R,VL=I*E.X;
+  return {facts:[['R',E.R+' Ω'],['<span class="ltr">X<sub>L</sub> = X<sub>C</sub></span>',E.X+' Ω'],['V<sub>s</sub>',E.V+' V'],['<span class="ltr">I = V<sub>s</sub> ÷ R</span>',DCML.fm(B,I,0)+' A'],['<span class="ltr">V<sub>L</sub> = V<sub>C</sub></span>',DCML.fm(B,VL,0)+' V','hi'],['<span class="ltr">V<sub>L</sub> ÷ V<sub>s</sub></span>',DCML.fm(B,VL/E.V,0),'hi']],
+   msg:s.e===6?'\\(X_C\\) مجهولة في السؤال، وشرط الرنين وحده أعطاها: \\(X_C=X_L=30\\ \\Omega\\).':'المصدر <span class="ltr">10 V</span> فقط، وجهد الملف <span class="ltr">50 V</span>.'}}})}
    ]},
 
   {recap:[

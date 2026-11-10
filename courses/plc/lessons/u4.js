@@ -204,7 +204,183 @@ B.lesson({
  title:'لماذا مقاومات البدء؟ والدائرة الرئيسة للمحرك ذي العضو الدائر الملفوف',
  summary:'تيار البدء العالي وطريقة تخفيفه بمقاومات على التوالي مع العضو الدائر، ثم الدائرة الرئيسة في الشكل (1-4): المتمم K1 والمرحل F4 ومجموعات المقاومات R1 و R2 و R3 ومتممات القصر K2 و K3 و K4.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 85',
    q:'محرك كبير يسحب عند بدء تشغيله أضعاف تياره العادي… كيف نبدأ تشغيله بأمان؟ وكيف نكتب لذلك برنامجاً؟',
@@ -223,7 +399,12 @@ B.lesson({
      <p><b>الوقت المتوقع للتدريب:</b> ساعتان.</p>
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج • حاسب آلي • جهاز عرض (داتا شو) • سبورة • كراسة الطالب • قلم.</p>
      <p><b>متطلبات الجدارة:</b> آلات التيار المتردد • ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 85'},
-    {watch:String.raw`<p>الجدارة تقول «التحكم في <b>سرعة</b> المحرك»، لكن المحتوى الفعلي للوحدة هو <b>بدء تشغيل</b> المحرك بمقاومات متعددة المراحل تُخرج بالتدريج حتى يعمل المحرك بشكل طبيعي. لا يوجد في الوحدة تحكم مستمر في السرعة.</p>`,fix:true}
+    {watch:String.raw`<p>الجدارة تقول «التحكم في <b>سرعة</b> المحرك»، لكن المحتوى الفعلي للوحدة هو <b>بدء تشغيل</b> المحرك بمقاومات متعددة المراحل تُخرج بالتدريج حتى يعمل المحرك بشكل طبيعي. لا يوجد في الوحدة تحكم مستمر في السرعة.</p>`,fix:true},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'اقرأ كل عبارة عن صفحة الجدارة (ص 85) وقرّر: صح أم خطأ؟',items:[
+     [String.raw`الهدف أن تكتب بالحاسب الآلي برنامجاً لتشغيل المحرك ذي العضو الدائر الملفوف بمقاومات البدء المتعددة المراحل.`,true,String.raw`هذا نص الجدارة: «استخدام الحاسب الآلي في كتابة برنامج…» للمحرك ذي العضو الدائر الملفوف بمقاومات البدء.`],
+     [String.raw`ستتعلم في هذه الوحدة كيف ترفع سرعة المحرك وتخفضها متى شئت أثناء العمل.`,false,String.raw`مع أن الجدارة تقول «التحكم في سرعة المحرك»، فالمحتوى الفعلي هو <b>بدء التشغيل</b>: مقاومات تُخرج بالتدريج حتى يعمل المحرك بشكل طبيعي.`],
+     [String.raw`ستحوّل دائرة التحكم إلى برنامج <span class="ltr">PLC</span> بثلاث طرق: <span class="ltr">LAD</span> و <span class="ltr">FBD</span> و <span class="ltr">STL</span>.`,true,String.raw`الهدف الثالث: «أن يحول المتدرب دائرة التحكم من مخطط مسار التيار إلى دائرة <span class="ltr">(PLC)</span> بالطرق الثلاثة».`],
+     [String.raw`يكفي أن تصل إلى نصف مستوى الأداء المطلوب في هذه الجدارة.`,false,String.raw`مستوى الأداء المطلوب في الكتاب: إتقان الجدارة بنسبة <span class="ltr">100٪</span>.`]]})}
    ]},
 
   {st:2,short:'محتويات الوحدة',title:'محتويات الوحدة: ثلاثة فصول',ref:'ص 86',
@@ -240,7 +421,12 @@ B.lesson({
     {book:String.raw`<ul><li><b>الفصل الأول:</b> الهدف من تشغيل المحرك الحثي ذي العضو الدائر الملفوف باستخدام مقاومات البدء المتعددة المراحل.</li>
      <li><b>الفصل الثاني:</b> الدائرة الرئيسة ودائرة التحكم لتشغيل المحرك الحثي ذي العضو الدائر الملفوف باستخدام مقاومات البدء المتعددة المراحل.</li>
      <li><b>الفصل الثالث:</b> تحويل دائرة التحكم إلى:<ol><li>دائرة <span class="ltr">(LAD)</span> باستخدام <span class="ltr">(PLC)</span> باستخدام دالة التخزين مع دالة الإلغاء والإبقاء والمزمنات.</li><li>دائرة <span class="ltr">(FBD)</span> باستخدام <span class="ltr">(PLC)</span> باستخدام دالة التخزين مع دالة الإلغاء والإبقاء والمزمنات.</li><li>دائرة <span class="ltr">(STL)</span> باستخدام <span class="ltr">(PLC)</span> باستخدام دالة التخزين مع دالة الإلغاء والإبقاء والمزمنات.</li></ol></li></ul>`,ref:'ص 86'},
-    {tip:String.raw`<p>هذا الدرس: الفصل الأول والدائرة الرئيسة. الدرس التالي: دائرة التحكم وطريقة عملها. ثم الدرس الثالث: جدول المداخل والمخارج وبرنامج <span class="ltr">LAD</span>. والدرس الرابع: البرنامج نفسه بلغتي <span class="ltr">FBD</span> و <span class="ltr">STL</span>.</p>`,title:'أين تجد كل فصل؟'}
+    {tip:String.raw`<p>هذا الدرس: الفصل الأول والدائرة الرئيسة. الدرس التالي: دائرة التحكم وطريقة عملها. ثم الدرس الثالث: جدول المداخل والمخارج وبرنامج <span class="ltr">LAD</span>. والدرس الرابع: البرنامج نفسه بلغتي <span class="ltr">FBD</span> و <span class="ltr">STL</span>.</p>`,title:'أين تجد كل فصل؟'},
+    {title:'مختبر مصغّر: رتّب فصول الوحدة',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط فصول الوحدة بالترتيب الذي جاءت به في الكتاب (ص 86).',steps:[
+     [String.raw`الهدف من تشغيل المحرك بمقاومات البدء المتعددة المراحل (لماذا؟)`,String.raw`نبدأ بالسبب: لماذا نحتاج المقاومات أصلاً؟`],
+     [String.raw`الدائرة الرئيسة ودائرة التحكم`,String.raw`لا نرسم الدائرة قبل أن نعرف لماذا نحتاجها؛ هذا الفصل يأتي بعد الهدف.`],
+     [String.raw`تحويل دائرة التحكم إلى <span class="ltr">LAD</span> و <span class="ltr">FBD</span> و <span class="ltr">STL</span>`,String.raw`لا يمكن تحويل دائرة التحكم إلى برنامج قبل رسمها؛ هذا آخر فصل.`]],
+     done:String.raw`هذا ترتيب الكتاب: السبب، ثم الدائرتان، ثم البرنامج بثلاث لغات. والدائرة الرئيسة تبقى سلكية؛ الذي يتحول إلى برنامج هو دائرة التحكم.`})}
    ]},
 
   {st:3,short:'لماذا مقاومات البدء؟',title:'الفصل الأول: لماذا نبدأ التشغيل بمقاومات؟',ref:'ص 87',
@@ -550,7 +736,25 @@ B.lesson({
     {tip:String.raw`<ul><li><b><span class="ltr">Network 1</span>:</b> <span class="ltr">S1</span> <span class="ltr">(I1.1)</span> يثبّت العلامة <span class="ltr">M0.0</span>. وتُلغى <span class="ltr">M0.0</span> إذا انقطعت إشارة <span class="ltr">F4</span> <span class="ltr">(I0.0)</span> <b>أو</b> إشارة <span class="ltr">S0</span> <span class="ltr">(I0.1)</span>.</li>
      <li><b><span class="ltr">Network 2</span>:</b> يُثبَّت <span class="ltr">K1</span> <span class="ltr">(Q4.1)</span> إذا كانت <span class="ltr">M0.0 = 1</span> <b>و</b> متممات القصر <span class="ltr">Q4.2</span> و <span class="ltr">Q4.3</span> و <span class="ltr">Q4.4</span> كلها مفصولة (تلامسات مغلقة)، ويُلغى عندما تصبح <span class="ltr">M0.0 = 0</span> (تلامس مغلق على <span class="ltr">R</span>).</li></ul>`,title:'اقرأ الشبكتين'},
     {add:String.raw`<p>العلامة <span class="ltr">M</span> «ذاكرة» داخلية في الـ <span class="ltr">PLC</span>، مثل ورقة تكتب عليها «المحرك مطلوب تشغيله». لا يوصل عليها شيء من الخارج، لكن كل الشبكات التالية تقرؤها.</p>`,title:'ما العلامة M0.0؟'},
-    {watch:String.raw`<p>تلامسات <span class="ltr">Q4.2</span> و <span class="ltr">Q4.3</span> و <span class="ltr">Q4.4</span> المغلقة في <span class="ltr">Network 2</span> شرط على طرف <span class="ltr">S</span> فقط، تماماً مثل تلامسات <span class="ltr">K2</span> و <span class="ltr">K3</span> و <span class="ltr">K4</span> في فرع <span class="ltr">S1</span> بالدائرة السلكية: بعد أن يُثبَّت <span class="ltr">K1</span> لا يلغيه عمل متممات القصر.</p>`}
+    {watch:String.raw`<p>تلامسات <span class="ltr">Q4.2</span> و <span class="ltr">Q4.3</span> و <span class="ltr">Q4.4</span> المغلقة في <span class="ltr">Network 2</span> شرط على طرف <span class="ltr">S</span> فقط، تماماً مثل تلامسات <span class="ltr">K2</span> و <span class="ltr">K3</span> و <span class="ltr">K4</span> في فرع <span class="ltr">S1</span> بالدائرة السلكية: بعد أن يُثبَّت <span class="ltr">K1</span> لا يلغيه عمل متممات القصر.</p>`},
+    {title:'مختبر مصغّر: شغّل الشبكتين 1 و 2',widget:(el,B)=>{const P=B.createPLC(FIX4),nm={};IO4.forEach(r=>nm[r.addr]=r.sym);
+      return DCML.lab(el,B,{intro:String.raw`هذه هي الشبكتان 1 و 2 من البرنامج (وهما متطابقتان في نسخة الكتاب والنسخة المصححة). اضغط الأزرار واحداً واحداً وراقب العلامة <span class="ltr">M0.0</span> والمتمم <span class="ltr">K1</span>. الخطوط الملونة = إشارة <span class="ltr">1</span> تمر.`,
+       predict:{q:String.raw`المحرك يعمل. ضغطت <span class="ltr">S0</span> ثم تركته. هل يعود <span class="ltr">K1</span> للعمل وحده بعد ترك <span class="ltr">S0</span>؟`,opts:[
+        [String.raw`نعم، لأن <span class="ltr">I0.1</span> رجع <span class="ltr">1</span>`,false,String.raw`رجوع <span class="ltr">I0.1</span> إلى <span class="ltr">1</span> يزيل شرط الإلغاء فقط، ولا يثبّت شيئاً.`],
+        [String.raw`لا، يبقى متوقفاً حتى تضغط <span class="ltr">S1</span> من جديد`,true,String.raw`ضغط <span class="ltr">S0</span> ألغى العلامة <span class="ltr">M0.0</span> فأُلغي <span class="ltr">K1</span>، ولا يثبّتها مرة أخرى إلا <span class="ltr">1</span> على طرف <span class="ltr">S</span>، أي ضغط <span class="ltr">S1</span>.`],
+        [String.raw`يعمل ويتوقف بالتناوب في كل دورة مسح`,false,String.raw`لا شيء يتغير بين دورة مسح وأخرى ما دامت المداخل ثابتة.`]]},
+       ins:[{k:'s1',l:'S1',sw:true,v:0,on:'S1 مضغوط ← <span class="ltr">I1.1 = 1</span>',off:'S1 متروك ← <span class="ltr">I1.1 = 0</span>'},
+        {k:'s0',l:'S0',sw:true,v:0,on:'S0 مضغوط ← <span class="ltr">I0.1 = 0</span>',off:'S0 متروك ← <span class="ltr">I0.1 = 1</span>'},
+        {k:'f4',l:'F4',sw:true,v:0,on:'F4 فصلت ← <span class="ltr">I0.0 = 0</span>',off:'F4 سليمة ← <span class="ltr">I0.0 = 1</span>'}],
+       calc:s=>{P.set('I1.1',s.s1);P.set('I0.1',s.s0?0:1);P.set('I0.0',s.f4?0:1);P.runNet(0);P.runNet(1);
+        const m=P.get('M0.0'),k1=P.get('Q4.1'),rs=s.s0||s.f4;
+        const msg=s.s1&&rs?String.raw`<span class="ltr">S1</span> وإشارة الإلغاء معاً: في برنامج <span class="ltr">STL</span> يأتي السطر <span class="ltr">R M 0.0</span> بعد <span class="ltr">S M 0.0</span>، فالكلمة الأخيرة للإلغاء ويبقى المحرك متوقفاً.`
+         :rs?String.raw`أحد المدخلين <span class="ltr">I0.0</span> أو <span class="ltr">I0.1</span> صار <span class="ltr">0</span>، فوصل <span class="ltr">1</span> إلى طرف <span class="ltr">R</span> وأُلغيت <span class="ltr">M0.0</span> ثم <span class="ltr">K1</span>.`
+         :s.s1?String.raw`<span class="ltr">S1</span> مضغوط: ثُبّتت <span class="ltr">M0.0</span>، ومتممات القصر مفصولة، فثُبّت <span class="ltr">K1</span>. الآن اترك <span class="ltr">S1</span> ولاحظ أن الاثنين يبقيان <span class="ltr">1</span>.`
+         :m?String.raw`<span class="ltr">S1</span> متروك لكن <span class="ltr">M0.0</span> و <span class="ltr">K1</span> ما زالا <span class="ltr">1</span>: هذه هي «الذاكرة» في دالة التخزين.`
+         :String.raw`المحرك متوقف. اضغط <span class="ltr">S1</span> لتبدأ.`;
+        return {pic:[0,1].map(i=>`<div class="net static"><header><h3>Network ${i+1}</h3></header><div class="svgbox">${B.ladNetwork(P.nets[i],P,nm).replace("<svg","<svg style=\"min-width:420px\"")}</div></div>`).join(''),
+         facts:[['العلامة M0.0',String(m),m?'hi':''],['K1 (Q4.1)',String(k1),k1?'hi':'']],msg,cls:rs?'warn':''}}})}}
    ]},
 
   {st:3,short:'LAD: المزمنات ومتممات القصر',title:'<span class="ltr">LAD</span> — الشبكات 3 إلى 8: المزمنات ومتممات القصر',ref:'ص 91–92',
@@ -662,7 +866,25 @@ B.lesson({
      <li>الدائرة الصغيرة <b><span class="ltr">(N)</span></b> على المدخل = عكس — مثل التلامس المغلق في <span class="ltr">LAD</span>.</li>
      <li>صناديق <span class="ltr">SR</span> والمزمنات <span class="ltr">S_ODT</span> هي نفسها التي في <span class="ltr">LAD</span>؛ تتغير طريقة رسم الشروط فقط.</li></ul>`,title:'ثلاثة رموز تكفي'},
     {tip:String.raw`<p>في <span class="ltr">Network 1</span>: بوابة <span class="ltr">&gt;=1</span> مدخلاها <span class="ltr">I0.0 (N)</span> و <span class="ltr">I0.1 (N)</span> تذهب إلى طرف <span class="ltr">R</span> للعلامة <span class="ltr">M0.0</span>، و <span class="ltr">I1.1</span> إلى طرف <span class="ltr">S</span>. وفي الشبكات 3 إلى 7: بوابة <span class="ltr">&gt;=1</span> على طرف <span class="ltr">R</span> فيها المتمم التالي «أو» <span class="ltr">M0.0</span>.</p>`,title:'قارن مع LAD'},
-    {watch:String.raw`<p>الخطأ نفسه موجود في <span class="ltr">FBD</span>: مدخل <span class="ltr">M0.0</span> في بوابات <span class="ltr">&gt;=1</span> على أطراف <span class="ltr">R</span> (الشبكات 3 إلى 7) وعلى طرف <span class="ltr">R</span> في <span class="ltr">Network 8</span> مكتوب <b>بدون</b> دائرة عكس. الصحيح <span class="ltr">M0.0 (N)</span> كما في طرف <span class="ltr">R</span> للمخرج <span class="ltr">Q4.1</span> في <span class="ltr">Network 2</span>.</p>`,fix:true}
+    {watch:String.raw`<p>الخطأ نفسه موجود في <span class="ltr">FBD</span>: مدخل <span class="ltr">M0.0</span> في بوابات <span class="ltr">&gt;=1</span> على أطراف <span class="ltr">R</span> (الشبكات 3 إلى 7) وعلى طرف <span class="ltr">R</span> في <span class="ltr">Network 8</span> مكتوب <b>بدون</b> دائرة عكس. الصحيح <span class="ltr">M0.0 (N)</span> كما في طرف <span class="ltr">R</span> للمخرج <span class="ltr">Q4.1</span> في <span class="ltr">Network 2</span>.</p>`,fix:true},
+    {title:'مختبر مصغّر: بوابة & في Network 2',widget:(el,B)=>{const P=B.createPLC(FIX4),nm={};IO4.forEach(r=>nm[r.addr]=r.sym);
+      return DCML.lab(el,B,{intro:String.raw`هذه <span class="ltr">Network 2</span> بلغة <span class="ltr">FBD</span>. غيّر حالة العلامة <span class="ltr">M0.0</span> ومتممات القصر، وراقب خرج البوابة <span class="ltr">&amp;</span> (طرف <span class="ltr">S</span>) والمتمم <span class="ltr">K1</span>.`,
+       predict:{q:String.raw`المحرك متوقف، و <span class="ltr">M0.0 = 1</span>، لكن المتمم <span class="ltr">K3</span> عالق عاملاً (<span class="ltr">Q4.3 = 1</span>). هل يُثبَّت <span class="ltr">K1</span>؟`,opts:[
+        [String.raw`نعم، لأن <span class="ltr">M0.0 = 1</span>`,false,String.raw`<span class="ltr">M0.0</span> مدخل واحد فقط من مداخل البوابة <span class="ltr">&amp;</span>، وهي تحتاج كل مداخلها <span class="ltr">1</span>.`],
+        [String.raw`لا، لأن مدخل <span class="ltr">Q4.3</span> عليه دائرة عكس فيدخل البوابة <span class="ltr">0</span>`,true,String.raw`الدائرة الصغيرة تعكس <span class="ltr">Q4.3 = 1</span> إلى <span class="ltr">0</span>، فيخرج من <span class="ltr">&amp;</span> صفر ولا يصل شيء إلى طرف <span class="ltr">S</span>: لا تشغيل والمقاومات مقصورة.`],
+        [String.raw`نعم، لكن يفصل بعد خمس ثوانٍ`,false,String.raw`لا يوجد مزمن في <span class="ltr">Network 2</span>؛ الشرط إما يتحقق أو لا.`]]},
+       ins:[{k:'m',l:'M0.0',sw:true,v:0,on:'<span class="ltr">M0.0 = 1</span> (أمر التشغيل محفوظ)',off:'<span class="ltr">M0.0 = 0</span> (لا أمر تشغيل)'},
+        {k:'k2',l:'K2',sw:true,v:0,on:'K2 يعمل ← <span class="ltr">Q4.2 = 1</span>',off:'K2 مفصول ← <span class="ltr">Q4.2 = 0</span>'},
+        {k:'k3',l:'K3',sw:true,v:0,on:'K3 يعمل ← <span class="ltr">Q4.3 = 1</span>',off:'K3 مفصول ← <span class="ltr">Q4.3 = 0</span>'},
+        {k:'k4',l:'K4',sw:true,v:0,on:'K4 يعمل ← <span class="ltr">Q4.4 = 1</span>',off:'K4 مفصول ← <span class="ltr">Q4.4 = 0</span>'}],
+       calc:s=>{P.set('M0.0',s.m);P.set('Q4.2',s.k2);P.set('Q4.3',s.k3);P.set('Q4.4',s.k4);const was=P.get('Q4.1');P.runNet(1);
+        const g=s.m&&!s.k2&&!s.k3&&!s.k4?1:0,k1=P.get('Q4.1');
+        const msg=!s.m?String.raw`<span class="ltr">M0.0 = 0</span>: دائرة العكس على طرف <span class="ltr">R</span> تعطي <span class="ltr">1</span>، فيُلغى <span class="ltr">K1</span>.`
+         :g?String.raw`كل مداخل <span class="ltr">&amp;</span> صارت <span class="ltr">1</span> (المتممات المفصولة تُعكس إلى <span class="ltr">1</span>)، فوصل <span class="ltr">1</span> إلى <span class="ltr">S</span> وثُبّت <span class="ltr">K1</span>.`
+         :k1?String.raw`خرج <span class="ltr">&amp;</span> الآن <span class="ltr">0</span>، لكن <span class="ltr">K1</span> ثُبّت قبل ذلك فيبقى يعمل: عمل متممات القصر بعد التشغيل لا يلغيه، تماماً كما في الدائرة السلكية.`
+         :String.raw`متمم قصر عامل، فأحد مداخل <span class="ltr">&amp;</span> = <span class="ltr">0</span> ولا يُثبَّت <span class="ltr">K1</span>: لا يبدأ المحرك والمقاومات مقصورة.`;
+        return {pic:`<div class="net static"><header><h3>Network 2</h3></header><div class="svgbox">${B.fbdNetwork(P.nets[1],P,nm).replace("<svg","<svg style=\"min-width:420px\"")}</div></div>`,
+         facts:[['خرج & (طرف S)',String(g),g?'hi':''],['طرف R (M0.0 معكوسة)',String(s.m?0:1),s.m?'':'bad'],['K1 (Q4.1)',String(k1),k1?'hi':'']],msg,cls:(!g&&!k1&&s.m)?'warn':''}}})}}
    ]},
 
   {st:2,short:'STL',title:'ثالثاً: دائرة <span class="ltr">STL</span> — البرنامج سطراً سطراً',ref:'ص 95–96',
@@ -727,7 +949,14 @@ B.lesson({
    body:[
     {tip:String.raw`<ol><li>اضغط <span class="ltr">S1</span>: يجب أن يعمل <span class="ltr">K1</span> <span class="ltr">(Q4.1)</span> ويبدأ <span class="ltr">T4</span>.</li><li>بعد زمن كل مزمن يجب أن يعمل متمم القصر التالي بالترتيب: <span class="ltr">Q4.4</span> ثم <span class="ltr">Q4.3</span> ثم <span class="ltr">Q4.2</span>، ويفصل الذي قبله.</li><li>في النهاية يبقى <span class="ltr">Q4.1</span> و <span class="ltr">Q4.2</span> فقط.</li><li>اضغط <span class="ltr">S0</span>: يجب أن يفصل كل شيء. وكرر مع فصل <span class="ltr">F4</span>.</li><li>حاول التشغيل ومتمم قصر عامل: يجب ألا يعمل <span class="ltr">K1</span>.</li></ol>`,title:'ماذا تختبر؟'},
     {tip:String.raw`<p>في تبويب «المختبر» نفّذ البرنامج بنسخة الكتاب ثم بالنسخة المصححة، وتابع في تبويب البرنامج (عرض <span class="ltr">STL</span> مع «تشغيل المسح ببطء») قيمة <span class="ltr">RLO</span> عند كل سطر.</p>`,title:'في هذا الموقع'},
-    {add:String.raw`<p>في المصانع لا يُشغَّل برنامج جديد على المحرك مباشرة. يُختبر أولاً والمحرك مفصول عن القدرة (تراقب المخارج على لمبات وحدة الـ <span class="ltr">PLC</span>)، ثم يُشغَّل المحرك بعد التأكد من الترتيب. وفي برنامج هذه الوحدة تفيدك المخارج <span class="ltr">Q5.2</span> و <span class="ltr">Q5.3</span> و <span class="ltr">Q5.4</span> في ذلك: ترى عليها عمل المزمنات.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>في المصانع لا يُشغَّل برنامج جديد على المحرك مباشرة. يُختبر أولاً والمحرك مفصول عن القدرة (تراقب المخارج على لمبات وحدة الـ <span class="ltr">PLC</span>)، ثم يُشغَّل المحرك بعد التأكد من الترتيب. وفي برنامج هذه الوحدة تفيدك المخارج <span class="ltr">Q5.2</span> و <span class="ltr">Q5.3</span> و <span class="ltr">Q5.4</span> في ذلك: ترى عليها عمل المزمنات.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: رتّب خطوات الاختبار',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط خطوات تنفيذ المطلوب واختباره بالترتيب الصحيح.',steps:[
+     [String.raw`نفّذ البرنامج على جهاز الحاسب الآلي`,String.raw`الكتاب يبدأ بتنفيذ التمرين على الحاسب قبل أي شيء.`],
+     [String.raw`انقل البرنامج إلى وحدة الـ <span class="ltr">PLC</span>`,String.raw`لا يمكن اختبار شيء على الجهاز قبل نقل البرنامج إليه.`],
+     [String.raw`اضغط <span class="ltr">S1</span>: يعمل <span class="ltr">K1</span> ويبدأ المزمن <span class="ltr">T4</span>`,String.raw`أول اختبار بعد النقل هو التشغيل.`],
+     [String.raw`انتظر: يعمل <span class="ltr">K4</span> ثم <span class="ltr">K3</span> ثم <span class="ltr">K2</span>، ويبقى في النهاية <span class="ltr">K1</span> و <span class="ltr">K2</span> فقط`,String.raw`تسلسل متممات القصر يأتي بعد التشغيل بـ <span class="ltr">S1</span>.`],
+     [String.raw`اضغط <span class="ltr">S0</span>: يجب أن يفصل كل شيء، ثم كرّر مع فصل <span class="ltr">F4</span>`,String.raw`الإيقاف يُختبر بعد أن ترى التسلسل كاملاً.`]],
+     done:String.raw`ولو نقلت برنامج الكتاب كما هو لتوقف الاختبار عند الخطوة الرابعة: يعمل <span class="ltr">K1</span> فقط ولا يعمل <span class="ltr">K4</span>، بسبب تلامس <span class="ltr">M0.0</span> المفتوح على أطراف الإلغاء.`})}
    ]},
 
   {recap:[

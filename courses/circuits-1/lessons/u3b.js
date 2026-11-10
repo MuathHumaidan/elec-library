@@ -253,7 +253,183 @@ B.lesson({
  title:'توصيل المقاومات على التوازي',
  summary:'في التوازي يكون فرق الجهد على كل مقاومة متساوياً: الموصلية الكلية مجموع الموصليات، ومقلوب المقاومة الكلية مجموع المقلوبات. حالة المقاومات المتساوية R/N، وقاعدتا المقاومتين (3-31) والثلاث (3-32)، والتيارات والقدرة في دوائر التوازي — مع الأمثلة (3-18) إلى (3-24).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'التوصيل على التوازي',title:'توصيل المقاومات على التوازي',ref:'ص 72',
    q:'إذا وصلت عدة مقاومات بين نفس النقطتين، فما الشيء الذي يكون متساوياً عليها كلها؟ وماذا يحدث للمقاومة الكلية كلما أضفت مقاومة؟',
@@ -307,7 +483,17 @@ B.lesson({
      $$\frac{1}{R_T}=\frac{1}{R_1}+\frac{1}{R_2}+\frac{1}{R_3}=\frac{1}{2}+\frac{1}{4}+\frac{1}{5}=0.95\ \text{S}$$
      $$R_T=\frac{1}{0.95}=1.053\ \Omega\qquad G_T=0.95\ \text{S}$$`,ref:'ص 72–73'},
     {tip:String.raw`<p>لاحظ أن \(1/R_T\) و\(G_T\) رقم واحد (0.95 S): الموصلية الكلية هي مقلوب المقاومة الكلية. لذلك يكتب الكتاب ناتج \(1/R_T\) بوحدة السيمنز S.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: موصلية كل فرع',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بمقاومات المثال <span class="ltr">2 و 4 و 5 Ω</span>، ثم غيّرها (أرقام تختارها أنت) وراقب موصلية كل فرع والمقاومة الكلية.',
+ predict:{q:'لو كبّرنا \\(R_3\\) من <span class="ltr">5 Ω</span> إلى <span class="ltr">50 Ω</span>، فإن \\(R_T\\)…',opts:[
+  ['تزيد قليلاً لكنها تبقى أصغر من 2 Ω',true,'موصلية الفرع الثالث تصغر (من 0.2 إلى 0.02 S) فتنقص \\(G_T\\) قليلاً وتكبر \\(R_T\\) قليلاً، لكنها تبقى أصغر من أصغر مقاومة.'],
+  ['تصبح أكبر من 5 Ω',false,'في التوازي تبقى \\(R_T\\) أصغر من أصغر مقاومة موصولة (2 Ω) مهما كبرت الأخرى.'],
+  ['تنقص',false,'تكبير مقاومة فرع يقلل موصليته، فتقل \\(G_T\\) وتزيد \\(R_T\\) لا العكس.']]},
+ ins:[{k:'a',l:'R<sub>1</sub>',min:1,max:50,step:1,v:2,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:50,step:1,v:4,u:'Ω'},{k:'c',l:'R<sub>3</sub>',min:1,max:50,step:1,v:5,u:'Ω'}],
+ calc:(s,v,B)=>{const G=[1/s.a,1/s.b,1/s.c],GT=G[0]+G[1]+G[2];
+  return {bars:G.map((g,i)=>({l:'G<sub>'+(i+1)+'</sub> = 1/R<sub>'+(i+1)+'</sub>',v:g,max:1,u:'S',dp:3,col:'--blue'})),
+   facts:[['<span class="ltr" dir="ltr" style="white-space:normal">G<sub>T</sub> (3-29)</span>',DCML.fm(B,GT,3)+' S'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> = 1/G<sub>T</sub> (3-30)</span>',DCML.fm(B,1/GT,3)+' Ω','hi'],['أصغر مقاومة',Math.min(s.a,s.b,s.c)+' Ω']],
+   msg:(s.a===2&&s.b===4&&s.c===5)?'هذه أرقام المثال: \\(G_T=0.95\\ \\text{S}\\) و\\(R_T=1.053\\ \\Omega\\) كما في حل الكتاب.':''}}})}
    ]},
 
   {st:3,short:'مقاومات متساوية',title:'المقاومة الكلية لمجموعة مقاومات متساوية موصلة على التوازي',ref:'ص 73',
@@ -328,7 +514,16 @@ B.lesson({
      <p>وتكون الموصلية الكلية \(G_T\) لعدد N متساوٍ من الموصلية G في هذه الحالة:</p>
      $$G_T=N\times G$$`,ref:'ص 73'},
     {tip:String.raw`<p>القاعدة \(R_T=R/N\) ليست قانوناً جديداً؛ هي المعادلة (3-30) نفسها بعد أن صارت كل الحدود متساوية: N حداً كل منها \(1/R\) مجموعها \(N/R\)، ثم نقلب الناتج. هاتان القاعدتان غير مرقمتين في الكتاب.</p>`},
-    {add:String.raw`<p>مصابيح الإنارة في غرفة واحدة موصلة عادة على التوازي، وكثيراً ما تكون متساوية القدرة. فكلما أشعلت مصباحاً إضافياً نقصت المقاومة الكلية وزاد التيار المسحوب من المصدر.</p>`}
+    {add:String.raw`<p>مصابيح الإنارة في غرفة واحدة موصلة عادة على التوازي، وكثيراً ما تكون متساوية القدرة. فكلما أشعلت مصباحاً إضافياً نقصت المقاومة الكلية وزاد التيار المسحوب من المصدر.</p>`},
+    {title:'مختبر مصغّر: زِد عدد المقاومات المتساوية',widget:(el,B)=>DCML.lab(el,B,{intro:'مقاومات متساوية على التوازي. غيّر عددها N وقيمة كل منها R (أرقام تختارها أنت؛ القيمة <span class="ltr">2 Ω</span> من مثال 3-19).',
+ predict:{q:'إذا كانت \\(R_T\\) لأربع مقاومات متساوية <span class="ltr">0.5 Ω</span>، فكم تصبح لو جعلناها ثماني مقاومات؟',opts:[
+  ['1 Ω',false,'زيادة عدد الفروع تنقص المقاومة الكلية ولا تزيدها.'],
+  ['0.25 Ω',true,'\\(R_T=R/N\\): مضاعفة N تنصّف \\(R_T\\): \\(2/8=0.25\\ \\Omega\\).'],
+  ['0.5 Ω',false,'N في المقام، فتغيّره يغيّر \\(R_T\\).']]},
+ ins:[{k:'N',l:'عدد المقاومات N',min:1,max:10,step:1,v:4,dp:0},{k:'R',l:'قيمة كل مقاومة R',seg:[[2,'<span class="ltr">2 Ω</span>'],[10,'<span class="ltr">10 Ω</span>'],[100,'<span class="ltr">100 Ω</span>']],v:2}],
+ calc:(s,v,B)=>({facts:[['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> = R/N</span>',DCML.fm(B,s.R/s.N,3)+' Ω','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">G<sub>T</sub> = N × G</span>',DCML.fm(B,s.N/s.R,3)+' S']],
+  plot:{xr:[1,10],yr:[0,s.R],xl:'N',yl:'R<tspan baseline-shift="sub" font-size="80%">T</tspan> (Ω)',xt:[1,2,4,6,8,10],curves:[{f:x=>s.R/x}],cur:[s.N,s.R/s.N]},
+  msg:'كل مرة يتضاعف فيها N تنقص \\(R_T\\) إلى النصف.'})})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(3-19)</span>',title:'مثال <span class="ltr">(3-19)</span>: أربع مقاومات متساوية',ref:'ص 74',
@@ -346,7 +541,11 @@ B.lesson({
      <p><b>الحل:</b> كما هو موضح في الشكل (3-20) حيث المقاومات متساوية، تحسب \(R_T\) كالآتي:</p>
      $$R_T=\frac{R}{N}=\frac{2}{4}=0.5\ \Omega$$`,ref:'ص 74'},
     {tip:String.raw`<p>لتعرف هل المقاومات على التوازي لا تنظر إلى شكل الرسم بل إلى <b>طرفي كل مقاومة</b>: تتبّع السلك من طرف المقاومة حتى تصل إلى أحد الخطين الرئيسيين دون أن تمر بأي مقاومة. إذا وصل طرفاها إلى نفس النقطتين اللتين يصل إليهما طرفا المقاومات الأخرى، فهي على التوازي معها.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن الشكل <span class="ltr">(3-20)</span> وطريقة التعرف على التوازي:',items:[
+ ['المقاومتان المرسومتان داخل المستطيل الصغير موصلتان على التوالي مع المقاومتين الأخريين.',false,'طرفا كل مقاومة يصلان إلى الخطين الرئيسيين نفسيهما دون المرور بمقاومة أخرى، فالأربع كلها على التوازي.'],
+ ['لنعرف هل المقاومات على التوازي ننظر إلى طرفي كل مقاومة وليس إلى شكل الرسم.',true,'إذا اتصل طرفا كل مقاومة بنفس النقطتين فهي على التوازي مهما كان شكل الرسم.'],
+ ['المقاومة الكلية للمقاومات الأربع (كل منها 2 Ω) أكبر من 2 Ω.',false,'\\(R_T=R/N=2/4=0.5\\ \\Omega\\)، أصغر من أصغر مقاومة.']]})}
    ]},
 
   {st:5,short:'قاعدة هامة',title:'قاعدة هامة: مقاومتان، وثلاث مقاومات',ref:'ص 74',
@@ -367,7 +566,14 @@ B.lesson({
      <p>2. إذا وصلت ثلاث مقاومات \(R_1\) و \(R_2\) و \(R_3\) على التوازي فتحسب المقاومة الكلية \(R_T\) كذلك كما يلي:</p>
      <div class="eq">$$R_T=\frac{R_1R_2R_3}{R_1R_2+R_1R_3+R_2R_3}$$<span class="eqno">(3-32)</span></div>`,ref:'ص 74'},
     {tip:String.raw`<p>تُحفظ المعادلة (3-31) بعبارة <b>«حاصل الضرب على المجموع»</b>، وهي لمقاومتين فقط. ولأكثر من مقاومتين تستطيع أن تطبقها مرتين: اجمع اثنتين أولاً، ثم اجمع الناتج مع الثالثة بنفس القاعدة.</p>`,title:'كيف تحفظها؟'},
-    {watch:String.raw`<p>في المعادلة (3-31) البسط <b>ضرب</b> والمقام <b>جمع</b>. من يعكسهما يحصل على رقم غير معقول؛ تحقق دائماً: الناتج يجب أن يكون أصغر من أصغر المقاومتين.</p>`}
+    {watch:String.raw`<p>في المعادلة (3-31) البسط <b>ضرب</b> والمقام <b>جمع</b>. من يعكسهما يحصل على رقم غير معقول؛ تحقق دائماً: الناتج يجب أن يكون أصغر من أصغر المقاومتين.</p>`},
+    {title:'مختبر مصغّر: قارن القاعدة الصحيحة بالخطأ الشائع',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر مقاومتين أو ثلاثاً (أرقام تختارها أنت)، وقارن ناتج المعادلتين (3-31) و(3-32) بالقاعدة الخاطئة «حاصل ضرب الثلاث على مجموعها».',
+ ins:[{k:'n',l:'عدد المقاومات',seg:[[2,'مقاومتان'],[3,'ثلاث مقاومات']],v:3},{k:'a',l:'R<sub>1</sub>',min:1,max:30,step:1,v:2,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:30,step:1,v:4,u:'Ω'},{k:'c',l:'R<sub>3</sub> (عند اختيار ثلاث)',min:1,max:30,step:1,v:5,u:'Ω'}],
+ calc:(s,v,B)=>{const a=s.a,b=s.b,c=s.c;
+  if(s.n===2){const r=a*b/(a+b);return {facts:[['R<sub>1</sub>R<sub>2</sub> (البسط)',DCML.fm(B,a*b,0)],['R<sub>1</sub>+R<sub>2</sub> (المقام)',DCML.fm(B,a+b,0)],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> (3-31)</span>',DCML.fm(B,r,3)+' Ω','hi']],msg:'تحقق: الناتج أصغر من أصغر المقاومتين ('+Math.min(a,b)+' Ω).'}}
+  const r=a*b*c/(a*b+a*c+b*c),w=a*b*c/(a+b+c);
+  return {facts:[['البسط R<sub>1</sub>R<sub>2</sub>R<sub>3</sub>',DCML.fm(B,a*b*c,0)],['المقام R<sub>1</sub>R<sub>2</sub>+R<sub>1</sub>R<sub>3</sub>+R<sub>2</sub>R<sub>3</sub>',DCML.fm(B,a*b+a*c+b*c,0)],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> (3-32)</span>',DCML.fm(B,r,3)+' Ω','hi'],['القاعدة الخاطئة R<sub>1</sub>R<sub>2</sub>R<sub>3</sub>÷(R<sub>1</sub>+R<sub>2</sub>+R<sub>3</sub>)',DCML.fm(B,w,3)+' Ω','bad']],
+   msg:w>Math.min(a,b,c)?'القاعدة الخاطئة أعطت رقماً أكبر من أصغر مقاومة ('+Math.min(a,b,c)+' Ω)، وهذا مستحيل في التوازي.':'لاحظ أن القاعدة الخاطئة لا تعطي ناتج المعادلة (3-32).',cls:'warn'}}})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">(3-20)</span>',title:'مثال <span class="ltr">(3-20)</span>: المقاومة الكلية وتيارا الفرعين',ref:'ص 75',
@@ -388,7 +594,17 @@ B.lesson({
      $$I_1=\frac{15.9996}{2}=7.9998\ \text{A}\qquad I_2=\frac{15.9996}{4}=3.9999\ \text{A}$$`,ref:'ص 75'},
     {tip:String.raw`<p>الأرقام 15.9996 و 7.9998 و 3.9999 سببها تقريب \(R_T\) إلى 1.3333. القيمة الدقيقة \(R_T=8/6=4/3\ \Omega\)، فيكون الجهد <span class="ltr">16 V</span> تماماً، و\(I_1=8\ \text{A}\) و\(I_2=4\ \text{A}\). ستجد نفس الدائرة في مثال (3-26) محلولة بقاعدة توزيع التيار.</p>`},
     {tip:String.raw`<p>السهم الخارج المسمى \(I_3\) في الشكل هو التيار الكلي الخارج من المقاومتين، ويساوي التيار الداخل <span class="ltr">12 A</span>: ما يدخل المجموعة يخرج منها.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: كيف يتوزع التيار على الفرعين؟',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بأرقام المثال (<span class="ltr">12 A</span> و<span class="ltr">2 Ω</span> و<span class="ltr">4 Ω</span>)، ثم غيّرها (أرقام تختارها أنت).',
+ predict:{q:'لو جعلنا \\(R_2=2\\ \\Omega\\) مثل \\(R_1\\) والتيار الداخل <span class="ltr">12 A</span>، فكم تيار كل فرع؟',opts:[
+  ['8 A و 4 A',false,'هذا عندما \\(R_2=4\\ \\Omega\\). مع تساوي المقاومتين يتساوى التياران.'],
+  ['12 A لكل فرع',false,'مجموع تياري الفرعين يساوي التيار الداخل (12 A)، فلا يأخذ كل فرع 12 A.'],
+  ['6 A لكل فرع',true,'المقاومتان متساويتان وجهدهما واحد، فيتقاسمان التيار نصفين.']]},
+ ins:[{k:'I',l:'التيار الداخل I',min:1,max:20,step:1,v:12,u:'A'},{k:'a',l:'R<sub>1</sub>',min:1,max:20,step:1,v:2,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:20,step:1,v:4,u:'Ω'}],
+ calc:(s,v,B)=>{const RT=s.a*s.b/(s.a+s.b),V=s.I*RT,i1=V/s.a,i2=V/s.b;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> (3-31)</span>',DCML.fm(B,RT,4)+' Ω'],['<span class="ltr" dir="ltr" style="white-space:normal">V = I × R<sub>T</sub></span>',DCML.fm(B,V,3)+' V'],['I<sub>1</sub> + I<sub>2</sub>',DCML.fm(B,i1+i2,3)+' A','hi']],
+   bars:[{l:'I<sub>1</sub> = V/R<sub>1</sub>',v:i1,max:s.I,u:'A',dp:3,col:'--live'},{l:'I<sub>2</sub> = V/R<sub>2</sub>',v:i2,max:s.I,u:'A',dp:3,col:'--blue'}],
+   msg:'الفرع ذو المقاومة الأصغر يأخذ التيار الأكبر، ومجموع التيارين يساوي التيار الداخل دائماً.'}}})}
    ]},
 
   {st:7,short:'مثال <span class="ltr">(3-21)</span>',title:'مثال <span class="ltr">(3-21)</span>: نفس مثال <span class="ltr">(3-18)</span> بالمعادلة <span class="ltr">(3-32)</span>',ref:'ص 75–76',
@@ -406,7 +622,13 @@ B.lesson({
      <p><b>الحل:</b> باستخدام المعادلة (3-32) يمكننا حساب \(R_T\) كما هو موضح في الشكل (3-22) كالآتي:</p>
      $$R_T=\frac{R_1\times R_2\times R_3}{R_1\times R_2+R_1\times R_3+R_2\times R_3}=\frac{(2)\times(4)\times(5)}{(2)\times(4)+(2)\times(5)+(4)\times(5)}=\frac{40}{38}=1.053\ \Omega$$`,ref:'ص 75–76'},
     {tip:String.raw`<p>نفس الناتج <span class="ltr">1.053 Ω</span> الذي حصلنا عليه في مثال (3-18) بجمع المقلوبات. اختر الطريقة الأسهل لك؛ النتيجة واحدة.</p>`},
-    {tip:String.raw`<p>شكل الرسم (مروحة أو خطوط مستقيمة) لا يغيّر شيئاً: الأطراف العليا الثلاثة في نقطة واحدة، والأطراف السفلى الثلاثة على خط واحد. فهي على التوازي، كما في الرسم الأيمن من الشكل (3-22) المرسوم بالطريقة المعتادة.</p>`}
+    {tip:String.raw`<p>شكل الرسم (مروحة أو خطوط مستقيمة) لا يغيّر شيئاً: الأطراف العليا الثلاثة في نقطة واحدة، والأطراف السفلى الثلاثة على خط واحد. فهي على التوازي، كما في الرسم الأيمن من الشكل (3-22) المرسوم بالطريقة المعتادة.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات المعادلة (3-32)',widget:(el,B)=>DCML.order(el,B,{intro:'لمقاومات المثال <span class="ltr">2 و 4 و 5 Ω</span>: اضغط خطوات الحل بالترتيب.',steps:[
+ ['اكتب البسط: \\((2)(4)(5)=40\\)','نبدأ بأجزاء الكسر قبل القسمة.'],
+ ['اكتب المقام: \\((2)(4)+(2)(5)+(4)(5)=8+10+20=38\\)','القسمة تأتي بعد معرفة البسط والمقام.'],
+ ['اقسم: \\(R_T=40/38=1.053\\ \\Omega\\)','لا نقسم قبل حساب البسط والمقام.'],
+ ['تحقق: \\(1.053<2\\ \\Omega\\) (أصغر من أصغر مقاومة) ونفس ناتج مثال (3-18)','التحقق آخر خطوة بعد الناتج.']],
+ done:'الناتج \\(1.053\\ \\Omega\\) هو نفسه بجمع المقلوبات.'})}
    ]},
 
   {st:8,short:'مثال <span class="ltr">(3-22)</span>',title:'مثال <span class="ltr">(3-22)</span>: مقاومات مجهولة من المقاومة الكلية',ref:'ص 76–77',
@@ -432,7 +654,17 @@ B.lesson({
     {watch:String.raw`<p>طُبعت النتائج في الكتاب «28 Ω و 56 Ω و 112 Ω»، والصحيح <b>28 kΩ و 56 kΩ و 112 kΩ</b> لأن المعطى \(R_T=16\,k\Omega\) (الأرقام نفسها صحيحة). في تبويب «الأمثلة المحلولة» حلان: كما في الكتاب، والمصحح.</p>`,fix:true},
     {tip:String.raw`<p>من أين جاء الرقم 1.75؟ \(\frac{1}{R_1}+\frac{1}{2R_1}+\frac{1}{4R_1}=\frac{1}{R_1}(1+0.5+0.25)=1.75\cdot\frac{1}{R_1}\). ثم \(\frac{1}{16}=\frac{1.75}{R_1}\) ومنها \(R_1=1.75\times16\).</p>
      <p>تحقق: \(\frac{1}{28}+\frac{1}{56}+\frac{1}{112}=\frac{4+2+1}{112}=\frac{7}{112}=\frac{1}{16}\) ✓</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: ابحث عن R₁ بنفسك',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك \\(R_1\\)، وتبقى \\(R_2=2R_1\\) و\\(R_3=4R_1\\) كما في المثال. ابحث عن القيمة التي تجعل \\(R_T=16\\ k\\Omega\\).',
+ predict:{q:'المقاومة الكلية لهذه المجموعة تساوي \\(R_1\\) مقسومة على…',opts:[
+  ['1.75',true,'\\(\\frac{1}{R_T}=\\frac{1.75}{R_1}\\)، أي \\(R_T=R_1/1.75\\)، ولذلك \\(R_1=1.75\\times16\\).'],
+  ['3',false,'لو كانت المقاومات الثلاث متساوية لقسمنا على 3، لكنها مختلفة: \\(1+0.5+0.25=1.75\\).'],
+  ['7',false,'\\(1+2+4=7\\) هو مجموع المضاعفات (كأنها توالي)؛ في التوازي نجمع المقلوبات.']]},
+ ins:[{k:'r',l:'R<sub>1</sub>',min:10,max:40,step:1,v:20,u:'kΩ'}],
+ calc:(s,v,B)=>{const RT=s.r/1.75,ok=s.r===28;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>2</sub> = 2R<sub>1</sub></span>',2*s.r+' kΩ'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>3</sub> = 4R<sub>1</sub></span>',4*s.r+' kΩ'],['R<sub>T</sub>',DCML.fm(B,RT,2)+' kΩ',ok?'hi':'']],
+   bars:[{l:'R<sub>T</sub> مقابل الهدف <span class="ltr">16 kΩ</span>',v:RT,max:24,txt:DCML.fm(B,RT,2)+' kΩ',col:ok?'--on':'--live'}],
+   msg:ok?'<b>وجدتها:</b> \\(R_1=28\\ k\\Omega\\) فتكون \\(R_2=56\\ k\\Omega\\) و\\(R_3=112\\ k\\Omega\\).':(RT<16?'\\(R_T\\) أصغر من \\(16\\ k\\Omega\\): كبّر \\(R_1\\).':'\\(R_T\\) أكبر من \\(16\\ k\\Omega\\): صغّر \\(R_1\\).'),cls:ok?'':'warn'}}})}
    ]},
 
   {st:9,short:'مثال <span class="ltr">(3-23)</span>',title:'مثال <span class="ltr">(3-23)</span>: التيارات والقدرة في دائرة التوازي',ref:'ص 77',
@@ -459,7 +691,17 @@ B.lesson({
     {tip:String.raw`<p>المفتاح في هذا المثال: <b>في التوازي جهد كل فرع = جهد البطارية</b> \((V_1=V_2=E)\). لذلك نحسب تيار كل فرع مباشرة من \(E/R\) دون أن نحتاج إلى \(R_T\). أما \(R_T\) فنحتاجها لتيار المنبع \(I_S\).</p>
      <p>و«للتأكد من صحة الحل» نجمع تياري الفرعين فيجب أن يساويا \(I_S\)؛ وبالمثل مجموع القدرتين يساوي قدرة المنبع.</p>`},
     {add:String.raw`<p>هذا هو سبب توصيل الأجهزة في البيت على التوازي: كل جهاز يأخذ جهد المصدر كاملاً، ويعمل أو يُفصل دون أن يتأثر غيره. وكلما زاد عدد الأجهزة العاملة زاد التيار الكلي المسحوب.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: افصل فرعاً وراقب الباقي',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام المثال: بطارية <span class="ltr">27 V</span> و<span class="ltr">9 Ω</span> و<span class="ltr">18 Ω</span>. افصل أحد الفرعين أو غيّر الجهد (أرقام تختارها أنت).',
+ predict:{q:'لو فصلنا المقاومة \\(R_2\\) (18 Ω)، فإن تيار \\(R_1\\)…',opts:[
+  ['يزيد لأنه يأخذ تيار الفرع المفصول',false,'تيار \\(R_1\\) يحدده \\(E/R_1\\) فقط، وجهدها ما زال جهد البطارية.'],
+  ['يبقى 3 A',true,'جهد \\(R_1\\) يبقى جهد البطارية، فيبقى \\(I_1=27/9=3\\ \\text{A}\\). الذي ينقص هو تيار المنبع وقدرته.'],
+  ['يصبح صفراً',false,'الفرعان مستقلان؛ فصل أحدهما لا يقطع الآخر.']]},
+ ins:[{k:'E',l:'جهد البطارية E',min:3,max:30,step:3,v:27,u:'V'},{k:'s1',l:'R<sub>1</sub>',sw:true,v:1,on:'R<sub>1</sub> = 9 Ω موصولة',off:'R<sub>1</sub> مفصولة'},{k:'s2',l:'R<sub>2</sub>',sw:true,v:1,on:'R<sub>2</sub> = 18 Ω موصولة',off:'R<sub>2</sub> مفصولة'}],
+ calc:(s,v,B)=>{const i1=s.s1?s.E/9:0,i2=s.s2?s.E/18:0,IS=i1+i2,mx=30/9+30/18;
+  return {facts:[['I<sub>1</sub>',DCML.fm(B,i1,2)+' A'],['I<sub>2</sub>',DCML.fm(B,i2,2)+' A'],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>S</sub> = I<sub>1</sub>+I<sub>2</sub></span>',DCML.fm(B,IS,2)+' A','hi'],['P<sub>1</sub>',DCML.fm(B,s.E*i1,1)+' W'],['P<sub>2</sub>',DCML.fm(B,s.E*i2,1)+' W'],['<span class="ltr" dir="ltr" style="white-space:normal">P<sub>S</sub> = E × I<sub>S</sub></span>',DCML.fm(B,s.E*IS,1)+' W','hi']],
+   bars:[{l:'I<sub>S</sub>',v:IS,max:mx,u:'A',dp:2,col:'--blue'}],
+   msg:(!s.s1&&!s.s2)?'الفرعان مفصولان: لا يمر تيار من البطارية.':'لاحظ: \\(P_S=P_1+P_2\\) دائماً، وتيار كل فرع لا يتأثر بفصل الآخر.'}}})}
    ]},
 
   {st:10,short:'مثال <span class="ltr">(3-24)</span>',title:'مثال <span class="ltr">(3-24)</span>: مقاومة مجهولة وجهد البطارية',ref:'ص 78',
@@ -482,7 +724,14 @@ B.lesson({
      $$I_2=\frac{V_2}{R_2}=\frac{E}{R_2}=\frac{40}{20}=2\ \text{A}\qquad P_2=I_2^2\times R_2=(2)^2\times(20)=80\ \text{W}$$`,ref:'ص 78'},
     {watch:String.raw`<p>في الكتاب: الجزء الثاني مرقم «(ت)» والصحيح «(ب)»؛ وكُتب \(I_T\) بدل \(I_S\) المطلوب (نفس الكمية)؛ وفي سطر \(I_2\) طُبع الحد الأوسط \(E/R_T\) والصحيح \(E/R_2\) (الناتج \(40/20=2\ \text{A}\) صحيح). عرضناها هنا مصححة.</p>`,fix:true},
     {tip:String.raw`<p>رمز الأرضي يعني أن كل الأطراف المتصلة به متصلة ببعضها (نقطة مرجعية واحدة)، فلا داعي لرسم السلك السفلي. لذلك المقاومات الثلاث هنا على التوازي مع البطارية تماماً كما في الشكل (3-24).</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: رتّب خطوات الحل',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط خطوات حل المثال بالترتيب الذي يجعل كل خطوة تعتمد على ما قبلها.',steps:[
+ ['من (3-30): \\(\\frac14=\\frac1{10}+\\frac1{20}+\\frac1{R_3}\\) ومنها \\(R_3=10\\ \\Omega\\)','هذه تحتاج فقط \\(R_T\\) و\\(R_1\\) و\\(R_2\\) المعطاة، فهي البداية.'],
+ ['جهد البطارية: \\(E=I_1R_1=4\\times10=40\\ \\text{V}\\)','نحتاج E قبل حساب أي تيار آخر.'],
+ ['تيار المنبع: \\(I_S=E/R_T=40/4=10\\ \\text{A}\\)','يحتاج E أولاً.'],
+ ['\\(I_2=E/R_2=40/20=2\\ \\text{A}\\)','الكتاب يكمل الجزء (أ) بحساب \\(I_S\\) قبل أن ينتقل إلى الجزء (ب).'],
+ ['\\(P_2=I_2^2R_2=(2)^2(20)=80\\ \\text{W}\\)','القدرة تحتاج \\(I_2\\) أولاً.']],
+ done:'لاحظ أن \\(I_S\\) و\\(I_2\\) تعتمدان كلتاهما على E فقط؛ لذلك كان حساب E هو المفتاح.'})}
    ]},
 
   {recap:[
@@ -699,7 +948,12 @@ B.lesson({
     {html:String.raw`<figure style="margin:0">${box(fig327(),300)}<figcaption class="sub" style="text-align:center">الشكل (3-27): العقدة كتفرّع أنبوب؛ الداخل من أعلى يتوزع على الفروع الثلاثة.</figcaption></figure>`},
     {tip:String.raw`<p>فكّر في العقدة كتفرّع أنابيب ماء (الشكل 3-27): الماء الداخل في كل ثانية يخرج كله من الفروع في نفس الثانية، لا يضيع منه شيء ولا يتجمع عند التفرع. والتيار كذلك: العقدة لا تخزن شحنة.</p>
      <p>لذلك إذا عرفت كل تيارات العقدة إلا واحداً، فالمجهول = (مجموع الداخل) − (مجموع الخارج المعلوم).</p>`},
-    {watch:String.raw`<p>انتبه لاتجاه الأسهم قبل أن تكتب المعادلة: السهم المتجه <b>نحو</b> العقدة تيار داخل، والمتجه <b>بعيداً</b> عنها تيار خارج. وإذا خرج الناتج سالباً فالتيار الحقيقي عكس السهم الذي رسمته.</p>`}
+    {watch:String.raw`<p>انتبه لاتجاه الأسهم قبل أن تكتب المعادلة: السهم المتجه <b>نحو</b> العقدة تيار داخل، والمتجه <b>بعيداً</b> عنها تيار خارج. وإذا خرج الناتج سالباً فالتيار الحقيقي عكس السهم الذي رسمته.</p>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن نص القانون ومعنى العقدة (ص 79):',items:[
+ ['العقدة هي أي نقطة على السلك، حتى لو لم يتفرع عندها شيء.',false,'العقدة في الكتاب «النقطة التي تجمع أكثر من فرعين»؛ النقطة على سلك واحد ليست عقدة.'],
+ ['في الشكل <span class="ltr">(3-27)</span> يدخل \\(I_1\\) ويخرج ثلاثة تيارات، فيكون \\(I_1=I_2+I_3+I_4\\).',true,'مجموع الداخل يساوي مجموع الخارج.'],
+ ['التيار الخارج من العقدة أكبر دائماً من كل تيار داخل إليها.',false,'القانون يتكلم عن <b>المجموع</b>: مجموع الخارج = مجموع الداخل. وقد يكون أحد الخارجين أصغر من أي داخل.'],
+ ['قانون كيرشوف للتيار يعني أن الشحنة لا تتجمع في العقدة ولا تضيع منها.',true,'هذا معناه الفيزيائي: كل ما يدخل العقدة يخرج منها (إضافة من خارج نص الكتاب).']]})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">(3-25)</span>',title:'مثال <span class="ltr">(3-25)</span>: تطبيق القانون على عقدتين',ref:'ص 80',
@@ -719,7 +973,16 @@ B.lesson({
      <p>وكذلك التيار \(I_5\)، عند العقدة b نحصل عليه طبقاً لنفس القانون، أي أن</p>
      $$I_3=I_4+I_5\qquad 7=1+I_5\qquad I_5=7-1=6\ \text{A}$$`,ref:'ص 80'},
     {tip:String.raw`<p>نبدأ بالعقدة a لأن فيها مجهولاً واحداً فقط (\(I_3\)). أما العقدة b ففيها مجهولان (\(I_3\) و \(I_5\))، فلا نحلها إلا بعد أن نعرف \(I_3\) من العقدة a. <b>قاعدة عامة:</b> ابدأ دائماً بالعقدة التي فيها أقل عدد من المجاهيل.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: عقدتان متتاليتان',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بأرقام المثال (\\(I_1=4\\) و\\(I_2=3\\) و\\(I_4=1\\ \\text{A}\\))، ثم غيّرها (أرقام تختارها أنت) وتابع العقدتين a و b.',
+ predict:{q:'لو صار \\(I_4=8\\ \\text{A}\\) والباقي كما هو، فماذا يحدث لـ \\(I_5\\)؟',opts:[
+  ['يصبح 15 A',false,'عند العقدة b: \\(I_3=I_4+I_5\\)، فـ \\(I_5=I_3-I_4\\) لا \\(I_3+I_4\\).'],
+  ['يصبح \\(-1\\ \\text{A}\\): أي أنه في الحقيقة يدخل العقدة b بقيمة 1 A',true,'\\(I_5=7-8=-1\\ \\text{A}\\). الإشارة السالبة تعني أن الاتجاه الحقيقي عكس السهم المفترض.'],
+  ['لا يتغير 6 A',false,'\\(I_5\\) يعتمد على \\(I_4\\) عند العقدة b.']]},
+ ins:[{k:'a',l:'I<sub>1</sub> (داخل إلى a)',min:0,max:10,step:1,v:4,u:'A'},{k:'b',l:'I<sub>2</sub> (داخل إلى a)',min:0,max:10,step:1,v:3,u:'A'},{k:'d',l:'I<sub>4</sub> (خارج من b)',min:0,max:12,step:1,v:1,u:'A'}],
+ calc:(s,v,B)=>{const I3=s.a+s.b,I5=I3-s.d;
+  return {facts:[['I<sub>3</sub> = I<sub>1</sub> + I<sub>2</sub> (العقدة a)',I3+' A','hi'],['I<sub>5</sub> = I<sub>3</sub> − I<sub>4</sub> (العقدة b)',DCML.fm(B,I5,0)+' A',I5<0?'bad':'hi']],
+   msg:I5<0?'\\(I_5\\) سالب: اتجاهه الحقيقي داخل إلى العقدة b، عكس السهم المرسوم.':(s.a===4&&s.b===3&&s.d===1?'هذه أرقام المثال: \\(I_3=7\\ \\text{A}\\) و\\(I_5=6\\ \\text{A}\\).':''),cls:I5<0?'warn':''}}})}
    ]},
 
   {st:3,short:'قاعدة توزيع التيار',title:'قاعدة توزيع التيار',ref:'ص 81',
@@ -772,7 +1035,17 @@ B.lesson({
      <p>وبالمثل يمكن الحصول على التيار \(I_2\)، أي أن</p>
      <div class="eq">$$I_2=\frac{I\times R_1}{R_1+R_2}$$<span class="eqno">(3-35)</span></div>`,ref:'ص 81–82'},
     {tip:String.raw`<p>لاحظ <b>«التقاطع»</b>: تيار \(R_1\) يُضرب في \(R_2\)، وتيار \(R_2\) يُضرب في \(R_1\). السبب أن الفرع ذا المقاومة الأصغر يأخذ التيار الأكبر. تحقق سريع: إذا كانت \(R_1=R_2\) انقسم التيار نصفين.</p>`,title:'كيف تتذكرها؟'},
-    {watch:String.raw`<p>المعادلتان (3-34) و(3-35) <b>لمقاومتين فقط</b>. لثلاثة فروع أو أكثر استعمل الصورة العامة (3-33).</p>`}
+    {watch:String.raw`<p>المعادلتان (3-34) و(3-35) <b>لمقاومتين فقط</b>. لثلاثة فروع أو أكثر استعمل الصورة العامة (3-33).</p>`},
+    {title:'مختبر مصغّر: أي مقاومة في البسط؟',widget:(el,B)=>DCML.lab(el,B,{intro:'مقاومتان على التوازي وتيار داخل I (أرقام تختارها أنت). قارن المعادلة (3-34) بالخطأ الشائع.',
+ predict:{q:'في المعادلة (3-34) لحساب \\(I_1\\)، نضرب I في…',opts:[
+  ['\\(R_1\\) لأن التيار تيارها',false,'العكس: كلما كبرت \\(R_1\\) قلّ تيارها، فلا يمكن أن تكون في البسط.'],
+  ['\\(R_2\\)، أي المقاومة الأخرى',true,'\\(I_1=\\frac{I\\times R_2}{R_1+R_2}\\): المقاومة <b>المقابلة</b> في البسط.'],
+  ['\\(R_T\\)',false,'\\(R_T\\) تظهر في الصورة العامة (3-33) مقسومة على \\(R_x\\)، أما في (3-34) ففي البسط \\(R_2\\).']]},
+ ins:[{k:'I',l:'التيار الداخل I',min:1,max:20,step:1,v:12,u:'A'},{k:'a',l:'R<sub>1</sub>',min:1,max:20,step:1,v:2,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:20,step:1,v:4,u:'Ω'}],
+ calc:(s,v,B)=>{const i1=s.I*s.b/(s.a+s.b),i2=s.I*s.a/(s.a+s.b),w=s.I*s.a/(s.a+s.b);
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>1</sub> = I R<sub>2</sub>/(R<sub>1</sub>+R<sub>2</sub>) (3-34)</span>',DCML.fm(B,i1,3)+' A','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>2</sub> = I R<sub>1</sub>/(R<sub>1</sub>+R<sub>2</sub>) (3-35)</span>',DCML.fm(B,i2,3)+' A','hi'],['خطأ: I R<sub>1</sub>/(R<sub>1</sub>+R<sub>2</sub>) لتيار R<sub>1</sub>',DCML.fm(B,w,3)+' A','bad']],
+   bars:[{l:'I<sub>1</sub>',v:i1,max:s.I,u:'A',dp:2,col:'--live'},{l:'I<sub>2</sub>',v:i2,max:s.I,u:'A',dp:2,col:'--blue'}],
+   msg:s.a===s.b?'المقاومتان متساويتان، فيتساوى التياران، ولا يظهر الخطأ هنا. غيّر إحداهما.':'لاحظ أن الخطأ الشائع يعطي تيار الفرع الآخر: الفرع الأصغر مقاومة يأخذ التيار الأكبر.'}}})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">(3-26)</span>',title:'مثال <span class="ltr">(3-26)</span>: التيارات بقاعدة توزيع التيار',ref:'ص 82–83',
@@ -798,7 +1071,16 @@ B.lesson({
      <p>مع ملاحظة أنه يمكن حساب التيار \(I_3\) مباشرة وذلك باعتبار أن التيار الكلي الداخل للمقاومتين \(R_1\) و \(R_2\) يجب أن يكون مساوياً للتيار الخارج منهما وذلك طبقاً لقانون كيرشوف للتيار، أي أن</p>
      $$I_3=I=12\ \text{A}$$`,ref:'ص 82–83'},
     {tip:String.raw`<p>قارن بمثال (3-20): هناك حسبنا \(R_T\) ثم الجهد ثم التيارين، فظهرت كسور التقريب (7.9998). هنا ضربنا مباشرة فخرجت القيم الدقيقة 8 و 4 A. وبعد أن تعرف أحد التيارين يكفيك قانون كيرشوف للتيار لتعرف الآخر.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: أسئلة سريعة على الشكل (3-31)',widget:(el,B)=>DCML.cases(el,B,{intro:'التيار الداخل <span class="ltr">12 A</span>، و\\(R_1=2\\ \\Omega\\) و\\(R_2=4\\ \\Omega\\).',cases:[
+ {q:'بعد أن عرفنا \\(I_1=8\\ \\text{A}\\)، ما أسرع طريق لـ \\(I_2\\)؟',opts:[
+  ['قانون كيرشوف للتيار: \\(I_2=12-8=4\\ \\text{A}\\)',true,'هذا الحل الآخر الذي ذكره الكتاب، ولا يحتاج قاعدة التوزيع مرة ثانية.'],
+  ['\\(I_2=12\\times4/(2+4)\\)',false,'هذا يعطي 8 A، وهو تيار \\(R_1\\) لا \\(R_2\\): في البسط تكون المقاومة المقابلة \\(R_1\\).'],
+  ['لا يمكن بدون جهد المصدر',false,'التيار الكلي ومقاومتا الفرعين تكفي.']]},
+ {q:'ما التيار \\(I_3\\) الخارج من المقاومتين معاً؟',opts:[
+  ['4 A',false,'هذا تيار \\(R_2\\) وحدها.'],
+  ['12 A',true,'ما يدخل مجموعة التوازي يخرج منها: \\(I_3=I_1+I_2=I=12\\ \\text{A}\\).'],
+  ['24 A',false,'التيار لا يتضاعف؛ الفرعان يلتقيان فيعود التيار كما دخل.']]}]})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">(3-27)</span>',title:'مثال <span class="ltr">(3-27)</span>: مقاومة مجهولة من توزيع التيار',ref:'ص 83–84',
@@ -826,7 +1108,17 @@ B.lesson({
      $$V_2=I_2R_2=(6)(7)=42\ \text{mV}\qquad V_1=I_1R_1=V_2=42\ \text{mV}\qquad R_1=\frac{V_1}{I_1}=\frac{42\ \text{mV}}{21\ \text{mA}}=2\ \Omega$$`,ref:'ص 83–84'},
     {watch:String.raw`<p>في الكتاب طُبع السطر «\(R_1=[R_2(\;\;)]/I_1\)» وما بين القوسين ناقص؛ الصحيح \(R_1=\frac{R_2(I-I_1)}{I_1}\) كما في السطر الذي يليه. أكملناه هنا.</p>`,fix:true},
     {tip:String.raw`<p>الحل الثاني أسهل غالباً: قانون كيرشوف للتيار يعطيك \(I_2\)، ثم قانون أوم يعطيك الجهد، والجهد واحد في الفرعين. ولا داعي لتحويل الوحدات: ميلي أمبير × أوم = ميلي فولت، وميلي فولت ÷ ميلي أمبير = أوم.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: ابحث عن R₁',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام المثال: \\(I=27\\ \\text{mA}\\) و\\(R_2=7\\ \\Omega\\). حرّك \\(R_1\\) حتى يصبح \\(I_1=21\\ \\text{mA}\\).',
+ predict:{q:'إذا كبّرنا \\(R_1\\)، فإن \\(I_1\\)…',opts:[
+  ['يكبر',false,'المقاومة الأكبر تأخذ تياراً أقل.'],
+  ['يصغر، ويكبر \\(I_2\\)',true,'التيار الكلي ثابت (27 mA)، فما ينقص من \\(I_1\\) يذهب إلى \\(I_2\\).'],
+  ['لا يتغير لأن I ثابت',false,'ثبات I لا يعني ثبات توزيعه؛ التوزيع يتبع نسبة المقاومتين.']]},
+ ins:[{k:'r',l:'R<sub>1</sub>',min:0.5,max:10,step:0.5,v:5,dp:1,u:'Ω'}],
+ calc:(s,v,B)=>{const i1=27*7/(s.r+7),i2=27-i1,ok=Math.abs(s.r-2)<1e-9;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>1</sub> = I R<sub>2</sub>/(R<sub>1</sub>+R<sub>2</sub>)</span>',DCML.fm(B,i1,2)+' mA',ok?'hi':''],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>2</sub> = I − I<sub>1</sub></span>',DCML.fm(B,i2,2)+' mA'],['<span class="ltr" dir="ltr" style="white-space:normal">V<sub>1</sub> = I<sub>1</sub>R<sub>1</sub></span>',DCML.fm(B,i1*s.r,1)+' mV']],
+   bars:[{l:'I<sub>1</sub> مقابل الهدف <span class="ltr">21 mA</span>',v:i1,max:27,txt:DCML.fm(B,i1,2)+' mA',col:ok?'--on':'--live'}],
+   msg:ok?'<b>وجدتها:</b> \\(R_1=2\\ \\Omega\\)، وعندها \\(V_1=V_2=42\\ \\text{mV}\\) كما في الحل الآخر.':(i1<21?'\\(I_1\\) أقل من المطلوب: صغّر \\(R_1\\).':'\\(I_1\\) أكبر من المطلوب: كبّر \\(R_1\\).'),cls:ok?'':'warn'}}})}
    ]},
 
   {recap:[
@@ -1034,7 +1326,17 @@ B.lesson({
    body:[
     {book:String.raw`<p>الدائرة الكهربائية المفتوحة يكون لها <b>فرق جهد بين طرفيها المفتوحين</b>، بينما يكون <b>التيار المار فيها دائماً مساوياً للصفر</b>. ويبين الشكل (3-33) دائرة كهربائية مفتوحة عند الطرفين a و b بينما يكون فرق الجهد بين طرفي الدائرة: \(V_{ab}=E\) والتيار \(I=0\).</p>`,ref:'ص 84'},
     {tip:String.raw`<p>لماذا \(V_{ab}=E\)؟ لأنه لا يمر تيار، فلا يوجد هبوط جهد على أي سلك أو مقاومة بين البطارية والطرفين؛ فيظهر جهد البطارية كاملاً عند الطرفين المفتوحين.</p>`},
-    {add:String.raw`<p>مقبس الكهرباء في الجدار مثال على دائرة مفتوحة: بين ثقبيه جهد كامل، لكن لا يمر تيار حتى توصل جهازاً يغلق الدائرة. لهذا يبقى المقبس خطراً حتى لو لم يكن فيه شيء.</p>`}
+    {add:String.raw`<p>مقبس الكهرباء في الجدار مثال على دائرة مفتوحة: بين ثقبيه جهد كامل، لكن لا يمر تيار حتى توصل جهازاً يغلق الدائرة. لهذا يبقى المقبس خطراً حتى لو لم يكن فيه شيء.</p>`},
+    {title:'مختبر مصغّر: افتح الدائرة وأغلقها',widget:(el,B)=>DCML.lab(el,B,{intro:'بطارية E ومقاومة R (أرقام تختارها أنت). افتح الطرفين a و b أو صِلهما، وراقب الفولتميتر بين الطرفين والأميتر.',
+ predict:{q:'عندما تكون الدائرة مفتوحة عند a و b، ماذا يقرأ الفولتميتر بين الطرفين؟',opts:[
+  ['صفراً، لأنه لا يمر تيار',false,'انعدام التيار لا يعني انعدام الجهد: لا هبوط في R، فيظهر جهد البطارية كله بين الطرفين.'],
+  ['جهد البطارية E',true,'نص الكتاب: \\(V_{ab}=E\\) والتيار \\(I=0\\).'],
+  ['نصف E',false,'لا يوجد ما يقسم الجهد؛ لا تيار في R فلا هبوط فيها.']]},
+ ins:[{k:'E',l:'جهد البطارية E',min:2,max:24,step:2,v:12,u:'V'},{k:'R',l:'المقاومة R',min:2,max:20,step:2,v:6,u:'Ω'},{k:'c',l:'الطرفان',sw:true,v:0,on:'الطرفان a و b موصولان (دائرة مغلقة)',off:'الطرفان a و b مفتوحان'}],
+ calc:(s,v,B)=>{const I=s.c?s.E/s.R:0,V=s.c?0:s.E;
+  return {facts:[['V<sub>ab</sub>',DCML.fm(B,V,1)+' V','hi'],['I',DCML.fm(B,I,2)+' A','hi'],['جهد R = I × R',DCML.fm(B,I*s.R,1)+' V']],
+   bars:[{l:'الفولتميتر بين a و b',v:V,max:24,u:'V',dp:1,col:'--blue'},{l:'الأميتر',v:I,max:12,u:'A',dp:2,col:'--live'}],
+   msg:s.c?'الطرفان موصولان بسلك: الجهد بينهما صفر، وجهد البطارية كله على R.':'الدائرة مفتوحة: \\(I=0\\) و\\(V_{ab}=E\\).'}}})}
    ]},
 
   {st:2,short:'دائرة القصر',title:'الدوائر المفتوحة ودوائر القصر: دائرة القصر',ref:'ص 84–85',
@@ -1114,7 +1416,16 @@ B.lesson({
      <p>لذلك تكون المقاومة الكلية لهذه الدائرة هي:</p>
      $$R_T=R_S+R_P=R_1+\frac{R_2\times R_3}{R_2+R_3}$$
      <p>وسوف نقوم بحل أمثلة توضيحية لهذا النوع من الدوائر الكهربائية.</p>`,ref:'ص 87'},
-    {tip:String.raw`<p>لا قانون جديد: نستعمل ما درسناه. نحسب كل مجموعة توازي بقاعدتها (3-31) فتصبح مقاومة واحدة، ثم نجمعها مع مقاومات التوالي. العنوان في الكتاب يذكر «التوصيل على الشكل نجمة أو دلتا» أيضاً، وهو موضوع درس لاحق في هذه الوحدة.</p>`}
+    {tip:String.raw`<p>لا قانون جديد: نستعمل ما درسناه. نحسب كل مجموعة توازي بقاعدتها (3-31) فتصبح مقاومة واحدة، ثم نجمعها مع مقاومات التوالي. العنوان في الكتاب يذكر «التوصيل على الشكل نجمة أو دلتا» أيضاً، وهو موضوع درس لاحق في هذه الوحدة.</p>`},
+    {title:'مختبر مصغّر: جزء توالي + جزء توازي',widget:(el,B)=>DCML.lab(el,B,{intro:'الشكل <span class="ltr">(3-37)</span>: \\(R_1\\) على التوالي مع مجموعة التوازي \\(R_2\\) و\\(R_3\\). غيّر القيم (أرقام تختارها أنت).',
+ predict:{q:'لو كبّرنا \\(R_3\\) كثيراً جداً (كأنها مفتوحة)، فإن \\(R_T\\) تقترب من…',opts:[
+  ['\\(R_1\\)',false,'هذا يحدث لو صارت \\(R_3\\) صفراً (قصر)، فتنعدم \\(R_P\\).'],
+  ['\\(R_1+R_2\\)',true,'فرع \\(R_3\\) شبه مفتوح، فيبقى \\(R_2\\) وحدها في الجزء المتوازي: \\(R_P\\to R_2\\).'],
+  ['\\(R_1+R_2+R_3\\)',false,'\\(R_3\\) على التوازي مع \\(R_2\\)، فلا تُجمع معها.']]},
+ ins:[{k:'a',l:'R<sub>1</sub>',min:1,max:20,step:1,v:4,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:20,step:1,v:6,u:'Ω'},{k:'c',l:'R<sub>3</sub>',min:1,max:200,step:1,v:12,u:'Ω'}],
+ calc:(s,v,B)=>{const RP=s.b*s.c/(s.b+s.c),RT=s.a+RP;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>S</sub> = R<sub>1</sub></span>',s.a+' Ω'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>P</sub> = R<sub>2</sub>R<sub>3</sub>/(R<sub>2</sub>+R<sub>3</sub>)</span>',DCML.fm(B,RP,2)+' Ω'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>T</sub> = R<sub>S</sub> + R<sub>P</sub></span>',DCML.fm(B,RT,2)+' Ω','hi']],
+   bars:[{l:'R<sub>S</sub>',v:s.a,max:40,u:'Ω',dp:0,col:'--blue'},{l:'R<sub>P</sub> (أصغر من R<sub>2</sub> ومن R<sub>3</sub>)',v:RP,max:40,u:'Ω',dp:2,col:'--live'}]}}})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">(3-29)</span>',title:'مثال <span class="ltr">(3-29)</span>: جهد الطرفين من جهد مقاومة واحدة',ref:'ص 88',
@@ -1132,7 +1443,13 @@ B.lesson({
      <p><b>الحل:</b> التيار الداخل إلى الدائرة الموضحة في الشكل (3-38) يكون</p>
      $$I=\frac{10}{2}=5\ \text{A}\qquad R_p=\frac{6\times12}{6+12}=4\ \Omega\qquad R_T=1+2+4=7\ \Omega\qquad V_{ab}=I\times R_T=7\times5=35\ \text{V}$$`,ref:'ص 88'},
     {tip:String.raw`<p>المقاومة 2 Ω على التوالي مع خط الدخل، فتيارها هو التيار الكلي I. بعد أن عرفناه، نحسب المقاومة الكلية (1 + 2 + مكافئ التوازي 4 = 7 Ω)، ثم قانون أوم للدائرة كلها.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: رتّب خطوات الحل',widget:(el,B)=>DCML.order(el,B,{intro:'المعطى الوحيد جهد المقاومة <span class="ltr">2 Ω</span> (<span class="ltr">10 V</span>). رتّب الخطوات.',steps:[
+ ['تيار الدائرة من المقاومة المعلوم جهدها: \\(I=10/2=5\\ \\text{A}\\)','هذه الخطوة الوحيدة الممكنة من المعطى، فهي الأولى.'],
+ ['اختصر مجموعة التوازي: \\(R_p=\\frac{6\\times12}{6+12}=4\\ \\Omega\\)','نحتاجها قبل جمع المقاومة الكلية.'],
+ ['المقاومة الكلية: \\(R_T=1+2+4=7\\ \\Omega\\)','تحتاج \\(R_p\\) أولاً.'],
+ ['جهد الطرفين: \\(V_{ab}=I\\times R_T=5\\times7=35\\ \\text{V}\\)','تحتاج I و\\(R_T\\) معاً.']],
+ done:'التيار نفسه يمر في <span class="ltr">1 Ω</span> و<span class="ltr">2 Ω</span> ومجموعة التوازي لأنها على التوالي.'})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">(3-30)</span>',title:'مثال <span class="ltr">(3-30)</span>: جهد مجموعة التوازي وتياراها',ref:'ص 88',
@@ -1153,7 +1470,17 @@ B.lesson({
      $$I_1=\frac{20}{6}=3.333\ \text{A}\qquad I_2=\frac{20}{12}=\frac{10}{6}\ \text{A}$$`,ref:'ص 88'},
     {tip:String.raw`<p>جهد الطرفين يتوزع على أجزاء التوالي: \(5+10+20=35\ \text{V}\). وجهد المقاومة 6 Ω هو نفسه جهد 12 Ω لأنهما على التوازي.</p>
      <p>تحقق: \(I_1+I_2=3.333+1.667=5\ \text{A}=I\) ✓ (يترك الكتاب \(I_2\) كسراً \(10/6\approx1.667\ \text{A}\)).</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: وزّع الجهد على التوالي',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر جهد المقاومة <span class="ltr">2 Ω</span> (في الكتاب <span class="ltr">10 V</span>؛ غيره أرقام تختارها أنت) وتابع جهد كل جزء وتياري الفرعين.',
+ predict:{q:'لو ضاعفنا جهد المقاومة 2 Ω إلى 20 V، فإن \\(I_1\\) في المقاومة 6 Ω…',opts:[
+  ['يتضاعف',true,'الدائرة خطية: كل الجهود والتيارات تتضاعف معاً، فيصبح \\(I_1=6.667\\ \\text{A}\\).'],
+  ['لا يتغير',false,'تيار الدائرة \\(I=V_{2\\Omega}/2\\) يتضاعف، فيتضاعف كل ما يعتمد عليه.'],
+  ['يزيد بمقدار 10 A',false,'الزيادة نسبة (ضعف) وليست مقداراً ثابتاً.']]},
+ ins:[{k:'v',l:'V<sub>2⁠Ω</sub>',min:2,max:20,step:1,v:10,u:'V'}],
+ calc:(s,v,B)=>{const I=s.v/2,V1=I*1,V6=I*4,Vab=I*7;
+  return {bars:[{l:'V<sub>1⁠Ω</sub> = I × 1',v:V1,max:70,u:'V',dp:2,col:'--blue'},{l:'V<sub>2⁠Ω</sub>',v:s.v,max:70,u:'V',dp:2,col:'--blue'},{l:'V<sub>6⁠Ω</sub> = V<sub>ab</sub> − V<sub>2⁠Ω</sub> − V<sub>1⁠Ω</sub>',v:V6,max:70,u:'V',dp:2,col:'--live'},{l:'V<sub>ab</sub>',v:Vab,max:70,u:'V',dp:2,col:'--on'}],
+   facts:[['<span class="ltr" dir="ltr" style="white-space:normal">I = V<sub>2⁠Ω</sub>/2</span>',DCML.fm(B,I,2)+' A'],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>1</sub> = V<sub>6⁠Ω</sub>/6</span>',DCML.fm(B,V6/6,3)+' A','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>2</sub> = V<sub>6⁠Ω</sub>/12</span>',DCML.fm(B,V6/12,3)+' A','hi']],
+   msg:'تحقق: \\(I_1+I_2=I\\)، ومجموع الجهود الثلاثة يساوي \\(V_{ab}\\).'}}})}
    ]},
 
   {st:7,short:'مثال <span class="ltr">(3-31)</span>',title:'مثال <span class="ltr">(3-31)</span>: مصابيح <span class="ltr">110 V</span> من منبع <span class="ltr">230 V</span>',ref:'ص 89',
@@ -1178,7 +1505,16 @@ B.lesson({
      $$R=\frac{V_R}{I}=\frac{120}{2.1818}=55\ \Omega$$`,ref:'ص 89'},
     {watch:String.raw`<p>عبارة «القدرة الإجمالية المسحوبة من المنبع» المقصود بها القدرة المسحوبة <b>بواسطة المصابيح</b> (240 W)؛ أما القدرة المسحوبة من المنبع فتشمل قدرة R أيضاً.</p>`},
     {tip:String.raw`<p>المصابيح على التوازي فجهدها واحد (110 V)، وتيار الدخل هو مجموع تياراتها، ويمر كله في R. لذلك نحسب التيار من القدرة الكلية للمصابيح وجهدها.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: غيّر عدد المصابيح',widget:(el,B)=>DCML.lab(el,B,{intro:'مصابيح <span class="ltr">60 W</span> و<span class="ltr">110 V</span> على التوازي، ومقاومة R على التوالي من منبع <span class="ltr">230 V</span>. الكتاب: أربعة مصابيح؛ غيرها أرقام تختارها أنت.',
+ predict:{q:'لو كانت المصابيح ثلاثة فقط بدل أربعة، فإن المقاومة R المطلوبة…',opts:[
+  ['تكون أصغر من 55 Ω',false,'تيار ثلاثة مصابيح أقل، ولإسقاط نفس الجهد 120 V بتيار أقل نحتاج مقاومة أكبر.'],
+  ['تبقى 55 Ω',false,'\\(V_R\\) ثابت (120 V) لكن التيار تغير، فتتغير \\(R=V_R/I\\).'],
+  ['تكون أكبر من 55 Ω',true,'\\(I=180/110=1.636\\ \\text{A}\\)، و\\(R=120/1.636\\approx73.3\\ \\Omega\\).']]},
+ ins:[{k:'n',l:'عدد المصابيح',min:1,max:6,step:1,v:4,dp:0}],
+ calc:(s,v,B)=>{const P=60*s.n,I=P/110,R=120/I;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">P = n × 60</span>',P+' W'],['<span class="ltr" dir="ltr" style="white-space:normal">I = P/110</span>',DCML.fm(B,I,4)+' A'],['<span class="ltr" dir="ltr" style="white-space:normal">V<sub>R</sub> = 230 − 110</span>',120+' V'],['<span class="ltr" dir="ltr" style="white-space:normal">R = V<sub>R</sub>/I</span>',DCML.fm(B,R,2)+' Ω','hi'],['القدرة المفقودة في R',DCML.fm(B,120*I,1)+' W','bad']],
+   msg:s.n===4?'أرقام الكتاب: \\(I=2.1818\\ \\text{A}\\) و\\(R=55\\ \\Omega\\).':'كلما زاد عدد المصابيح زاد التيار وصغرت المقاومة المطلوبة.'}}})}
    ]},
 
   {st:8,short:'مثال <span class="ltr">(3-32)</span>',title:'مثال <span class="ltr">(3-32)</span>: طريقة بديلة… أيهما أفضل؟',ref:'ص 89–90',
@@ -1415,7 +1751,17 @@ B.lesson({
      $$R=\frac{90-45}{15}=3\ \Omega$$`,ref:'ص 90–91'},
     {tip:String.raw`<p>الطريق من المعلوم إلى المجهول: قدرة 3 Ω ← جهدها \(V_3\) ← تيارها، و\(V_3\) هو أيضاً جهد 6 Ω (توازي) ← تيارها ← مجموع التيارين هو التيار الكلي I (قانون كيرشوف للتيار) ← وهذا التيار يمر في 1 Ω و R ← نكتب قانون أوم للدائرة كلها: \(90=15(3+R)\).</p>`,title:'تتبّع الحل'},
     {watch:String.raw`<p>حيث يقول الحل «\(I=15=\frac{V}{3+R}\)» فالرقم 3 هو مجموع 1 Ω ومكافئ التوازي 2 Ω (\(6\times3/9\))، وليس المقاومة 3 Ω. ثم \(V=15(3+R)=45+15R\).</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: ابحث عن R بالتجربة',widget:(el,B)=>DCML.lab(el,B,{intro:'جهد المنبع <span class="ltr">90 V</span> كما في الحل. حرّك R حتى تصبح قدرة المقاومة <span class="ltr">3 Ω</span> هي <span class="ltr">300 W</span>.',
+ predict:{q:'إذا كبّرنا R، فإن القدرة في المقاومة 3 Ω…',opts:[
+  ['تكبر',false,'R على التوالي مع الخط؛ تكبيرها يقلل التيار الكلي، فيقل جهد مجموعة التوازي وقدرتها.'],
+  ['تصغر',true,'التيار الكلي \\(I=90/(3+R)\\) يقل، فيقل جهد التوازي \\(V_3=2I\\)، وتقل \\(V_3^2/3\\).'],
+  ['لا تتغير لأن المقاومة 3 Ω ثابتة',false,'قيمتها ثابتة لكن جهدها يتغير مع تيار الدائرة.']]},
+ ins:[{k:'R',l:'R',min:0,max:9,step:0.5,v:6,dp:1,u:'Ω'}],
+ calc:(s,v,B)=>{const I=90/(3+s.R),V3=2*I,P=V3*V3/3,ok=s.R===3;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">I = 90/(3+R)</span>',DCML.fm(B,I,2)+' A'],['<span class="ltr" dir="ltr" style="white-space:normal">V<sub>3</sub> = I × 2 Ω</span>',DCML.fm(B,V3,2)+' V'],['<span class="ltr" dir="ltr" style="white-space:normal">P<sub>3⁠Ω</sub> = V<sub>3</sub><sup>2</sup>/3</span>',DCML.fm(B,P,1)+' W',ok?'hi':'']],
+   bars:[{l:'P<sub>3⁠Ω</sub> مقابل الهدف <span class="ltr">300 W</span>',v:P,max:900,txt:DCML.fm(B,P,1)+' W',col:ok?'--on':'--live'}],
+   msg:ok?'<b>وجدتها:</b> \\(R=3\\ \\Omega\\)، والتيار \\(15\\ \\text{A}\\) و\\(V_3=30\\ \\text{V}\\) كما في الحل.':(P>300?'القدرة أكبر من 300 W: كبّر R.':'القدرة أقل من 300 W: صغّر R.'),cls:ok?'':'warn'}}})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">(3-34)</span>',title:'مثال <span class="ltr">(3-34)</span>: توازن القدرة',ref:'ص 91',
@@ -1437,7 +1783,17 @@ B.lesson({
      <p>وواضح أن القدرة التي يزودها المنبع تكون مماثلة للقدرة الممتصة في المقاومات.</p>`,ref:'ص 91'},
     {tip:String.raw`<p>الحدود الأربعة هي: \(150+300+675+225=1350\ \text{W}\). لاحظ أن الكتاب يستعمل \(V^2/R\) للمقاومتين المتوازيتين (جهدهما معلوم 30 V) و\(I^2R\) للمقاومتين على التوالي (تيارهما معلوم 15 A). اختر الصيغة حسب المعلوم.</p>`},
     {add:String.raw`<p>هذا «توازن القدرة» هو مبدأ حفظ الطاقة: الطاقة التي يعطيها المصدر في كل ثانية تتحول كلها إلى حرارة في المقاومات. لذلك هو أفضل طريقة لتتأكد من صحة حلك في أي دائرة.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: ميزان القدرة',widget:(el,B)=>DCML.lab(el,B,{intro:'دائرة المثال (<span class="ltr">90 V</span>، و<span class="ltr">1 Ω</span> و R على التوالي مع <span class="ltr">6 Ω ∥ 3 Ω</span>). في الكتاب \\(R=3\\ \\Omega\\)؛ غيّرها (أرقام تختارها أنت).',
+ predict:{q:'أي المقاومات الأربع تمتص أكبر قدرة عندما \\(R=3\\ \\Omega\\)؟',opts:[
+  ['المقاومة 3 Ω التي على التوازي',false,'قدرتها 300 W؛ يمر فيها جزء من التيار فقط (10 A).'],
+  ['المقاومة R = 3 Ω التي على التوالي',true,'يمر فيها التيار الكلي 15 A: \\(3\\times15^2=675\\ \\text{W}\\).'],
+  ['المقاومة 6 Ω لأنها الأكبر',false,'جهدها 30 V فقط، فقدرتها \\(30^2/6=150\\ \\text{W}\\).']]},
+ ins:[{k:'R',l:'R',min:0.5,max:9,step:0.5,v:3,dp:1,u:'Ω'}],
+ calc:(s,v,B)=>{const I=90/(3+s.R),V3=2*I,p=[V3*V3/6,V3*V3/3,s.R*I*I,I*I],sum=p.reduce((a,b)=>a+b),Ps=90*I;
+  return {bars:[['6 Ω',p[0]],['3 Ω',p[1]],['R',p[2]],['1 Ω',p[3]]].map(([l,x])=>({l:'P <span class="ltr">'+l+'</span>',v:x,max:Ps,u:'W',dp:1,col:'--live'})),
+   facts:[['مجموع قدرات المقاومات',DCML.fm(B,sum,1)+' W','hi'],['قدرة المنبع P = V × I',DCML.fm(B,Ps,1)+' W','hi']],
+   msg:'مهما غيّرت R يبقى المجموع مساوياً لقدرة المنبع (توازن القدرة).'}}})}
    ]},
 
   {st:3,short:'مثال <span class="ltr">(3-35)</span>',title:'مثال <span class="ltr">(3-35)</span>: اختزال الدائرة',ref:'ص 92',
@@ -1459,7 +1815,13 @@ B.lesson({
     {tip:String.raw`<ol><li>3 Ω و 6 Ω على التوازي: \(\frac{3\times6}{3+6}=2\ \Omega\).</li><li>2 Ω و 4 Ω على التوالي: \(2+4=6\ \Omega\).</li><li>صار عندنا فرعان (2 Ω و 6 Ω) على التوازي: \(\frac{2\times6}{2+6}=1.5\ \Omega\)، ثم 1 Ω على التوالي: \(R_T=2.5\ \Omega\).</li></ol>
      <p>الخطوتان 1 و 2 هما الشكل (3-42ب)، والكتاب يكتب الخطوة 3 مباشرة.</p>`,title:'خطوات الاختزال'},
     {tip:String.raw`<p><b>قاعدة الاختزال:</b> ابدأ من أبعد نقطة عن المصدر، واجمع كل مجموعة «واضحة»: مقاومتان طرفاهما على نفس النقطتين ← توازي؛ مقاومتان متتاليتان لا يتفرع بينهما شيء ← توالي. وارسم الدائرة من جديد بعد كل خطوة.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: رتّب خطوات الاختزال',widget:(el,B)=>DCML.order(el,B,{intro:'اختزل دائرة الشكل <span class="ltr">(3-42أ)</span> من أبعد نقطة عن البطارية.',steps:[
+ ['\\(3\\ \\Omega\\parallel6\\ \\Omega=\\frac{3\\times6}{3+6}=2\\ \\Omega\\)','نبدأ من المجموعة الأبعد عن المصدر.'],
+ ['\\(2\\ \\Omega+4\\ \\Omega=6\\ \\Omega\\) (توالي)','هذه أيضاً من الشكل (3-42ب)؛ رتّبها بعد مجموعة 3 و 6 كما في الشرح.'],
+ ['الفرعان \\(2\\ \\Omega\\parallel6\\ \\Omega=1.5\\ \\Omega\\)','لا يظهر هذان الفرعان إلا بعد الخطوتين الأوليين.'],
+ ['\\(R_T=1+1.5=2.5\\ \\Omega\\)','المقاومة 1 Ω تُضاف في الآخر لأنها على التوالي مع كل ما بعدها.'],
+ ['\\(I=15/2.5=6\\ \\text{A}\\)','التيار يحتاج \\(R_T\\) أولاً.']]})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(3-36)</span>',title:'مثال <span class="ltr">(3-36)</span>: تيار فرع وقدرة مقاومة',ref:'ص 93',
@@ -1479,7 +1841,15 @@ B.lesson({
      $$P_{2\Omega}=I_2^2(2)=(1.5)^2\,2=4.5\ \text{W}$$`,ref:'ص 93'},
     {watch:String.raw`<p>في الكتاب تبدأ الصفحة بـ«الحل:» مباشرة، ولا يوجد عنوان «مثال (3-36)» ولا نص السؤال. يُفهم من الحل (ومن إشارة مثال 3-37 إليه) أن المطلوب: حساب التيار \(I_2\) والقدرة المفقودة في المقاومة 2 Ω (التي على التوالي مع 4 Ω) في دائرة الشكل (3-42أ).</p>`,fix:true},
     {tip:String.raw`<p>المقاومة 6 Ω في الشكل (3-42ب) ليست مقاومة حقيقية؛ هي 2 Ω و 4 Ω على التوالي. لذلك تيارها \(I_2\) هو نفسه تيار المقاومة 2 Ω الأصلية، ومنه نحسب قدرتها \(I^2R\).</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: من الدائرة المختزلة إلى الأصلية',widget:(el,B)=>DCML.cases(el,B,{intro:'في الشكل <span class="ltr">(3-42ب)</span>: فرعان <span class="ltr">2 Ω</span> و<span class="ltr">6 Ω</span> على التوازي، والتيار الكلي <span class="ltr">6 A</span>.',cases:[
+ {q:'تيار الفرع 6 Ω هو \\(I_2=\\left[\\frac{?}{2+6}\\right]6\\). ما الرقم في البسط؟',opts:[
+  ['6',false,'في قاعدة توزيع التيار تكون في البسط مقاومة الفرع <b>الآخر</b>.'],
+  ['2',true,'\\(I_2=\\frac{2}{2+6}\\times6=1.5\\ \\text{A}\\).']]},
+ {q:'الفرع 6 Ω ليس مقاومة حقيقية. ما المقاومات الحقيقية التي يمر فيها \\(I_2=1.5\\ \\text{A}\\)؟',opts:[
+  ['3 Ω و 6 Ω',false,'هاتان تكوّنان الفرع الآخر (2 Ω المكافئة)، ويمر فيهما 4.5 A.'],
+  ['2 Ω و 4 Ω على التوالي',true,'هما الفرع 6 Ω، فيمر التيار نفسه في كل منهما، ولذلك \\(P_{2\\Omega}=(1.5)^2\\times2=4.5\\ \\text{W}\\).'],
+  ['1 Ω',false,'المقاومة 1 Ω يمر فيها التيار الكلي 6 A.']]}]})}
    ]},
 
   {st:5,short:'مثال <span class="ltr">(3-37)</span>',title:'مثال <span class="ltr">(3-37)</span>: قدرة كل مقاومة في الدائرة',ref:'ص 93',
@@ -1505,7 +1875,18 @@ B.lesson({
      $$P_T=36+4.5+27+9+13.5=90\ \text{W}$$`,ref:'ص 93'},
     {watch:String.raw`<p>المثال يطلب إثبات أن مجموع القدرات يساوي قدرة البطارية، لكن الكتاب لا يكتب قدرة البطارية. وهي \(E\times I=15\times6=90\ \text{W}\)، فيتحقق المطلوب.</p>`},
     {tip:String.raw`<p>نرجع من الدائرة المختزلة إلى الأصلية خطوة خطوة: التيار الكلي 6 A ← يتوزع على الفرعين (4.5 A و 1.5 A) ← تيار الفرع الأول 4.5 A يتوزع على 3 Ω و 6 Ω (3 A و 1.5 A) ← تيار الفرع الثاني 1.5 A يمر في 2 Ω و 4 Ω معاً.</p>`,title:'من الأصغر إلى الأكبر ثم العكس'},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: من يستهلك أكثر؟',widget:(el,B)=>DCML.lab(el,B,{intro:'دائرة الشكل <span class="ltr">(3-42أ)</span>. الكتاب: بطارية <span class="ltr">15 V</span>؛ غيرها أرقام تختارها أنت.',
+ predict:{q:'أي مقاومة تستهلك أكبر قدرة في هذه الدائرة؟',opts:[
+  ['6 Ω لأنها الأكبر',false,'يمر فيها 1.5 A فقط: \\(13.5\\ \\text{W}\\).'],
+  ['1 Ω رغم أنها الأصغر',true,'يمر فيها التيار الكلي 6 A: \\(6^2\\times1=36\\ \\text{W}\\)، وهي الأكبر.'],
+  ['3 Ω',false,'قدرتها 27 W، أقل من المقاومة 1 Ω.']]},
+ ins:[{k:'E',l:'جهد البطارية E',min:5,max:30,step:5,v:15,u:'V'}],
+ calc:(s,v,B)=>{const I=s.E/2.5,i1=I*6/8,i2=I*2/8,i3=i1*6/9,i4=i1*3/9;
+  const p=[['1 Ω',I*I],['3 Ω',i3*i3*3],['6 Ω',i4*i4*6],['2 Ω',i2*i2*2],['4 Ω',i2*i2*4]],PT=p.reduce((a,x)=>a+x[1],0);
+  return {bars:p.map(([l,x])=>({l:'P <span class="ltr">'+l+'</span>',v:x,max:PT,u:'W',dp:2,col:l==='1 Ω'?'--stop':'--live'})),
+   facts:[['P<sub>T</sub> (مجموع القدرات)',DCML.fm(B,PT,2)+' W','hi'],['قدرة البطارية E × I',DCML.fm(B,s.E*I,2)+' W','hi']],
+   msg:'لاحظ: لو ضاعفت الجهد تتضاعف التيارات وتصبح كل قدرة أربعة أضعاف (\\(P=I^2R\\)).'}}})}
    ]},
 
   {recap:[
@@ -1699,7 +2080,17 @@ B.lesson({
      <div class="eq">$$R_b=\frac{R_1R_2+R_2R_3+R_3R_1}{R_3}$$<span class="eqno">(3-36)</span></div>
      $$R_c=\frac{R_1R_2+R_2R_3+R_3R_1}{R_1}$$`,ref:'ص 95'},
     {tip:String.raw`<p>البسط واحد في المعادلات الثلاث: مجموع حواصل ضرب أذرع النجمة <b>مثنى مثنى</b>. والذي يتغير المقام فقط: <b>ذراع النجمة المقابل للضلع</b> — أي الذراع الذي لا يلمس طرفي الضلع.</p>
-     <p>وإذا كانت أذرع النجمة متساوية (\(R_Y\)) فإن كل ضلع \(R_\Delta=\frac{3R_Y^2}{R_Y}=3R_Y\).</p>`,title:'كيف تحفظها؟'}
+     <p>وإذا كانت أذرع النجمة متساوية (\(R_Y\)) فإن كل ضلع \(R_\Delta=\frac{3R_Y^2}{R_Y}=3R_Y\).</p>`,title:'كيف تحفظها؟'},
+    {title:'مختبر مصغّر: حوّل النجمة وتحقق من التكافؤ',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بالحالة الأولى من الجدول <span class="ltr">(3-1)</span> (12 و 34 و <span class="ltr">1 Ω</span>)، ثم غيّر الأذرع (أرقام تختارها أنت). الأضلاع بالمعادلات (3-36) على الشكل المصحح.',
+ predict:{q:'لو كانت أذرع النجمة الثلاثة متساوية <span class="ltr">10 Ω</span>، فكم يكون كل ضلع في الدلتا؟',opts:[
+  ['10 Ω',false,'البسط \\(3\\times10^2=300\\) والمقام 10، فالضلع 30 Ω.'],
+  ['3.33 Ω',false,'القسمة على 3 تكون في الاتجاه العكسي (من الدلتا إلى النجمة).'],
+  ['30 Ω',true,'\\(R_\\Delta=3R_Y\\) عندما تتساوى الأذرع.']]},
+ ins:[{k:'a',l:'R<sub>1</sub>',min:1,max:50,step:1,v:12,u:'Ω'},{k:'b',l:'R<sub>2</sub>',min:1,max:50,step:1,v:34,u:'Ω'},{k:'c',l:'R<sub>3</sub>',min:1,max:50,step:1,v:1,u:'Ω'}],
+ calc:(s,v,B)=>{const S=s.a*s.b+s.b*s.c+s.c*s.a,Ra=S/s.b,Rb=S/s.c,Rc=S/s.a,par=(x,y)=>x*y/(x+y);
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">Σ = R<sub>1</sub>R<sub>2</sub>+R<sub>2</sub>R<sub>3</sub>+R<sub>3</sub>R<sub>1</sub></span>',DCML.fm(B,S,0)],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>a</sub> = Σ/R<sub>2</sub></span>',DCML.fm(B,Ra,2)+' Ω','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>b</sub> = Σ/R<sub>3</sub></span>',DCML.fm(B,Rb,2)+' Ω','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>c</sub> = Σ/R<sub>1</sub></span>',DCML.fm(B,Rc,2)+' Ω','hi'],
+    ['بين N<sub>1</sub> و N<sub>2</sub> في النجمة: R<sub>1</sub>+R<sub>2</sub>',DCML.fm(B,s.a+s.b,2)+' Ω'],['بين N<sub>1</sub> و N<sub>2</sub> في الدلتا: R<sub>b</sub> ∥ (R<sub>a</sub>+R<sub>c</sub>)',DCML.fm(B,par(Rb,Ra+Rc),2)+' Ω']],
+   msg:'المقاومة بين الطرفين نفسيهما واحدة في الربطين: هذا هو معنى التكافؤ.'}}})}
    ]},
 
   {st:3,short:'من Δ إلى Y',title:'تحويل ربط Δ إلى ربط Y',ref:'ص 95',
@@ -1717,7 +2108,17 @@ B.lesson({
      <div class="eq">$$R_2=\frac{R_bR_c}{R_a+R_b+R_c}$$<span class="eqno">(3-37)</span></div>
      $$R_3=\frac{R_aR_c}{R_a+R_b+R_c}$$`,ref:'ص 95'},
     {watch:String.raw`<p>السطر الثالث من المعادلة (3-37) مطبوع في الكتاب «\(R_1=\frac{R_aR_C}{\ldots}\)» (\(R_1\) مكررة)، والصحيح \(R_3\) كما يعامله الجدول (3-2). عرضناه هنا مصححاً.</p>`,fix:true},
-    {tip:String.raw`<p>المقام واحد في المعادلات الثلاث: <b>مجموع أضلاع الدلتا</b>. والبسط: <b>حاصل ضرب الضلعين الملتقيين عند طرف الذراع</b>. وإذا كانت الأضلاع متساوية (\(R_\Delta\)) فإن كل ذراع \(R_Y=R_\Delta/3\).</p>`,title:'كيف تحفظها؟'}
+    {tip:String.raw`<p>المقام واحد في المعادلات الثلاث: <b>مجموع أضلاع الدلتا</b>. والبسط: <b>حاصل ضرب الضلعين الملتقيين عند طرف الذراع</b>. وإذا كانت الأضلاع متساوية (\(R_\Delta\)) فإن كل ذراع \(R_Y=R_\Delta/3\).</p>`,title:'كيف تحفظها؟'},
+    {title:'مختبر مصغّر: حوّل الدلتا وتحقق من التكافؤ',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بالحالة الأولى من الجدول <span class="ltr">(3-2)</span> (\\(R_A=16\\) و\\(R_B=76\\) و\\(R_C=27\\ \\Omega\\))، ثم غيّر الأضلاع (أرقام تختارها أنت).',
+ predict:{q:'لو كانت أضلاع الدلتا متساوية <span class="ltr">30 Ω</span>، فكم يكون كل ذراع في النجمة؟',opts:[
+  ['10 Ω',true,'\\(R_Y=\\frac{30\\times30}{90}=10\\ \\Omega\\)، أي \\(R_\\Delta/3\\).'],
+  ['90 Ω',false,'90 هو المقام (مجموع الأضلاع)، والذراع أصغر من كل ضلع.'],
+  ['30 Ω',false,'الذراع لا يساوي الضلع؛ في الاتجاه من الدلتا إلى النجمة نقسم على 3.']]},
+ ins:[{k:'a',l:'R<sub>a</sub>',min:1,max:100,step:1,v:16,u:'Ω'},{k:'b',l:'R<sub>b</sub>',min:1,max:100,step:1,v:76,u:'Ω'},{k:'c',l:'R<sub>c</sub>',min:1,max:100,step:1,v:27,u:'Ω'}],
+ calc:(s,v,B)=>{const S=s.a+s.b+s.c,R1=s.a*s.b/S,R2=s.b*s.c/S,R3=s.a*s.c/S,par=(x,y)=>x*y/(x+y);
+  return {facts:[['المقام R<sub>a</sub>+R<sub>b</sub>+R<sub>c</sub>',S+' Ω'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>1</sub> = R<sub>a</sub>R<sub>b</sub>/Σ</span>',DCML.fm(B,R1,3)+' Ω','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>2</sub> = R<sub>b</sub>R<sub>c</sub>/Σ</span>',DCML.fm(B,R2,3)+' Ω','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">R<sub>3</sub> = R<sub>a</sub>R<sub>c</sub>/Σ</span>',DCML.fm(B,R3,3)+' Ω','hi'],
+    ['بين N<sub>1</sub> و N<sub>2</sub> في الدلتا',DCML.fm(B,par(s.b,s.a+s.c),3)+' Ω'],['بين N<sub>1</sub> و N<sub>2</sub> في النجمة: R<sub>1</sub>+R<sub>2</sub>',DCML.fm(B,R1+R2,3)+' Ω']],
+   msg:'كل ذراع أصغر من الضلعين الملتقيين عند طرفه، والمقاومة بين أي طرفين لا تتغير بالتحويل.'}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(3-38)</span>',title:'مثال <span class="ltr">(3-38)</span>: من نجمة إلى دلتا — الجدول <span class="ltr">(3-1)</span>',ref:'ص 95',
@@ -1757,7 +2158,15 @@ B.lesson({
     {book:String.raw`<p>لتكن المقاومات \(R_A\)، \(R_C\)، \(R_B\) الموضحة في الشكل (3-43) قيمتها 16Ω، 27Ω، 76Ω (الحالة الأولى الجدول (3-2)). تم تحويل ربط Δ إلى ربط Y. احسب قيمة المقاومات \(R_3\)، \(R_1\)، \(R_2\) للحالات الخمس. بتطبيق القوانين (3-37) نحصل على قيم المقاومات للحالات الخمس الجدول (3-2).</p>
      <p><b>الحل:</b></p>${table32()}`,ref:'ص 96'},
     {watch:String.raw`<p>في الكتاب كُتب «(الحالة الأولى الجدول (3-1))» والصحيح الجدول (3-2)؛ وترتيب القيم في النص «27Ω، 76Ω، 16Ω» لا يطابق الجدول، والصحيح من الجدول: \(R_A=16\)، \(R_C=27\)، \(R_B=76\ \Omega\). عرضناها هنا مصححة. أما قيم الجدول (3-2) فكلها صحيحة بالمعادلات (3-37).</p>`,fix:true},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: ذهاب وعودة',widget:(el,B)=>DCML.lab(el,B,{intro:'حوّل دلتا الحالة الأولى من الجدول <span class="ltr">(3-2)</span> إلى نجمة بالمعادلات (3-37)، ثم أرجع النجمة إلى دلتا بالمعادلات (3-36). غيّر الأضلاع إن شئت (أرقام تختارها أنت).',
+ predict:{q:'بعد الذهاب إلى النجمة والعودة إلى الدلتا، ماذا نتوقع؟',opts:[
+  ['نحصل على الأضلاع الأصلية نفسها',true,'المجموعتان من المعادلات كل منهما عكس الأخرى، فالعودة تعيد القيم الأصلية (مع فرق تقريب بسيط إن قرّبنا).'],
+  ['تتضاعف الأضلاع',false,'لو تغيرت القيم لما كان الربطان متكافئين.'],
+  ['نحصل على قيم أصغر',false,'التحويل لا «يفقد» شيئاً؛ هو كتابة أخرى للدائرة نفسها.']]},
+ ins:[{k:'a',l:'R<sub>A</sub>',min:1,max:100,step:1,v:16,u:'Ω'},{k:'b',l:'R<sub>B</sub>',min:1,max:100,step:1,v:76,u:'Ω'},{k:'c',l:'R<sub>C</sub>',min:1,max:100,step:1,v:27,u:'Ω'}],
+ calc:(s,v,B)=>{const S=s.a+s.b+s.c,R1=s.a*s.b/S,R2=s.b*s.c/S,R3=s.a*s.c/S,P=R1*R2+R2*R3+R3*R1;
+  return {facts:[['R<sub>1</sub>',DCML.fm(B,R1,3)+' Ω'],['R<sub>2</sub>',DCML.fm(B,R2,3)+' Ω'],['R<sub>3</sub>',DCML.fm(B,R3,3)+' Ω'],['عودة: R<sub>A</sub> = Σ/R<sub>2</sub>',DCML.fm(B,P/R2,3)+' Ω','hi'],['عودة: R<sub>B</sub> = Σ/R<sub>3</sub>',DCML.fm(B,P/R3,3)+' Ω','hi'],['عودة: R<sub>C</sub> = Σ/R<sub>1</sub>',DCML.fm(B,P/R1,3)+' Ω','hi']]}}})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">(3-40)</span>',title:'مثال <span class="ltr">(3-40)</span>: القنطرة',ref:'ص 96–97',
@@ -1781,7 +2190,13 @@ B.lesson({
     {html:String.raw`<figure style="margin:0">${box(fig344(1),340)}<figcaption class="sub" style="text-align:center">الشكل (3-44ب): بعد تحويل الدلتا abc إلى نجمة مركزها o.</figcaption></figure>`},
     {watch:String.raw`<p>في الكتاب: «نحول شبكة الدلتا الشكل (3-44ب)» والمقصود الدلتا abc في الشكل (3-44أ)؛ و«المعادلة (7-2)» والصحيح (3-37)؛ والرمز «\(R_{ad}\)» المقصود به \(R_{od}\)، و«\(R_{ab}\)» المقصود به \(R_{AB}\). عرضناها هنا مصححة.</p>`,fix:true},
     {tip:String.raw`<p>التحويل لا يغيّر شيئاً «خارج» المثلث: المقاومتان 4.5 Ω و 3 Ω بقيتا كما هما، والطرفان A و B كما هما. لكنه جعل الشبكة توالي وتوازي: \(R_{bo}\) على التوالي مع مجموعة الطريقين المتوازيين.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div>`},
+    {title:'مختبر مصغّر: رتّب خطوات حل القنطرة',widget:(el,B)=>DCML.order(el,B,{steps:[
+ ['حوّل الدلتا abc إلى نجمة: \\(R_{ao}=1.5\\)، \\(R_{bo}=1\\)، \\(R_{co}=3\\ \\Omega\\)','بدون التحويل لا توجد مقاومات توالي أو توازي واضحة.'],
+ ['اجمع كل طريق على التوالي: \\(1.5+4.5=6\\) و\\(3+3=6\\ \\Omega\\)','يظهر الطريقان بعد التحويل فقط.'],
+ ['الطريقان على التوازي بين o و d: \\(R_{od}=3\\ \\Omega\\)','نجمع كل طريق أولاً ثم نضع الطريقين على التوازي.'],
+ ['\\(R_{AB}=R_{bo}+R_{od}=1+3=4\\ \\Omega\\)','الخطوة الأخيرة تحتاج \\(R_{od}\\).']],
+ done:'لاحظ أن المقاومتين 4.5 Ω و 3 Ω لم تتغيرا؛ التحويل كان للمثلث وحده.'})}
    ]},
 
   {recap:[
@@ -2134,7 +2549,11 @@ B.lesson({
      <li>احسب كفاءة المحرك الكهربائي إذا كانت القدرة الخارجة منه 850 W وكان التيار المغذي له 8A عند 120 V.</li></ol>`,ref:'ص 98'},
     {tip:String.raw`<p>الكتاب لا يعطي إجابات للتمارين. حاول بنفسك أولاً، ثم افتح الإجابة المقترحة، أو تحقق من إجابتك في تبويب «المختبر». <span class="fixnote">ترقيم الكتاب فيه قفزات (لا يوجد 15 ولا 18 ولا 19، و«16» مكرر) — احتفظنا بأرقام الكتاب.</span></p>`},
     {tip:(()=>X.filter(x=>['1','2','3'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
-    {watch:String.raw`<p>التمرين 1: زيادة 12% بين 18°C و 20°C فقط غير واقعية لمعدن (تعطي معاملاً حرارياً 0.06 لكل درجة)؛ الأرجح خطأ في الدرجة الثانية. الإجابة المقترحة بالأرقام المطبوعة.</p>`,fix:true}
+    {watch:String.raw`<p>التمرين 1: زيادة 12% بين 18°C و 20°C فقط غير واقعية لمعدن (تعطي معاملاً حرارياً 0.06 لكل درجة)؛ الأرجح خطأ في الدرجة الثانية. الإجابة المقترحة بالأرقام المطبوعة.</p>`,fix:true},
+    {title:'مختبر مصغّر: أي قانون تحتاج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'قبل الحل: لكل تمرين اختر القانون الذي يبدأ به.',cats:['معامل درجة الحرارة','قانون أوم','الكفاءة'],items:[
+ ['التمرين 1: مقاومة تتغير مع ارتفاع درجة الحرارة.',0,'المقاومة عند درجة حرارة جديدة تُحسب بمعامل درجة الحرارة الذي درسته سابقاً.'],
+ ['التمرين 2: مقاومة 4 Ω وجهدها 20 V، والمطلوب التيار.',1,'\\(I=V/R\\).'],
+ ['التمرين 3: القدرة الخارجة 850 W، والتيار والجهد المغذيان معلومان.',2,'القدرة الداخلة \\(V\\times I\\)، والكفاءة = الخارجة ÷ الداخلة.']]})}
    ]},
 
   {st:2,short:'التمارين 4–8: التوالي',title:'التمارين <span class="ltr">4–8</span>: دوائر التوالي',ref:'ص 98–99',
@@ -2156,7 +2575,12 @@ B.lesson({
     {html:`<div class="cb-figs">${[[fx1a,'الشكل (1) أ'],[fx1b,'الشكل (1) ب'],[fx2r,'الشكل (2) — الرسم الأيمن'],[fx2l,'الشكل (2) — الرسم الأيسر'],[fx3a,'الشكل (3) A'],[fx3b,'الشكل (3) B'],[fx4,'الشكل (4)'],[fx5,'الشكل (5)']].map(([f,c])=>`<figure>${box(f(),420)}<figcaption>${c}</figcaption></figure>`).join('')}</div>`},
     {tip:String.raw`<p>في حلقة واحدة: <b>التيار واحد في كل العناصر</b>. لذلك إذا عرفت جهد مقاومة واحدة وقيمتها (التمرين 7: 16 V على 2 kΩ) أو قدرتها (التمرين 8: 144 mW على 4 kΩ) عرفت تيار الحلقة كلها. وانتبه للوحدات: kΩ و MΩ و mA.</p>`},
     {tip:(()=>X.filter(x=>['4 (أ)','4 (ب)','5 (الرسم الأيمن)','5 (الرسم الأيسر)','6 (A)','6 (B)','7','8'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
-    {watch:String.raw`<p>التمرين 6 (B): قيمة \(R_2\) غير مكتوبة في الشكل، فلا يمكن الحل العددي إلا بقيمة نفترضها. والتمرين 5: تحت الرسمين حرف «(أ)» فقط، و«0.56KΩ» في الرسم الأيسر صغيرة جداً مقارنة بغيرها (ربما المقصود 0.56 MΩ).</p>`}
+    {watch:String.raw`<p>التمرين 6 (B): قيمة \(R_2\) غير مكتوبة في الشكل، فلا يمكن الحل العددي إلا بقيمة نفترضها. والتمرين 5: تحت الرسمين حرف «(أ)» فقط، و«0.56KΩ» في الرسم الأيسر صغيرة جداً مقارنة بغيرها (ربما المقصود 0.56 MΩ).</p>`},
+    {title:'مختبر مصغّر: صح أم خطأ عن دوائر التوالي',widget:(el,B)=>DCML.tf(el,B,{intro:'راجع القواعد التي تحتاجها في التمارين 4–8:',items:[
+ ['في دائرة توالي يمر التيار نفسه في كل المقاومات.',true,'حلقة واحدة لا تفرع فيها، فالتيار واحد.'],
+ ['المقاومة الأكبر في دائرة التوالي عليها أصغر جهد.',false,'الجهد \\(V=IR\\) والتيار واحد، فالمقاومة الأكبر عليها <b>أكبر</b> جهد.'],
+ ['إذا عرفت قدرة مقاومة واحدة وقيمتها في دائرة توالي عرفت تيار الدائرة كلها.',true,'\\(I=\\sqrt{P/R}\\)، وهو تيار كل العناصر (التمرين 8).'],
+ ['مجموع القدرات المفقودة في المقاومات أكبر من قدرة البطارية بسبب الفقد.',false,'المجموع <b>يساوي</b> قدرة البطارية تماماً (توازن القدرة).']]})}
    ]},
 
   {st:3,short:'التمارين 9–13: التوازي',title:'التمارين <span class="ltr">9–13</span>: دوائر التوازي',ref:'ص 100–101',
@@ -2177,7 +2601,12 @@ B.lesson({
      <li>احسب الكميات المجهولة في الدائرة الموضحة في الشكل (10).</li></ol>`,ref:'ص 100–101'},
     {html:`<div class="cb-figs">${[[fx6a,'الشكل (6) A'],[F319,'الشكل (6) B'],[fx7a,'الشكل (7) A'],[fx7b,'الشكل (7) B'],[fx8a,'الشكل (8) A'],[fx8b,'الشكل (8) B'],[fx9,'الشكل (9)'],[fx10,'الشكل (10)']].map(([f,c])=>`<figure>${box(f(),420)}<figcaption>${c}</figcaption></figure>`).join('')}</div>`},
     {tip:String.raw`<p>التمرين 9 (B) هو مثال (3-18) نفسه. والتمرين 10 مثل مثال (3-24): اكتب (3-30) وضع المجهول وحده في طرف. وفي التمرين 12 لاحظ أن المقاومة الصغيرة (1 Ω) تأخذ معظم التيار، والكبيرة جداً (100 kΩ) تكاد لا تأخذ شيئاً.</p>`},
-    {tip:(()=>X.filter(x=>['9','10','11 (A)','11 (B)','12','13'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'}
+    {tip:(()=>X.filter(x=>['9','10','11 (A)','11 (B)','12','13'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: صح أم خطأ عن دوائر التوازي',widget:(el,B)=>DCML.tf(el,B,{intro:'راجع القواعد التي تحتاجها في التمارين 9–13:',items:[
+ ['المقاومة الكلية لمقاومات على التوازي أصغر من أصغر مقاومة فيها.',true,'كل فرع جديد يزيد الموصلية الكلية.'],
+ ['في التوازي يأخذ الفرع ذو المقاومة الأكبر التيار الأكبر.',false,'الجهد واحد، فالتيار \\(V/R\\) أكبر في المقاومة <b>الأصغر</b>.'],
+ ['مقاومة \\(100\\ k\\Omega\\) على التوازي مع \\(1\\ \\Omega\\) تكاد لا تغيّر المقاومة الكلية.',true,'موصليتها صغيرة جداً (\\(10^{-5}\\ \\text{S}\\)) مقارنة بـ 1 S.'],
+ ['لحساب مقاومة مجهولة في التوازي من \\(R_T\\) نطرح: \\(R_x=R_T-R_1-R_2\\).',false,'نطرح <b>المقلوبات</b>: \\(\\frac1{R_x}=\\frac1{R_T}-\\frac1{R_1}-\\frac1{R_2}\\).']]})}
    ]},
 
   {st:4,short:'التمرين 14: مفتوحة وقصر',title:'التمرين <span class="ltr">14</span>: الدائرة المفتوحة ودائرة القصر',ref:'ص 101',
@@ -2193,7 +2622,16 @@ B.lesson({
    body:[
     {book:String.raw`<ol start="14"><li>للدائرة الموضحة في الشكل (11) احسب:<br>أ- فرق الجهد \(V_L\) بين طرفي الدائرة المفتوحة.<br>ب- إذا تم عمل قصر بين طرفي المقاومة 2.2 KΩ احسب قيمة \(V_L\).<br>ج- إذا تم عمل قصر بين طرفي \(V_L\) احسب تيار القصر في هذه الحالة.</li></ol>`,ref:'ص 101'},
     {tip:String.raw`<p>هذا التمرين يشبه مثال (3-28): (أ) مثل الحالة قبل القصر — التيار يمر في 2.2 kΩ و 47 kΩ فقط. (ب) القصر على 2.2 kΩ يجعل جهدها صفراً فيظهر جهد البطارية كله على 47 kΩ. (ج) القصر على الطرفين يجعل 3.3 kΩ على التوازي مع 47 kΩ، وتيارها هو تيار القصر.</p>`},
-    {tip:(()=>X.filter(x=>['14'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'}
+    {tip:(()=>X.filter(x=>['14'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: ثلاث حالات للدائرة نفسها',widget:(el,B)=>DCML.cases(el,B,{intro:'الشكل <span class="ltr">(11)</span>: \\(V_L\\) هو جهد الطرفين المفتوحين.',cases:[
+ {q:'(ب) بعد عمل قصر على المقاومة <span class="ltr">2.2 kΩ</span>، كم يصبح \\(V_L\\)؟',opts:[
+  ['صفراً',false,'الصفر يكون على المقاومة المقصورة نفسها، لا على الطرفين.'],
+  ['جهد البطارية كله',true,'لم يبق في مسار التيار إلا <span class="ltr">47 kΩ</span>، فعليها جهد البطارية كله، وهو \\(V_L\\) (لا تيار في <span class="ltr">3.3 kΩ</span>).'],
+  ['كما كان في (أ)',false,'تغيّر مسار التيار بعد القصر، فتغيّر توزيع الجهد.']]},
+ {q:'(ج) بعد قصر الطرفين، أين يمر تيار القصر؟',opts:[
+  ['في المقاومة <span class="ltr">3.3 kΩ</span> وحدها، والمقاومة <span class="ltr">47 kΩ</span> لا يمر فيها شيء',false,'<span class="ltr">47 kΩ</span> تبقى بين النقطتين نفسيهما، فهي على التوازي مع <span class="ltr">3.3 kΩ</span> ويمر فيها تيار أيضاً.'],
+  ['في <span class="ltr">2.2 kΩ</span> ثم يتفرع على <span class="ltr">47 kΩ</span> و <span class="ltr">3.3 kΩ</span> (على التوازي)، وتيار <span class="ltr">3.3 kΩ</span> هو تيار القصر',true,'بعد القصر يكتمل مسار <span class="ltr">3.3 kΩ</span> فتصبح على التوازي مع <span class="ltr">47 kΩ</span>.'],
+  ['لا يمر تيار لأن الطرفين مقصوران',false,'القصر يكمل المسار؛ الذي ينعدم هو الجهد بين الطرفين المقصورين.']]}]})}
    ]},
 
   {st:5,short:'«16» و16 و17: مركب',title:'التمارين <span class="ltr">«16»</span> و<span class="ltr">16</span> و<span class="ltr">17</span>: التوصيل المركب',ref:'ص 102',
@@ -2213,7 +2651,13 @@ B.lesson({
     {html:`<div class="cb-figs">${[[fx12,'الشكل (12)'],[fx13,'الشكل (13)'],[fx14,'الشكل (14)']].map(([f,c])=>`<figure>${box(f(),420)}<figcaption>${c}</figcaption></figure>`).join('')}</div>`},
     {tip:String.raw`<p>في الدائرة السلّمية (الشكل 13) ابدأ من <b>أبعد نقطة عن البطارية</b>: اجمع آخر مقاومتين على التوالي، ثم الناتج على التوازي مع التي قبلها، وهكذا حتى تصل إلى البطارية. ثم ارجع في الاتجاه المعاكس لتحسب التيارات والجهود.</p>`},
     {tip:(()=>X.filter(x=>['«16» (الأول)','16','17'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
-    {watch:String.raw`<p>التمرين الذي بعد 14 مرقم في الكتاب «16» والمفترض 15، وبعده 16 مرة أخرى؛ وبعد 17 يأتي 20.</p>`,fix:true}
+    {watch:String.raw`<p>التمرين الذي بعد 14 مرقم في الكتاب «16» والمفترض 15، وبعده 16 مرة أخرى؛ وبعد 17 يأتي 20.</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب خطوات حل الدائرة السلّمية',widget:(el,B)=>DCML.order(el,B,{intro:'الطريقة العامة للشكل <span class="ltr">(13)</span> وما يشبهه:',steps:[
+ ['اجمع آخر مقاومتين (أبعد نقطة عن البطارية) على التوالي','الاختزال يبدأ من أبعد نقطة عن المصدر.'],
+ ['ضع الناتج على التوازي مع المقاومة التي قبله','لا يظهر هذا الزوج المتوازي إلا بعد جمع آخر مقاومتين.'],
+ ['كرر حتى تصل إلى البطارية وتحصل على \\(R_T\\)','هذا بعد أن تبدأ الاختزال من الطرف البعيد.'],
+ ['احسب التيار الكلي \\(I=E/R_T\\)','يحتاج \\(R_T\\) أولاً.'],
+ ['ارجع في الاتجاه المعاكس لحساب تيارات الفروع وجهودها','التيارات الفرعية تحتاج التيار الكلي أولاً.']]})}
    ]},
 
   {st:6,short:'التمرين 20: دلتا ونجمة',title:'التمرين <span class="ltr">20</span>: شبكة دلتا ونجمة',ref:'ص 103',
@@ -2229,7 +2673,12 @@ B.lesson({
    body:[
     {book:String.raw`<ol start="20"><li>احسب القدرة المغذاة إلى الشبكة الشكل (15).</li></ol>`,ref:'ص 103'},
     {tip:String.raw`<p>حوّل النجمة (9 و 6 و 3 Ω) إلى دلتا بالمعادلة (3-36)، فيصير بين كل طرفين ضلعان على التوازي (ضلع أصلي وضلع جديد). اجمع كل زوج، ثم احسب المقاومة بين a و b، ثم القدرة \(P=V^2/R\).</p>`},
-    {tip:(()=>X.filter(x=>['20'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'}
+    {tip:(()=>X.filter(x=>['20'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: رتّب خطوات حل التمرين 20',widget:(el,B)=>DCML.order(el,B,{steps:[
+ ['حوّل النجمة الداخلية (9 و 6 و 3 Ω) إلى دلتا بالمعادلة (3-36)','بدون التحويل لا تظهر أزواج متوازية.'],
+ ['اجمع كل ضلع جديد على التوازي مع الضلع الأصلي بين الطرفين نفسيهما','هذه الأزواج تظهر بعد التحويل.'],
+ ['احسب المقاومة المكافئة بين a و b','تحتاج الأضلاع المجمّعة أولاً.'],
+ ['احسب القدرة المغذاة \\(P=V^2/R\\)','القدرة آخر خطوة لأنها تحتاج المقاومة المكافئة.']]})}
    ]},
 
   {st:7,short:'التمارين 21–23',title:'التمارين <span class="ltr">21–23</span>: التيار والمقاومة والجهد والقدرة',ref:'ص 103–104',
@@ -2249,7 +2698,11 @@ B.lesson({
     {html:`<div class="cb-figs">${[[fx16,'الشكل (16)'],[fx17,'الشكل (17)'],[fx18,'الشكل (18)']].map(([f,c])=>`<figure>${box(f(),420)}<figcaption>${c}</figcaption></figure>`).join('')}</div>`},
     {tip:String.raw`<p>في التمرين 23 الجهد واحد على الفروع الثلاثة: من الفرع المعلوم \(5\times2=10\ \text{V}\) تعرف جهد المصدر وتيار المقاومة 10 Ω. وفي التمرين 21 تعرف جهد المجموعة الثلاثية من أي فرع فيها.</p>`},
     {tip:(()=>X.filter(x=>['21','22','23'].includes(x.n)).map(x=>`<details class="cb-q"><summary>تمرين ${x.n}</summary><div class="cb-ans">${x.ans}</div></details>`).join('')+`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`)(),title:'الإجابات المقترحة (ليست من الكتاب)'},
-    {watch:String.raw`<p>التمرين 22: اتجاهات أقطاب البطاريات الخمس غير واضحة في رسم الكتاب؛ الإجابة المقترحة تفترض أنها كلها في اتجاه واحد. إذا كانت إحداها معكوسة فاطرح جهدها بدل جمعه.</p>`,fix:true}
+    {watch:String.raw`<p>التمرين 22: اتجاهات أقطاب البطاريات الخمس غير واضحة في رسم الكتاب؛ الإجابة المقترحة تفترض أنها كلها في اتجاه واحد. إذا كانت إحداها معكوسة فاطرح جهدها بدل جمعه.</p>`,fix:true},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'أفكار تحتاجها في التمارين 21–23:',items:[
+ ['في مجموعة توازي، إذا عرفت تيار فرع واحد ومقاومته عرفت جهد كل الفروع.',true,'الجهد واحد على كل فروع التوازي: \\(V=IR\\) لأي فرع.'],
+ ['التيار الكلي الداخل إلى مجموعة توازي يساوي أكبر تيار فرع فيها.',false,'يساوي <b>مجموع</b> تيارات الفروع (قانون كيرشوف للتيار).'],
+ ['إذا كانت إحدى البطاريات الموصلة على التوالي معكوسة الأقطاب فإن جهدها يُطرح بدل أن يُجمع.',true,'جهدها يعاكس جهد الأخريات في الحلقة.']]})}
    ]},
 
   {recap:[

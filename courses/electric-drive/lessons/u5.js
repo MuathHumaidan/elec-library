@@ -121,7 +121,183 @@ B.lesson(FIXL({
  title:'التحريك الكهربائي: أنواعه ومميزاته وعيوبه ونظم تغذية شبكاته',
  summary:'ما المقصود بالتحريك الكهربائي، ونوعاه (مركبة مستقلة ذاتياً أو مركبة تأخذ الطاقة من شبكة)، ومزاياه الثماني وعيوبه الثلاثة، ونظم تغذية الشبكات الثلاثة: التيار المستمر والمتردد أحادي الوجه والمتردد ثلاثي الأوجه.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الخامسة: الهدف العام والأهداف التفصيلية',ref:'ص 51',
    q:'ما الذي يُنتظر منك أن تعرفه وتحسبه حين تنتهي من وحدة «التحريك الكهربائي»؟',
@@ -136,7 +312,12 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة مميزات وعيوب التحريك الكهربائي ونظم تغذية شبكات التحريك وحساب القدرة المحركة.</p>
      <p><b>الأهداف التفصيلية:</b></p><ol><li>أن يعرف المتدرب مميزات وعيوب التحريك الكهربائي.</li><li>أن يعرف المتدرب نظم تغذية شبكات التحريك.</li><li>أن يتمكن المتدرب من حساب القدرة المحركة لدواليب الحركة.</li><li>أن يعرف المتدرب ميكانيكية حركة القطارات.</li></ol>`,ref:'ص 51'},
-    {tip:String.raw`<p>الوحدة أربعة دروس: هذا الدرس نظري (الهدفان 1 و2)، ثم ثلاثة دروس حسابية عن القطار: القوى والقدرة، ثم صندوق التروس والعزم، ثم أمثلة تطبيقية تجمع كل ذلك.</p>`}
+    {tip:String.raw`<p>الوحدة أربعة دروس: هذا الدرس نظري (الهدفان 1 و2)، ثم ثلاثة دروس حسابية عن القطار: القوى والقدرة، ثم صندوق التروس والعزم، ثم أمثلة تطبيقية تجمع كل ذلك.</p>`},
+    {title:'مختبر مصغّر: أين يُدرس كل هدف؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل هدف من أهداف الوحدة اختر: هل يغطيه هذا الدرس، أم الدروس الحسابية بعده؟',cats:['هذا الدرس','الدروس 2–4'],items:[
+ ['أن يعرف المتدرب مميزات وعيوب التحريك الكهربائي.',0,'المزايا الثماني والعيوب الثلاثة في المحطة الرابعة من هذا الدرس (ص 53).'],
+ ['أن يتمكن المتدرب من حساب القدرة المحركة لدواليب الحركة.',1,'هذا حساب؛ يبدأ في الدرس الثاني بالمعادلات (5-1) إلى (5-7).'],
+ ['أن يعرف المتدرب نظم تغذية شبكات التحريك.',0,'النظم الثلاثة في المحطات 5 و6 و7 من هذا الدرس (ص 54–55).'],
+ ['أن يعرف المتدرب ميكانيكية حركة القطارات.',1,'صندوق التروس والعزم وقوة الجر في الدرس الثالث، والأمثلة التطبيقية في الرابع.']]})}
    ]},
 
   {st:2,short:'ما التحريك الكهربائي؟',title:'التحريك الكهربائي: تعريفه ولماذا نستخدمه',ref:'ص 52',
@@ -153,7 +334,12 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>التحريك الكهربائي يقصد به حركة المركبات والقطارات التي تستخدم المحركات الكهربائية لإنتاج الطاقة الميكانيكية اللازمة للتحريك، مثل القطارات والحافلات الكهربائية وعربات الترام ومركبات الديزل الكهربائية. تستخدم الطاقة الكهربائية في التحريك الكهربائي لما تتميز به من <b>نظافة</b> و<b>سهولة في السيطرة على سرعة المحركات الكهربائية</b> و<b>عدم وجود غازات العادم</b>، كما أن القاطرات الكهربائية تحتاج إلى صيانة أقل من نظيرتها الميكانيكية.</p>`,ref:'ص 52'},
     {tip:String.raw`<p>المهم في التعريف هو <b>المحرك الكهربائي</b>: هو الذي يدير الدواليب. أما مصدر الكهرباء فقد يختلف من مركبة لأخرى، وهذا ما يقسم التحريك إلى نوعين في المحطة التالية.</p>`},
-    {add:String.raw`<p>«مركبات الديزل الكهربائية» قد تبدو غريبة في القائمة لأن فيها محرك ديزل؛ لكن الديزل فيها لا يدير الدواليب مباشرة، بل يدير مولداً، والمولد يغذي محركات كهربائية تدير الدواليب. فهي تحريك كهربائي أيضاً.</p>`}
+    {add:String.raw`<p>«مركبات الديزل الكهربائية» قد تبدو غريبة في القائمة لأن فيها محرك ديزل؛ لكن الديزل فيها لا يدير الدواليب مباشرة، بل يدير مولداً، والمولد يغذي محركات كهربائية تدير الدواليب. فهي تحريك كهربائي أيضاً.</p>`},
+    {title:'مختبر مصغّر: هل هذا تحريك كهربائي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'طبّق التعريف: هل يدير <b>محرك كهربائي</b> دواليب المركبة؟',cats:['تحريك كهربائي','ليس تحريكاً كهربائياً'],items:[
+ ['عربة ترام تأخذ التيار من سلك فوقها وتديرها محركات كهربائية',0,'من أمثلة الكتاب نفسه: «وعربات الترام» (ص 52).'],
+ ['مركبة ديزل كهربائية: الديزل يدير مولداً، والمولد يغذي محركات تدير الدواليب',0,'الدواليب تديرها محركات كهربائية، والكتاب يذكر «مركبات الديزل الكهربائية» في التعريف.'],
+ ['سيارة يدير محرك البنزين دواليبها مباشرة عبر ناقل الحركة، ولا محرك كهربائي فيها',1,'التعريف يشترط محركات كهربائية تنتج الطاقة الميكانيكية اللازمة للتحريك، وهذه لا محرك كهربائي فيها.'],
+ ['حافلة كهربائية تديرها محركات كهربائية',0,'«والحافلات الكهربائية» من أمثلة الكتاب.']]})}
    ]},
 
   {st:3,short:'أنواع التحريك',title:'أنواع التحريك الكهربائي: مستقل ذاتياً أو من شبكة',ref:'ص 52',
@@ -175,7 +361,13 @@ B.lesson(FIXL({
      <tr><td>يحتاج شبكة على الطريق؟</td><td>لا</td><td>نعم، ممتدة على طول الطريق</td></tr>
      <tr><td>أين يستخدم؟</td><td>مركبة أرضية أو سفينة…</td><td>النقل البري فقط</td></tr></tbody></table>`,title:'النوعان في جدول'},
     {add:String.raw`<p>قاطرات الديزل الكهربائية في قطارات الشحن مثال على النوع الأول. أما القطارات الكهربائية التي تمر فوقها أسلاك ممتدة على طول الخط، مثل قطار الحرمين السريع، فهي من النوع الثاني.</p>`},
-    {watch:String.raw`<p>عندما تكون المحركات للتيار المستمر والشبكة للتيار المتردد لا بد من <b>تحويل</b>: إما محطات تحويل تغذي شبكة التحريك، وإما أجهزة تحويل محمولة على المركبة نفسها.</p>`}
+    {watch:String.raw`<p>عندما تكون المحركات للتيار المستمر والشبكة للتيار المتردد لا بد من <b>تحويل</b>: إما محطات تحويل تغذي شبكة التحريك، وإما أجهزة تحويل محمولة على المركبة نفسها.</p>`},
+    {title:'مختبر مصغّر: النوع الأول أم الثاني؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الفرق كله في مصدر الطاقة: على متن المركبة، أم من شبكة على الطريق؟',cats:['الأول: مستقل ذاتياً','الثاني: من شبكة توزيع'],items:[
+ ['سفينة تحمل محرك ديزل يدير مولداً يغذي محركاتها',0,'تحمل على متنها كل مستلزمات توليد الطاقة، والكتاب ذكر السفينة مثالاً.'],
+ ['ترام يأخذ التيار من سلك هوائي ممتد فوق الطريق',1,'الطاقة من شبكة توزيع ممتدة على طول الطريق.'],
+ ['مركبة يلزم لها محطات فرعية على الطريق لتعويض الجهد المفقود في الموصلات',1,'المحطات الفرعية ذكرها الكتاب في النوع الثاني.'],
+ ['قاطرة ديزل كهربائية تجر قطار شحن في الصحراء بلا أسلاك فوقها',0,'الديزل والمولد على القاطرة نفسها؛ لا شبكة على الطريق.'],
+ ['وسيلة نقل لا تصلح إلا للنقل البري',1,'«ويستخدم هذا النوع بالطبع في وسائل النقل البري فقط» — لأنه يحتاج شبكة ممتدة على الطريق.']]})}
    ]},
 
   {st:4,short:'المزايا والعيوب',title:'مميزات وعيوب التحريك الكهربائي',ref:'ص 53',
@@ -233,7 +425,21 @@ B.lesson(FIXL({
      <tr><td>المسافة بين محطات التغذية</td><td><span class="ltr">3–5 km</span></td><td><span class="ltr">40–50 km</span></td></tr>
      <tr><td>الخط الراجع</td><td colspan="2">القضبان (وفي الحافلة الكهربائية: خط هوائي ثانٍ)</td></tr></tbody></table>`,title:'أرقام النظام في جدول'},
     {tip:String.raw`<p>لماذا تتقارب محطات التغذية داخل المدن (<span class="ltr">3–5 km</span>)؟ لأن الجهد منخفض (<span class="ltr">600–700&nbsp;V</span>)، فلنقل القدرة نفسها يلزم تيار كبير، والتيار الكبير يسبب هبوط جهد كبيراً في الخطوط؛ فنحتاج محطة قريبة تعوّض الجهد. وخارج المدن الجهد أعلى فتتباعد المحطات.</p>`},
-    {watch:String.raw`<p>شرط هبوط الجهد <span class="ltr">7&nbsp;V</span> خاص <b>بالخط الراجع (القضبان)</b> بين أي نقطتين عليه، أما شرط <span class="ltr">10&#37;</span> بالزيادة أو النقصان فخاص <b>بجهد الحافلات الكهربائية</b>. لا تخلط بينهما.</p>`}
+    {watch:String.raw`<p>شرط هبوط الجهد <span class="ltr">7&nbsp;V</span> خاص <b>بالخط الراجع (القضبان)</b> بين أي نقطتين عليه، أما شرط <span class="ltr">10&#37;</span> بالزيادة أو النقصان فخاص <b>بجهد الحافلات الكهربائية</b>. لا تخلط بينهما.</p>`},
+    {title:'مختبر مصغّر: كم محطة تغذية على الخط؟',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر مكان الخط وطوله (طول الخط <b>رقم تختاره أنت</b>)، والمسافة بين محطات التغذية من الكتاب، وشاهد كم محطة يحتاج الخط.',
+ predict:{q:'خطان لهما الطول نفسه: أحدهما للترام داخل المدينة والآخر خارج المدن. أيهما يحتاج محطات تغذية أكثر؟',opts:[
+  ['خط خارج المدن، لأن جهده أعلى',false,'الجهد الأعلى خارج المدن <span class="ltr">(1500–3000 V)</span> هو بالضبط ما يسمح بتباعد المحطات.'],
+  ['خط الترام داخل المدينة',true,'المحطات داخل المدن كل <span class="ltr">3–5 km</span> وخارجها كل <span class="ltr">40–50 km</span> (ص 54)؛ الجهد المنخفض يعني تياراً أكبر وهبوطاً أكبر فيلزم تعويض الجهد على مسافات قصيرة.'],
+  ['يحتاجان العدد نفسه',false,'المسافة بين المحطات تختلف كثيراً بين النظامين.']]},
+ ins:[{k:'k',l:'مكان الخط',seg:[['in','داخل المدن (الترام)'],['out','خارج المدن']],v:'in'},
+  {k:'sp',l:'المسافة بين محطات التغذية (من مدى الكتاب)',seg:[['lo','أقل المدى'],['hi','أكبر المدى']],v:'lo'},
+  {k:'L',l:'طول الخط',u:'km',min:10,max:200,step:10,v:60,dp:0}],
+ calc:(s,P,B)=>{const IN=s.k==='in',sp=IN?(s.sp==='lo'?3:5):(s.sp==='lo'?40:50),n=Math.floor(s.L/sp)+1,W=340,x0=14,x1=326,X=d=>x0+d/s.L*(x1-x0);
+  let pic=`<svg viewBox="0 0 ${W} 78" role="img" aria-label="محطات التغذية على طول الخط" style="font-family:var(--font)" direction="ltr"><path d="M${x0} 40H${x1}" stroke="var(--fg)" stroke-width="2.4"/>`;
+  for(let i=0;i<n;i++){const x=X(i*sp).toFixed(1);pic+=`<rect x="${(+x-4).toFixed(1)}" y="22" width="8" height="12" rx="2" fill="var(--blue)"/><path d="M${x} 34V40" stroke="var(--blue)" stroke-width="2"/>`}
+  pic+=`<text x="${x0}" y="62" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${x1}" y="62" text-anchor="end" font-size="12" fill="var(--muted)" font-family="var(--mono)">${s.L} km</text></svg>`;
+  return {pic,facts:[['الجهد المستمر',IN?'600–700 V':'1500–3000 V'],['محطة كل',sp+' km'],['عدد محطات التغذية',String(n),'hi']],
+   msg:`محطة في أول الخط ثم واحدة كل <span class="ltr">${sp} km</span>. ${IN?'داخل المدن الجهد منخفض فتتقارب المحطات.':'خارج المدن الجهد أعلى فتتباعد المحطات كثيراً.'} <span class="ml-ill" style="display:block">العدد تقريبي للتوضيح؛ الكتاب يعطي المسافات فقط.</span>`}}})}
    ]},
 
   {st:6,short:'المتردد أحادي الوجه',title:'2) نظام التيار المتردد أحادي الوجه',ref:'ص 54–55',
@@ -253,7 +459,17 @@ B.lesson(FIXL({
     {tip:String.raw`<p>فوائد التردد المنخفض كما عدّها الكتاب، في سلسلة واحدة:</p>
      <ul><li>كفاءة ومعامل قدرة أفضل للمحرك.</li><li>شرارة أقل بين الموحد والفرش.</li><li>ممانعة حثية أقل للموصلات ← جهد مفقود أقل ← محطات تغذية أبعد (<span class="ltr">50–80 km</span>).</li><li>تداخل أقل مع شبكات الهاتف والاتصالات.</li></ul>`,title:'لماذا التردد المنخفض؟'},
     {tip:String.raw`<p>لماذا تقل الممانعة الحثية مع التردد؟ لأنها تتناسب طردياً معه: \(X_L=2\pi f L\). فعند <span class="ltr">16⅔ Hz</span> تكون ثلث قيمتها عند <span class="ltr">50&nbsp;Hz</span>، فيقل هبوط الجهد في الخط وتتباعد محطات التغذية.</p>`},
-    {add:String.raw`<p>«محرك التوالي العام» محرك يشبه محرك التوالي للتيار المستمر (فيه موحد وفرش)، لكنه يعمل على التيار المتردد أيضاً؛ ولهذا ذكر الكتاب أن التردد المنخفض يقلل الشرارة بين الموحد والفرش.</p>`}
+    {add:String.raw`<p>«محرك التوالي العام» محرك يشبه محرك التوالي للتيار المستمر (فيه موحد وفرش)، لكنه يعمل على التيار المتردد أيضاً؛ ولهذا ذكر الكتاب أن التردد المنخفض يقلل الشرارة بين الموحد والفرش.</p>`},
+    {title:'مختبر مصغّر: خفّض التردد وشاهد الممانعة الحثية',widget:(el,B)=>DCML.lab(el,B,{intro:'الممانعة الحثية للموصلات \\(X_L=2\\pi f L\\) تتناسب مع التردد. اختر التردد وشاهد قيمتها نسبةً إلى قيمتها عند <span class="ltr">50 Hz</span> (الموصلات نفسها).',
+ predict:{q:'عند <span class="ltr">16⅔ Hz</span>، كم تصبح الممانعة الحثية للموصلات نسبةً إلى قيمتها عند <span class="ltr">50 Hz</span>؟',opts:[
+  ['ثلاثة أضعافها',false,'التردد قلّ، والممانعة تتناسب معه طردياً فتقل لا تزيد.'],
+  ['نصفها',false,'النصف عند <span class="ltr">25 Hz</span>.'],
+  ['ثلثها',true,'<span class="ltr">16⅔ ÷ 50 = 1/3</span>، فتصير الممانعة ثلث قيمتها، ويقل الجهد المفقود في الخط.']]},
+ ins:[{k:'f',l:'تردد الشبكة',seg:[[50,'50 Hz (الشبكة العامة)'],[25,'25 Hz'],[16.667,'16⅔ Hz']],v:50}],
+ calc:(s,P,B)=>{const r=s.f/50,lo=s.f<50;
+  return {facts:[['التردد',s.f>17?s.f+' Hz':'16⅔ Hz'],['الممانعة الحثية نسبةً إلى 50 Hz',r>0.99?'1 ×':r>0.4?'½ ×':'⅓ ×','hi']],
+   bars:[{l:'الممانعة الحثية للموصلات (نسبة)',v:r,max:1,txt:r>0.99?'100%':r>0.4?'50%':'33%',col:lo?'--on':'--stop'}],
+   msg:lo?'ممانعة أقل ← جهد مفقود أقل ← محطات تغذية أبعد <span class="ltr">(50–80 km)</span>، ومعها كفاءة ومعامل قدرة أفضل للمحرك وشرارة أقل بين الموحد والفرش وتداخل أقل مع الهاتف (ص 54–55).':'عند تردد الشبكة العامة يلزم خفض التردد أولاً: محرك تزامني ثلاثي الأوجه يدير مولداً أحادي الوجه (ص 54).',cls:lo?'':'warn'}}})}
    ]},
 
   {st:7,short:'المتردد ثلاثي الأوجه',title:'3) نظام التيار المتردد ثلاثي الأوجه',ref:'ص 55',
@@ -274,7 +490,14 @@ B.lesson(FIXL({
      <tr><td>مستمر — الحافلة الكهربائية</td><td>—</td><td>—</td><td>خطان</td><td>الخط الهوائي الثاني</td><td>—</td></tr>
      <tr><td>متردد أحادي الوجه</td><td><span class="ltr">11–15&nbsp;kV</span></td><td><span class="ltr">16⅔ / 25&nbsp;Hz</span></td><td>خط واحد</td><td>القضبان</td><td><span class="ltr">50–80 km</span></td></tr>
      <tr><td>متردد ثلاثي الأوجه</td><td><span class="ltr">3.3&nbsp;kV</span></td><td><span class="ltr">16⅔ Hz</span></td><td>خطان</td><td>أحد القضبان (الخط الثالث)</td><td>غير مذكورة</td></tr></tbody></table></div>`,title:'النظم الثلاثة في جدول واحد (من ص 54–55)'},
-    {watch:String.raw`<p>في هذا النظام القضيب ليس «خطاً راجعاً» فقط كما في النظامين السابقين، بل هو <b>الخط الثالث</b>: يحمل أحد الأوجه الثلاثة، والخطان الهوائيان يحملان الوجهين الآخرين.</p>`}
+    {watch:String.raw`<p>في هذا النظام القضيب ليس «خطاً راجعاً» فقط كما في النظامين السابقين، بل هو <b>الخط الثالث</b>: يحمل أحد الأوجه الثلاثة، والخطان الهوائيان يحملان الوجهين الآخرين.</p>`},
+    {title:'مختبر مصغّر: أي نظام هذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر نظام التغذية الذي يطابقه (من ص 54–55).',cats:['التيار المستمر','المتردد أحادي الوجه','المتردد ثلاثي الأوجه'],items:[
+ ['جهد <span class="ltr">3.3 kV</span>، وخطان هوائيان، وأحد القضبان يمثل الخط الثالث',2,'هذا وصف النظام ثلاثي الأوجه في ص 55.'],
+ ['جهد <span class="ltr">11–15 kV</span> وخط هوائي واحد، والقاطرة تحمل محولاً',1,'النظام أحادي الوجه: المحول يخفض الجهد إلى <span class="ltr">300</span> أو <span class="ltr">400 V</span>.'],
+ ['جهد <span class="ltr">600–700 V</span> لعربات الترام داخل المدن',0,'نظام التيار المستمر داخل المدن.'],
+ ['محركات الجر محركات حثية ثلاثية الأوجه',2,'«تستخدم المحركات الحثية الثلاثية الأوجه كمحركات جر في هذه الحالة».'],
+ ['محرك التوالي العام، وتُضبط سرعته بتغيير جهد المحول',1,'النظام أحادي الوجه (ص 54).'],
+ ['تُغذى الشبكة من محطات تحول المتردد <span class="ltr">110–132 kV</span> إلى الجهد المطلوب',0,'محطات تغذية نظام التيار المستمر تأخذ من شبكات المتردد وتحوله إلى تيار مستمر.']]})}
    ]},
 
   {st:8,short:'أسئلة الوحدة',title:'أسئلة وتمارين متنوعة: <span class="ltr">5&#8209;1</span> و<span class="ltr">5&#8209;2</span>',ref:'ص 64',
@@ -292,7 +515,13 @@ B.lesson(FIXL({
      <p><b>5-2</b> ناقش الأنواع المختلفة لنظم تغذية شبكات التحريك الكهربائي.</p>`,ref:'ص 64'},
     {tip:String.raw`<p><b>لـ 5-1:</b> ابدأ بالمزايا الثماني (المحطة 4)، ثم بيّن أيها يهم داخل المدن أكثر: عدم العادم والنظافة، وعزم البدء الكبير والتسارع العالي (كثرة التوقف والانطلاق)، والتغير الناعم في السرعة.</p>
      <p><b>لـ 5-2:</b> لكل نظام اذكر: الجهد، والتردد، وعدد الخطوط الهوائية، وما يمثل الخط الراجع، والمسافة بين محطات التغذية (جدول المحطة 7)، ثم فوائد التردد المنخفض (المحطة 6).</p>`},
-    {tip:String.raw`<p>إجابة مقترحة كاملة لكل سؤال تجدها في الأسلوب الرسمي لهذا الدرس (اضغط «رسمي» في أعلى الصفحة) تحت «أسئلة وتمارين متنوعة».</p>`}
+    {tip:String.raw`<p>إجابة مقترحة كاملة لكل سؤال تجدها في الأسلوب الرسمي لهذا الدرس (اضغط «رسمي» في أعلى الصفحة) تحت «أسئلة وتمارين متنوعة».</p>`},
+    {title:'تحقق سريع: نظم التغذية',widget:(el,B)=>DCML.tf(el,B,{intro:'عبارات تساعدك في السؤال <span class="ltr">5&#8209;2</span>. احكم على كل منها بحسب نص الكتاب.',items:[
+ ['في نظام التيار المستمر تمثل القضبان الخط الراجع للتيار.',true,'إلا في الحافلات الكهربائية، حيث الخطان هوائيان (ص 54).'],
+ ['النظام أحادي الوجه يعمل بتردد <span class="ltr">50 Hz</span> مباشرة من الشبكة العامة.',false,'يستخدم <span class="ltr">16⅔ Hz</span> أو <span class="ltr">25 Hz</span>؛ ومن شبكة <span class="ltr">50/60 Hz</span> يلزم خفض التردد.'],
+ ['التردد المنخفض يقلل التداخل مع شبكات الهاتف والاتصالات.',true,'من فوائد التردد المنخفض التي عدّها الكتاب (ص 55).'],
+ ['في النظام ثلاثي الأوجه تتكون شبكة التحريك من خط هوائي واحد.',false,'من خطين هوائيين، وأحد القضبان يمثل الخط الثالث.'],
+ ['التداخل مع خطوط الهاتف والاتصالات من عيوب التحريك الكهربائي.',true,'العيب الثالث في ص 53، ولهذا يُعد تقليله بالتردد المنخفض فائدة.']]})}
    ]},
 
   {recap:[
@@ -500,7 +729,16 @@ B.lesson(FIXL({
     {book:String.raw`<p>بالإشارة إلى الباب الأول، وبإهمال تأثير الأجزاء الدوارة على كتلة القطار، إذا أثرت قوة جر \(F_a\) على كتلة مقدارها \(m\) وكانت قيمة التسارع الخطي الناتج \(a\) فإن:</p>
      <div class="eq">$$F_a=m\cdot a$$<span class="eqno">(5-3)</span></div>`,ref:'ص 56'},
     {tip:String.raw`<p>هذا هو قانون نيوتن الثاني. الوحدات: الكتلة بالكيلوجرام والتسارع بـ <span class="ltr">m/s²</span> فتخرج القوة بالنيوتن. لذلك نحوّل الطن أولاً: <span class="ltr">250 ton = 250×10³ kg</span>.</p>`},
-    {add:String.raw`<p>«بإهمال تأثير الأجزاء الدوارة»: الدواليب والتروس وأعضاء المحركات الدوارة تحتاج هي أيضاً طاقة لتبدأ الدوران، فتجعل القطار «يتصرف» كأنه أثقل قليلاً. الكتاب يهمل هذا الأثر لتبسيط الحساب.</p>`}
+    {add:String.raw`<p>«بإهمال تأثير الأجزاء الدوارة»: الدواليب والتروس وأعضاء المحركات الدوارة تحتاج هي أيضاً طاقة لتبدأ الدوران، فتجعل القطار «يتصرف» كأنه أثقل قليلاً. الكتاب يهمل هذا الأثر لتبسيط الحساب.</p>`},
+    {title:'مختبر مصغّر: الكتلة والتسارع وقوة الجر',widget:(el,B)=>DCML.lab(el,B,{intro:'تبدأ المنزلقات بأرقام مثال (5-1): <span class="ltr">250 ton</span> و<span class="ltr">0.6 m/s²</span>. غيّرها (أرقام تختارها أنت) وشاهد \\(F_a=m\\cdot a\\).',
+ predict:{q:'ضاعفنا كتلة القطار، وأردنا له نصف التسارع فقط. ماذا يحدث لقوة التسارع \\(F_a\\)؟',opts:[
+  ['تتضاعف',false,'الكتلة تضاعفت فعلاً، لكن التسارع نقص إلى النصف أيضاً.'],
+  ['تبقى كما هي',true,'\\((2m)\\times(a/2)=m\\,a\\): الضعف في الكتلة يلغيه النصف في التسارع.'],
+  ['تقل إلى الربع',false,'الكتلة تضاعفت، فلا تقل القوة إلى الربع.']]},
+ ins:[{k:'m',l:'كتلة القطار m',u:'ton',min:50,max:500,step:10,v:250,dp:0},{k:'a',l:'التسارع a',u:'m/s²',min:0.1,max:1.2,step:0.05,v:0.6,dp:2}],
+ calc:(s,P,B)=>{const Fa=s.m*1000*s.a;return {facts:[['الكتلة بالكيلوجرام',DCML.fm(B,s.m*1000,0)+' kg'],['قوة التسارع F<sub>a</sub>',DCML.fm(B,Fa,0)+' N','hi']],
+  bars:[{l:'F<sub>a</sub> (المقياس حتى 600000 N)',v:Fa,max:600000,txt:DCML.fm(B,Fa,0)+' N'}],
+  msg:Math.abs(s.m-250)<1e-6&&Math.abs(s.a-0.6)<1e-6?'هذه أرقام مثال (5-1): \\(F_a=250\\times10^3\\times0.6=150000\\ \\text{N}\\).':'تذكّر: حوّل الطن إلى كيلوجرام قبل الضرب، وإلا خرجت القوة أصغر ألف مرة.'}}})}
    ]},
 
   {st:3,short:'قوة المقاومة',title:'حساب القوة اللازمة للتغلب على المقاومة لحركة القطار',ref:'ص 56',
@@ -518,7 +756,16 @@ B.lesson(FIXL({
      <div class="eq">$$F_r=m\cdot r$$<span class="eqno">(5-4)</span></div>
      <p>حيث \(r\) هي <b>المقاومة النوعية لحركة القطار</b> ووحداتها <span class="ltr">(N/ton)</span> أو <span class="ltr">(N/kg)</span> طبقاً لوحدة الكتلة.</p>`,ref:'ص 56'},
     {tip:String.raw`<p>\(r\) تعني: كم نيوتن من المقاومة لكل كيلوجرام من كتلة القطار. فإذا كانت \(r=0.05\ \text{N/kg}\) وكتلة القطار <span class="ltr">250 ton = 250000 kg</span> فإن \(F_r=250000\times0.05=12500\ \text{N}\) (مثال 5-1).</p>`},
-    {watch:String.raw`<p>المعادلة (5-4) تجعل \(F_r\) <b>ثابتة</b> لا تتغير مع السرعة؛ أي أن حسابات الكتاب لا تُدخل مقاومة الرياح (التي تزيد مع مربع السرعة) في الأرقام. وانتبه أيضاً: الحرف \(r\) هنا المقاومة النوعية، وسيأتي في الدرس التالي حرف \(r\) آخر بمعنى نصف قطر الدولاب.</p>`}
+    {watch:String.raw`<p>المعادلة (5-4) تجعل \(F_r\) <b>ثابتة</b> لا تتغير مع السرعة؛ أي أن حسابات الكتاب لا تُدخل مقاومة الرياح (التي تزيد مع مربع السرعة) في الأرقام. وانتبه أيضاً: الحرف \(r\) هنا المقاومة النوعية، وسيأتي في الدرس التالي حرف \(r\) آخر بمعنى نصف قطر الدولاب.</p>`},
+    {title:'مختبر مصغّر: هل تتغير قوة المقاومة مع السرعة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'الكتلة <span class="ltr">250 ton</span> من مثال (5-1)، و\\(r\\) من قيم أمثلة الكتاب. حرّك سرعة القطار (رقم تختاره أنت) وراقب \\(F_r\\) في المعادلة (5-4).',
+ predict:{q:'زادت سرعة القطار من <span class="ltr">30 km/h</span> إلى <span class="ltr">60 km/h</span>. ماذا يحدث لـ \\(F_r\\) في حساب الكتاب بالمعادلة (5-4)؟',opts:[
+  ['تتضاعف',false,'المعادلة \\(F_r=m\\,r\\) ليس فيها سرعة.'],
+  ['تصبح أربعة أضعاف',false,'هذا ما يحدث لمقاومة الرياح وحدها (تتناسب مع مربع السرعة)، والكتاب لا يدخلها في الأرقام.'],
+  ['لا تتغير',true,'\\(F_r=m\\,r\\) تعتمد على الكتلة والمقاومة النوعية فقط، فهي ثابتة في كل أمثلة الكتاب.']]},
+ ins:[{k:'r',l:'المقاومة النوعية r (من أمثلة الكتاب)',seg:[[0.04,'0.04 N/kg'],[0.05,'0.05 N/kg'],[0.06,'0.06 N/kg']],v:0.05},{k:'v',l:'سرعة القطار v',u:'km/h',min:0,max:80,step:5,v:30,dp:0}],
+ calc:(s,P,B)=>{const Fr=250000*s.r;return {facts:[['F<sub>r</sub> = m·r',DCML.fm(B,Fr,0)+' N','hi'],['السرعة',s.v+' km/h']],
+  plot:{xr:[0,80],yr:[0,20000],xl:'v (km/h)',yl:'F<tspan font-size="9" dy="3">r</tspan><tspan dy="-3"> (N)</tspan>',curves:[{pts:[[0,Fr],[80,Fr]]}],cur:[s.v,Fr],xt:[0,20,40,60,80],yt:[0,5000,10000,15000,20000]},
+  msg:'الخط أفقي: في المعادلة (5-4) لا تعتمد \\(F_r\\) على السرعة. أما مقاومة الرياح التي ذكرها الكتاب (تتناسب مع مربع السرعة) فلا تدخل في أرقام الأمثلة.'}}})}
    ]},
 
   {st:4,short:'قوة الجاذبية',title:'حساب القوة اللازمة للتغلب على تأثير الجاذبية الأرضية',ref:'ص 56',
@@ -536,7 +783,16 @@ B.lesson(FIXL({
      <div class="eq">$$F_g=W\sin\theta=m\cdot g\cdot\sin\theta$$<span class="eqno">(5-5)</span></div>`,ref:'ص 56'},
     {tip:String.raw`<p>الوزن \(W=m\,g\) يتحلل إلى مركّبتين: \(W\cos\theta\) عمودية على السطح (يحملها القضيب)، و\(W\sin\theta\) موازية للسطح نحو الأسفل (تحاول إرجاع القطار). والمحرك يجب أن يغلب هذه المركّبة الثانية، ولهذا \(F_g=W\sin\theta\).</p>`},
     {tip:String.raw`<p>في الأمثلة يُعطى الميل نسبةً مثل <span class="ltr">1:250</span> أو <span class="ltr">1:80</span> أو <span class="ltr">3:100</span>، ويُستعمل على أنه \(\sin\theta\) مباشرة: \(1/250\) و\(1/80\) و\(0.03\). المعنى: يرتفع القطار متراً واحداً كل <span class="ltr">250 m</span> يقطعها على المنحدر.</p>`,title:'الميل في الأمثلة'},
-    {add:String.raw`<p>الميل <span class="ltr">3:100</span> (أي <span class="ltr">3&#37;</span>) يبدو صغيراً، لكنه في مثال (5-3) يجعل قوة الجاذبية <span class="ltr">73575 N</span>، أكبر من خمسة أضعاف قوة المقاومة <span class="ltr">12500 N</span>. لهذا تُصمم خطوط القطارات بميول صغيرة جداً.</p>`}
+    {add:String.raw`<p>الميل <span class="ltr">3:100</span> (أي <span class="ltr">3&#37;</span>) يبدو صغيراً، لكنه في مثال (5-3) يجعل قوة الجاذبية <span class="ltr">73575 N</span>، أكبر من خمسة أضعاف قوة المقاومة <span class="ltr">12500 N</span>. لهذا تُصمم خطوط القطارات بميول صغيرة جداً.</p>`},
+    {title:'مختبر مصغّر: الميل وقوة الجاذبية',widget:(el,B)=>DCML.lab(el,B,{intro:'القطار <span class="ltr">250 ton</span> و\\(r=0.05\\ \\text{N/kg}\\) من مثال (5-1)، فقوة المقاومة <span class="ltr">12500 N</span>. اختر ميلاً من أمثلة الكتاب وتمارينه وقارن \\(F_g\\) بها.',
+ predict:{q:'أي ميل يجعل قوة الجاذبية أكبر من قوة المقاومة <span class="ltr">12500 N</span>؟',opts:[
+  ['<span class="ltr">1:250</span>',false,'\\(F_g=250\\times10^3\\times9.81/250=9810\\ \\text{N}\\)، أقل من 12500.'],
+  ['<span class="ltr">1:80</span> وما هو أشد منه',true,'عند <span class="ltr">1:80</span> تصبح \\(F_g=30656\\ \\text{N}\\)، وعند <span class="ltr">3:100</span> تصبح 73575 N.'],
+  ['لا يوجد ميل يجعلها أكبر',false,'ميل صغير مثل <span class="ltr">1:80</span> يكفي ليجعلها أكبر.']]},
+ ins:[{k:'s',l:'الميل (sin θ)',seg:[[0.004,'1:250'],[0.01,'1:100'],[0.0125,'1:80'],[0.03,'3:100'],[0.05,'5:100']],v:0.004}],
+ calc:(s,P,B)=>{const Fg=250000*9.81*s.s,Fr=12500,mx=130000;return {facts:[['sin θ',DCML.fm(B,s.s,4)],['F<sub>g</sub> = m·g·sin θ',DCML.fm(B,Fg,0)+' N','hi'],['F<sub>g</sub> ÷ F<sub>r</sub>',DCML.fm(B,Fg/Fr,1)+' ×']],
+  bars:[{l:'قوة الجاذبية F<sub>g</sub>',v:Fg,max:mx,txt:DCML.fm(B,Fg,0)+' N',col:'--live'},{l:'قوة المقاومة F<sub>r</sub>',v:Fr,max:mx,txt:'12500 N',col:'--stop'}],
+  msg:Fg>Fr?'الجاذبية هنا أكبر من المقاومة؛ لهذا تُصمم خطوط القطارات بميول صغيرة جداً.':'على هذا الميل الصغير الجاذبية أقل من المقاومة.'}}})}
    ]},
 
   {st:5,short:'القدرة المحركة',title:'القدرة المحركة لدواليب الحركة',ref:'ص 57',
@@ -555,7 +811,16 @@ B.lesson(FIXL({
      <p>إذا كانت \(\eta_c\) هي كفاءة صندوق التروس، فإن القدرة المطلوبة من محركات التحريك:</p>
      <div class="eq">$$P_m=\frac{P_L}{\eta_c}$$<span class="eqno">(5-7)</span></div>`,ref:'ص 57'},
     {tip:String.raw`<p>لتحويل السرعة من <span class="ltr">km/h</span> إلى <span class="ltr">m/s</span> نضرب في \(\frac{5}{18}\) (لأن <span class="ltr">1 km/h = 1000 m ÷ 3600 s</span>)، فمثلاً <span class="ltr">60 km/h = 16.67 m/s</span>. ووحدة القدرة الناتجة واط عندما تكون القوة بالنيوتن والسرعة بالمتر في الثانية.</p>`,title:'تحويل السرعة'},
-    {watch:String.raw`<p>القدرة \(P_L=F_t\,v\) تزيد مع السرعة. ففي أثناء التسارع (القوة ثابتة والسرعة تزيد) تكون القدرة أكبر ما يمكن في <b>نهاية</b> فترة التسارع؛ ولهذا يطلب مثال (5-1) القدرة «عند نهاية فترة التسارع».</p>`}
+    {watch:String.raw`<p>القدرة \(P_L=F_t\,v\) تزيد مع السرعة. ففي أثناء التسارع (القوة ثابتة والسرعة تزيد) تكون القدرة أكبر ما يمكن في <b>نهاية</b> فترة التسارع؛ ولهذا يطلب مثال (5-1) القدرة «عند نهاية فترة التسارع».</p>`},
+    {title:'مختبر مصغّر: القدرة تكبر مع السرعة',widget:(el,B)=>DCML.lab(el,B,{intro:'قوة التحريك ثابتة طوال التسارع \\(F_t=172310\\ \\text{N}\\) في مثال (5-1). حرّك سرعة القطار من الصفر إلى <span class="ltr">60 km/h</span>، واختر كفاءة صندوق التروس من قيم أمثلة الكتاب.',
+ predict:{q:'في منتصف فترة التسارع (السرعة <span class="ltr">30 km/h</span>)، كم تكون قدرة الدواليب \\(P_L\\) مقارنة بقيمتها في نهاية التسارع <span class="ltr">2872 kW</span>؟',opts:[
+  ['النصف تقريباً',true,'\\(P_L=F_t\\,v\\) والقوة ثابتة، فنصف السرعة يعطي نصف القدرة.'],
+  ['هي نفسها',false,'القدرة تعتمد على السرعة، لا على القوة وحدها.'],
+  ['الربع',false,'العلاقة خطية مع السرعة: \\(P_L=F_t\\,v\\)، لا مع مربعها.']]},
+ ins:[{k:'v',l:'سرعة القطار',u:'km/h',min:0,max:60,step:5,v:30,dp:0},{k:'e',l:'كفاءة صندوق التروس η<sub>c</sub>',seg:[[0.9,'90%'],[0.92,'92%'],[0.95,'95%']],v:0.9}],
+ calc:(s,P,B)=>{const Ft=172310,v=s.v*5/18,PL=Ft*v/1000,Pm=PL/s.e;return {facts:[['v بالمتر في الثانية',DCML.fm(B,v,2)+' m/s'],['P<sub>L</sub> = F<sub>t</sub>·v',DCML.fm(B,PL,0)+' kW','hi'],['P<sub>m</sub> = P<sub>L</sub> ÷ η<sub>c</sub>',DCML.fm(B,Pm,0)+' kW']],
+  plot:{xr:[0,60],yr:[0,3500],xl:'v (km/h)',yl:'P (kW)',curves:[{f:x=>Ft*x*5/18/1000},{f:x=>Ft*x*5/18/1000/s.e,col:'--live',dash:'5 4'}],cur:[s.v,PL],xt:[0,10,20,30,40,50,60],yt:[0,1000,2000,3000]},
+  msg:s.v===60?'نهاية فترة التسارع: \\(P_L=172310\\times16.67\\approx2872\\ \\text{kW}\\)، أكبر قدرة أثناء التسارع.':'الخط المتقطع قدرة المحركات: أعلى من قدرة الدواليب دائماً، لأن جزءاً يضيع في التروس.'}}})}
    ]},
 
   {st:6,short:'مثال 5-1',title:'مثال <span class="ltr">(5&#8209;1)</span>: قوة التحريك والقدرة على منحدر',ref:'ص 57',
@@ -578,7 +843,20 @@ B.lesson(FIXL({
      <div class="eq">$$v=60\times\frac{5}{18}=16.67\ \text{m/s}$$</div>
      <div class="eq">$$\begin{aligned}P_L&=F_t\times v=172310\times16.67\\&=2872\ \text{kW}\end{aligned}$$</div>`,ref:'ص 57'},
     {tip:String.raw`<p>ترتيب الحل يتكرر في كل أمثلة الوحدة: <b>كل قوة وحدها</b> ← نجمعها في \(F_t\) بالمعادلة (5-2) ← نحوّل السرعة إلى <span class="ltr">m/s</span> ← القدرة بالمعادلة (5-6). القدرة <span class="ltr">2872&nbsp;kW</span> هي عند <b>نهاية</b> التسارع لأن السرعة فيها أكبر ما يمكن.</p>`},
-    {tip:String.raw`<p>الحل التفصيلي مع حاسبة تغيّر فيها الأرقام في تبويب «الأمثلة المحلولة» لهذا الدرس.</p>`}
+    {tip:String.raw`<p>الحل التفصيلي مع حاسبة تغيّر فيها الأرقام في تبويب «الأمثلة المحلولة» لهذا الدرس.</p>`},
+    {title:'مختبر مصغّر: افحص خطوات الحل',widget:(el,B)=>DCML.cases(el,B,{intro:'ثلاثة مواضع يقع فيها الخطأ غالباً في مثال (5-1).',cases:[
+ {q:'أي قيمة للكتلة نضعها في \\(F_a=m\\cdot a\\)؟',opts:[
+  ['<span class="ltr">250</span>',false,'هذه بالطن؛ تخرج القوة أصغر ألف مرة.'],
+  ['<span class="ltr">250×10³ kg</span>',true,'الكتلة بالكيلوجرام والتسارع بـ <span class="ltr">m/s²</span> فتخرج القوة بالنيوتن: <span class="ltr">150000 N</span>.'],
+  ['<span class="ltr">250×9.81</span>',false,'هذا وزن (بالكيلونيوتن)، لا كتلة.']]},
+ {q:'أي سرعة نضعها في \\(P_L=F_t\\times v\\)؟',opts:[
+  ['<span class="ltr">16.67 m/s</span>',true,'<span class="ltr">60 × 5/18 = 16.67 m/s</span>، فتخرج القدرة بالواط: <span class="ltr">≈ 2872 kW</span>.'],
+  ['<span class="ltr">60</span>',false,'هذه بالكيلومتر في الساعة؛ القدرة بالواط تحتاج السرعة بالمتر في الثانية.'],
+  ['<span class="ltr">0.6</span>',false,'هذا التسارع، لا السرعة.']]},
+ {q:'لو كان القطار <b>هابطاً</b> بالمعطيات نفسها، كم تكون \\(F_t\\)؟',opts:[
+  ['<span class="ltr">172310 N</span>',false,'هذه حالة الصعود (+F<sub>g</sub>).'],
+  ['<span class="ltr">162500 N</span>',false,'هذه على أرض أفقية (F<sub>g</sub> = 0).'],
+  ['<span class="ltr">152690 N</span>',true,'<span class="ltr">150000 + 12500 − 9810 = 152690 N</span>: الإشارة السالبة في (5-2) عند الهبوط.']]}]})}
    ]},
 
   {st:7,short:'تمرين 5-3',title:'تمرين من أسئلة الوحدة: <span class="ltr">5&#8209;3</span>',ref:'ص 64',
@@ -593,7 +871,16 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>5-3</b> قطار كتلته <span class="ltr">200 ton</span>، بدأ حركته صاعداً لمستوى مائل <span class="ltr">4:100</span> بتسارع <span class="ltr">0.5 m/s²</span> حتى وصلت سرعته <span class="ltr">54 km/h</span>. إذا كانت المقاومة النوعية لحركة القطار <span class="ltr">0.05 N/kg</span> أوجد مقدار قوة التحريك اللازمة في هذه الحالة والقدرة اللازمة لدواليب التحريك عند نهاية فترة التسارع.</p>`,ref:'ص 64'},
-    {tip:String.raw`<p>اتبع خطوات مثال (5-1) نفسها: \(F_a\) ثم \(F_r\) ثم \(F_g\) ثم \(F_t\)، ثم حوّل <span class="ltr">54 km/h</span> إلى <span class="ltr">m/s</span>، ثم \(P_L=F_t\,v\). تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`}
+    {tip:String.raw`<p>اتبع خطوات مثال (5-1) نفسها: \(F_a\) ثم \(F_r\) ثم \(F_g\) ثم \(F_t\)، ثم حوّل <span class="ltr">54 km/h</span> إلى <span class="ltr">m/s</span>، ثم \(P_L=F_t\,v\). تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`},
+    {title:'مختبر مصغّر: تحقق من أرقامك في التمرين 5-3',widget:(el,B)=>DCML.cases(el,B,{intro:'حلّ التمرين على ورقة أولاً، ثم اختر ما وصلت إليه. (الكتاب لا يطبع إجابات؛ هذه نتائج الحل المقترح بطريقة مثال 5-1.)',cases:[
+ {q:'قوة التحريك الكلية \\(F_t\\):',opts:[
+  ['<span class="ltr">110000 N</span>',false,'هذا \\(F_a+F_r\\) فقط؛ نسيت \\(F_g\\).'],
+  ['<span class="ltr">188480 N</span>',true,'<span class="ltr">100000 + 10000 + 78480 = 188480 N</span>.'],
+  ['<span class="ltr">7958000 N</span>',false,'استعملت \\(\\sin\\theta=4\\) بدل 0.04.']]},
+ {q:'قدرة الدواليب في نهاية فترة التسارع \\(P_L\\):',opts:[
+  ['<span class="ltr">≈ 10178 kW</span>',false,'ضربت في <span class="ltr">54</span> دون تحويل السرعة إلى <span class="ltr">m/s</span>.'],
+  ['<span class="ltr">≈ 94 kW</span>',false,'ضربت في التسارع بدل السرعة.'],
+  ['<span class="ltr">≈ 2827 kW</span>',true,'<span class="ltr">v = 54 × 5/18 = 15 m/s</span>، و<span class="ltr">188480 × 15 ≈ 2827 kW</span>.']]}]})}
    ]},
 
   {recap:[
@@ -753,7 +1040,15 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>تنتقل الحركة من محور دوران المحرك، الذي يبذل عزم دوران \(T_m\)، إلى محور دوران الدواليب الدوارة، باستخدام <b>صندوق للتروس</b> لخفض السرعة من \(n_m\) إلى \(n\)، الشكل (5-2).</p>`,ref:'ص 58'},
     {tip:String.raw`<p>في الشكل ترسان: <b>ترس المحرك</b> صغير (عليه \(T_m\) و\(\omega_m\))، و<b>ترس الدولاب</b> كبير (عليه \(T_L\) و\(\omega_L\)). الترس الصغير يلف عدة لفات حتى يلف الكبير لفة واحدة، فتنخفض السرعة. والدولاب قطره \(D\) يدفع القطار بقوة \(F_t\) عند تماسه مع القضيب.</p>`},
-    {add:String.raw`<p>الفكرة نفسها في الدراجة الهوائية: حين تنقل السلسلة إلى ترس خلفي كبير يصبح الصعود أسهل (عزم أكبر) لكن الدراجة أبطأ. محرك القطار سريع وعزمه محدود، والتروس تحوّل جزءاً من سرعته إلى عزم.</p>`}
+    {add:String.raw`<p>الفكرة نفسها في الدراجة الهوائية: حين تنقل السلسلة إلى ترس خلفي كبير يصبح الصعود أسهل (عزم أكبر) لكن الدراجة أبطأ. محرك القطار سريع وعزمه محدود، والتروس تحوّل جزءاً من سرعته إلى عزم.</p>`},
+    {title:'مختبر مصغّر: لفّ ترس المحرك',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر نسبة التحويل من أمثلة الكتاب، ثم حرّك عدد لفات ترس المحرك (رقم تختاره أنت) وشاهد كم يلف ترس الدولاب.',
+ predict:{q:'ترس المحرك لفّ <span class="ltr">7</span> لفات، ونسبة التحويل <span class="ltr">3.5</span>. كم لفة لفّ الدولاب؟',opts:[
+  ['<span class="ltr">24.5</span> لفة',false,'صندوق التروس يخفض السرعة؛ الدولاب يلف أقل من المحرك لا أكثر.'],
+  ['لفتان',true,'<span class="ltr">7 ÷ 3.5 = 2</span>: الترس الصغير يلف <span class="ltr">3.5</span> لفة لكل لفة من الترس الكبير.'],
+  ['<span class="ltr">7</span> لفات',false,'هذا لو لم يكن هناك صندوق تروس.']]},
+ ins:[{k:'sg',l:'نسبة التحويل σ (من أمثلة الكتاب)',seg:[[3,'σ = 3'],[3.5,'σ = 3.5']],v:3.5},{k:'n',l:'لفات ترس المحرك',min:0,max:14,step:0.5,v:3.5,dp:1}],
+ calc:(s,P,B)=>{const nl=s.n/s.sg;return {pic:gearsSVG(s.n*360,-nl*360,s.sg),facts:[['لفات ترس المحرك',DCML.fm(B,s.n,1)],['لفات الدولاب = ÷ σ',DCML.fm(B,nl,2),'hi']],
+  msg:'الخط الأزرق في كل ترس يبين كم دار. الترس الصغير (المحرك) يدور أسرع، والكبير (الدولاب) أبطأ \\(\\sigma\\) مرة: \\(n_L=n_m/\\sigma\\).'}}})}
    ]},
 
   {st:2,short:'العزم ونسبة التحويل',title:'عزم المحركات وعزم الدواليب ونسبة تحويل صندوق التروس',ref:'ص 59',
@@ -779,7 +1074,16 @@ B.lesson(FIXL({
      <div class="eq">$$T_L=\sigma\cdot\eta_c\cdot T_m$$<span class="eqno">(5-11)</span></div>`,ref:'ص 59'},
     {tip:String.raw`<p>كيف خرجت (5-11) من (5-10)؟ نعيد ترتيب الكسر: \(\frac{T_L}{T_m}=\frac{P_L}{P_m}\times\frac{\omega_m}{\omega_L}\). الكسر الأول هو الكفاءة \(\eta_c\)، والثاني هو نسبة التحويل \(\sigma\). إذن \(T_L/T_m=\eta_c\,\sigma\).</p>`,title:'خطوة الاشتقاق'},
     {tip:String.raw`<p>القدرة لا تزيد في التروس أبداً: \(P_L=\eta_c\,P_m\). ما يحدث هو مبادلة: السرعة تقل \(\sigma\) مرة، والعزم يزيد \(\sigma\) مرة (مضروباً في الكفاءة).</p>`},
-    {watch:String.raw`<p>أعلى ص 59 جملة مبتورة تشير إلى «المعادلة (5-14)»، ولا توجد معادلة بهذا الرقم في الكتاب (آخر معادلة (5-13)). المقصود أن \(T_m\) هو العزم الكلي = عدد المحركات × عزم المحرك الواحد، كما يوضحه آخر الصفحة.</p>`,fix:true}
+    {watch:String.raw`<p>أعلى ص 59 جملة مبتورة تشير إلى «المعادلة (5-14)»، ولا توجد معادلة بهذا الرقم في الكتاب (آخر معادلة (5-13)). المقصود أن \(T_m\) هو العزم الكلي = عدد المحركات × عزم المحرك الواحد، كما يوضحه آخر الصفحة.</p>`,fix:true},
+    {title:'مختبر مصغّر: ماذا يتغير في صندوق التروس؟',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر نسبة التحويل والكفاءة من قيم أمثلة الكتاب، وشاهد ثلاث نسب: العزم والسرعة والقدرة (الدولاب ÷ المحرك).',
+ predict:{q:'إذا كبّرنا نسبة التحويل \\(\\sigma\\) والكفاءة ثابتة، ماذا يحدث للنسبة \\(P_L/P_m\\)؟',opts:[
+  ['تكبر مع \\(\\sigma\\)',false,'التروس لا تزيد القدرة أبداً؛ هي تبادل السرعة بالعزم.'],
+  ['لا تتغير؛ تساوي الكفاءة \\(\\eta_c\\)',true,'\\(\\eta_c=P_L/P_m\\). الذي يتغير مع \\(\\sigma\\) هو العزم (يزيد) والسرعة (تقل).'],
+  ['تصغر مع \\(\\sigma\\)',false,'النسبة لا تعتمد على \\(\\sigma\\)، بل على الكفاءة فقط.']]},
+ ins:[{k:'sg',l:'نسبة التحويل σ',seg:[[3,'3'],[3.5,'3.5']],v:3.5},{k:'e',l:'كفاءة صندوق التروس η<sub>c</sub>',seg:[[0.9,'90%'],[0.92,'92%'],[0.95,'95%']],v:0.9}],
+ calc:(s,P,B)=>{const t=s.sg*s.e,w=1/s.sg;return {facts:[['T<sub>L</sub> ÷ T<sub>m</sub> = σ·η<sub>c</sub>',DCML.fm(B,t,3)+' ×','hi'],['ω<sub>L</sub> ÷ ω<sub>m</sub> = 1/σ',DCML.fm(B,w,3)+' ×'],['P<sub>L</sub> ÷ P<sub>m</sub> = η<sub>c</sub>',DCML.fm(B,s.e,2)+' ×']],
+  bars:[{l:'عزم الدولاب نسبةً إلى عزم المحرك',v:t,max:4,txt:DCML.fm(B,t,3)+' ×',col:'--live'},{l:'سرعة الدولاب نسبةً إلى سرعة المحرك',v:w,max:4,txt:DCML.fm(B,w,3)+' ×'},{l:'قدرة الدولاب نسبةً إلى قدرة المحرك',v:s.e,max:4,txt:DCML.fm(B,s.e,2)+' ×',col:'--on'}],
+  msg:'العزم يُضرب في \\(\\sigma\\,\\eta_c\\) (المعادلة 5-11)، والسرعة تُقسم على \\(\\sigma\\)، والقدرة تنقص بقدر المفقودات فقط.'}}})}
    ]},
 
   {st:3,short:'قوة الجر',title:'قوة الجر على حافة الدولاب',ref:'ص 59',
@@ -836,7 +1140,16 @@ B.lesson(FIXL({
      <div class="eq">$$T_m=\frac{186489\times0.92}{2\times0.92\times3.5}=26641\ \text{Nm}$$</div>
      <div class="eq">$$T_m/\text{motor}=\frac{26641}{4}=6660\ \text{Nm}$$</div>`,ref:'ص 60'},
     {watch:String.raw`<p>طُبع \(a=11.67/20=0.58\) ثم \(F_a=250\times10^3\times0.58=145833\ \text{N}\)، وضرب 0.58 فعلاً يعطي <b>145000 N</b>؛ الرقم 145833 جاء من التسارع غير المقرب <b>0.5833</b>. النتيجة النهائية للكتاب صحيحة (<span class="ltr">6660 Nm</span>)، والتصحيح أن يُكتب التسارع 0.5833. لو استُعملت 0.58 فعلاً لكان \(F_t=185656\ \text{N}\) وعزم كل محرك ≈ <b><span class="ltr">6631 Nm</span></b>. الحل كما في الكتاب والحل المصحح كلاهما في تبويب «الأمثلة المحلولة».</p>`,fix:true},
-    {tip:String.raw`<p>خريطة الحل: <b>السرعة والزمن ← التسارع</b> (معادلة الحركة) ← <b>القوى الثلاث</b> (5-3) و(5-4) و(5-5) ← <b>\(F_t\)</b> (5-2) ← <b>العزم الكلي</b> من (5-13) ← <b>القسمة على عدد المحركات</b>.</p>`}
+    {tip:String.raw`<p>خريطة الحل: <b>السرعة والزمن ← التسارع</b> (معادلة الحركة) ← <b>القوى الثلاث</b> (5-3) و(5-4) و(5-5) ← <b>\(F_t\)</b> (5-2) ← <b>العزم الكلي</b> من (5-13) ← <b>القسمة على عدد المحركات</b>.</p>`},
+    {title:'مختبر مصغّر: 0.58 أم 0.5833؟',widget:(el,B)=>DCML.lab(el,B,{intro:'الكتاب كتب التسارع 0.58 لكنه استعمل في الحساب القيمة غير المقربة. بدّل بين القيمتين وتتبّع أثرهما حتى عزم المحرك الواحد (معطيات مثال 5-2).',
+ predict:{q:'كم يساوي فعلاً \\(250\\times10^3\\times0.58\\)؟',opts:[
+  ['<span class="ltr">145833 N</span>',false,'هذا ما طُبع، لكنه ناتج 0.5833 لا 0.58.'],
+  ['<span class="ltr">145000 N</span>',true,'<span class="ltr">250000 × 0.58 = 145000</span>؛ والرقم 145833 جاء من <span class="ltr">0.5833</span>.'],
+  ['<span class="ltr">14500 N</span>',false,'راجع الأصفار: <span class="ltr">250×10³ = 250000</span>.']]},
+ ins:[{k:'a',l:'التسارع المستعمل في F<sub>a</sub>',seg:[[0.58,'0.58 (كما كُتب)'],[0.58333,'0.5833 (غير مقرب)']],v:0.58333}],
+ calc:(s,P,B)=>{const Fa=Math.round(250000*s.a),Fr=10000,Fg=30656,Ft=Fa+Fr+Fg,Tm=Ft*0.92/(2*3.5*0.92),Tp=Tm/4,bk=s.a>0.581;
+  return {facts:[['F<sub>a</sub>',DCML.fm(B,Fa,0)+' N','hi'],['F<sub>t</sub> = F<sub>a</sub> + 10000 + 30656',DCML.fm(B,Ft,0)+' N'],['T<sub>m</sub> الكلي',DCML.fm(B,Tm,0)+' Nm'],['عزم كل محرك',DCML.fm(B,Tp,0)+' Nm','hi']],
+   msg:bk?'هذه أرقام الكتاب: <span class="ltr">145833</span> و<span class="ltr">186489</span> و<span class="ltr">6660 Nm</span>. النتيجة صحيحة، والتصحيح أن يُكتب التسارع 0.5833.':'بالقيمة 0.58 فعلاً: \\(F_t=185656\\ \\text{N}\\) وعزم كل محرك ≈ <span class="ltr">6631 Nm</span>. الفرق صغير، لكنه يبين أن السطرين في الكتاب غير متسقين.',cls:bk?'':'warn'}}})}
    ]},
 
   {st:5,short:'تمرين 5-4',title:'تمرين من أسئلة الوحدة: <span class="ltr">5&#8209;4</span>',ref:'ص 64',
@@ -851,7 +1164,14 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>5-4</b> قطار كتلته <span class="ltr">240 ton</span>، يتحرك بواسطة أربعة محركات، بدأ حركته من السكون صاعداً لمستوى مائل <span class="ltr">1:100</span> واستغرق <span class="ltr">25 s</span> لتصل سرعته <span class="ltr">50 km/h</span>. إذا كانت نسبة تحويل صندوق التروس <span class="ltr">3.5</span> وكفاءته <span class="ltr">95&#37;</span>، المقاومة النوعية لحركة القطار <span class="ltr">0.05 N/kg</span>، قطر الدولاب <span class="ltr">90 cm</span> أوجد مقدار العزم المتولد من كل محرك.</p>`,ref:'ص 64'},
-    {tip:String.raw`<p>اتبع خريطة مثال (5-2) خطوة خطوة، وانتبه: هنا القطر <span class="ltr">0.9 m</span> والكفاءة <span class="ltr">0.95</span> (مختلفان هذه المرة). تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`}
+    {tip:String.raw`<p>اتبع خريطة مثال (5-2) خطوة خطوة، وانتبه: هنا القطر <span class="ltr">0.9 m</span> والكفاءة <span class="ltr">0.95</span> (مختلفان هذه المرة). تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات حل التمرين 5-4',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي تحل به التمرين، على خريطة مثال (5-2).',steps:[
+ ['حوّل السرعة: \\(v=50\\times\\frac{5}{18}\\ \\text{m/s}\\)','التسارع يحتاج السرعة بالمتر في الثانية أولاً.'],
+ ['التسارع من معادلة الحركة: \\(a=v/t\\) و\\(t=25\\ \\text{s}\\)','نحتاج التسارع قبل قوة التسارع.'],
+ ['القوى الثلاث: \\(F_a=m\\,a\\) و\\(F_r=m\\,r\\) و\\(F_g=m\\,g/100\\)','القوى تأتي بعد معرفة التسارع، وقبل جمعها.'],
+ ['اجمعها: \\(F_t=F_a+F_r+F_g\\)','الجمع بعد حساب القوى الثلاث.'],
+ ['العزم الكلي: \\(T_m=\\frac{F_t\\,D}{2\\,\\sigma\\,\\eta_c}\\) بـ \\(D=0.9\\) و\\(\\eta_c=0.95\\)','العزم الكلي يحتاج \\(F_t\\).'],
+ ['عزم كل محرك: \\(T_m\\div4\\)','القسمة على عدد المحركات آخر خطوة.']],done:'قارن نتيجتك بالحل المقترح في تبويب «الأمثلة المحلولة».'})}
    ]},
 
   {recap:[
@@ -1037,7 +1357,19 @@ B.lesson(FIXL({
      <div class="eq">$$v_0=0\qquad v=v_0+a\,t\qquad 22.22=0+0.55\,t$$</div>
      <div class="eq">$$t=\frac{22.22}{0.55}=40.4\ \text{s}$$</div>`,ref:'ص 61'},
     {tip:String.raw`<p>قرّب الكتاب التسارع إلى \(a=0.55\) فخرج الزمن <span class="ltr">40.4 s</span>؛ وبالتسارع غير المقرب <span class="ltr">0.5517</span> يكون الزمن ≈ <span class="ltr">40.3 s</span>. الفرق من التقريب فقط، ولذلك تعرض محاكاة المختبر (التي لا تقرّب) <span class="ltr">40.3 s</span>.</p>`},
-    {add:String.raw`<p>أربعون ثانية للوصول إلى <span class="ltr">80 km/h</span> وهو يصعد منحدراً: هذا ما يجعل القطار الكهربائي مناسباً للخطوط ذات المحطات المتقاربة، فعزم البدء الكبير (من مزايا التحريك الكهربائي في الدرس الأول) يعطي تسارعاً جيداً حتى على الميول.</p>`}
+    {add:String.raw`<p>أربعون ثانية للوصول إلى <span class="ltr">80 km/h</span> وهو يصعد منحدراً: هذا ما يجعل القطار الكهربائي مناسباً للخطوط ذات المحطات المتقاربة، فعزم البدء الكبير (من مزايا التحريك الكهربائي في الدرس الأول) يعطي تسارعاً جيداً حتى على الميول.</p>`},
+    {title:'مختبر مصغّر: العزم والميل وزمن الوصول',widget:(el,B)=>DCML.lab(el,B,{intro:'معطيات مثال (5-3)، وتستطيع تغيير عزم المحرك الواحد (رقم تختاره أنت؛ الكتاب <span class="ltr">8000 Nm</span>) وإزالة الميل. المطلوب: الزمن حتى <span class="ltr">80 km/h</span>.',
+ predict:{q:'لو سار القطار نفسه بالعزم نفسه على أرض <b>أفقية</b>، فإن زمن الوصول إلى <span class="ltr">80 km/h</span>:',opts:[
+  ['يزيد',false,'إزالة الميل تجعل \\(F_g=0\\)، فتبقى قوة أكبر للتسارع.'],
+  ['يقل كثيراً',true,'\\(F_a=224000-12500=211500\\ \\text{N}\\) بدل 137925، فيكبر التسارع ويقصر الزمن.'],
+  ['لا يتغير',false,'الميل يأخذ جزءاً كبيراً من قوة الجر <span class="ltr">(73575 N)</span>.']]},
+ ins:[{k:'T',l:'عزم المحرك الواحد',u:'Nm',min:2000,max:10000,step:500,v:8000,dp:0},{k:'g',l:'المستوى',seg:[[0.03,'صاعد 3:100 (المثال)'],[0,'أفقي']],v:0.03}],
+ calc:(s,P,B)=>{const Ft=2*0.9*3.5*4*s.T/0.9,Fr=12500,Fg=250000*9.81*s.g,Fa=Ft-Fr-Fg,v=80*5/18;
+  if(Fa<=0)return {facts:[['F<sub>t</sub>',DCML.fm(B,Ft,0)+' N'],['F<sub>r</sub> + F<sub>g</sub>',DCML.fm(B,Fr+Fg,0)+' N','bad']],msg:'قوة الجر لا تكفي حتى لغلبة المقاومة والجاذبية: \\(F_a\\le0\\)، فلا يتسارع القطار ولا يبدأ الصعود.',cls:'bad'};
+  const a=Fa/250000,t=v/a;
+  return {facts:[['F<sub>t</sub> (5-13)',DCML.fm(B,Ft,0)+' N'],['F<sub>a</sub> = F<sub>t</sub> − F<sub>r</sub> − F<sub>g</sub>',DCML.fm(B,Fa,0)+' N'],['a',DCML.fm(B,a,3)+' m/s²'],['t = v ÷ a',DCML.fm(B,t,1)+' s','hi']],
+   plot:{xr:[0,120],yr:[0,25],xl:'t (s)',yl:'v (m/s)',curves:[{pts:[[0,0],[Math.min(t,120),Math.min(t,120)*a]]}],cur:[Math.min(t,120),Math.min(t,120)*a],xt:[0,20,40,60,80,100,120],yt:[0,5,10,15,20,25]},
+   msg:(s.T===8000&&s.g===0.03?'أرقام الكتاب: الزمن هنا <span class="ltr">40.3 s</span> بالتسارع غير المقرب، والكتاب <span class="ltr">40.4 s</span> لأنه قرّب التسارع إلى 0.55. ':'')+(t>120?'الزمن أطول من مدى الرسم.':'المنحنى سرعة القطار حتى <span class="ltr">22.22 m/s</span>.')}}})}
    ]},
 
   {st:3,short:'مثال 5-3: التيار',title:'مثال <span class="ltr">(5&#8209;3)</span> — ثانياً: تيار المحرك أثناء فترة التسارع',ref:'ص 62',
@@ -1091,7 +1423,16 @@ B.lesson(FIXL({
      <div class="eq">$$a=\frac{F_a}{m}=\frac{110000}{200000}=0.55\ \text{m/s}^2$$</div>
      <div class="eq">$$v=v_0+a\,t=0+0.55\times20=11\ \text{m/s}$$</div>`,ref:'ص 62–63'},
     {tip:String.raw`<p><span class="ltr">11 m/s</span> تساوي <span class="ltr">11 × 18/5 = 39.6 km/h</span>. للتحويل من <span class="ltr">m/s</span> إلى <span class="ltr">km/h</span> نضرب في \(\frac{18}{5}\) (عكس التحويل السابق).</p>`},
-    {watch:String.raw`<p>هنا يُستعمل الجزء الآخر من معادلة الحركة: المجهول هو \(v\) لا \(t\). لا تقسم على التسارع؛ اضربه في الزمن.</p>`}
+    {watch:String.raw`<p>هنا يُستعمل الجزء الآخر من معادلة الحركة: المجهول هو \(v\) لا \(t\). لا تقسم على التسارع؛ اضربه في الزمن.</p>`},
+    {title:'مختبر مصغّر: السرعة تكبر مع الزمن',widget:(el,B)=>DCML.lab(el,B,{intro:'التسارع ثابت \\(a=0.55\\ \\text{m/s}^2\\) طوال فترة التسارع في مثال (5-4). حرّك الزمن داخل الفترة <span class="ltr">0–20 s</span> واقرأ السرعة.',
+ predict:{q:'كم تكون سرعة القطار بعد <span class="ltr">10 s</span> فقط من البدء؟',opts:[
+  ['<span class="ltr">11 m/s</span>',false,'هذه بعد <span class="ltr">20 s</span>.'],
+  ['<span class="ltr">5.5 m/s</span>',true,'\\(v=a\\,t=0.55\\times10=5.5\\ \\text{m/s}\\): نصف الزمن، نصف السرعة.'],
+  ['<span class="ltr">18.2 m/s</span>',false,'هذا ناتج القسمة \\(10/0.55\\)؛ المجهول هنا السرعة فنضرب.']]},
+ ins:[{k:'t',l:'الزمن من البدء',u:'s',min:0,max:20,step:1,v:10,dp:0}],
+ calc:(s,P,B)=>{const v=0.55*s.t;return {facts:[['v = a·t',DCML.fm(B,v,2)+' m/s','hi'],['بالكيلومتر في الساعة (× 18/5)',DCML.fm(B,v*3.6,1)+' km/h']],
+  plot:{xr:[0,20],yr:[0,12],xl:'t (s)',yl:'v (m/s)',curves:[{pts:[[0,0],[20,11]]}],cur:[s.t,v],xt:[0,5,10,15,20],yt:[0,3,6,9,12]},
+  msg:s.t===20?'نهاية فترة التسارع: \\(v=0.55\\times20=11\\ \\text{m/s}\\) كما في الكتاب.':'الخط مستقيم لأن التسارع ثابت.'}}})}
    ]},
 
   {st:5,short:'مثال 5-5',title:'مثال <span class="ltr">(5&#8209;5)</span>: تيار المحرك في المثال السابق',ref:'ص 63',
@@ -1112,7 +1453,17 @@ B.lesson(FIXL({
      <div class="eq">$$P_m=\frac{P_L}{\eta_c}=\frac{330000}{0.9}=366667\ \text{W}$$</div>
      <div class="eq">$$P_{in}=\frac{P_m}{\eta_m}=\frac{366667}{0.8}=458333\ \text{W}$$</div>
      <div class="eq">$$I=\frac{P_{in}}{V}=\frac{458333}{3000}=153\ \text{A}$$</div>`,ref:'ص 63'},
-    {tip:String.raw`<p>قارن بمثال (5-3): هناك <span class="ltr">542&nbsp;A</span> وهنا <span class="ltr">153&nbsp;A</span> فقط بالجهد نفسه <span class="ltr">3000&nbsp;V</span>. السبب أن قوة الجر هنا أقل (<span class="ltr">120000 N</span> مقابل <span class="ltr">224000 N</span>) والسرعة النهائية أقل بكثير (<span class="ltr">11 m/s</span> مقابل <span class="ltr">22.22 m/s</span>).</p>`}
+    {tip:String.raw`<p>قارن بمثال (5-3): هناك <span class="ltr">542&nbsp;A</span> وهنا <span class="ltr">153&nbsp;A</span> فقط بالجهد نفسه <span class="ltr">3000&nbsp;V</span>. السبب أن قوة الجر هنا أقل (<span class="ltr">120000 N</span> مقابل <span class="ltr">224000 N</span>) والسرعة النهائية أقل بكثير (<span class="ltr">11 m/s</span> مقابل <span class="ltr">22.22 m/s</span>).</p>`},
+    {title:'مختبر مصغّر: كفاءة المحرك والتيار',widget:(el,B)=>DCML.lab(el,B,{intro:'سلسلة القدرة في مثال (5-5): \\(P_L=1320000\\ \\text{W}\\) لأربعة محركات، و\\(\\eta_c=0.9\\)، و\\(V=3000\\ \\text{V}\\). اختر كفاءة المحرك من قيم أمثلة الكتاب وتمارينه.',
+ predict:{q:'لو كانت كفاءة المحرك <span class="ltr">88%</span> بدل <span class="ltr">80%</span>، فإن تيار المحرك:',opts:[
+  ['يزيد',false,'الكفاءة الأعلى تعني مفقودات أقل، فيلزم قدرة داخلة أقل.'],
+  ['يقل',true,'\\(P_{in}=P_m/\\eta_m\\): القسمة على رقم أكبر تعطي قدرة داخلة أقل، فتياراً أقل بالجهد نفسه.'],
+  ['لا يتغير',false,'كفاءة المحرك تدخل في الخطوة قبل الأخيرة.']]},
+ ins:[{k:'em',l:'كفاءة المحرك η<sub>m</sub>',seg:[[0.8,'80% (المثال)'],[0.85,'85%'],[0.88,'88%']],v:0.8}],
+ calc:(s,P,B)=>{const p1=1320000/4,pm=p1/0.9,pin=pm/s.em,I=pin/3000,mx=520000;
+  return {bars:[{l:'P<sub>L</sub> للمحرك الواحد',v:p1,max:mx,txt:DCML.fm(B,p1,0)+' W',col:'--on'},{l:'P<sub>m</sub> = ÷ η<sub>c</sub>',v:pm,max:mx,txt:DCML.fm(B,pm,0)+' W'},{l:'P<sub>in</sub> = ÷ η<sub>m</sub>',v:pin,max:mx,txt:DCML.fm(B,pin,0)+' W',col:'--live'}],
+   facts:[['تيار المحرك I = P<sub>in</sub> ÷ V',DCML.fm(B,I,0)+' A','hi']],
+   msg:s.em===0.8?'أرقام الكتاب: <span class="ltr">458333 W</span> و<span class="ltr">153 A</span>.':'كل خطوة نحو المصدر تكبر القدرة؛ والكفاءة الأعلى تجعل الخطوة الأخيرة أصغر.'}}})}
    ]},
 
   {st:6,short:'تمرينا الوحدة',title:'تمارين من أسئلة الوحدة: <span class="ltr">5&#8209;5</span> و<span class="ltr">5&#8209;6</span>',ref:'ص 64',
@@ -1128,7 +1479,13 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p><b>5-5</b> قطار كتلته <span class="ltr">250 ton</span>، يتحرك بواسطة أربعة محركات، كل منها يولد عزماً مقداره <span class="ltr">7500 Nm</span>، بدأ حركته من السكون صاعداً لمستوى مائل <span class="ltr">5:100</span>. إذا كانت نسبة تحويل صندوق التروس <span class="ltr">3.5</span> وكفاءته <span class="ltr">92&#37;</span> والمقاومة النوعية لحركة القطار <span class="ltr">0.06 N/kg</span> وقطر الدولاب <span class="ltr">90 cm</span>، احسب الزمن اللازم لكي تصل سرعة القطار إلى <span class="ltr">72 km/h</span>، ثم احسب تيار المحرك أثناء فترة التسارع إذا كان جهد المصدر <span class="ltr">3000&nbsp;V</span> وكفاءة المحرك <span class="ltr">88&#37;</span>.</p>
      <p><b>5-6</b> قطار كتلته <span class="ltr">200 ton</span> يتحرك بواسطة أربعة محركات كل منها يولد عزماً مقداره <span class="ltr">6000 Nm</span>، وكانت نسبة تحويل صندوق التروس <span class="ltr">3</span> وكفاءته <span class="ltr">95&#37;</span> والمقاومة النوعية لحركة القطار <span class="ltr">0.04 N/kg</span> وقطر الدولاب <span class="ltr">95 cm</span>، احسب سرعة القطار في نهاية فترة التسارع التي استغرقت <span class="ltr">25 s</span> علماً بأن القطار بدأ حركته من السكون.</p>`,ref:'ص 64'},
-    {tip:String.raw`<p><b>5-5</b> مثل مثال (5-3) تماماً: الزمن ثم التيار. <b>5-6</b> مثل مثال (5-4): مستوى أفقي والمطلوب السرعة. لاحظ في 5-5 أن القطر <span class="ltr">0.9 m</span> والكفاءة <span class="ltr">0.92</span>، وفي 5-6 القطر <span class="ltr">0.95 m</span> والكفاءة <span class="ltr">0.95</span>. الحلول المقترحة في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`}
+    {tip:String.raw`<p><b>5-5</b> مثل مثال (5-3) تماماً: الزمن ثم التيار. <b>5-6</b> مثل مثال (5-4): مستوى أفقي والمطلوب السرعة. لاحظ في 5-5 أن القطر <span class="ltr">0.9 m</span> والكفاءة <span class="ltr">0.92</span>، وفي 5-6 القطر <span class="ltr">0.95 m</span> والكفاءة <span class="ltr">0.95</span>. الحلول المقترحة في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`},
+    {title:'مختبر مصغّر: أي تمرين؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل معطى أو مطلوب اختر التمرين الذي يخصه، قبل أن تبدأ الحل.',cats:['التمرين 5-5','التمرين 5-6'],items:[
+ ['المطلوب الزمن حتى <span class="ltr">72 km/h</span> ثم تيار المحرك',0,'مثل مثال (5-3): الزمن ثم التيار.'],
+ ['المستوى أفقي، فلا توجد \\(F_g\\)',1,'التمرين 5-6 لا يذكر ميلاً، مثل مثال (5-4).'],
+ ['المطلوب السرعة في نهاية تسارع استغرق <span class="ltr">25 s</span>',1,'\\(v=a\\,t\\) كما في مثال (5-4).'],
+ ['ميل <span class="ltr">5:100</span> وكفاءة محرك <span class="ltr">88%</span>',0,'التمرين 5-5: \\(\\sin\\theta=0.05\\)، وكفاءة المحرك للتيار.'],
+ ['قطر الدولاب <span class="ltr">95 cm</span> وكفاءة التروس <span class="ltr">95%</span>',1,'في 5-6 القطر <span class="ltr">0.95 m</span>؛ وفي 5-5 القطر <span class="ltr">0.9 m</span> والكفاءة <span class="ltr">0.92</span>.']]})}
    ]},
 
   {recap:[

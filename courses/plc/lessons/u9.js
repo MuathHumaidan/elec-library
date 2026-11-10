@@ -248,7 +248,228 @@ B.lesson({
  title:'فكرة المصعد ومكوناته ومفاتيح نهاية المشوار',
  summary:'مصعد لثلاثة أدوار بمحرك عادي بسرعة واحدة: مكونات دائرة التحكم وعناوينها في الـ PLC، وتوصيل المداخل والمخارج، وكيف تتغير مفاتيح نهاية المشوار F1 و F2 و F3 مع حركة الكابينة.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,
+  /*PLCML-BEGIN*/(window.PLCML=window.PLCML||(function(){
+/* «مختبر مصغّر» لشبكة PLC — يكمّل DCML (يستعمل أنماطه نفسها): تبدّل المداخل وتشاهد الشبكة والمخارج.
+   o={intro, prog:[شبكات STL]|()=>[…], run:[أرقام الشبكات التي تُنفَّذ], show:[أرقام الشبكات المرسومة], view:'lad'|'fbd'|'stl', names:{عنوان:رمز},
+      ins:[{a:'I0.1', l:'نص', push:true, en:(P)=>متاح؟} | {a, on:'نص عند 1', off:'نص عند 0', v:0|1}],  (عنوان T يُضبط خرجه مباشرة)
+      words:[{k:'MW20', l, min, max, step, v}], time:[[ثوانٍ, 'نص الزر']], outs:[[عنوان, 'اسم', (P)=>نص اختياري]],
+      predict:{q, opts:[[نص, صحيح؟, السبب]]}, pic:(P,s)=>svg بدل رسم الشبكات, msg:(P,s,t)=>html, note:'html'} */
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const ensure=B=>{if(!document.getElementById('dcml-css'))try{DCML.tf(document.createElement('div'),B,{items:[]})}catch(e){}};
+const bd=x=>String(x).replace(/<span class="ltr">(.*?)<\/span>/g,'<bdi dir="ltr">$1</bdi>');
+const mmss=x=>{x=Math.max(0,Math.round(x));const m=Math.floor(x/60),s=x%60;return m+':'+String(s).padStart(2,'0')};
+function net(el,B,o){ensure(B);el.classList.add('ml');
+ const prog=typeof o.prog==='function'?o.prog():o.prog;const run=o.run||prog.map((_,i)=>i),show=o.show||run,view=o.view||'lad',names=o.names||{};
+ let P,t=0;const s={};
+ const put=(a,v)=>{if(a[0]==='T'){const m=P.timer(a);m.q=v?1:0;m.run=0}else P.set(a,v)};
+ const apply=()=>{o.ins.forEach(i=>{if(!i.push)put(i.a,s[i.a])});(o.words||[]).forEach(w=>{P.words[w.k]=s['w:'+w.k]})};
+ const scan=dt=>{apply();P.dt=dt;run.forEach(i=>P.runNet(i));t+=dt};
+ const reset=()=>{P=B.createPLC(prog);t=0;o.ins.forEach(i=>{s[i.a]=i.push?0:(i.v?1:0)});(o.words||[]).forEach(w=>{s['w:'+w.k]=w.v});if(o.init)o.init(P);scan(0.05);scan(0.05);t=0};
+ let h=o.intro?`<p class="ml-in">${o.intro}</p>`:'';
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}"><div class="ml-lbl">${o.inl||'اضغط لتغيير المداخل:'}</div><div class="ml-row" data-ins>${o.ins.map((i,k)=>`<button type="button" class="ml-b" data-k="${k}"></button>`).join('')}</div>`;
+ h+=(o.words||[]).map(w=>`<label class="ml-sl"><span class="ml-h"><span>${w.l}</span><b data-wv="${w.k}"></b></span><input type="range" data-w="${w.k}" min="${w.min}" max="${w.max}" step="${w.step||1}" value="${w.v}" aria-label="${String(w.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=o.time?`<div class="ml-row">${o.time.map(([d,l],k)=>`<button type="button" class="ml-b" data-t="${k}">${l}</button>`).join('')}</div>`:'';
+ h+=`<div class="ml-facts" data-outs></div><div data-net></div><div class="ml-fb" data-msg></div>${o.note?`<p class="ml-ill">${o.note}</p>`:''}<div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div></div>`;
+ el.innerHTML=h;try{B.math(el)}catch(e){}
+ const draw=()=>{
+  qa(el,'[data-ins] [data-k]').forEach(b=>{const i=o.ins[+b.dataset.k];if(i.push){b.innerHTML=i.l;b.disabled=!!(i.en&&!i.en(P));return}const v=s[i.a];b.setAttribute('aria-pressed',String(!!v));b.innerHTML=(v?i.on:i.off)||`${i.l} = <span class="ltr">${v}</span>`});
+  (o.words||[]).forEach(w=>{q(el,`[data-wv="${w.k}"]`).textContent=s['w:'+w.k]});
+  q(el,'[data-outs]').innerHTML=o.outs.map(([a,l,f])=>{const v=P.get(a),tm=a[0]==='T'&&P.tim[a];const rem=tm&&tm.run?` <small>(باقٍ <span class="ltr">${mmss(tm.tv-tm.el)}</span>)</small>`:'';
+   return `<div class="${!f&&v?'hi':''}"><span>${bd(l+rem)}</span><b>${f?f(P):v}</b></div>`}).join('')+(o.time?`<div><span>الزمن منذ البداية</span><b>${mmss(t)}</b></div>`:'');
+  q(el,'[data-net]').innerHTML=(o.pic?`<div class="svgbox" style="margin-top:10px">${o.pic(P,s)}</div>`:'')+show.map(i=>{const n=P.nets[i];const body=view==='stl'?`<div class="tablebox">${B.stlTable(n,P)}</div>`:`<div class="svgbox fixed">${view==='fbd'?B.fbdNetwork(n,P,names):B.ladNetwork(n,P,names)}</div>`;
+   return `<div class="net" style="margin-top:10px"><header><h3>${n.title}</h3></header>${body}</div>`}).join('');
+  const m=q(el,'[data-msg]');m.innerHTML=o.msg?o.msg(P,s,t)||'':'';try{if(m.innerHTML)B.math(m)}catch(e){}};
+ qa(el,'[data-ins] [data-k]').forEach(b=>b.onclick=()=>{const i=o.ins[+b.dataset.k];
+  if(i.push){put(i.a,1);scan(0.1);scan(0.1);put(i.a,0);scan(0.1);scan(0.1)}else{s[i.a]=s[i.a]?0:1;scan(0.1);scan(0.1)}draw()});
+ qa(el,'input[data-w]').forEach(inp=>inp.oninput=()=>{s['w:'+inp.dataset.w]=+inp.value;scan(0.1);draw()});
+ qa(el,'[data-t]').forEach(b=>b.onclick=()=>{const d=o.time[+b.dataset.t][0];for(let n=Math.round(d/0.1);n>0;n--)scan(0.1);draw()});
+ q(el,'[data-rs]').onclick=()=>{reset();qa(el,'input[data-w]').forEach(inp=>inp.value=s['w:'+inp.dataset.w]);draw()};
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]'),body=q(el,'.ml-body');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;try{B.math(fb)}catch(e){}
+   body.classList.remove('ml-lock');q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ reset();draw();return {P:()=>P,draw}}
+return {net,mmss};
+})())/*PLCML-END*/,{intro:true}),
 
   {st:1,short:'بيانات الوحدة',title:'بيانات الوحدة: ماذا ستتعلم؟',ref:'ص 143',
    q:'المصعد من أكثر الآلات التي تستعملها كل يوم… فما الذي يلزم الـ PLC ليعرف أين الكابينة وإلى أين يرسلها؟',
@@ -270,7 +491,11 @@ B.lesson({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج؛ حاسب آلي؛ جهاز عرض ( داتا شو )؛ سبورة؛ كراسة الطالب؛ قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 143'},
     {tip:String.raw`<p>الوحدة تسير في خطين: <b>أولاً</b> نفهم المصعد نفسه (مكوناته، ومفاتيح الأدوار، والدائرة التقليدية التي تشغّله)، <b>ثانياً</b> نحوّل هذه الدائرة إلى برنامج. وهذه هي الطريقة نفسها التي اتبعتها في كل الوحدات السابقة: دائرة تقليدية أولاً، ثم برنامج يقوم مقامها.</p>`,title:'خريطة الوحدة'},
-    {watch:String.raw`<p>«ثانيا» يذكر لغة <span class="ltr">LAD</span> فقط، لكن الوحدة تقدّم البرنامج بثلاث لغات <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span> (ص 149–157). ستدرسها كلها في الدرسين 9.3 و 9.4.</p>`,fix:true}
+    {watch:String.raw`<p>«ثانيا» يذكر لغة <span class="ltr">LAD</span> فقط، لكن الوحدة تقدّم البرنامج بثلاث لغات <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span> (ص 149–157). ستدرسها كلها في الدرسين 9.3 و 9.4.</p>`,fix:true},
+    {title:'تحقق سريع: ماذا في الوحدة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب صفحة بيانات الوحدة (ص 143).',items:[
+ ['المصعد في هذه الوحدة لثلاثة أدوار.',true,'«أولا: فكرة عمل المصعد الكهربائي لثلاثة أدوار».'],
+ ['أول أهداف الوحدة كتابة البرنامج، ثم فهم طريقة عمل المصعد.',false,'الترتيب في الكتاب: أن يعرف طريقة عمل المصعد، ثم أن يكتب برنامج تشغيله.'],
+ [String.raw`يذكر «ثانيا» لغة <span class="ltr">LAD</span> فقط، لكن الوحدة تعرض البرنامج بثلاث لغات.`,true,String.raw`البرنامج مطبوع بلغات <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span> (ص 149–157).`]]})}
    ]},
 
   {st:2,short:'أنواع التحكم',title:'ثالثاً: تركيب وطريقة عمل المصعد',ref:'ص 144',
@@ -289,7 +514,12 @@ B.lesson({
     {predict:{q:'مصعد مستشفى يجب ألا يهتز فيه المريض عند البدء والوقوف. أي نوع من الأنواع التي ذكرها الكتاب أنسب له؟',opts:[
      ['المحرك العادي بسرعة واحدة',false,'هذا أبسط الأنواع، لكن الكتاب لا يذكر أنه يمنع الشعور بحركة البدء والتوقف.'],
      ['التحكم في التردد',true,'الكتاب يصفه بأنه يتحكم في سرعة المحرك «بحيث لا يشعر المستخدم للمصعد بحركة البدء وحركة التوقف» ومن أفضل الأنواع.'],
-     ['لا فرق بين الأنواع الثلاثة',false,'الكتاب يفرّق بينها: النوعان الأولان يمنعان الشعور بالبدء والوقوف، والثالث أبسطها.']]}}
+     ['لا فرق بين الأنواع الثلاثة',false,'الكتاب يفرّق بينها: النوعان الأولان يمنعان الشعور بالبدء والوقوف، والثالث أبسطها.']]}},
+    {title:'مختبر مصغّر: أي نوع من التحكم؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الكتاب يذكر ثلاثة أنواع للتحكم في محرك الكبينة. اختر النوع الذي تصفه كل عبارة.',cats:['التحكم في التردد','محرك بسرعتين مع مكابح','محرك عادي بسرعة واحدة'],items:[
+ ['من أفضل الأنواع، لكن دائرته معقدة بعض الشيء للمبتدئ.',0,'هكذا يصف الكتاب التحكم بسرعة المحرك من خلال التحكم في التردد.'],
+ ['يستعمل مكابح خاصة حتى لا يشعر المستخدم بالبدء والوقوف.',1,'«محرك ذو السرعتين مع مكابح خاصة».'],
+ ['هو النوع الذي ندرسه في هذه الوحدة.',2,'«أبسط هذه الأنواع هو النوع الذي سوف ندرسه … محرك عادي بسرعة واحدة».'],
+ ['يتحكم في سرعة المحرك فلا يشعر الراكب بحركة البدء والتوقف.',0,'التحكم في السرعة عن طريق التردد هو أول نوع يذكره الكتاب.']]})}
    ]},
 
   {st:3,short:'جدول المكونات',title:'جدول المكونات الأساسية لدائرة التحكم',ref:'ص 145',
@@ -309,7 +539,14 @@ B.lesson({
      [String.raw`<span class="ltr">I0.3</span>`,false,String.raw`<span class="ltr">I0.3</span> هو <span class="ltr">SO3</span>: الاستدعاء من <b>خارج</b> الكبينة عند باب الدور الثالث.`],
      [String.raw`<span class="ltr">I0.6</span>`,false,String.raw`<span class="ltr">I0.6</span> هو <span class="ltr">F3</span>، مفتاح نهاية المشوار عند الدور الثالث، ولا يضغطه الراكب.`],
      [String.raw`<span class="ltr">I1.3</span>`,true,String.raw`ضواغط الداخل <span class="ltr">SI1, SI2, SI3</span> عناوينها <span class="ltr">I1.1, I1.2, I1.3</span>، فزر الدور الثالث من الداخل هو <span class="ltr">SI3 = I1.3</span>.`]]}},
-    {watch:String.raw`<p>الجدول يصف <span class="ltr">SS</span> بأنه «مفاتيح أمان غلق الأبواب أو أي مفتاح أمان آخر»، بينما رمزه في <span class="ltr">LAD</span> و<span class="ltr">FBD</span> هو <span class="ltr">STOP</span> وعنوان Network 2 في <span class="ltr">STL</span> هو <span class="ltr">Stop elevator</span>. وهو في شكل التوصيل ضاغط مغلق <span class="ltr">NC</span>. والعلامة <span class="ltr">M0.1</span> المستخدمة في البرنامج غير مذكورة في الجدول.</p>`,fix:true}
+    {watch:String.raw`<p>الجدول يصف <span class="ltr">SS</span> بأنه «مفاتيح أمان غلق الأبواب أو أي مفتاح أمان آخر»، بينما رمزه في <span class="ltr">LAD</span> و<span class="ltr">FBD</span> هو <span class="ltr">STOP</span> وعنوان Network 2 في <span class="ltr">STL</span> هو <span class="ltr">Stop elevator</span>. وهو في شكل التوصيل ضاغط مغلق <span class="ltr">NC</span>. والعلامة <span class="ltr">M0.1</span> المستخدمة في البرنامج غير مذكورة في الجدول.</p>`,fix:true},
+    {title:'مختبر مصغّر: مدخل أم مخرج أم علامة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'اختر مجموعة كل عنصر في جدول المكونات (ص 145)، ثم اقرأ عنوانه.',cats:[String.raw`مدخل <span class="ltr">I</span>`,String.raw`مخرج <span class="ltr">Q</span>`,String.raw`علامة <span class="ltr">M</span>`],items:[
+ [String.raw`<span class="ltr">SO2</span> ضاغط الاستدعاء عند باب الدور الثاني`,0,String.raw`عنوانه <span class="ltr">I0.2</span>: إشارة تدخل إلى الـ PLC.`],
+ [String.raw`<span class="ltr">K4</span> متمم الصعود`,1,String.raw`عنوانه <span class="ltr">Q5.4</span>، وعليه ملف المتمم الذي يشغّل المحرك صعوداً.`],
+ [String.raw`<span class="ltr">K0</span> المتمم المساعد`,2,String.raw`عنوانه <span class="ltr">M0.0</span>: لا يشغّل حملاً خارجياً، فتكفيه علامة داخلية.`],
+ [String.raw`<span class="ltr">F2</span> مفتاح الدور الثاني`,0,String.raw`مدخل له عنوانان: <span class="ltr">I0.5</span> للنقطة <span class="ltr">b</span> و<span class="ltr">I0.7</span> للنقطة <span class="ltr">a</span>.`],
+ [String.raw`<span class="ltr">K2</span> متمم طلب الدور الثاني`,1,String.raw`عنوانه <span class="ltr">Q4.2</span>؛ مخرج حتى لو لم يكن عليه حمل في شكل التوصيل.`],
+ [String.raw`<span class="ltr">S8</span> مفتاح أمان الدور الثاني`,0,String.raw`عنوانه <span class="ltr">I1.5</span>.`]]})}
    ]},
 
   {st:4,short:'توصيل المداخل',title:'شكل توصيل المداخل والمخارج بوحدة PLC',ref:'ص 146',
@@ -329,7 +566,19 @@ B.lesson({
     {predict:{q:'في الشكل، أي المخارج عليها ملف متمم؟',opts:[
      [String.raw`<span class="ltr">Q4.1</span> و<span class="ltr">Q4.2</span> و<span class="ltr">Q4.3</span> فقط`,false,'هذه متممات طلب الأدوار، وليس عليها أحمال في الشكل.'],
      ['كل المخارج الخمسة',false,'الشكل يرسم ملفين فقط.'],
-     [String.raw`<span class="ltr">Q5.4</span> (<span class="ltr">K4</span>) و<span class="ltr">Q5.5</span> (<span class="ltr">K5</span>)`,true,'هما متمما الصعود والنزول اللذان يشغّلان المحرك، فهما وحدهما يحتاجان ملفاً خارج الـ PLC.']]}}
+     [String.raw`<span class="ltr">Q5.4</span> (<span class="ltr">K4</span>) و<span class="ltr">Q5.5</span> (<span class="ltr">K5</span>)`,true,'هما متمما الصعود والنزول اللذان يشغّلان المحرك، فهما وحدهما يحتاجان ملفاً خارج الـ PLC.']]}},
+    {title:'مختبر مصغّر: ماذا يقرأ المدخل؟',widget:(el,B)=>DCML.lab(el,B,{
+ intro:'اختر العنصر، ثم غيّر حالته، وجرّب أن تقطع سلكه، وراقب ما يقرؤه مدخل الـ PLC.',
+ predict:{q:String.raw`الباب مغلق، لكن سلك <span class="ltr">S7</span> انقطع. ماذا يقرأ <span class="ltr">I1.4</span>، وماذا يفهم البرنامج؟`,opts:[
+  [String.raw`<span class="ltr">1</span>، فيستمر المصعد يعمل`,false,'المسار إلى المدخل مقطوع، فلا يصل جهد مهما كانت حالة المفتاح.'],
+  [String.raw`<span class="ltr">0</span>، فيفهم البرنامج أن الباب مفتوح ويوقف المصعد`,true,String.raw`هذا سبب توصيل مفاتيح الأمان مغلقة <span class="ltr">NC</span>: العطل يقود إلى التوقف.`]]},
+ ins:[{k:'e',l:'العنصر',seg:[['so',String.raw`<span class="ltr">SO1</span> ضاغط استدعاء (<span class="ltr">NO</span>)`],['s7',String.raw`<span class="ltr">S7</span> أمان باب الأول (<span class="ltr">NC</span>)`]],v:'s7'},
+  {k:'act',sw:true,v:0,on:'الضاغط مضغوط / الباب مفتوح',off:'الضاغط غير مضغوط / الباب مغلق'},
+  {k:'cut',sw:true,v:0,on:'السلك مقطوع',off:'السلك سليم'}],
+ calc:(s)=>{const no=s.e==='so',bit=s.cut?0:(no?(s.act?1:0):(s.act?0:1)),ad=no?'I0.1':'I1.4';
+  const mean=no?(bit?'أحد يطلب الدور الأول':'لا أحد يطلب الدور الأول'):(bit?'الباب مغلق، يُسمح بالحركة':'الباب مفتوح، يقف كل شيء');
+  return {facts:[[`المدخل <bdi dir="ltr">${ad}</bdi>`,String(bit),bit?'hi':''],['ما يفهمه البرنامج',bit?'1':'0']],
+   msg:String.raw`<b>${mean}.</b> `+(s.cut?(no?String.raw`مع ضاغط <span class="ltr">NO</span> لا يظهر انقطاع السلك: يبدو المدخل كأن أحداً لم يضغط، فلا يُلاحظ العطل إلا عند الاستدعاء.`:String.raw`السلك المقطوع يعطي <span class="ltr">0</span> مثل الباب المفتوح تماماً، فيقف المصعد ويُكتشف العطل فوراً.`):no?String.raw`الضاغط المفتوح <span class="ltr">NO</span> يعطي <span class="ltr">1</span> عند الضغط فقط.`:String.raw`المفتاح المغلق <span class="ltr">NC</span> يعطي <span class="ltr">1</span> في حالته العادية، و<span class="ltr">0</span> عندما يعمل (يُفتح الباب).`),cls:bit?'':'warn'}}})}
    ]},
 
   {st:5,short:'مفاتيح نهاية المشوار',title:'شرح مفاتيح نهاية المشوار',ref:'ص 146',
@@ -353,7 +602,18 @@ B.lesson({
      [String.raw`على <span class="ltr">off</span>، فلا تتحرك`,false,String.raw`<span class="ltr">off</span> فقط والكابينة <b>عند</b> الدور الثاني.`],
      [String.raw`على <span class="ltr">a</span> المتصلة بمتمم النزول، فتنزل حتى يعود F2 إلى <span class="ltr">off</span>`,true,'الكابينة فوق الدور الثاني فيلامس F2 النقطة a، والطريق إلى الدور الثاني نزولاً.']]}},
     {watch:String.raw`<p>لا تتعجب من أن النقطة <span class="ltr">b</span> «تحت» الدور الثاني متصلة بمتمم <b>الصعود</b>: الكابينة تحت الدور الثاني، فإذا طُلب الدور الثاني يجب أن <b>تصعد</b> إليه. وكذلك <span class="ltr">a</span> «فوق» الدور الثاني متصلة بمتمم <b>النزول</b>.</p>`},
-    {add:String.raw`<p>في المصاعد الحديثة تُستعمل لنفس الغرض حساسات مغناطيسية أو ضوئية بدل المفاتيح الميكانيكية، أو مُرمّز (Encoder) يقيس موضع الكابينة بدقة. لكن الفكرة واحدة: إشارة تخبر لوحة التحكم أين الكابينة الآن.</p>`,title:'في المصاعد الحديثة'}
+    {add:String.raw`<p>في المصاعد الحديثة تُستعمل لنفس الغرض حساسات مغناطيسية أو ضوئية بدل المفاتيح الميكانيكية، أو مُرمّز (Encoder) يقيس موضع الكابينة بدقة. لكن الفكرة واحدة: إشارة تخبر لوحة التحكم أين الكابينة الآن.</p>`,title:'في المصاعد الحديثة'},
+    {title:'مختبر مصغّر: حرّك الكابينة وراقب المفاتيح',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`اختر مكان الكابينة، وراقب وضع <span class="ltr">F1</span> و<span class="ltr">F2</span> و<span class="ltr">F3</span> في الرسم وما تقرؤه مداخلها.`,
+ predict:{q:String.raw`الكابينة بين الدور الأول والدور الثاني. على أي وضع يكون <span class="ltr">F2</span>؟`,opts:[
+  [String.raw`<span class="ltr">a</span>`,false,String.raw`<span class="ltr">a</span> للكابينة <b>فوق</b> الدور الثاني.`],
+  [String.raw`<span class="ltr">off</span>`,false,String.raw`<span class="ltr">off</span> فقط والكابينة <b>عند</b> الدور الثاني.`],
+  [String.raw`<span class="ltr">b</span> المتصلة بمتمم الصعود`,true,'الكابينة تحت الدور الثاني، فإذا طُلب الدور الثاني يجب أن تصعد.']]},
+ ins:[{k:'p',l:'مكان الكابينة',seg:[[0,'عند الأول'],[0.5,'بين الأول والثاني'],[1,'عند الثاني'],[1.5,'بين الثاني والثالث'],[2,'عند الثالث']],v:1}],
+ calc:(s)=>{const pos=+s.p,F1a=pos<=0.005,F3a=pos>=1.995,F2=Math.abs(pos-1)<0.03?'off':(pos<1?'b':'a');
+  return {pic:`<div style="max-width:230px;margin-inline:auto">${shaftSVG({pos,K:[0,0,0],doors:[0,0,0],F1a,F3a,F2})}</div>`,
+   facts:[[DCML.lt('F1 (I0.4)'),F1a?'0':'1',F1a?'':'hi'],[DCML.lt('F2 b (I0.5)'),F2==='b'?'1':'0',F2==='b'?'hi':''],[DCML.lt('F2 a (I0.7)'),F2==='a'?'1':'0',F2==='a'?'hi':''],[DCML.lt('F3 (I0.6)'),F3a?'0':'1',F3a?'':'hi']],
+   msg:F1a?String.raw`عند الدور الأول يُفتح <span class="ltr">F1</span> (<span class="ltr">NC</span>) فيقرأ مدخله <span class="ltr">0</span>.`:F3a?String.raw`عند الدور الثالث يُفتح <span class="ltr">F3</span> فيقرأ مدخله <span class="ltr">0</span>.`:F2==='off'?String.raw`عند الدور الثاني طرف <span class="ltr">F2</span> الرئيسي على <span class="ltr">off</span>: لا يلامس <span class="ltr">a</span> ولا <span class="ltr">b</span>.`:F2==='b'?String.raw`تحت الدور الثاني: <span class="ltr">F2</span> على <span class="ltr">b</span> (فرع الصعود <span class="ltr">K4</span>).`:String.raw`فوق الدور الثاني: <span class="ltr">F2</span> على <span class="ltr">a</span> (فرع النزول <span class="ltr">K5</span>).`}}})}
    ]},
 
   {recap:[
@@ -474,7 +734,20 @@ B.lesson({
      ['للإمساك الذاتي بعد ترك الضاغط',false,'الإمساك في هذه الدائرة يتم في فروع K1–K3 عن طريق تلامس T1 المفتوح.'],
      ['لتأخير بدء الحركة',false,'التأخير وظيفة المزمن T1، وليس التلامسات المغلقة.'],
      ['للتعشيق: K4 و K5 يشغلان المحرك نفسه في اتجاهين متعاكسين، فلا يجوز أن يعملا معاً',true,'إذا عمل أحدهما فتح تلامسه المغلق في فرع الآخر فلا يستطيع الآخر أن يعمل.']]}},
-    {watch:String.raw`<p>اسم «النقطة <span class="ltr">X</span>» من عندنا للتوضيح وليس في الكتاب. وقيمة زمن <span class="ltr">T1</span> غير مذكورة في الدائرة التقليدية؛ البرنامج في ص 149 يستخدم <span class="ltr">S5T#5S</span>.</p>`}
+    {watch:String.raw`<p>اسم «النقطة <span class="ltr">X</span>» من عندنا للتوضيح وليس في الكتاب. وقيمة زمن <span class="ltr">T1</span> غير مذكورة في الدائرة التقليدية؛ البرنامج في ص 149 يستخدم <span class="ltr">S5T#5S</span>.</p>`},
+    {title:'مختبر مصغّر: من يغذي بقية الدائرة؟',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`أول فرعين في الدائرة: مفاتيح الأمان <span class="ltr">S7</span> و<span class="ltr">S8</span> و<span class="ltr">S9</span> على التوالي مع ملف <span class="ltr">K0</span>، ثم <span class="ltr">SS</span> مع تلامس <span class="ltr">K0</span> إلى «النقطة <span class="ltr">X</span>» التي تأخذ منها كل الفروع الأخرى تغذيتها.`,
+ predict:{q:String.raw`الأبواب كلها مغلقة، وضغط أحدهم <span class="ltr">SS</span>. ماذا يحدث؟`,opts:[
+  [String.raw`يفصل <span class="ltr">K0</span>`,false,String.raw`ملف <span class="ltr">K0</span> يتغذى من <span class="ltr">S7</span>–<span class="ltr">S9</span> فقط، و<span class="ltr">SS</span> ليس في فرعه.`],
+  [String.raw`يبقى <span class="ltr">K0</span> يعمل، لكن تنقطع التغذية عن النقطة <span class="ltr">X</span> فيقف كل شيء`,true,String.raw`<span class="ltr">SS</span> على التوالي مع تلامس <span class="ltr">K0</span> قبل النقطة <span class="ltr">X</span>.`],
+  ['لا يحدث شيء، لأن الأبواب مغلقة',false,String.raw`<span class="ltr">SS</span> مفتاح أمان مستقل عن الأبواب.`]]},
+ ins:[{k:'d1',sw:true,v:1,on:String.raw`باب الأول مغلق (<span class="ltr">S7</span>)`,off:String.raw`باب الأول مفتوح (<span class="ltr">S7</span>)`},
+  {k:'d2',sw:true,v:1,on:String.raw`باب الثاني مغلق (<span class="ltr">S8</span>)`,off:String.raw`باب الثاني مفتوح (<span class="ltr">S8</span>)`},
+  {k:'d3',sw:true,v:1,on:String.raw`باب الثالث مغلق (<span class="ltr">S9</span>)`,off:String.raw`باب الثالث مفتوح (<span class="ltr">S9</span>)`},
+  {k:'ss',sw:true,v:0,on:String.raw`<span class="ltr">SS</span> مضغوط`,off:String.raw`<span class="ltr">SS</span> غير مضغوط`}],
+ calc:(s)=>{const k0=s.d1&&s.d2&&s.d3,x=k0&&!s.ss;
+  return {facts:[[DCML.lt('K0'),k0?'1':'0',k0?'hi':''],['النقطة X',x?'1':'0',x?'hi':'bad']],cls:x?'':'warn',
+   msg:x?'النقطة X عليها جهد: يمكن أن تعمل متممات الأدوار والصعود والنزول.':!k0?String.raw`باب مفتوح: لا يعمل <span class="ltr">K0</span>، و«جميع أجزاء الدائرة لا تعمل» كما في الملاحظة 1.`:String.raw`<span class="ltr">K0</span> يعمل، لكن <span class="ltr">SS</span> فتح الطريق إلى النقطة <span class="ltr">X</span>: لا تعمل أي فروع بعدها.`}}})}
    ]},
 
   {st:2,short:'خطوات التشغيل',title:'خطوات تشغيل الدائرة',ref:'ص 147',
@@ -535,7 +808,11 @@ B.lesson({
     {predict:{q:'أثناء صعود الكابينة فتح أحدهم باب الدور الأول (S7). ماذا يحدث حسب الملاحظة 1؟',opts:[
      ['يفصل K0 فتتوقف كل أجزاء الدائرة وتقف الكابينة',true,'«في حالة فصل أي مفتاح أمان … أن المتمم ( K0 ) لا يعمل، بالتالي فإن جميع أجزاء الدائرة لا تعمل» (ص 147).'],
      ['تكمل الكابينة إلى الدور المطلوب ثم تقف',false,'K0 يغذي النقطة X، فإذا فصل انقطعت التغذية عن K4 فوراً.'],
-     ['يتوقف الصعود فقط ويبقى النزول ممكناً',false,'K0 يقطع التغذية عن كل الفروع: الصعود والنزول وطلبات الأدوار.']]}}
+     ['يتوقف الصعود فقط ويبقى النزول ممكناً',false,'K0 يقطع التغذية عن كل الفروع: الصعود والنزول وطلبات الأدوار.']]}},
+    {title:'تحقق سريع: ملاحظتا الكتاب',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب الملاحظتين (ص 147–148).',items:[
+ [String.raw`إذا فُصل أي مفتاح أمان لا يعمل <span class="ltr">K0</span>، فلا تعمل أجزاء الدائرة كلها.`,true,'هذا نص الملاحظة 1.'],
+ [String.raw`تلامس المزمن المفتوح يُبقي متمم الدور المطلوب (<span class="ltr">K1</span>–<span class="ltr">K3</span>) ممسوكاً بعد ترك ضاغط التشغيل.`,true,String.raw`الملاحظة 2: تُغلق نقاط المزمن أثناء تشغيل <span class="ltr">K4</span> أو <span class="ltr">K5</span> «ليظل التيار موصلاً» إلى متمم الدور.`],
+ [String.raw`في البرنامج يرجع المزمن <span class="ltr">T1</span> لحظة وقوف المحرك تماماً كما تقول الملاحظة 2.`,false,String.raw`البرنامج يستعمل مزمن تأخير فصل بزمن <span class="ltr mono">S5T#5S</span>، فيبقى <span class="ltr">1</span> مدة 5 ث بعد الوقوف (انظر «انتبه» أعلاه).`]]})}
    ]},
 
   {recap:[
@@ -621,7 +898,14 @@ B.lesson({
      <li><b>Networks 4–6 : FLOOR CALLING</b> — طلبات الأدوار <span class="ltr">K1</span> و<span class="ltr">K2</span> و<span class="ltr">K3</span>.</li>
      <li><b>Network 7 : ELEVATOR UP</b> و<b>Network 8 : ELEVATOR DOWN</b> — <span class="ltr">K4</span> و<span class="ltr">K5</span>.</li></ul>
      <p>سنمرّ عليها في المحطات القادمة مجموعةً مجموعة، وكل الشبكات بالرسم الكامل في تبويب «المختبر».</p>`,title:'ثماني شبكات'},
-    {add:String.raw`<p>عنوان الكتاب «دالة التخزين مع دالة الإلغاء والإبقاء» يشير إلى فكرة «التذكر»: متمم الدور يبقى يعمل بعد ترك الضاغط (إبقاء)، ثم يفصل (إلغاء). في هذا البرنامج يتم ذلك بالإمساك الذاتي عن طريق المزمن، لا بتعليمتي <span class="ltr">S</span> و<span class="ltr">R</span> على المخارج.</p>`,title:'ماذا يعني العنوان؟'}
+    {add:String.raw`<p>عنوان الكتاب «دالة التخزين مع دالة الإلغاء والإبقاء» يشير إلى فكرة «التذكر»: متمم الدور يبقى يعمل بعد ترك الضاغط (إبقاء)، ثم يفصل (إلغاء). في هذا البرنامج يتم ذلك بالإمساك الذاتي عن طريق المزمن، لا بتعليمتي <span class="ltr">S</span> و<span class="ltr">R</span> على المخارج.</p>`,title:'ماذا يعني العنوان؟'},
+    {title:'مختبر مصغّر: أين صار هذا الفرع؟',widget:(el,B)=>DCML.sort(el,B,{intro:'كل فرع من الدائرة التقليدية صار شبكة. اختر الشبكة التي يقابلها كل فرع.',cats:['N1','N2','N3','N4–N6','N7','N8'].map(x=>DCML.lt(x)),items:[
+ [String.raw`<span class="ltr">S7</span> و<span class="ltr">S8</span> و<span class="ltr">S9</span> على التوالي مع ملف <span class="ltr">K0</span>`,0,String.raw`<span class="ltr">Network 1 : SAFE</span>، و<span class="ltr">K0</span> صار العلامة <span class="ltr">M0.0</span>.`],
+ [String.raw`<span class="ltr">SS</span> مع تلامس <span class="ltr">K0</span> إلى النقطة التي تغذي بقية الفروع`,1,String.raw`<span class="ltr">Network 2</span>: الناتج <span class="ltr">M0.1</span> يقوم مقام خط التغذية.`],
+ [String.raw`<span class="ltr">K4</span> أو <span class="ltr">K5</span> يشغّلان ملف المزمن`,2,String.raw`<span class="ltr">Network 3</span>: المزمن <span class="ltr">T1</span> من نوع تأخير الفصل.`],
+ [String.raw`<span class="ltr">SO2</span> أو <span class="ltr">SI2</span> أو إمساك <span class="ltr">K2</span> إلى ملف <span class="ltr">K2</span>`,3,String.raw`طلبات الأدوار في <span class="ltr">Network 4</span> و<span class="ltr">5</span> و<span class="ltr">6</span>، واحدة لكل دور.`],
+ [String.raw`(<span class="ltr">K3</span> مع <span class="ltr">F3</span>) أو (<span class="ltr">K2</span> مع <span class="ltr">b</span>)، ثم <span class="ltr">K5</span> مغلق، إلى <span class="ltr">K4</span>`,4,String.raw`<span class="ltr">Network 7 : ELEVATOR UP</span>.`],
+ [String.raw`(<span class="ltr">K1</span> مع <span class="ltr">F1</span>) أو (<span class="ltr">K2</span> مع <span class="ltr">a</span>)، ثم <span class="ltr">K4</span> مغلق، إلى <span class="ltr">K5</span>`,5,String.raw`<span class="ltr">Network 8 : ELEVATOR DOWN</span>.`]]})}
    ]},
 
   {st:2,short:'الأمان وخط التغذية',title:'Network 1 و Network 2: الأمان وخط التغذية',ref:'ص 149',
@@ -637,7 +921,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>Network 1 : SAFE</b> و <b>Network 2</b></p>`+netsHTML(PROG_BOOK,'lad',[1,2]),ref:'ص 149'},
     {tip:String.raw`<p>البرنامج يرى <b>الإشارة</b> التي تصل إلى المدخل، ولا يرى نوع التلامس في الموقع. المفتاح الموصّل مغلقاً <span class="ltr">NC</span> يعطي <span class="ltr">1</span> في حالته العادية. فإذا أردنا «مرّر ما دام المفتاح مغلقاً» نكتب له في البرنامج <b>تلامساً مفتوحاً</b>: يمرّر عندما يكون المدخل <span class="ltr">1</span>.</p><p>وهكذا فعل الكتاب مع <span class="ltr">S7</span> و<span class="ltr">S8</span> و<span class="ltr">S9</span> و<span class="ltr">SS</span>.</p>`,title:'قاعدة مهمة'},
-    {watch:String.raw`<p>عنوانا Network 2 و Network 3 في <span class="ltr">LAD</span> مكتوبان «<span class="ltr">Title:</span>» بلا عنوان، وفي <span class="ltr">STL</span>: «<span class="ltr">Stop elevator</span>» و«<span class="ltr">Delay time for calling</span>». الرسوم هنا تستخدم عناوين <span class="ltr">STL</span>. والعلامة <span class="ltr">M0.1</span> غير مذكورة في جدول ص 145.</p>`,fix:true}
+    {watch:String.raw`<p>عنوانا Network 2 و Network 3 في <span class="ltr">LAD</span> مكتوبان «<span class="ltr">Title:</span>» بلا عنوان، وفي <span class="ltr">STL</span>: «<span class="ltr">Stop elevator</span>» و«<span class="ltr">Delay time for calling</span>». الرسوم هنا تستخدم عناوين <span class="ltr">STL</span>. والعلامة <span class="ltr">M0.1</span> غير مذكورة في جدول ص 145.</p>`,fix:true},
+    {title:'مختبر مصغّر: افتح باباً واضغط SS',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 1</span> و<span class="ltr">Network 2</span>. كل المفاتيح موصّلة مغلقة <span class="ltr">NC</span>، فالباب المغلق يعطي مدخله <span class="ltr">1</span>.`,
+ predict:{q:String.raw`ضغط أحدهم <span class="ltr">SS</span> والأبواب مغلقة. ماذا يصبح <span class="ltr">M0.0</span> و<span class="ltr">M0.1</span>؟`,opts:[
+  [String.raw`<span class="ltr">M0.0 = 1</span> و<span class="ltr">M0.1 = 0</span>`,true,String.raw`<span class="ltr">SS</span> في <span class="ltr">Network 2</span> فقط: <span class="ltr">K0</span> يبقى، لكن خط التغذية <span class="ltr">M0.1</span> ينقطع.`],
+  [String.raw`الاثنان <span class="ltr">0</span>`,false,String.raw`<span class="ltr">Network 1</span> لا تحتوي <span class="ltr">I0.0</span>.`],
+  [String.raw`الاثنان <span class="ltr">1</span>`,false,String.raw`الضغط على <span class="ltr">SS</span> (<span class="ltr">NC</span>) يجعل <span class="ltr">I0.0 = 0</span>، و<span class="ltr mono">A I 0.0</span> لا يمرّر.`]]},
+ prog:PROG_BOOK.slice(0,2),names:NAMES9,
+ ins:[['I1.4','S7','الأول'],['I1.5','S8','الثاني'],['I1.6','S9','الثالث']].map(([a,n,f])=>({a,v:1,on:String.raw`باب ${f} مغلق (<span class="ltr">${a} = 1</span>)`,off:String.raw`باب ${f} مفتوح (<span class="ltr">${a} = 0</span>)`}))
+  .concat([{a:'I0.0',v:1,on:String.raw`<span class="ltr">SS</span> غير مضغوط (<span class="ltr">I0.0 = 1</span>)`,off:String.raw`<span class="ltr">SS</span> مضغوط (<span class="ltr">I0.0 = 0</span>)`}]),
+ outs:[['M0.0',String.raw`<span class="ltr">K0 (M0.0)</span>`],['M0.1',String.raw`خط التغذية <span class="ltr">M0.1</span>`]],
+ msg:P=>P.get('M0.1')?String.raw`<span class="ltr">M0.1 = 1</span>: بقية الشبكات تستطيع أن تعمل.`:String.raw`<span class="ltr">M0.1 = 0</span>: كل شبكات الطلب والحركة تبدأ بـ <span class="ltr mono">A M 0.1</span>، فلا يعمل شيء.`})}
    ]},
 
   {st:3,short:'المزمن T1',title:'Network 3: مزمن تأخير الفصل T1',ref:'ص 149',
@@ -690,7 +985,18 @@ B.lesson({
      ['لأن T1 صار 1 فأغلق تلامسه المفتوح، فيمرّ التيار عبر تلامس الإمساك K1',true,'هذا هو الفرع الثاني: T1 مفتوح ← Q4.1. والكتاب يقول: «ليظل التيار موصلاً إلى ملف المتمم الخاص بالدور المطلوب … حتى بعد ترك مفتاح التشغيل» (ص 148).'],
      ['لأن SI1 يبقى مضغوطاً من تلقاء نفسه',false,'SI1 ضاغط يعود عند تركه؛ الذي يُبقي K1 هو الإمساك عبر T1.'],
      ['لأن M0.1 يمسكه',false,'M0.1 شرط لازم لكنه لا يكفي وحده؛ يحتاج أحد الفروع الثلاثة.']]}},
-    {tip:String.raw`<p>إذا وقفت الكابينة عند الدور الأول مثلاً، وخلال الـ 5 ث التي يبقى فيها <span class="ltr">K1</span> ممسوكاً ضُغط <span class="ltr">SI3</span> من الداخل، يعمل <span class="ltr">K3</span> فتصعد الكابينة و<span class="ltr">T1</span> ما زال <span class="ltr">1</span>، فيبقى <span class="ltr">K1</span> ممسوكاً طوال الرحلة. وعند الوصول للثالث يعمل <span class="ltr">K5</span> فوراً بسبب <span class="ltr">K1</span> فتعود للأول، ثم تصعد بسبب <span class="ltr">K3</span>… وهكذا تتردد بين الدورين حتى يُفتح مفتاح أمان أو يُضغط <span class="ltr">SS</span>. هذا من تصميم الدائرة نفسها (التقليدية والمبرمجة)، وتستطيع تجربته في المختبر.</p>`,title:'ملاحظة من المحاكاة (ليست من الكتاب)'}
+    {tip:String.raw`<p>إذا وقفت الكابينة عند الدور الأول مثلاً، وخلال الـ 5 ث التي يبقى فيها <span class="ltr">K1</span> ممسوكاً ضُغط <span class="ltr">SI3</span> من الداخل، يعمل <span class="ltr">K3</span> فتصعد الكابينة و<span class="ltr">T1</span> ما زال <span class="ltr">1</span>، فيبقى <span class="ltr">K1</span> ممسوكاً طوال الرحلة. وعند الوصول للثالث يعمل <span class="ltr">K5</span> فوراً بسبب <span class="ltr">K1</span> فتعود للأول، ثم تصعد بسبب <span class="ltr">K3</span>… وهكذا تتردد بين الدورين حتى يُفتح مفتاح أمان أو يُضغط <span class="ltr">SS</span>. هذا من تصميم الدائرة نفسها (التقليدية والمبرمجة)، وتستطيع تجربته في المختبر.</p>`,title:'ملاحظة من المحاكاة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: طلب الدور الأول',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 4</span> وحدها. اضبط <span class="ltr">T1</span> كأن الكابينة واقفة أو تتحرك، ثم اضغط الضاغطين وراقب <span class="ltr">K1</span>.`,
+ predict:{q:String.raw`الكابينة واقفة (<span class="ltr">T1 = 0</span>). ضغطت <span class="ltr">SO1</span> ثم تركته. هل يبقى <span class="ltr">K1</span> يعمل في هذه الشبكة وحدها؟`,opts:[
+  [String.raw`نعم، يمسك نفسه دائماً`,false,String.raw`فرع الإمساك يبدأ بـ <span class="ltr mono">A T 1</span>، فلا يمسك إلا أثناء الحركة.`],
+  [String.raw`لا، لأن الإمساك يحتاج <span class="ltr">T1 = 1</span>`,true,String.raw`في البرنامج الكامل يبدأ <span class="ltr">K5</span> فوراً فيصبح <span class="ltr">T1 = 1</span> ويمسك <span class="ltr">K1</span>. هنا لا يتحرك شيء لأن الشبكة وحدها.`]]},
+ prog:PROG_BOOK.slice(3,4),names:NAMES9,
+ ins:[{a:'T1',on:String.raw`الكابينة تتحرك (<span class="ltr">T1 = 1</span>)`,off:String.raw`الكابينة واقفة (<span class="ltr">T1 = 0</span>)`},
+  {a:'I0.1',l:String.raw`اضغط <span class="ltr">SO1</span> (خارج) واتركه`,push:true},{a:'I1.1',l:String.raw`اضغط <span class="ltr">SI1</span> (داخل) واتركه`,push:true},
+  {a:'M0.1',v:1,on:String.raw`<span class="ltr">M0.1 = 1</span>`,off:String.raw`<span class="ltr">M0.1 = 0</span>`}],
+ outs:[['Q4.1',String.raw`طلب الدور الأول <span class="ltr">K1</span>`]],
+ msg:(P,s)=>P.get('Q4.1')?String.raw`<span class="ltr">K1</span> ممسوك بالفرع <span class="ltr mono">A T 1 / A Q 4.1</span>. اجعل <span class="ltr">T1 = 0</span> (انتهى زمن ما بعد الوقوف) فيفصل.`:s['T1']?String.raw`أثناء الحركة لا يمرّر <span class="ltr">SO1</span> (<span class="ltr mono">AN T 1</span>)، أما <span class="ltr">SI1</span> من الداخل فيمرّر دائماً.`:''})}
    ]},
 
   {st:5,short:'الصعود والنزول',title:'Network 7 و Network 8: الصعود والنزول',ref:'ص 151',
@@ -709,7 +1015,21 @@ B.lesson({
     {predict:{q:'ما وظيفة تلامس Q5.4 المغلق في Network 8؟',opts:[
      ['يمسك K5 بعد ترك الضاغط',false,'الإمساك في Networks 4–6 عن طريق T1.'],
      ['يؤخر النزول 5 ثوانٍ',false,'لا يوجد تأخير في Network 8.'],
-     ['تعشيق: لا ينزل المصعد ما دام K4 (الصعود) يعمل',true,'K4 و K5 يشغلان المحرك نفسه في اتجاهين متعاكسين، فلا يجوز أن يعملا معاً.']]}}
+     ['تعشيق: لا ينزل المصعد ما دام K4 (الصعود) يعمل',true,'K4 و K5 يشغلان المحرك نفسه في اتجاهين متعاكسين، فلا يجوز أن يعملا معاً.']]}},
+    {title:'مختبر مصغّر: طلب الدور الثاني من أسفل ومن أعلى',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`<span class="ltr">Network 7</span> و<span class="ltr">Network 8</span> من برنامج الكتاب، والطلب <span class="ltr">K2</span> (الدور الثاني). غيّر مكان الكابينة وراقب أي محرك يعمل.`,
+ predict:{q:String.raw`<span class="ltr">K2 = 1</span> والكابينة فوق الدور الثاني (<span class="ltr">F2</span> على <span class="ltr">a</span>). أي متمم يعمل؟`,opts:[
+  [String.raw`<span class="ltr">K4</span> صعوداً`,false,String.raw`فرع <span class="ltr">K2</span> في <span class="ltr">Network 7</span> يحتاج <span class="ltr">I0.5</span> (النقطة <span class="ltr">b</span>).`],
+  [String.raw`<span class="ltr">K5</span> نزولاً`,true,String.raw`في <span class="ltr">Network 8</span> الفرع <span class="ltr mono">A Q 4.2 / A I 0.7</span> يمرّر لأن <span class="ltr">F2</span> على <span class="ltr">a</span>.`],
+  ['لا شيء',false,'الكابينة ليست عند الدور الثاني، فيجب أن تتحرك إليه.']]},
+ ins:[{k:'k2',sw:true,v:1,on:String.raw`<span class="ltr">K2 = 1</span> (طُلب الثاني)`,off:String.raw`<span class="ltr">K2 = 0</span>`},
+  {k:'f',l:String.raw`مكان الكابينة (وضع <span class="ltr">F2</span>)`,seg:[['b','تحت الثاني (b)'],['off','عند الثاني (off)'],['a','فوق الثاني (a)']],v:'a'}],
+ calc:(s)=>{const P=B.createPLC(PROG_BOOK.slice(6,8));const set=()=>{P.set('M0.1',1);P.set('Q4.1',0);P.set('Q4.3',0);P.set('Q4.2',s.k2);P.set('I0.5',s.f==='b'?1:0);P.set('I0.7',s.f==='a'?1:0);P.set('I0.4',1);P.set('I0.6',1)};
+  set();P.scan(0.1);set();P.scan(0.1);const up=P.get('Q5.4'),dn=P.get('Q5.5');
+  return {facts:[[DCML.lt('K4 (Q5.4)'),String(up),up?'hi':''],[DCML.lt('K5 (Q5.5)'),String(dn),dn?'hi':'']],
+   pic:`<div class="svgbox fixed">${B.ladNetwork(P.nets[0],P,NAMES9)}</div><div class="svgbox fixed">${B.ladNetwork(P.nets[1],P,NAMES9)}</div>`,
+   msg:!s.k2?String.raw`لا طلب، فلا حركة.`:up?String.raw`الكابينة تحت الثاني: تصعد حتى يترك <span class="ltr">F2</span> النقطة <span class="ltr">b</span>.`:dn?String.raw`الكابينة فوق الثاني: تنزل حتى يترك <span class="ltr">F2</span> النقطة <span class="ltr">a</span>.`:String.raw`<span class="ltr">F2</span> على <span class="ltr">off</span>: الكابينة عند الثاني فلا يمرّر أي فرع، فتقف.`}},
+ })}
    ]},
 
   {st:6,short:'خطأ F1 و F3',title:'لماذا S7 و SS بتلامس مفتوح، و F1 و F3 بتلامس مغلق؟',ref:'ص 146، 151',
@@ -728,7 +1048,17 @@ B.lesson({
      ['تنزل وتقف عند الدور الأول',false,'هذا ما يجب أن يحدث، لكن AN I 0.4 لا يمرّر وI0.4 = 1.'],
      ['يعمل K1 لكن K5 لا يعمل، فلا تتحرك الكابينة',true,'F1 مغلق والكابينة بعيدة فيقرأ I0.4 = 1، و AN I 0.4 لا يمرّر إلا عند 0.'],
      ['تصعد إلى الدور الثالث',false,'K4 يحتاج K3 أو K2؛ لم يُطلب أي منهما.']]}},
-    {tip:String.raw`<p>التصحيح بإحدى طريقتين متكافئتين:</p><ol><li>إبقاء التوصيل <span class="ltr">NC</span> كما في الشكل، وتغيير السطرين إلى <span class="ltr">A I 0.6</span> في Network 7 و<span class="ltr">A I 0.4</span> في Network 8 — بنفس طريقة الكتاب مع <span class="ltr">S7</span>–<span class="ltr">S9</span> و<span class="ltr">SS</span>.</li><li>أو إبقاء البرنامج كما هو وتوصيل <span class="ltr">F1</span> و<span class="ltr">F3</span> بتلامس مفتوح <span class="ltr">NO</span>.</li></ol><p>في المختبر زر للتبديل بين «كما في الكتاب» و«المصحح».</p>`,title:'كيف نصحح؟'}
+    {tip:String.raw`<p>التصحيح بإحدى طريقتين متكافئتين:</p><ol><li>إبقاء التوصيل <span class="ltr">NC</span> كما في الشكل، وتغيير السطرين إلى <span class="ltr">A I 0.6</span> في Network 7 و<span class="ltr">A I 0.4</span> في Network 8 — بنفس طريقة الكتاب مع <span class="ltr">S7</span>–<span class="ltr">S9</span> و<span class="ltr">SS</span>.</li><li>أو إبقاء البرنامج كما هو وتوصيل <span class="ltr">F1</span> و<span class="ltr">F3</span> بتلامس مفتوح <span class="ltr">NO</span>.</li></ol><p>في المختبر زر للتبديل بين «كما في الكتاب» و«المصحح».</p>`,title:'كيف نصحح؟'},
+    {title:'مختبر مصغّر: نسخة الكتاب أم المصححة؟',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`<span class="ltr">Network 8</span> مع طلب الدور الأول (<span class="ltr">K1 = 1</span>). <span class="ltr">F1</span> موصّل <span class="ltr">NC</span>: يقرأ <span class="ltr">I0.4 = 1</span> والكابينة بعيدة، و<span class="ltr">0</span> عند الدور الأول.`,
+ ins:[{k:'v',l:'البرنامج',seg:[['b',String.raw`كما في الكتاب (<span class="ltr">AN I 0.4</span>)`],['f',String.raw`المصحح (<span class="ltr">A I 0.4</span>)`]],v:'b'},
+  {k:'p',l:'مكان الكابينة',seg:[['2','عند الدور الثاني'],['1','عند الدور الأول']],v:'2'}],
+ calc:(s)=>{const P=B.createPLC((s.v==='f'?PROG_FIX:PROG_BOOK).slice(7,8));const at1=String(s.p)==='1';
+  const set=()=>{P.set('M0.1',1);P.set('Q4.1',1);P.set('Q4.2',0);P.set('Q5.4',0);P.set('I0.4',at1?0:1);P.set('I0.7',0)};set();P.scan(0.1);
+  const dn=P.get('Q5.5'),good=at1?!dn:!!dn;
+  return {facts:[[DCML.lt('I0.4'),at1?'0':'1'],[DCML.lt('K5 (Q5.5)'),String(dn),dn?'hi':''],['السلوك',good?'صحيح':'خطأ',good?'':'bad']],
+   pic:`<div class="svgbox fixed">${B.ladNetwork(P.nets[0],P,NAMES9)}</div>`,cls:good?'':'bad',
+   msg:good?(at1?'الكابينة عند الأول: لا ينزل المحرك، فتقف كما يجب.':'الكابينة بعيدة عن الأول: ينزل المحرك إليه كما يجب.'):(at1?String.raw`الكابينة وصلت الدور الأول و<span class="ltr">K5</span> ما زال يعمل! في المصعد الحقيقي تتجاوز الكابينة الدور.`:String.raw`الكابينة بعيدة عن الأول و<span class="ltr">K5</span> لا يعمل: الطلب لا يُنفَّذ.`)}}})}
    ]},
 
   {recap:[
@@ -812,7 +1142,18 @@ B.lesson({
      [String.raw`عندما يصبح <span class="ltr">M0.1 = 0</span> (فتح أمان أو ضغط <span class="ltr">SS</span>)`,true,'النفي يقلب 0 إلى 1 على المدخل R، فيُصفَّر المزمن، كالتلامس المغلق في LAD.'],
      [String.raw`عندما يصبح <span class="ltr">M0.1 = 1</span>`,false,'M0.1 = 1 هو الحالة العادية؛ لو صفّر المزمن عندها لما عمل أبداً.'],
      ['عند كل وقوف للكابينة',false,'الوقوف يُرجع المدخل S إلى 0، فيبدأ زمن التأخير ولا يُصفَّر فوراً.']]}},
-    {watch:String.raw`<p>عنوانا <span class="ltr">FBD</span> (ص 152) و<span class="ltr">STL</span> (ص 156) يذكران «والعدادات»، ولا يوجد في برنامج المصعد أي عداد؛ يوجد مزمن واحد <span class="ltr">T1</span> فقط. والخطأ نفسه في <span class="ltr">F1</span> و<span class="ltr">F3</span> يظهر هنا دائرة نفي على <span class="ltr">I0.6</span> و<span class="ltr">I0.4</span> (ص 154–155).</p>`,fix:true}
+    {watch:String.raw`<p>عنوانا <span class="ltr">FBD</span> (ص 152) و<span class="ltr">STL</span> (ص 156) يذكران «والعدادات»، ولا يوجد في برنامج المصعد أي عداد؛ يوجد مزمن واحد <span class="ltr">T1</span> فقط. والخطأ نفسه في <span class="ltr">F1</span> و<span class="ltr">F3</span> يظهر هنا دائرة نفي على <span class="ltr">I0.6</span> و<span class="ltr">I0.4</span> (ص 154–155).</p>`,fix:true},
+    {title:'مختبر مصغّر: طلب الدور الثاني بالبوابات',widget:(el,B)=>PLCML.net(el,B,{view:'fbd',
+ intro:String.raw`<span class="ltr">Network 5</span> بلغة <span class="ltr">FBD</span>. غيّر المداخل وراقب خرج كل بوابة <span class="ltr">&amp;</span> و<span class="ltr">&gt;=1</span>.`,
+ predict:{q:String.raw`الكابينة تتحرك (<span class="ltr">T1 = 1</span>) وضغط شخص <span class="ltr">SO2</span> من الخارج. هل يعمل <span class="ltr">K2</span>؟`,opts:[
+  [String.raw`نعم، لأن البوابة <span class="ltr">&gt;=1</span> يكفيها مدخل واحد`,false,String.raw`مدخل <span class="ltr">SO2</span> يمر أولاً في بوابة <span class="ltr">&amp;</span> مع <span class="ltr">T1</span> المنفي، وخرجها الآن <span class="ltr">0</span>.`],
+  [String.raw`لا، دائرة النفي على <span class="ltr">T1</span> تجعل بوابة <span class="ltr">SO2</span> صفراً أثناء الحركة`,true,String.raw`هذا هو حجب ضواغط الخارج أثناء الحركة (<span class="ltr mono">AN T 1</span>).`]]},
+ prog:PROG_BOOK.slice(4,5),names:NAMES9,
+ ins:[{a:'T1',on:String.raw`تتحرك (<span class="ltr">T1 = 1</span>)`,off:String.raw`واقفة (<span class="ltr">T1 = 0</span>)`},
+  {a:'I0.2',l:String.raw`اضغط <span class="ltr">SO2</span> (خارج)`,push:true},{a:'I1.2',l:String.raw`اضغط <span class="ltr">SI2</span> (داخل)`,push:true},
+  {a:'M0.1',v:1,on:String.raw`<span class="ltr">M0.1 = 1</span>`,off:String.raw`<span class="ltr">M0.1 = 0</span>`}],
+ outs:[['Q4.2',String.raw`طلب الدور الثاني <span class="ltr">K2</span>`]],
+ msg:(P,s)=>P.get('Q4.2')&&s['T1']?String.raw`<span class="ltr">K2</span> ممسوك: بوابة <span class="ltr">&amp;</span> الثانية (<span class="ltr">T1</span> و<span class="ltr">K2</span>) خرجها <span class="ltr">1</span>.`:''})}
    ]},
 
   {st:2,short:'لغة STL',title:'٣- دائرة STL: الشبكات نفسها بأسطر',ref:'ص 156–157',
@@ -886,7 +1227,21 @@ B.lesson({
      ['نعم، عطل في F2',false,'F2 على off عند الدور الثاني هو الوضع الطبيعي، فلا يمرّر فرع K2 إلى K4 ولا إلى K5.'],
      ['لا: الكابينة في الدور المطلوب نفسه، فلا حركة',true,'فرعا K2 يمران عبر F2، و F2 على off عند الدور الثاني، فلا يعمل K4 ولا K5.'],
      ['نعم، عطل في SO2',false,'K2 يعمل فعلاً عند الضغط؛ لكن لا حركة مطلوبة.']]}},
-    {add:String.raw`<p>في تبويب «المختبر» لهذا الدرس زر لعطل «<span class="ltr">F2</span> عالق على <span class="ltr">off</span>»: فعّله ثم اطلب الدور الثاني والكابينة عند الأول، ولاحظ أن <span class="ltr">K2</span> يعمل لكن <span class="ltr">K4</span> لا يعمل لأن <span class="ltr">I0.5</span> لا يصبح <span class="ltr">1</span>. هذا تمهيد للوحدة العاشرة عن تشخيص الأعطال.</p>`,title:'جرّب عطلاً'}
+    {add:String.raw`<p>في تبويب «المختبر» لهذا الدرس زر لعطل «<span class="ltr">F2</span> عالق على <span class="ltr">off</span>»: فعّله ثم اطلب الدور الثاني والكابينة عند الأول، ولاحظ أن <span class="ltr">K2</span> يعمل لكن <span class="ltr">K4</span> لا يعمل لأن <span class="ltr">I0.5</span> لا يصبح <span class="ltr">1</span>. هذا تمهيد للوحدة العاشرة عن تشخيص الأعطال.</p>`,title:'جرّب عطلاً'},
+    {title:'مختبر مصغّر: اختبار القبول قبل التسليم',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`«التأكد من صحة عمل الدائرة» يعني تجربة كل رحلة. اختر البرنامج والرحلة: يُنفَّذ البرنامج كاملاً على نموذج مبسّط للمصعد (مثل نموذج تبويب «المختبر»)، و<span class="ltr">F1</span> و<span class="ltr">F3</span> موصّلان <span class="ltr">NC</span> كما في شكل ص 146.`,
+ ins:[{k:'v',l:'البرنامج',seg:[['b','كما في الكتاب'],['f','المصحح']],v:'b'},
+  {k:'t',l:'الرحلة',seg:[['1-0','من الثاني إلى الأول'],['1-2','من الثاني إلى الثالث'],['0-1','من الأول إلى الثاني'],['2-1','من الثالث إلى الثاني'],['0-2','من الأول إلى الثالث']],v:'1-0'}],
+ calc:(s)=>{const [a,b]=s.t.split('-').map(Number);const P=B.createPLC(s.v==='f'?PROG_FIX:PROG_BOOK);let pos=a,crash=0,moved=0;
+  const so=['I0.1','I0.2','I0.3'][b];
+  const inp=(c)=>{['I1.4','I1.5','I1.6','I0.0'].forEach(x=>P.set(x,1));P.set('I0.4',pos>0.005?1:0);P.set('I0.6',pos<1.995?1:0);P.set('I0.5',pos<0.97?1:0);P.set('I0.7',pos>1.03?1:0);P.set(so,c)};
+  inp(1);P.scan(0.1);inp(0);P.scan(0.1);
+  for(let i=0;i<400;i++){const up=P.get('Q5.4'),dn=P.get('Q5.5');if(up||dn)moved=1;pos+=(up-dn)*0.03;if(pos<-0.27||pos>2.36){crash=1;break}inp(0);P.scan(0.1);if(!up&&!dn&&moved&&!P.get('T1'))break}
+  const F=['الأول','الثاني','الثالث'],at=Math.round(pos),ok=!crash&&Math.abs(pos-b)<0.06;
+  const res=crash?'تجاوزت الكابينة آخر دور!':!moved?'لم تتحرك الكابينة':Math.abs(pos-at)<0.06?'وقفت عند الدور '+F[at]:'وقفت بين دورين';
+  return {facts:[['النتيجة',ok?'ناجح':'راسب',ok?'hi':'bad']],cls:ok?'':'bad',
+   msg:`<b>${res}.</b> `+(ok?'هذه الرحلة تعمل كما يجب.':String.raw`السبب خطأ الكتاب في سطري <span class="ltr">F1</span> و<span class="ltr">F3</span> (<span class="ltr mono">AN I 0.4</span> و<span class="ltr mono">AN I 0.6</span>): المفتاح المغلق يعطي <span class="ltr">1</span> والكابينة بعيدة، فلا يمرّر الفرع. جرّب البرنامج المصحح.`)}},
+ })}
    ]},
 
   {recap:[

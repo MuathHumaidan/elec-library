@@ -740,3 +740,4 @@ html[data-wide] #view,html[data-wide] .topbar .in{max-width:1680px}
 html[data-wide] .theory.stations{max-width:none}
 @media (max-width:1000px){.widebtn{display:none}}
 @media (max-width:1300px){.widebtn .sl{display:none}}
+.ml .ml-facts b[dir=rtl]{text-align:right;font-family:inherit}

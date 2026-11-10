@@ -193,7 +193,183 @@ B.lesson({
  title:'القدرة في المحرك الحثي: سريان القدرة والمفاقيد والكفاءة',
  summary:'كيف تنساب القدرة الكهربائية الداخلة إلى العضو الثابت عبر الثغرة الهوائية إلى العضو الدوار حتى تخرج قدرةً ميكانيكية على العمود (الشكل 1-18)، وما يُفقد منها في كل مرحلة، ودور الانزلاق S في مفاقيد العضو الدوار والكفاءة، مع المثالين (1-6) و (1-7).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'القدرة الداخلة',title:'القدرة الداخلة إلى المحرك',ref:'ص 38',
    q:'الكهرباء تدخل المحرك من ثلاثة أسلاك وتخرج حركةً على العمود… هل يخرج كل ما دخل؟',
@@ -217,7 +393,17 @@ B.lesson({
      <div class="eq">$$P_{cu1}=3R_1I_{ph}^2$$<span class="eqno">(1-17)</span></div>`,ref:'ص 38'},
     {tip:String.raw`<p>الصيغتان في (1-16) تعطيان القدرة نفسها: الأولى بقيم <b>الوجه</b> مضروبة في 3 (ثلاثة أوجه)، والثانية بقيم <b>الخط</b> مضروبة في \(\sqrt3\). اختر الصيغة حسب ما يعطيك السؤال.</p>
      <p>وفي (1-17) الرقم 3 لأن لكل وجه ملفاً له مقاومة \(R_1\) يسخن بمرور تيار الوجه فيه.</p>`},
-    {watch:String.raw`<p>لا تخلط القيم: إذا كتبت \(\sqrt3\) فاستعمل جهد الخط وتيار الخط معاً، وإذا كتبت 3 فاستعمل جهد الوجه وتيار الوجه معاً.</p>`}
+    {watch:String.raw`<p>لا تخلط القيم: إذا كتبت \(\sqrt3\) فاستعمل جهد الخط وتيار الخط معاً، وإذا كتبت 3 فاستعمل جهد الوجه وتيار الوجه معاً.</p>`},
+    {title:'مختبر مصغّر: ما الذي يحدد القدرة الداخلة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك تيار الخط ومعامل القدرة، واحسب القدرة الداخلة بالصيغتين في المعادلة (1-16). الأرقام هنا <b>أرقام تختارها أنت</b>.',
+ predict:{q:'الجهد والتيار كما هما، لكن معامل القدرة نزل من <span class="ltr">0.8</span> إلى <span class="ltr">0.4</span>. القدرة الداخلة…',opts:[
+  ['تبقى كما هي، لأن التيار لم يتغير',false,'معامل القدرة عامل مضروب في المعادلة (1-16)؛ أي تغيّر فيه يغيّر القدرة.'],
+  ['تنقص إلى النصف',true,'\\(P_{in}=\\sqrt3\\,V_LI_L\\cos\\theta\\): إذا صار \\(\\cos\\theta\\) النصف صارت القدرة النصف.'],
+  ['تتضاعف',false,'نقص معامل القدرة ينقص القدرة الفعالة ولا يزيدها.']]},
+ ins:[{k:'c',l:'توصيل الملفات',seg:[['Y','نجمة'],['D','دلتا']],v:'Y'},{k:'V',l:'جهد الخط V<sub>L</sub>',seg:[[220,'220 V'],[380,'380 V'],[440,'440 V']],v:380},{k:'I',l:'تيار الخط I<sub>L</sub>',min:5,max:100,step:1,v:40,u:'A',dp:0},{k:'pf',l:'معامل القدرة cos θ',min:0.2,max:1,step:0.01,v:0.8,dp:2}],
+ calc:(s,v,B)=>{const Y=s.c==='Y',Vp=Y?s.V/SQ3:s.V,Ip=Y?s.I:s.I/SQ3,P1=SQ3*s.V*s.I*s.pf,P3=3*Vp*Ip*s.pf;
+  return {facts:[['V<sub>ph</sub>',String(+Vp.toFixed(1))+' V'],['I<sub>ph</sub>',DCML.fm(B,Ip,2)+' A'],['<span class="ltr">√3 V<sub>L</sub> I<sub>L</sub> cos θ</span>',DCML.fm(B,P1/1000,2)+' kW','hi'],['<span class="ltr">3 V<sub>ph</sub> I<sub>ph</sub> cos θ</span>',DCML.fm(B,P3/1000,2)+' kW','hi']],
+   bars:[{l:'P<sub>in</sub>',v:P1/1000,max:SQ3*440*100/1000,u:'kW',dp:2,col:'--blue'}],
+   msg:'الصيغتان تعطيان القدرة نفسها في النجمة والدلتا؛ المهم ألا تخلط قيم الخط بقيم الوجه.'}},ill:true})}
    ]},
 
   {st:2,short:'مفاقيد الثابت و Pg',title:'مفاقيد العضو الثابت والقدرة المنتقلة عبر الثغرة الهوائية',ref:'ص 39',
@@ -242,7 +428,12 @@ B.lesson({
      <div class="eq">$$P_{cu2}=3R'_2I'^2_2$$<span class="eqno">(1-21)</span></div>`,ref:'ص 39'},
     {tip:String.raw`<p>فكّر في القدرة كماء يمر في أنبوب له تسربات: يدخل \(P_{in}\)، ويتسرب منه في العضو الثابت \(P_{cu1}\) و\(P_{cor}\) (معاً \(P_S\))، والباقي \(P_g\) يعبر الثغرة إلى العضو الدوار. ولهذا تحسب \(P_g\) بالطرح في (1-19).</p>
      <p>في مثال (1-7) يعطيك الكتاب مفاقيد العضو الثابت مجموعةً \(P_S = 1\ \text{kW}\)، فلا تحتاج حساب كل نوع وحده.</p>`},
-    {watch:String.raw`<p>في (1-20) تُقسم \(R'_2\) على الانزلاق \(S\)، أما في (1-21) فلا تُقسم. الفرق بين المعادلتين هو قلب الدرس كله، كما سترى في المحطة الرابعة.</p>`}
+    {watch:String.raw`<p>في (1-20) تُقسم \(R'_2\) على الانزلاق \(S\)، أما في (1-21) فلا تُقسم. الفرق بين المعادلتين هو قلب الدرس كله، كما سترى في المحطة الرابعة.</p>`},
+    {title:'مختبر مصغّر: أين يضيع هذا الجزء؟',widget:(el,B)=>DCML.sort(el,B,{intro:'صنّف كل نوع من المفاقيد حسب مكانه في طريق القدرة.',cats:['العضو الثابت (P<sub>S</sub>)','العضو الدوار','الاحتكاك'],items:[
+ ['حرارة في مقاومة ملفات العضو الثابت \\(R_1\\)',0,'\\(P_{cu1}\\) من المعادلة (1-17)، وهي جزء من \\(P_S\\).'],
+ ['احتكاك العضو الدوار مع الهواء وكراسي التحميل',2,'\\(P_F\\): تُطرح من \\(P_m\\) لنحصل على \\(P_o\\) (1-24).'],
+ ['تيارات دوامية وتخلف مغناطيسي في القلب الحديدي للعضو الثابت',0,'\\(P_{cor}\\): تمثلها \\(R_c\\)، وهي جزء من \\(P_S\\) (1-18).'],
+ ['حرارة في مقاومة ملفات العضو الدوار \\(R\'_2\\)',1,'\\(P_{cu2}\\) من (1-21)، بعد عبور الثغرة الهوائية.']]})}
    ]},
 
   {st:3,short:'Pm و Po',title:'القدرة الميكانيكية المتحولة والقدرة الخارجة',ref:'ص 40',
@@ -264,7 +455,17 @@ B.lesson({
      <div class="eq">$$P_o=P_m-P_F$$<span class="eqno">(1-24)</span></div>`,ref:'ص 40'},
     {tip:String.raw`<p>\(P_m\) هي القدرة التي «صُنعت» حركةً داخل العضو الدوار، و\(P_o\) هي ما يستلمه الحمل فعلاً. الفرق بينهما احتكاك فقط \(P_F\).</p>
      <p>وعلى لوحة بيانات المحرك تُكتب القدرة الخارجة \(P_o\)، وهي القدرة التي تختار بها المحرك المناسب للحمل.</p>`},
-    {watch:String.raw`<p>لا تخلط بين \(P_m\) و\(P_o\): في مثال (1-7) \(P_m = 38.064\ \text{kW}\) لكن \(P_o = 36.064\ \text{kW}\) بعد خصم احتكاك قدره \(2\ \text{kW}\).</p>`}
+    {watch:String.raw`<p>لا تخلط بين \(P_m\) و\(P_o\): في مثال (1-7) \(P_m = 38.064\ \text{kW}\) لكن \(P_o = 36.064\ \text{kW}\) بعد خصم احتكاك قدره \(2\ \text{kW}\).</p>`},
+    {title:'مختبر مصغّر: من P<sub>m</sub> إلى P<sub>o</sub>',widget:(el,B)=>DCML.lab(el,B,{intro:'في مثال (1-7): \\(P_m=38.064\\ kW\\) والقدرة الداخلة \\(40\\ kW\\). غيّر مفاقيد الاحتكاك وحدها (قيمة الكتاب <span class="ltr">2 kW</span>؛ الباقي أرقام تختارها أنت).',
+ predict:{q:'لو استعملنا كراسي تحميل أفضل فقلّ الاحتكاك، وبقي كل شيء آخر كما هو، فإن \\(P_m\\)…',opts:[
+  ['تزيد، وتزيد معها \\(P_o\\)',false,'\\(P_m\\) تتحدد قبل الاحتكاك: \\(P_m=P_g-P_{cu2}\\) (1-22).'],
+  ['لا تتغير، وتزيد \\(P_o\\)',true,'الاحتكاك يُطرح بعد \\(P_m\\): \\(P_o=P_m-P_F\\) (1-24)؛ فنقصه يزيد ما يصل إلى الحمل فقط.'],
+  ['لا تتغير، ولا تتغير \\(P_o\\)',false,'\\(P_o\\) تزيد كلما قلّ \\(P_F\\).']]},
+ ins:[{k:'F',l:'مفاقيد الاحتكاك P<sub>F</sub>',seg:[[0.5,'0.5'],[1,'1'],[2,'2 kW'],[3,'3'],[4,'4']],v:2}],
+ calc:(s,v,B)=>{const Pm=38.064,Po=Pm-s.F;
+  return {facts:[['P<sub>m</sub>',DCML.fm(B,Pm,3)+' kW'],['P<sub>o</sub> (1-24)',DCML.fm(B,Po,3)+' kW','hi'],['P<sub>o</sub> ÷ 0.746',DCML.fm(B,Po/0.746,3)+' hp'],['η (1-27)',DCML.fm(B,Po/40*100,2)+' %']],
+   bars:[{l:'P<sub>o</sub> من P<sub>m</sub>',v:Po,max:Pm,u:'kW',dp:3,col:'--on'}],
+   msg:s.F===2?'هذه نتيجة الكتاب: <span class="ltr">P<sub>o</sub> = 36.064 kW = 48.343 hp</span> و<span class="ltr">η = 90.16 %</span>.':''}}})}
    ]},
 
   {st:4,short:'مخطط القدرة والكفاءة',title:'مخطط سريان القدرة، ودور الانزلاق في الكفاءة',ref:'ص 41–42',
@@ -329,7 +530,14 @@ B.lesson({
      ['لا، الحل كله من التردد والقدرة والتيار',true,'الجهد معطى ولا يُستخدم في أي فرع من الحل، وهذا ليس خطأً في الكتاب.'],
      ['نعم، في حساب المفاقيد النحاسية',false,String.raw`المفاقيد تحسب من \(P_{cu2}=S\,P_g\) ولا يظهر فيها الجهد.`]]}},
     {watch:String.raw`<p>في حل مثال (1-7) ص 44 طُبع: \(n_s=\frac{120\times 50}{8}=732\ rpm\)، والصحيح <b><span class="ltr">750 rpm</span></b> (\(6000\div 8=750\)). والكتاب نفسه يستعمل 750 في السطر التالي \(S=\frac{750-732}{750}\)، لذلك بقية النتائج صحيحة ولا تتأثر.</p>`,fix:true},
-    {tip:String.raw`<p>في مثال (1-7) يحوّل الكتاب الكيلوواط إلى حصان بالقسمة على <span class="ltr">0.746</span>: \(36.064\div 0.746=48.343\ \text{hp}\).</p>`}
+    {tip:String.raw`<p>في مثال (1-7) يحوّل الكتاب الكيلوواط إلى حصان بالقسمة على <span class="ltr">0.746</span>: \(36.064\div 0.746=48.343\ \text{hp}\).</p>`},
+    {title:'مختبر مصغّر: تتبّع القدرة في مثال (1-7)',widget:(el,B)=>DCML.order(el,B,{intro:'«بتتبع مسار انتقال القدرة داخل المحرك في الشكل (1-18)»: اضغط المراحل بالترتيب من المصدر إلى الحمل.',steps:[
+ ['\\(P_{in}=40\\ kW\\): تدخل من المصدر','هذه ليست بداية الطريق؛ القدرة تبدأ من المصدر.'],
+ ['\\(P_g=40-1=39\\ kW\\): تعبر الثغرة الهوائية (1-19)','قبل هذه المرحلة يجب أن تدخل القدرة إلى العضو الثابت.'],
+ ['\\(P_m=(1-0.024)\\times39=38.064\\ kW\\) (1-26)','\\(P_m\\) تُحسب من \\(P_g\\)، فلا تأتي قبلها.'],
+ ['\\(P_o=38.064-2=36.064\\ kW\\) (1-24)','\\(P_o\\) آخر القدرات؛ تُطرح منها الاحتكاك بعد \\(P_m\\).'],
+ ['\\(\\eta=\\frac{36.064}{40}\\times100=90.16\\ \\%\\) (1-27)','الكفاءة تحتاج القدرة الخارجة أولاً.']],
+ done:'كل مرحلة تطرح نوعاً من المفاقيد: \\(P_S=1\\ kW\\)، ثم \\(P_{cu2}=0.936\\ kW\\)، ثم \\(P_F=2\\ kW\\).'})}
    ]},
 
   {recap:[
@@ -535,7 +743,17 @@ B.lesson({
      <div class="eq">$$T=K\frac{R'_2}{S}I'^2_2$$<span class="eqno">(1-31)</span></div>`,ref:'ص 45'},
     {tip:String.raw`<p>السرعة الزاوية \(\omega\) هي السرعة نفسها لكن بوحدة <b>راديان في الثانية</b> بدل <b>دورة في الدقيقة</b>: الدورة الواحدة \(2\pi\) راديان، والدقيقة 60 ثانية؛ ومن هنا جاءت (1-30).</p>
      <p>ولماذا تعطي (1-28) و(1-29) العزم نفسه؟ لأن \(P_m=(1-S)P_g\) والسرعة الزاوية للعمود \(\omega=(1-S)\,\omega_s\)، فعند القسمة يختصر العامل \((1-S)\).</p>`},
-    {watch:String.raw`<p>لا تقسم القدرة على السرعة بوحدة <span class="ltr">rpm</span> مباشرة. حوّل السرعة أولاً إلى <span class="ltr">rad/sec</span> بالمعادلة (1-30)، وإلا خرج العزم خطأً.</p>`}
+    {watch:String.raw`<p>لا تقسم القدرة على السرعة بوحدة <span class="ltr">rpm</span> مباشرة. حوّل السرعة أولاً إلى <span class="ltr">rad/sec</span> بالمعادلة (1-30)، وإلا خرج العزم خطأً.</p>`},
+    {title:'مختبر مصغّر: العزم من القدرة والسرعة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر السرعة التزامنية لمحرك من الكتاب وحرّك القدرة عبر الثغرة، واحسب العزم من (1-29) و(1-30). القيمة <span class="ltr">80 kW</span> من مثال (1-6)؛ غيرها أرقام تختارها أنت.',
+ predict:{q:'محركان يعبر ثغرتيهما القدرة نفسها \\(P_g\\): الأول <span class="ltr">750 rpm</span> والثاني <span class="ltr">1800 rpm</span>. أيهما عزمه أكبر؟',opts:[
+  ['الثاني، لأنه أسرع',false,'السرعة في <b>مقام</b> المعادلة (1-29)؛ السرعة الأكبر تعطي عزماً أصغر للقدرة نفسها.'],
+  ['متساويان، لأن القدرة واحدة',false,'القدرة واحدة لكن السرعة الزاوية مختلفة، فيختلف العزم.'],
+  ['الأول، لأنه أبطأ',true,'\\(T=P_g/\\omega_s\\): المحرك البطيء يعطي عزماً أكبر بالقدرة نفسها (أكثر من الضعف هنا).']]},
+ ins:[{k:'ns',l:'السرعة التزامنية n<sub>s</sub>',seg:[[750,'750'],[1000,'1000'],[1500,'1500'],[1800,'1800 rpm']],v:1000},{k:'Pg',l:'القدرة عبر الثغرة P<sub>g</sub>',min:10,max:100,step:5,v:80,u:'kW',dp:0}],
+ calc:(s,v,B)=>{const w=2*PI*s.ns/60,T=s.Pg*1000/w;
+  return {facts:[['ω<sub>s</sub> (1-30)',DCML.fm(B,w,2)+' rad/s'],['T = P<sub>g</sub>/ω<sub>s</sub> (1-29)',DCML.fm(B,T,1)+' Nm','hi'],['خطأ: P<sub>g</sub> ÷ n<sub>s</sub>',DCML.fm(B,s.Pg*1000/s.ns,1),'bad']],
+   bars:[{l:'العزم',v:T,max:100000/(2*PI*750/60),u:'Nm',dp:1,col:'--blue'}],
+   msg:'القسمة على السرعة بوحدة rpm مباشرة تعطي رقماً أصغر بنحو عشر مرات: حوّل إلى rad/s أولاً.'}}})}
    ]},
 
   {st:2,short:'معادلة العزم والانزلاق',title:'ثابت المحرك ومعادلة العزم والانزلاق',ref:'ص 46–47',
@@ -645,7 +863,17 @@ B.lesson({
     {book:String.raw`<p>ويمكن أيضا من المعادلة (1-34) حساب قيمة العزم الأقصى للمحرك وذلك عندما ننقل موضع العزم الأقصى إلى لحظة البدء أي أن (\(S_m=1\ \&\ R'_2=X'_2\)) فتصبح المعادلة كما يلي:</p>
      <div class="eq">$$T_{max}=\frac{K\,V_{ph}^2}{2X'_2}$$<span class="eqno">(1-37)</span></div>`,ref:'ص 50'},
     {tip:String.raw`<p>العزم الأقصى يكبر مع <b>مربع الجهد</b> ويصغر كلما كبرت المعاوقة الحثية للعضو الدوار \(X'_2\). أما مقاومة العضو الدوار فتحدد <b>أين</b> تقع القمة لا <b>كم</b> ارتفاعها.</p>`},
-    {watch:String.raw`<p>تعليل الكتاب للمعادلة (1-37) مربك: الصيغة لا تحتاج أن يكون \(S_m=1\)؛ فهي تنتج مباشرة بالتعويض بـ \(S=S_m=R'_2/X'_2\) في المعادلة المبسطة (1-35) لأي قيمة لـ \(R'_2\)، ولذلك لا تحتوي الصيغة على \(R'_2\). والصيغة مأخوذة من (1-35) التي أُهملت فيها معاوقة العضو الثابت، وليس من (1-34) الكاملة كما يقول النص.</p>`,fix:true}
+    {watch:String.raw`<p>تعليل الكتاب للمعادلة (1-37) مربك: الصيغة لا تحتاج أن يكون \(S_m=1\)؛ فهي تنتج مباشرة بالتعويض بـ \(S=S_m=R'_2/X'_2\) في المعادلة المبسطة (1-35) لأي قيمة لـ \(R'_2\)، ولذلك لا تحتوي الصيغة على \(R'_2\). والصيغة مأخوذة من (1-35) التي أُهملت فيها معاوقة العضو الثابت، وليس من (1-34) الكاملة كما يقول النص.</p>`,fix:true},
+    {title:'مختبر مصغّر: ما الذي يغيّر ارتفاع القمة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'القيم الابتدائية من مثال (1-8): <span class="ltr">V<sub>ph</sub> = 240 V</span>، <span class="ltr">X\'<sub>2</sub> = 1 Ω</span>، <span class="ltr">R\'<sub>2</sub> = 0.6 Ω</span>، <span class="ltr">K = 0.0159</span>؛ غيرها أرقام تختارها أنت. غيّر كل عامل وحده وراقب \\(T_{max}\\) و\\(S_m\\).',
+ predict:{q:'لو تضاعفت \\(X\'_2\\) وبقي الجهد كما هو، فإن \\(T_{max}\\)…',opts:[
+  ['تتضاعف',false,'\\(X\'_2\\) في <b>مقام</b> المعادلة (1-37).'],
+  ['تنقص إلى النصف',true,'\\(T_{max}=\\frac{KV_{ph}^2}{2X\'_2}\\): مضاعفة المقام تنصّف الناتج.'],
+  ['لا تتغير',false,'الذي لا يغيّرها هو \\(R\'_2\\)، أما \\(X\'_2\\) ففي المعادلة.']]},
+ ins:[{k:'V',l:'جهد الوجه V<sub>ph</sub>',min:120,max:240,step:10,v:240,u:'V',dp:0},{k:'X',l:"X'<sub>2</sub>",seg:[[0.5,'0.5'],[1,'1 Ω'],[2,'2']],v:1},{k:'R',l:"R'<sub>2</sub>",seg:[[0.3,'0.3'],[0.6,'0.6 Ω'],[1,'1']],v:0.6}],
+ calc:(s,v,B)=>{const K=0.0159,Tm=K*s.V*s.V/(2*s.X),Sm=s.R/s.X;
+  return {facts:[['T<sub>max</sub> (1-37)',DCML.fm(B,Tm,2)+' Nm','hi'],['S<sub>m</sub> (1-36)',DCML.fm(B,Sm,2)]],
+   bars:[{l:'T<sub>max</sub>',v:Tm,max:0.0159*240*240/(2*0.5),u:'Nm',dp:2,col:'--blue'}],
+   msg:s.V===240&&s.X===1?'\\(T_{max}=457.92\\ Nm\\) كما في الفرع (هـ) من مثال (1-8)'+(s.R!==0.6?'، مع أن \\(R\'_2\\) تغيرت: تغيّر \\(S_m\\) فقط.':'.'):''}}})}
    ]},
 
   {st:6,short:'عزم البدء',title:'حساب عزم البدء',ref:'ص 50–51',
@@ -662,7 +890,17 @@ B.lesson({
     {book:String.raw`<p>يلاحظ من الشكل رقم (1-21) أن عزم البدء يزداد كلما زادت مقاومة ملفات العضو الدوار، أي أنه يمكن التحكم في قيمة عزم البدء وذلك بتغيير قيمة مقاومة ملفات العضو الدوار \(R'_2\) وذلك بإضافة مقاومة موصلة على التوالي مع ملفات العضو الدوار كما هو واضح من المنحنيات في الشكل (1-21). أما قيمة عزم البدء فيمكن إيجادها مباشرة من المعادلة (1-34) عندما يكون (S = 1):</p>
      <div class="eq">$$T_{st}=\frac{K\,V_{ph}^2\,R'_2}{\left[(R_1+R'_2)^2+X_{eq}^2\right]}$$<span class="eqno">(1-38)</span></div>`,ref:'ص 50–51'},
     {tip:String.raw`<p>(1-38) هي (1-34) نفسها بعد وضع \(S=1\): يختفي \(S\) من المقام، ويصبح \(R'_2/S\) مجرد \(R'_2\).</p>`},
-    {watch:String.raw`<p>يقول الكتاب: «عزم البدء يزداد كلما زادت مقاومة ملفات العضو الدوار». لكن في الشكل (1-21) نفسه منحنى <span class="ltr">R5 = 6Ro</span> عزمه عند <span class="ltr">S = 1</span> <b>أقل</b> من منحنى <span class="ltr">R4 = 5Ro</span>، لأن قمته تجاوزت <span class="ltr">S = 1</span>. الزيادة صحيحة فقط إلى أن يصل موضع العزم الأقصى إلى لحظة البدء \((S_m=1)\)، وبعدها يقل عزم البدء. جرّب ذلك بزر <span class="ltr">6Ro</span> في المحطة الرابعة.</p>`,fix:true}
+    {watch:String.raw`<p>يقول الكتاب: «عزم البدء يزداد كلما زادت مقاومة ملفات العضو الدوار». لكن في الشكل (1-21) نفسه منحنى <span class="ltr">R5 = 6Ro</span> عزمه عند <span class="ltr">S = 1</span> <b>أقل</b> من منحنى <span class="ltr">R4 = 5Ro</span>، لأن قمته تجاوزت <span class="ltr">S = 1</span>. الزيادة صحيحة فقط إلى أن يصل موضع العزم الأقصى إلى لحظة البدء \((S_m=1)\)، وبعدها يقل عزم البدء. جرّب ذلك بزر <span class="ltr">6Ro</span> في المحطة الرابعة.</p>`,fix:true},
+    {title:'مختبر مصغّر: زِد مقاومة الدوار وراقب عزم البدء',widget:(el,B)=>DCML.lab(el,B,{intro:'بأرقام مثال (1-8): <span class="ltr">V<sub>ph</sub> = 240 V</span>، <span class="ltr">R<sub>1</sub> = 0.4 Ω</span>، <span class="ltr">X<sub>eq</sub> = 2 Ω</span>، <span class="ltr">K = 0.0159</span>. القيمة <span class="ltr">R\'<sub>2</sub> = 0.6 Ω</span> من الكتاب، والقيم الأخرى أرقام تختارها أنت لترى الاتجاه.',
+ predict:{q:'لو استمررنا في زيادة \\(R\'_2\\) دون حد، فإن عزم البدء…',opts:[
+  ['يزيد دائماً',false,'يزيد فقط حتى يصل موضع العزم الأقصى إلى لحظة البدء، كما في الملاحظة على الشكل (1-21).'],
+  ['يزيد ثم يبدأ في النقصان',true,'\\(R\'_2\\) في البسط وفي المقام معاً في (1-38): في البداية يغلب البسط، ثم يغلب المقام.'],
+  ['ينقص دائماً',false,'في البداية يزيد: من 0.6 إلى 1 Ω مثلاً يرتفع عزم البدء.']]},
+ ins:[{k:'R',l:"R'<sub>2</sub>",min:0.2,max:6,step:0.1,v:0.6,u:'Ω',dp:1}],
+ calc:(s,v,B)=>{const K=0.0159,V=240,R1=0.4,X=2,T=r=>K*V*V*r/((R1+r)*(R1+r)+X*X),I=V/Math.hypot(R1+s.R,X),Ts=T(s.R),Sm=s.R/Math.hypot(R1,X);
+  return {facts:[["I'<sub>2st</sub> (1-39)",DCML.fm(B,I,2)+' A'],['T<sub>st</sub> (1-38)',DCML.fm(B,Ts,1)+' Nm','hi']],
+   plot:{xr:[0,6],yr:[0,200],xl:"R'2 (Ω)",yl:'Tst (Nm)',curves:[{f:T,col:'--blue'}],cur:[s.R,Ts],aria:'عزم البدء مقابل مقاومة الدوار'},
+   msg:Math.abs(s.R-0.6)<1e-9?'هذه قيمة الكتاب: <span class="ltr">T<sub>st</sub> = 109.9 Nm</span> و<span class="ltr">I\'<sub>2st</sub> = 107.33 A</span>.':Sm>1.001?'تجاوزت القمة لحظة البدء (موضعها في المنحنى الكامل بعد \\(S=1\\))، فبدأ عزم البدء ينقص.':''}}})}
    ]},
 
   {st:7,short:'مثال <span class="ltr">(1-8)</span>',title:'مثال <span class="ltr">(1-8)</span>',ref:'ص 52–54',
@@ -682,7 +920,16 @@ B.lesson({
      [String.raw`<span class="ltr">240 V</span>`,true,String.raw`في الدلتا يقع جهد الخط كاملاً على كل ملف: \(V_{ph}=V_L=240\ V\)، كما في حل الكتاب.`],
      [String.raw`<span class="ltr">415.7 V</span>`,false,String.raw`هذا \(240\times\sqrt3\)، ولا يحدث في أي توصيل هنا.`]]}},
     {watch:String.raw`<p>في الفرع (ب) ص 53 طُبع: \(T=0.0159\times\frac{0.6}{0.05}\times(19.11)^2=69.74\ Nm\). بالأرقام المكتوبة نفسها الناتج <b><span class="ltr">69.68 Nm</span></b>؛ والرقم 69.74 قريب مما يخرج لو استُعمل K بدون تقريب (<span class="ltr">0.015915…</span>). الفرق صغير.</p>`,fix:true},
-    {watch:String.raw`<p>في الفرع (هـ) ص 54 حُسب العزم الأقصى من (1-37) <b>بإهمال معاوقة العضو الثابت</b> (\(X'_2=1\) فقط وبدون \(R_1\))، بينما الفروع (أ)–(د) استعملت الدائرة الكاملة (\(R_1\) و\(X_{eq}=2\)). لذلك <span class="ltr">457.92 Nm</span> لا تطابق قمة منحنى (1-34) لنفس المحرك. هذا تبسيط من الكتاب وليس خطأً حسابياً، وفي «المختبر» مفتاح يقارن الطريقتين.</p>`,fix:true}
+    {watch:String.raw`<p>في الفرع (هـ) ص 54 حُسب العزم الأقصى من (1-37) <b>بإهمال معاوقة العضو الثابت</b> (\(X'_2=1\) فقط وبدون \(R_1\))، بينما الفروع (أ)–(د) استعملت الدائرة الكاملة (\(R_1\) و\(X_{eq}=2\)). لذلك <span class="ltr">457.92 Nm</span> لا تطابق قمة منحنى (1-34) لنفس المحرك. هذا تبسيط من الكتاب وليس خطأً حسابياً، وفي «المختبر» مفتاح يقارن الطريقتين.</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب فروع مثال (1-8)',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي يحل به الكتاب مثال (1-8).',steps:[
+ ['\\(V_{ph}=V_L=240\\ V\\) لأن الملفات دلتا','كل المعادلات بجهد الوجه؛ ابدأ به.'],
+ ['أ) الانزلاق عند الحمل الكامل \\(S=\\frac{1800-1710}{1800}=0.05\\)','لا تحسب تيار الحمل الكامل قبل أن تعرف انزلاقه.'],
+ ['أ) تيار الحمل الكامل \\(I\'_2\\) من (1-33)','يحتاج الانزلاق أولاً.'],
+ ['ب) ثابت المحرك \\(K\\) من (1-32) ثم العزم \\(T\\) من (1-31)','العزم يحتاج التيار \\(I\'_2\\) أولاً.'],
+ ['جـ) تيار البدء من (1-33) عند \\(S=1\\)','الكتاب يحسب الحمل الكامل أولاً ثم البدء.'],
+ ['د) عزم البدء من (1-38)','يحتاج تيار البدء (أو المعادلة كاملة) بعد الحمل الكامل.'],
+ ['هـ) العزم الأقصى من (1-37) وانزلاقه من (1-36)','هذا آخر فروع المثال.']],
+ done:'نتائج الكتاب: <span class="ltr">T = 69.74 Nm</span>، <span class="ltr">T<sub>st</sub> = 109.9 Nm</span>، <span class="ltr">T<sub>max</sub> = 457.92 Nm</span>.'})}
    ]},
 
   {recap:[
@@ -1126,7 +1373,13 @@ B.lesson({
      <tr><td>محول ذاتي</td><td><span class="ltr">2 I<sub>n</sub></span></td><td>لا قدرة مفقودة؛ الأفضل للمحركات الموصلة نجمة داخلياً</td></tr>
      <tr><td>نجمة / دلتا</td><td>ثلث المباشر</td><td>للمحركات ذات الستة أطراف التي تعمل دلتا</td></tr>
      <tr><td>مقاومات الدوار</td><td><span class="ltr">3 I<sub>n</sub></span></td><td>خاصة بمحرك حلقات الانزلاق، والأفضل له</td></tr>
-     <tr><td>بادئ إلكتروني</td><td><span class="ltr">3 I<sub>n</sub></span> ثابت</td><td>الأفضل: تسارع ناعم وحماية، لكنه أغلى</td></tr></tbody></table>`}
+     <tr><td>بادئ إلكتروني</td><td><span class="ltr">3 I<sub>n</sub></span> ثابت</td><td>الأفضل: تسارع ناعم وحماية، لكنه أغلى</td></tr></tbody></table>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'راجع ما يقوله الكتاب عن أجهزة البدء الإلكترونية (ص 65).',items:[
+ ['الجهاز يجعل التيار ثابتاً طيلة فترة البدء مع عزم مستقر.',true,'«تجعل التيار ثابتاً طيلة فترة البدء مع عزم مستقر».'],
+ ['الجهاز يتحكم في التيار مباشرة دون أن يغيّر الجهد.',false,'يعتمد على «التحكم الدقيق والناعم في الجهد مع مراقبة التيار في نفس الوقت».'],
+ ['ثمنه مرتفع، لكنه يوفّر تكلفة أجهزة الحماية.',true,'«تتوفر فيها جميع أنواع الحماية… مما يعني توفير تكلفة أجهزة الحماية مقابل ارتفاع ثمن الجهاز».'],
+ ['يُستعمل في البدء فقط، ولا يفيد عند فرملة المحرك.',false,'«كما أنها أيضا تستخدم أثناء فرملة المحرك».'],
+ ['البدء به يكون على مراحل، وعند كل مرحلة قفزة في التيار.',false,'هذا في الطرق التقليدية؛ الجهاز يعطي «تسارعاً ناعماً بدون وقفات أو قفزات مفاجئة».']]})}
    ]},
 
   {recap:[
@@ -1290,7 +1543,12 @@ B.lesson({
     {tip:String.raw`<p>تذكير بالمعادلتين من الفصل الأول:</p>
      <div class="eq">$$n=n_s(1-S)$$<span class="eqno">(1-4)</span></div>
      <div class="eq">$$n_s=\frac{120\,f_s}{p}$$<span class="eqno">(1-1)</span></div>
-     <p>لاحظ أن الكتاب يسمي التحكم «محدوداً»: لا يعطي المحرك الحثي مدى واسعاً من السرعات بسهولة.</p>`,title:'المعادلتان اللتان يرجع إليهما الكتاب'}
+     <p>لاحظ أن الكتاب يسمي التحكم «محدوداً»: لا يعطي المحرك الحثي مدى واسعاً من السرعات بسهولة.</p>`,title:'المعادلتان اللتان يرجع إليهما الكتاب'},
+    {title:'مختبر مصغّر: أي رقم في المعادلة تغيّر؟',widget:(el,B)=>DCML.sort(el,B,{intro:'السرعة \\(n=n_s(1-S)\\) و\\(n_s=\\frac{120f_s}{p}\\). لكل إجراء اضغط الرقم الذي يغيّره.',cats:['الانزلاق S','عدد الأقطاب p','تردد المصدر f'],items:[
+ ['إضافة مقاومات على التوالي مع ملفات العضو الدوار الملفوف',0,'الطريقة الأولى: يزيد الانزلاق عند الحمل نفسه فتقل السرعة (ص 67).'],
+ ['جهاز إلكتروني يغيّر تردد الجهد الواصل إلى المحرك',2,'الطريقة الثالثة: يتغير \\(n_s\\) مع التردد (ص 69).'],
+ ['إعادة توصيل ملفات العضو الثابت لتعطي نصف عدد أقطابها',1,'الطريقة الثانية: يتغير \\(n_s\\) بتغير \\(p\\) (ص 67–68).'],
+ ['وضع طبقتين منفصلتين من الملفات في العضو الثابت',1,'لكل طبقة عدد أقطاب مختلف، فنحصل على سرعات أكثر بالطريقة الثانية (ص 67).']]})}
    ]},
 
   {st:2,short:'تغيير الانزلاق',title:'1ـ تغيير قيمة الانزلاق',ref:'ص 67',
@@ -1540,7 +1798,15 @@ B.lesson({
      [String.raw`\(P_g=P_m+P_F\)`,false,String.raw`هذه تعطي \(P_m\) من \(P_o\) (عكس (1-24))، لا \(P_g\).`],
      [String.raw`\(P_g=\frac{P_m}{1-S}\)`,true,String.raw`من (1-26) \(P_m=(1-S)P_g\)، فنقسم على \((1-S)\). ثم \(P_{in}=P_g+P_S\).`]]}},
     {watch:String.raw`<p>السؤال 16 في ص 57 ينتهي عند الفرع (ب) كما طُبع. وفي السؤال 15 لم تذكر السرعة التزامنية صراحة (تحسب من أربعة أقطاب و 60 Hz = 1800 rpm)، ولم يذكر في (د) هل الـ 1 Ω محولة إلى العضو الثابت؛ افترضنا في الإجابة إضافتها إلى \(R'_2\).</p>`,fix:true},
-    {html:`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حلول التمارين 14 و15 و16 خطوة بخطوة</button></div>`}
+    {html:`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حلول التمارين 14 و15 و16 خطوة بخطوة</button></div>`},
+    {title:'مختبر مصغّر: رتّب حل التمرين 10',widget:(el,B)=>DCML.order(el,B,{intro:'التمرين 10: ستة أقطاب، <span class="ltr">500 V</span>، <span class="ltr">60 Hz</span>، القدرة الخارجة <span class="ltr">20 hp</span> عند <span class="ltr">1140 rpm</span>، والاحتكاك <span class="ltr">1 hp</span>. اضغط الخطوات بترتيب فروع التمرين.',steps:[
+ ['\\(n_s=\\frac{120\\times60}{6}=1200\\ rpm\\)','الانزلاق يحتاج السرعة التزامنية أولاً.'],
+ ['أ) \\(S=\\frac{1200-1140}{1200}=0.05\\)','يحتاج \\(n_s\\) أولاً.'],
+ ['ب) \\(P_m=P_o+P_F=21\\ hp\\) ثم \\(P_g=\\frac{P_m}{1-S}\\)','\\(P_g\\) تحتاج الانزلاق؛ والسلم يُصعد من الخرج إلى الداخل.'],
+ ['ب) \\(P_{cu2}=S\\,P_g\\)','تحتاج \\(P_g\\) أولاً.'],
+ ['جـ) \\(P_{in}=P_g+P_S\\)','تحتاج \\(P_g\\) ومفاقيد العضو الثابت <span class="ltr">1500 W</span>.'],
+ ['د) \\(I_L=\\frac{P_{in}}{\\sqrt3\\,V_L\\cos\\theta}\\) من (1-16)','تيار الخط يحتاج القدرة الداخلة أولاً.']],
+ done:'لاحظ أن الطريق هنا معكوس: من القدرة الخارجة رجوعاً إلى الداخلة.'})}
    ]},
 
   {st:2,short:'أسئلة الفصل الرابع',title:'أسئلة وتمارين الفصل الرابع: البدء والتحكم في السرعة',ref:'ص 70',
@@ -1588,7 +1854,13 @@ B.lesson({
      [7,'في المحرك ذي حلقات الانزلاق توصل مقاومات على التوالي مع ملفات العضو الدوار (الشكل 1-29)، فيتغير موضع العزم الأقصى (\\(S_m=R\'_2/X\'_2\\)) وتنزاح نقطة التشغيل إلى انزلاق أكبر، فتقل السرعة حسب \\(n=n_s(1-S)\\). التحكم محدود ويحبذ ألا يزيد عن 15% من السرعة التزامنية بسبب زيادة المفاقيد وقلة الكفاءة (ص 67).'],
      [8,'بوضع طبقتين منفصلتين من الملفات في العضو الثابت لكل منهما عدد أقطاب مختلف (مثلاً 8 و 6)، مع إمكانية إعادة توصيل كل طبقة لتعطي نصف عدد أقطابها أو ضعفه؛ دمج الطريقتين يعطي أربع سرعات (ص 67). وذلك في محرك القفص السنجابي.'],
      [9,'للحفاظ على قيمة ثابتة للفيض المغناطيسي في الثغرة الهوائية، فيضبط الجهد متناسباً مع التردد (ص 69). (توضيح: لو خُفض التردد مع بقاء الجهد لزاد الفيض وتشبع القلب وارتفع التيار، ولو رُفع التردد لضعف الفيض والعزم.)'],
-     [10,'<ol type="a" style="list-style:none;padding-inline-start:4px;margin:4px 0"><li>أ) <b>يزداد</b>: الحمل الأكبر يحتاج عزماً أكبر فتقل السرعة ويزيد S (منحنى العزم والسرعة في المنطقة المستقرة).</li><li>ب) <b>يقل</b>: المعادلة (1-39).</li><li>جـ) <b>تقل</b>: يزيد الانزلاق عند الحمل نفسه، \\(n=n_s(1-S)\\).</li><li>د) <b>تقل</b>: \\(P_{cu2}=S\\,P_g\\).</li><li>هـ) <b>تقل</b>: \\(n_s=120f/p\\).</li><li>و) <b>يزداد</b>: \\(f_r=S\\,f_s\\).</li><li>ز) <b>تقل</b>: بزيادة السرعة يقل S فيقل \\(I\'_2\\) حسب (1-33).</li><li>حـ) <b>تقل</b>: \\(n_s=120f/p\\).</li></ol>']].map(([n,a])=>`<details class="u1b-q"><summary>السؤال ${n}</summary><div class="u1b-ans">${a}</div></details>`).join(''),title:'إجابات مقترحة (ليست من الكتاب)'}
+     [10,'<ol type="a" style="list-style:none;padding-inline-start:4px;margin:4px 0"><li>أ) <b>يزداد</b>: الحمل الأكبر يحتاج عزماً أكبر فتقل السرعة ويزيد S (منحنى العزم والسرعة في المنطقة المستقرة).</li><li>ب) <b>يقل</b>: المعادلة (1-39).</li><li>جـ) <b>تقل</b>: يزيد الانزلاق عند الحمل نفسه، \\(n=n_s(1-S)\\).</li><li>د) <b>تقل</b>: \\(P_{cu2}=S\\,P_g\\).</li><li>هـ) <b>تقل</b>: \\(n_s=120f/p\\).</li><li>و) <b>يزداد</b>: \\(f_r=S\\,f_s\\).</li><li>ز) <b>تقل</b>: بزيادة السرعة يقل S فيقل \\(I\'_2\\) حسب (1-33).</li><li>حـ) <b>تقل</b>: \\(n_s=120f/p\\).</li></ol>']].map(([n,a])=>`<details class="u1b-q"><summary>السؤال ${n}</summary><div class="u1b-ans">${a}</div></details>`).join(''),title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: بقية فروع السؤال 10',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة، ثم اقرأ المعادلة التي تعللها.',items:[
+ ['جـ) عند زيادة مقاومة العضو الدوار فإن سرعة المحرك تزداد.',false,'تقل: يزيد الانزلاق عند الحمل نفسه، و\\(n=n_s(1-S)\\).'],
+ ['د) إذا قلّ الانزلاق فإن القدرة المفقودة في العضو الدائر تقل.',true,'\\(P_{cu2}=S\\,P_g\\) من (1-25).'],
+ ['هـ) إذا قلّ تردد المصدر فإن سرعة المجال المغناطيسي الدوار تزداد.',false,'تقل: \\(n_s=\\frac{120f_s}{p}\\).'],
+ ['ز) إذا زادت سرعة المحرك فإن قيم التيارات داخل ملفات العضو الدوار تقل.',true,'بزيادة السرعة يقل \\(S\\) فيكبر \\(R\'_2/S\\) في مقام (1-33)، فيقل \\(I\'_2\\).'],
+ ['حـ) إذا زاد عدد أقطاب العضو الثابت فإن سرعة المجال المغناطيسي الدوار تزداد.',false,'تقل: عدد الأقطاب في مقام (1-1).']]})}
    ]},
 
   {recap:[

@@ -328,7 +328,183 @@ B.lesson({
  title:'التجربة الأولى: استجابة نظام حراري لإشارة الخطوة',
  summary:'نسلّط خطوة جهد w = 7 V على عنصر التسخين ونسجّل خرج حساس الحرارة 200 ثانية، ثم نعيدها والمروحة تعمل بجهد 5 V كتشويش فنرى أن الحلقة المفتوحة لا تصحح نقص الخرج. وفي الجزء الثاني نرسم منحنى الخواص الاستاتيكي (الخرج المستقر مع الدخل) ونحسب ميله K<sub>p</sub>.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر مختبر التحكم الآلي.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'الدائرة المفتوحة',title:'الوحدة الثانية: الاستجابة الزمنية لأنظمة ذات دائرة مفتوحة',ref:'ص 9',
    q:'نعطي النظام دخلاً ثابتاً ولا نراقب خرجه لنصححه… فماذا يحدث لو تغيّر شيء من الخارج؟',
@@ -344,7 +520,12 @@ B.lesson({
     {book:String.raw`<p><b>الوحدة الثانية: تحليل الاستجابة الزمنية لبعض الأنظمة الصناعية ذات الدائرة المفتوحة</b></p>`,ref:'ص 9'},
     {tip:String.raw`<p>في هذه الوحدة لا يوجد «حاكم»: نعطي النظام دخلاً ثابتاً ونقيس كيف يتصرف خرجه مع الزمن. نسمي ذلك <b>الاستجابة الزمنية</b>. ونستخدم <b>إشارة الخطوة</b>: جهد يقفز فجأة من الصفر إلى قيمة ثابتة. من شكل الاستجابة نعرف: إلى أين يصل الخرج (الكسب)، وبأي سرعة (الثابت الزمني). و<b>التشويش</b> \(z\) مؤثر خارجي لا نتحكم فيه (هنا مروحة تبرّد العنصر).</p>`},
     {tip:box(openLoopSVG({plant:'النظام الحراري',z:1,u:'y',y:'x'}),600)+String.raw`<p class="sub">الحلقة (الدائرة) المفتوحة للنظام الحراري: الدخل يذهب إلى الوحدة المحكومة، ولا يرجع قياس الخرج ليصحح الدخل.</p>`,title:'مخطط الحلقة المفتوحة'},
-    {add:String.raw`<p>مثال من الحياة: سخّان ماء تشغّله بمؤقت لمدة ثابتة دون منظم حرارة (ثرموستات). إذا كان الجو بارداً يخرج الماء أبرد من المعتاد، لأن السخّان لا «يعرف» درجة الماء ليعوّض. هذه دائرة مفتوحة.</p>`,title:'دائرة مفتوحة في البيت'}
+    {add:String.raw`<p>مثال من الحياة: سخّان ماء تشغّله بمؤقت لمدة ثابتة دون منظم حرارة (ثرموستات). إذا كان الجو بارداً يخرج الماء أبرد من المعتاد، لأن السخّان لا «يعرف» درجة الماء ليعوّض. هذه دائرة مفتوحة.</p>`,title:'دائرة مفتوحة في البيت'},
+    {title:'مختبر مصغّر: مفتوحة أم مغلقة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'السؤال الذي يفرّق بينهما: هل يُقاس الخرج ويرجع ليصحح الدخل؟ صنّف كل نظام.',cats:['دائرة مفتوحة','دائرة مغلقة'],items:[
+ ['سخّان ماء يعمل بمؤقت لمدة ثابتة، بلا منظم حرارة.',0,'لا أحد يقيس حرارة الماء ليعوّض؛ إذا برد الجو يخرج الماء أبرد.'],
+ ['تجربة هذا الدرس: المولد يعطي جهد التسخين، والملتيميتر يقرأ الخرج فقط.',0,'الملتيميتر يعرض القراءة لنا، ولا يرجع قياسه ليغيّر جهد المولد.'],
+ ['مكيّف يقيس حرارة الغرفة ويزيد التبريد إذا ارتفعت عن الدرجة المضبوطة.',1,'القياس يرجع ويغيّر عمل المكيّف: هذه تغذية راجعة (موضوع الوحدة الثالثة).'],
+ ['نشغّل المروحة (تشويش) فينخفض الخرج ويبقى منخفضاً.',0,'هذا ما يحدث في الدائرة المفتوحة: لا شيء يصحح أثر التشويش.']]})}
    ]},
 
   {st:2,short:'الهدف من التجربة',title:'التجربة الأولى — الهدف من التجربة',ref:'ص 10',
@@ -360,7 +541,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>التجربة الأولى: استجابة نظام حراري لإشارة الخطوة</b></p><p><b>الهدف من التجربة:</b></p><p>أن يتعرف المتدرب من خلال هذه التجربة على:</p><ul><li>الأجهزة المستخدمة في مختبر التحكم <span class="ltr">Com3Lab</span></li><li>طريقة تشغيل الكرت الإلكتروني المبني عليه هذا المختبر.</li><li>استجابة نظام حراري لإشارة الخطوة.</li><li>تأثير التشويش على الحلقة المفتوحة.</li></ul>`,ref:'ص 10'},
-    {tip:String.raw`<p><span class="ltr">Com3Lab</span> كرت إلكتروني عليه عدة «لوحات» (حراري، سرعة، إضاءة، حاكمات)، والأجهزة (المولد، الملتيميتر، راسم الذبذبات) أجهزة افتراضية تظهر على شاشة الحاسب ونوصل أسلاكها على صورة اللوحة.</p>`}
+    {tip:String.raw`<p><span class="ltr">Com3Lab</span> كرت إلكتروني عليه عدة «لوحات» (حراري، سرعة، إضاءة، حاكمات)، والأجهزة (المولد، الملتيميتر، راسم الذبذبات) أجهزة افتراضية تظهر على شاشة الحاسب ونوصل أسلاكها على صورة اللوحة.</p>`},
+    {title:'تحقق سريع: أهداف التجربة',widget:(el,B)=>DCML.tf(el,B,{intro:'قائمة أهداف للحفظ: احكم على كل عبارة بحسب نص الكتاب (ص 10).',items:[
+ ['من أهداف التجربة معرفة طريقة تشغيل الكرت الإلكتروني المبني عليه المختبر.',true,'هذا الهدف الثاني.'],
+ ['تدرس التجربة استجابة نظام حراري لإشارة الخطوة.',true,'هذا الهدف الثالث، وهو عنوان التجربة.'],
+ ['تدرس التجربة تأثير التشويش على الحلقة المغلقة.',false,'الهدف الرابع: «تأثير التشويش على الحلقة المفتوحة»؛ الحلقة المغلقة في الوحدة الثالثة.']]})}
    ]},
 
   {st:3,short:'الأجهزة والمكونات',title:'الأجهزة والمكونات',ref:'ص 10',
@@ -375,7 +560,12 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأجهزة والمكونات:</b></p><ul><li>مصدر التغذية <span class="ltr">(Power Supply)</span></li><li>الكرت الإلكتروني.</li><li>مولد إشارة <span class="ltr">Function Generator</span></li><li>وحدة متحكم فيها <span class="ltr">(Controlled Unit)</span></li><li>جهاز قياس الجهد <span class="ltr">Multimeter</span></li></ul>`,ref:'ص 10'},
-    {tip:String.raw`<p>المولد يعطي <b>الدخل</b> (خطوة الجهد)، والوحدة المتحكم فيها هي <b>النظام</b> نفسه (لوحة <span class="ltr">Temperature Control</span>)، والملتيميتر يقرأ <b>الخرج</b>. ومصدر التغذية والكرت يشغّلان كل ذلك.</p>`}
+    {tip:String.raw`<p>المولد يعطي <b>الدخل</b> (خطوة الجهد)، والوحدة المتحكم فيها هي <b>النظام</b> نفسه (لوحة <span class="ltr">Temperature Control</span>)، والملتيميتر يقرأ <b>الخرج</b>. ومصدر التغذية والكرت يشغّلان كل ذلك.</p>`},
+    {title:'مختبر مصغّر: ما دور كل جهاز؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل جهاز من قائمة الكتاب اختر دوره في التجربة.',cats:['يعطي الدخل','النظام نفسه','يقرأ الخرج','يشغّل اللوحة'],items:[
+ ['مولد إشارة Function Generator',0,'يعطي خطوة الجهد w على دخل عنصر التسخين.'],
+ ['وحدة متحكم فيها Controlled Unit (لوحة Temperature Control)',1,'هي النظام الحراري الذي ندرس استجابته.'],
+ ['جهاز قياس الجهد Multimeter',2,'موصول بمقبس خرج الحساس في الشكل (2-3).'],
+ ['مصدر التغذية Power Supply',3,'يغذي الكرت الإلكتروني فقط، ولا يدخل في الإشارة.']]})}
    ]},
 
   {st:4,short:'خطوات إجراء التجربة',title:'خطوات إجراء التجربة — الشكل <span class="ltr">(2-3)</span>',ref:'ص 10–11',
@@ -391,7 +581,15 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>خطوات إجراء التجربة:</b></p><ul><li>شغل لوحة العمليات وأجب عن الأسئلة التي تسمح بمواصلة العمل.</li><li>قم بتوصيل الأجهزة وفق الشكل <span class="ltr">(2-3)</span>.</li><li>قم بمعايرة جهاز العرض وتأكد من عمل كل الأجهزة.</li><li>قبل تشغيل التجربة اطلب من المسؤول عن المختبر مراجعة التوصيلات.</li><li>اختر إشارة خطوة <span class="ltr">w = 7 v</span> ثم ارسم إشارة الدخل والخرج معا خلال زمن قدره <span class="ltr">200 s</span> سجل القيمة التي استقر عليها الخرج \(X_0\)</li><li>أعد التجربة بإدخال تشويش على عملية التسخين (تشغيل المروحة بجهد <span class="ltr">5 v</span>) وسجل القيمة التي استقر عليها الخرج \(X_{01}\)</li></ul>`,ref:'ص 10'},
     {book:box(benchSVG({kind:'th',ins:'mm',outCh:'V',wired:true,gen:'7.0 V',meter:'—'}),760)+String.raw`<p class="sub">الشكل <span class="ltr">(2-3)</span>: توصيل التجربة</p>`,ref:'ص 11'},
-    {tip:String.raw`<p>داخل لوحة <span class="ltr">Temperature Control</span>: الجهد \(y_T\) يسخّن مقاومة، والحرارة تصل إلى حساس يحوّلها إلى جهد \(x_T\) (الصندوق <span class="ltr">ϑ/u</span>). لا يرتفع الخرج فوراً: المقاومة تسخن أولاً، ثم تنتقل الحرارة إلى الحساس، لذلك تبدأ الاستجابة <b>ببطء</b> كأن فيها تأخيراً، ثم تصعد، ثم تقترب من قيمتها النهائية بهدوء دون أن تتجاوزها. أنظمة الحرارة <b>بطيئة</b>: ثوابتها الزمنية عشرات الثواني أو أكثر.</p>`,title:'ماذا يحدث داخل اللوحة؟'}
+    {tip:String.raw`<p>داخل لوحة <span class="ltr">Temperature Control</span>: الجهد \(y_T\) يسخّن مقاومة، والحرارة تصل إلى حساس يحوّلها إلى جهد \(x_T\) (الصندوق <span class="ltr">ϑ/u</span>). لا يرتفع الخرج فوراً: المقاومة تسخن أولاً، ثم تنتقل الحرارة إلى الحساس، لذلك تبدأ الاستجابة <b>ببطء</b> كأن فيها تأخيراً، ثم تصعد، ثم تقترب من قيمتها النهائية بهدوء دون أن تتجاوزها. أنظمة الحرارة <b>بطيئة</b>: ثوابتها الزمنية عشرات الثواني أو أكثر.</p>`,title:'ماذا يحدث داخل اللوحة؟'},
+    {title:'مختبر مصغّر: رتّب خطوات التجربة',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي يذكره الكتاب (ص 10).',steps:[
+ ['شغّل لوحة العمليات وأجب عن الأسئلة','البداية دائماً بتشغيل اللوحة.'],
+ ['وصّل الأجهزة وفق الشكل (2-3)','المعايرة والمراجعة تأتيان بعد التوصيل.'],
+ ['عاير جهاز العرض وتأكد من عمل كل الأجهزة','نعاير بعد التوصيل وقبل طلب المراجعة.'],
+ ['اطلب من المسؤول مراجعة التوصيلات','المراجعة قبل التشغيل، لا بعده.'],
+ ['خطوة <span class="ltr">w = 7 V</span> وارسم الدخل والخرج خلال <span class="ltr">200 s</span> وسجّل <span class="ltr">X<sub>0</sub></span>','القياس بلا تشويش أولاً.'],
+ ['شغّل المروحة بجهد <span class="ltr">5 V</span> وسجّل <span class="ltr">X<sub>01</sub></span>','التشويش يأتي بعد تسجيل القيمة الأولى لنقارن بها.']],
+ done:'لاحظ أن القياس بلا تشويش يسبق القياس مع المروحة، لنقارن القيمتين.'})}
    ]},
 
   {st:5,short:'تسجيل النتائج',title:'تسجيل النتائج: بدون تشويش ومع التشويش — الشكل <span class="ltr">(2-4)</span>',ref:'ص 11',
@@ -437,7 +635,19 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>الجزء الثاني: منحنى الخواص الاستاتيكي</b></p><p>وصل التجربة شكل <span class="ltr">(2-5)</span> وذلك بتثبيت إشارة الدخل على القيم المبينة في الجدول وتسجيل القيمة التي يستقر عليها الخرج بعد 3 دقائق من تثبيت الدخل على القيمة المطلوبة وسجل النتائج في الجدول التالي.</p>`+box(benchSVG({kind:'th',ins:'mm',outCh:'V',wired:true,jump:true,gen:'4.0 V',meter:'—'}),760)+String.raw`<p class="sub">الشكل <span class="ltr">(2-5)</span>: توصيل التجربة</p>`+ptable(['قيمة إشارة الدخل y (v)','4','5','6','7'],[['قيمة إشارة الخرج x (v)','','','','']])+String.raw`<ul><li>ارسم منحنى إشارة الخرج \(x\) بدلالة إشارة الدخل \(y\) باستخدام راسم <span class="ltr">Characteristic curve plotter</span> في اللوحة <span class="ltr">Com3Lab</span></li></ul><p>ماذا تلاحظ حول المنحنى؟</p>`,ref:'ص 12'},
     {tip:String.raw`<p><b>«استاتيكي»</b> أي بعد الاستقرار: لا يهمنا هنا كيف يصعد الخرج مع الزمن، بل أين يستقر لكل قيمة دخل. نقطة واحدة لكل قيمة دخل، ثم نصل النقاط فنحصل على منحنى الخواص.</p><details class="c2-q"><summary>ماذا تلاحظ حول المنحنى؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> المنحنى خط مستقيم تقريباً: كل زيادة متساوية في جهد الدخل تعطي زيادة متساوية في الخرج المستقر، أي أن النظام «خطي» في هذا المدى. والخط لا يمر بالصفر لأن الحساس يقرأ حرارة الغرفة حتى عندما يكون الدخل صفراً.</div></details>`},
-    {watch:String.raw`<p>الشكل <span class="ltr">(2-5)</span> مثل الشكل <span class="ltr">(2-3)</span> مع وصلة قصيرة بين المقبسين <span class="ltr">ϑ</span> و <span class="ltr">Sense</span> في إطار <span class="ltr">ϑ-Calibration</span>، والكتاب لا يشرح وظيفة هذه الوصلة. لا تنسها عند التوصيل.</p>`}
+    {watch:String.raw`<p>الشكل <span class="ltr">(2-5)</span> مثل الشكل <span class="ltr">(2-3)</span> مع وصلة قصيرة بين المقبسين <span class="ltr">ϑ</span> و <span class="ltr">Sense</span> في إطار <span class="ltr">ϑ-Calibration</span>، والكتاب لا يشرح وظيفة هذه الوصلة. لا تنسها عند التوصيل.</p>`},
+    {title:'مختبر مصغّر: سجّل نقاط المنحنى',widget:(el,B)=>{const done=new Set();
+ DCML.lab(el,B,{intro:'اختر قيمة الدخل من جدول الكتاب، وانتظر (هنا فوراً) القيمة التي يستقر عليها الخرج؛ كل قيمة تختارها تضاف نقطة على المنحنى.',
+  predict:{q:'لو رفعنا الدخل من 4 إلى 5 V ثم من 6 إلى 7 V، هل يزيد الخرج المستقر بالمقدار نفسه؟',opts:[
+   ['لا، الزيادة تكبر كثيراً مع كل خطوة',false,'لو كان كذلك لكان المنحنى منحنياً إلى أعلى.'],
+   ['نعم تقريباً، فالمنحنى خط مستقيم',true,'زيادات متساوية في الدخل تعطي زيادات متساوية في الخرج المستقر، كما في الشكل (2-6).'],
+   ['لا يتغير الخرج المستقر',false,'الخرج المستقر يتبع جهد التسخين: دخل أكبر = حرارة أعلى.']]},
+  ins:[{k:'y',l:'قيمة إشارة الدخل y (من جدول الكتاب)',seg:[[4,'4 V'],[5,'5 V'],[6,'6 V'],[7,'7 V']],v:4}],
+  tp:{id:'u2-l1',defs:TH_DEF},
+  calc:(s,P,B)=>{done.add(s.y);const x=thFinal(P,s.y,0),xm=thFinal(P,8,0);const pts=[...done].sort().map(y=>[y,thFinal(P,y,0),'--live']);
+   return {facts:[['الدخل y',s.y+' V'],['الخرج المستقر x',DCML.fm(B,x,2)+' V','hi'],['نقاط مسجلة',done.size+' / 4']],
+    plot:{xr:[0,8],yr:[0,Math.ceil(xm+0.5)],xl:'y (V)',yl:'x (V)',xt:[0,2,4,6,8],curves:done.size===4?[{f:y=>thFinal(P,y,0),col:'--blue',dash:'5 4',w:2}]:[],dots:pts,cur:[s.y,x]},
+    msg:done.size<4?'سجّل القيم الأربع لترى الخط كاملاً.':'الخط مستقيم. ولو مددناه (المتقطع) إلى دخل صفر لقطع محور الخرج عند '+DCML.fm(B,P.xa,1)+' V لا عند الصفر: الحساس يقرأ حرارة الغرفة.'}}})}}
    ]},
 
   {st:7,short:'حساب الميل',title:'حساب الميل \\(K_p\\) — الشكل <span class="ltr">(2-6)</span>',ref:'ص 13',
@@ -457,7 +667,19 @@ B.lesson({
 
 Kp = …….</pre><p>ماذا يمثل الثابت \(K_p\) للنظام الحراري؟</p>`,ref:'ص 13'},
     {tip:String.raw`<div class="eq">$$K_p=\frac{\Delta x}{\Delta y}=\frac{x_2-x_1}{y_2-y_1}$$</div><details class="c2-q"><summary>ماذا يمثل الثابت K<sub>p</sub> للنظام الحراري؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> يمثل <b>كسب النظام الحراري</b> (الكسب الاستاتيكي): كم فولتاً يزيد الخرج المستقر إذا زاد الدخل فولتاً واحداً.</div></details>`,title:'الميل في سطر واحد'},
-    {watch:String.raw`<p>الرمز \(K_p\) يُستعمل عادة لكسب <b>الحاكم التناسبي</b> (الوحدة الثالثة)، أما هنا فهو كسب <b>النظام نفسه</b>، ويسميه الكتاب في التجربتين التاليتين \(K_s\).</p>`}
+    {watch:String.raw`<p>الرمز \(K_p\) يُستعمل عادة لكسب <b>الحاكم التناسبي</b> (الوحدة الثالثة)، أما هنا فهو كسب <b>النظام نفسه</b>، ويسميه الكتاب في التجربتين التاليتين \(K_s\).</p>`},
+    {title:'مختبر مصغّر: اختر نقطتين واحسب الميل',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر نقطتين من قيم الجدول، وشاهد \\(\\Delta x\\) و \\(\\Delta y\\) والميل \\(K_p=\\Delta x/\\Delta y\\).',
+ predict:{q:'حسبت الميل من النقطتين 4 و 7 V. لو اخترت النقطتين 5 و 6 V بدلاً منهما، ماذا يحدث للميل؟',opts:[
+  ['يكبر لأن النقطتين أقرب',false,'المسافة الأقصر تصغّر \\(\\Delta x\\) و\\(\\Delta y\\) معاً، فتبقى نسبتهما نفسها.'],
+  ['يصغر',false,'لا: على خط مستقيم النسبة ثابتة.'],
+  ['يبقى كما هو، لأن الخط مستقيم',true,'ميل الخط المستقيم واحد في كل مكان عليه؛ لكن النقطتين المتباعدتين تقللان أثر خطأ القراءة.']]},
+ ins:[{k:'a',l:'النقطة الأولى y<sub>1</sub>',seg:[[4,'4 V'],[5,'5 V'],[6,'6 V'],[7,'7 V']],v:4},{k:'b',l:'النقطة الثانية y<sub>2</sub>',seg:[[4,'4 V'],[5,'5 V'],[6,'6 V'],[7,'7 V']],v:7}],
+ tp:{id:'u2-l1',defs:TH_DEF},
+ calc:(s,P,B)=>{const x1=thFinal(P,s.a,0),x2=thFinal(P,s.b,0),dy=s.b-s.a,dx=x2-x1,xm=thFinal(P,8,0);
+  if(!dy)return {facts:[['Δy','0 V','bad']],msg:'اخترت النقطة نفسها مرتين: \\(\\Delta y=0\\) ولا يمكن القسمة عليه. اختر نقطتين مختلفتين.',cls:'bad',plot:{xr:[0,8],yr:[0,Math.ceil(xm+0.5)],xl:'y (V)',yl:'x (V)',xt:[0,2,4,6,8],curves:[{f:y=>thFinal(P,y,0),col:'--blue',w:2}],dots:[[s.a,x1,'--live']]}};
+  return {facts:[['Δx = x₂ − x₁',DCML.fm(B,dx,2)+' V'],['Δy = y₂ − y₁',DCML.fm(B,dy,0)+' V'],['K<sub>p</sub> = Δx/Δy',DCML.fm(B,dx/dy,2),'hi'],['x₂ ÷ y₂ (نقطة واحدة)',DCML.fm(B,x2/s.b,2),'bad']],
+   plot:{xr:[0,8],yr:[0,Math.ceil(xm+0.5)],xl:'y (V)',yl:'x (V)',xt:[0,2,4,6,8],curves:[{f:y=>thFinal(P,y,0),col:'--blue',w:2},{pts:[[s.a,x1],[s.b,x1],[s.b,x2]],col:'--live',dash:'5 4',w:2}],dots:[[s.a,x1,'--live'],[s.b,x2,'--live']]},
+   msg:'المثلث المتقطع: ضلعه الأفقي \\(\\Delta y\\) وضلعه الرأسي \\(\\Delta x\\). البطاقة الحمراء قسمة الخرج على الدخل عند نقطة واحدة: رقم أكبر من الميل لأن الخط لا يمر بالصفر.'}}})}
    ]},
 
   {st:8,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 14',
@@ -472,6 +694,11 @@ Kp = …….</pre><p>ماذا يمثل الثابت \(K_p\) للنظام الح�
    ],
    body:[
     {book:String.raw`<p><b>أسئلة ومناقشة</b></p><ul><li>ماذا تلاحظ حول استجابة النظام الحراري لإشارة الخطوة؟</li><li>ما نوع هذا النظام؟</li><li>ما تأثير التشويش (تشغيل المروحة) على خرج النظام؟</li><li>هل تتأثر الدائرة المفتوحة بالتشويش؟</li></ul>`,ref:'ص 14'},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'عبارات تلخّص ما رأيته في التجربة. احكم عليها، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['خرج النظام الحراري يقفز فوراً لحظة تسليط الخطوة.',false,'يبدأ متأخراً قليلاً ثم يصعد ببطء: الحرارة تحتاج وقتاً لتصل إلى الحساس.'],
+ ['تشغيل المروحة يخفض الخرج المستقر.',true,'المروحة تسحب الحرارة، فيستقر الخرج عند \\(X_{01}\\) أصغر من \\(X_0\\).'],
+ ['الدائرة المفتوحة تعيد الخرج وحدها إلى قيمته بعد قليل من تشغيل المروحة.',false,'لا يوجد قياس للخرج يرجع إلى الدخل، فيبقى الخرج منخفضاً ما دامت المروحة تعمل.'],
+ ['يحتاج النظام الحراري دقائق ليستقر خرجه.',true,'لهذا ينتظر الكتاب 3 دقائق قبل تسجيل كل نقطة في الجزء الثاني.']]})},
     {tip:String.raw`<details class="c2-q"><summary>1: ماذا تلاحظ حول استجابة النظام الحراري لإشارة الخطوة؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> استجابة بطيئة جداً (تحتاج نحو 3 دقائق لتستقر)، تبدأ متأخرة قليلاً ثم تصعد وتقترب من قيمتها النهائية تدريجياً، ولا تتجاوز القيمة النهائية ولا تتأرجح.</div></details><details class="c2-q"><summary>2: ما نوع هذا النظام؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> نظام من <b>الرتبة الأولى تقريباً مع تأخير صغير في البداية</b> (يُسمى أحياناً PT1 مع زمن ميت، أو نظامين من الرتبة الأولى على التوالي). وهو نظام «ذاتي الاستقرار»: يصل وحده إلى قيمة ثابتة.</div></details><details class="c2-q"><summary>3: ما تأثير التشويش (تشغيل المروحة) على خرج النظام؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> يخفض الخرج المستقر (\(X_{01}<X_0\))، لأن المروحة تزيد فقد الحرارة.</div></details><details class="c2-q"><summary>4: هل تتأثر الدائرة المفتوحة بالتشويش؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> نعم، تتأثر ولا تصحح نفسها: لا يوجد قياس للخرج يرجع إلى الدخل، فيبقى الخطأ ما دام التشويش موجوداً. التصحيح يحتاج دائرة مغلقة (الوحدة الثالثة).</div></details>`,title:'إجابات مقترحة — افتحها بعد أن تحاول'},
     {watch:String.raw`<p>انتبه للرموز: في هذه التجربة \(X_0\) هو <b>الخرج</b> المستقر، أما في التجربتين التاليتين فالكتاب يستعمل \(X_0\) لقيمة الخطوة (<b>الدخل</b>).</p>`}
    ]},
@@ -649,7 +876,12 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>التجربة الثانية: استجابة محرك تيار مستمر لإشارة الخطوة</b></p><p><b>الهدف من التجربة:</b></p><p>أن يتعرف المتدرب من خلال هذه التجربة على ما يلي:</p><ul><li>الأجهزة المستخدمة في مختبر التحكم <span class="ltr">Com3Lab</span></li><li>نظام من الرتبة الأولى (<span class="ltr">PT<sub>1</sub></span> أو محرك التيار المستمر)</li><li>استجابة النظام من الدرجة الأولى لإشارة الخطوة</li></ul>`,ref:'ص 15'},
     {tip:String.raw`<p><b>نظام الرتبة الأولى</b> <span class="ltr">(PT1)</span> يتصرف مثل خزان يمتلئ: عند الخطوة يبدأ الخرج يصعد بسرعة ثم تقل سرعته حتى يستقر، دون تأرجح ودون أن يتجاوز قيمته النهائية. يوصف برقمين فقط:</p><ul><li><b>الكسب</b> \(K_s\): الخرج المستقر ÷ قيمة الخطوة.</li><li><b>الثابت الزمني</b> \(T\): يخبرنا بسرعة الصعود (تفصيله في المحطة الرابعة).</li></ul>`},
-    {watch:String.raw`<p>الكتاب يقول «الرتبة الأولى» مرة و«الدرجة الأولى» مرة، والمعنى واحد.</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب يقول «الرتبة الأولى» مرة و«الدرجة الأولى» مرة، والمعنى واحد.</p>`,fix:true},
+    {title:'تحقق سريع: صفات نظام الرتبة الأولى',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة عن نظام الرتبة الأولى (PT1)، ثم اقرأ السبب.',items:[
+ ['عند الخطوة يقفز خرج نظام الرتبة الأولى فوراً إلى قيمته النهائية.',false,'يصعد بسرعة في البداية ثم تقل سرعته حتى يستقر؛ لا يقفز.'],
+ ['نظام الرتبة الأولى لا يتجاوز قيمته النهائية ولا يتأرجح حولها.',true,'هذا ما يميزه عن الأنظمة التي ستراها مع الحاكم التكاملي في الوحدة الثالثة.'],
+ ['يكفي رقمان لوصفه: الكسب \\(K_s\\) والثابت الزمني \\(T\\).',true,'الكسب يخبر إلى أين يصل الخرج، والثابت الزمني بأي سرعة.'],
+ ['«الرتبة الأولى» و«الدرجة الأولى» في الكتاب شيئان مختلفان.',false,'الكتاب يستعمل الكلمتين بالمعنى نفسه.']]})}
    ]},
 
   {st:2,short:'الأجهزة والمكونات',title:'الأجهزة والمكونات',ref:'ص 15',
@@ -664,7 +896,19 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأجهزة والمكونات:</b></p><ul><li>مصدر التغذية <span class="ltr">(Power Supply)</span></li><li>الكارت الإلكتروني. <span class="ltr">COM3LAB</span></li><li>مولد إشارة <span class="ltr">Function Generator</span></li><li>نظام من الرتبة الأولى <span class="ltr">PT1</span> و محرك تيار مستمر (نفترض أن محرك التيار المستمر نظام من الدرجة الأولى)</li></ul>`,ref:'ص 15'},
-    {tip:String.raw`<p>لماذا يُعدّ المحرك من الرتبة الأولى؟ عند تسليط الجهد لا تقفز السرعة فوراً لأن العضو الدوار له ثقل (قصور ذاتي)؛ تزيد السرعة بسرعة ثم ببطء حتى تتعادل القوة الدافعة مع الاحتكاك والحمل. الثابت الزمني يكبر مع ثقل العضو الدوار. على لوحة <span class="ltr">Speed Control</span> يقيس الصندوق <span class="ltr">RPM/TTL</span> عدد اللفات، ويحوّلها الصندوق <span class="ltr">f/u</span> إلى جهد \(x_S\) يتناسب مع السرعة.</p>`}
+    {tip:String.raw`<p>لماذا يُعدّ المحرك من الرتبة الأولى؟ عند تسليط الجهد لا تقفز السرعة فوراً لأن العضو الدوار له ثقل (قصور ذاتي)؛ تزيد السرعة بسرعة ثم ببطء حتى تتعادل القوة الدافعة مع الاحتكاك والحمل. الثابت الزمني يكبر مع ثقل العضو الدوار. على لوحة <span class="ltr">Speed Control</span> يقيس الصندوق <span class="ltr">RPM/TTL</span> عدد اللفات، ويحوّلها الصندوق <span class="ltr">f/u</span> إلى جهد \(x_S\) يتناسب مع السرعة.</p>`},
+    {title:'مختبر مصغّر: عضو دوار أثقل',widget:(el,B)=>{const segs=[[1,'كما هو: T'],[2,'أثقل: 2T'],[3,'أثقل جداً: 3T']];
+ DCML.lab(el,B,{intro:'الثابت الزمني يكبر مع ثقل العضو الدوار. اختر الثقل وشاهد منحنى جهد السرعة لخطوة <span class="ltr">10 V</span> على عرض <span class="ltr">5 s</span> (قيمتا الكتاب).',
+  predict:{q:'جعلنا العضو الدوار أثقل. ماذا يتغير في المنحنى؟',opts:[
+   ['تقل السرعة النهائية',false,'في هذا النموذج القيمة النهائية = الكسب × الخطوة، والثقل لا يغيّر الكسب.'],
+   ['يتأرجح الخرج حول السرعة النهائية',false,'نظام الرتبة الأولى لا يتأرجح مهما ثقل.'],
+   ['يصل إلى السرعة النهائية نفسها لكن أبطأ',true,'الثقل يكبّر الثابت الزمني \\(T\\) فيتأخر الوصول، والقيمة النهائية لا تتغير.']]},
+  ins:[{k:'m',l:'ثقل العضو الدوار',seg:segs,v:1}],
+  tp:{id:'u2-l2',defs:MO_DEF},
+  calc:(s,P,B)=>{const T=P.Tm*s.m,Y=P.Km*10,f=k=>t=>P.Km*10*(1-Math.exp(-t/(P.Tm*k)));
+   return {facts:[['الثابت الزمني T',DCML.fm(B,T,2)+' s','hi'],['الخرج المستقر Y<sub>0</sub>',DCML.fm(B,Y,2)+' V'],['زمن الاستقرار ≈ 5T',DCML.fm(B,5*T,2)+' s',5*T>5?'bad':'']],
+    plot:{xr:[0,5],yr:[0,Math.max(10,Y)*1.1],xl:'t (s)',yl:'V',curves:[{pts:[[0,0],[0,10],[5,10]],col:'--live',dash:'5 4',w:1.8}].concat(segs.filter(x=>x[0]!==s.m).map(x=>({f:f(x[0]),col:'--muted',dash:'3 4',w:1.6}))).concat([{f:f(s.m),col:'--blue',w:2.6}]),cur:[T,0.632*Y]},
+    msg:'النقطة البرتقالية عند \\(t=T\\): الخرج 63.2% من قيمته النهائية. الخط البرتقالي المتقطع = الخطوة، والرمادي = الثقلان الآخران.'+(5*T>5?' بهذا الثقل لا يستقر الخرج خلال <span class="ltr">5 s</span>؛ زد زمن العرض.':'')}}})}}
    ]},
 
   {st:3,short:'خطوات إجراء التجربة',title:'خطوات إجراء التجربة — الشكل <span class="ltr">(2-1)</span>',ref:'ص 15–16',
@@ -681,7 +925,19 @@ B.lesson({
     {book:String.raw`<p><b>خطوات إجراء التجربة:</b></p><ul><li>قم بتوصيل الأجهزة كما في الشكل <span class="ltr">(2-1)</span> مع أفضلية تغيير النظام <span class="ltr">PT1</span> بمحرك المروحة.</li><li>قبل تشغيل التجربة اطلب من المدرب مراجعة التوصيل ومعايرة الأجهزة.</li><li>قم بتشغيل التجربة وتحديد الخطوة بـ <span class="ltr">10v</span> وزمن <span class="ltr">5s</span> وسجل إشارتي القناتين \(Y_1\) و \(Y_2\) على راسم الذبذبات.</li><li>سجل ملحوظاتك.</li></ul>`,ref:'ص 15'},
     {book:box(benchSVG({kind:'pt1',ins:'osc',inCh:'Y2',outCh:'Y1',wired:true,gen:'10.0 V'}),760)+String.raw`<p class="sub">الشكل <span class="ltr">(2-1)</span>: توصيل التجربة</p>`,ref:'ص 16'},
     {tip:String.raw`<p>اقرأ الشكل هكذا: خرج المولد <span class="ltr">OUT</span> إلى دخل <span class="ltr">PT1</span> \((X_5)\)، وخرجها \(X_6\) إلى القناة <span class="ltr">Y1</span>، والقناة <span class="ltr">Y2</span> على خط الدخل. أي: <b><span class="ltr">Y1</span> = الخرج</b> و<b><span class="ltr">Y2</span> = الدخل</b>. و«زمن <span class="ltr">5 s</span>» هو مدة العرض على الشاشة.</p>`},
-    {watch:String.raw`<p>الخطوة الأولى تحيل إلى الشكل <span class="ltr">(2-1)</span> بينما الشكل في ص 16 مطبوع برقم <span class="ltr">(1-2)</span>؛ استعملنا <span class="ltr">(2-1)</span>.</p>`,fix:true}
+    {watch:String.raw`<p>الخطوة الأولى تحيل إلى الشكل <span class="ltr">(2-1)</span> بينما الشكل في ص 16 مطبوع برقم <span class="ltr">(1-2)</span>؛ استعملنا <span class="ltr">(2-1)</span>.</p>`,fix:true},
+    {title:'مختبر مصغّر: أي قناة هذه؟',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'في الشكل (2-1): '+L('X<sub>6</sub> → Y1')+' والقناة '+L('Y2')+' على خط الدخل. موقفان على شاشة راسم الذبذبات:',cases:[
+ {q:'منحنى يقفز لحظة التشغيل إلى '+L('10 V')+' ويبقى أفقياً. على أي قناة هو؟',opts:[
+  [L('Y1'),false,'Y1 موصولة بخرج النظام، والخرج لا يقفز.'],
+  [L('Y2'),true,'Y2 على خط الدخل، والدخل خطوة: يقفز فوراً إلى 10 V.'],
+  ['TRIG',false,'TRIG للتزامن، لا يعرض منحنى.']]},
+ {q:'منحنى يصعد بسرعة ثم ببطء حتى يستقر. على أي قناة هو؟',opts:[
+  [L('Y1'),true,'Y1 = الخرج \\(X_6\\): هذا سلوك نظام الرتبة الأولى.'],
+  [L('Y2'),false,'Y2 تعرض الخطوة نفسها، وهي لا تصعد تدريجياً.']]},
+ {q:'ماذا يعني «زمن <span class="ltr">5 s</span>» في الخطوة الثالثة؟',opts:[
+  ['مدة العرض على شاشة راسم الذبذبات',true,'نرى على الشاشة ما يحدث خلال <span class="ltr">5 s</span> من لحظة الخطوة.'],
+  ['الثابت الزمني للمحرك',false,'الثابت الزمني نقيسه نحن من المنحنى، لا نضبطه.'],
+  ['مدة انتظار قبل تسليط الخطوة',false,'الخطوة تبدأ عند بداية العرض.']]}]})}}
    ]},
 
   {st:4,short:'تسجيل النتائج',title:'تسجيل النتائج: الكسب والثابت الزمني',ref:'ص 16',
@@ -731,7 +987,18 @@ B.lesson({
    body:[
     {book:String.raw`<p>أعد التجربة باستخدام <span class="ltr">SIMULINK</span></p>`+box(slk2SVG(),580)+String.raw`<p>قارن بين النتائج</p>`,ref:'ص 16'},
     {tip:String.raw`<p>المخطط: كتلة <span class="ltr">Step</span>، ومنها فرع إلى دالة التحويل وفرع إلى <span class="ltr">Mux</span>، وخرج دالة التحويل إلى <span class="ltr">Mux</span>، وخرج <span class="ltr">Mux</span> إلى <span class="ltr">Scope</span>، فيُعرض الدخل والخرج معاً. في كتلة <span class="ltr">Transfer Fcn</span> نكتب البسط \(K_s\) والمقام \(T\,s+1\) بالأرقام التي حسبتها.</p><details class="c2-q"><summary>قارن بين النتائج.</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> إذا وضعنا في كتلة دالة التحويل \(K_s\) و \(T\) المقاستين من المنحنى، يتطابق منحنى Simulink تقريباً مع منحنى المختبر: النموذج البسيط \(K_s/(Ts+1)\) يصف المحرك جيداً. الفروق الصغيرة من دقة القراءة ومن أن المحرك الحقيقي ليس من الرتبة الأولى تماماً. وإذا حُسب \(K_s\) بصيغة الكتاب المقلوبة يستقر منحنى Simulink عند قيمة خاطئة (جرّب ذلك في المختبر).</div></details>`},
-    {watch:String.raw`<p>المخطط بلا رقم شكل في الكتاب. ضع في البسط \(K_s\) المحسوب بالصيغة المصححة \(Y_0/X_0\)، وإلا لن يتطابق المنحنيان.</p>`}
+    {watch:String.raw`<p>المخطط بلا رقم شكل في الكتاب. ضع في البسط \(K_s\) المحسوب بالصيغة المصححة \(Y_0/X_0\)، وإلا لن يتطابق المنحنيان.</p>`},
+    {title:'مختبر مصغّر: ضع K<sub>s</sub> في Transfer Fcn وقارن',widget:(el,B)=>DCML.lab(el,B,{intro:'المنحنى المتصل = المحرك (المختبر). المتقطع = Simulink بالبسط الذي تختاره و \\(T\\) المقاس. خطوة <span class="ltr">X<sub>0</sub> = 10 V</span>.',
+ predict:{q:'وضعت في Transfer Fcn البسط \\(K_s=X_0/Y_0\\) كما طُبع في الجدول. هل يتطابق منحنى Simulink مع منحنى المحرك؟',opts:[
+  ['نعم، يتطابقان تماماً',false,'الصيغة كما طُبعت مقلوبة (الدخل ÷ الخرج)، فتعطي رقماً آخر.'],
+  ['لا، يستقر منحنى Simulink عند قيمة أخرى',true,'البسط يحدد القيمة النهائية؛ مع الصيغة المقلوبة تصبح القيمة النهائية خاطئة.'],
+  ['يختلفان في السرعة فقط',false,'السرعة يحددها \\(T\\) وهو نفسه في الحالتين؛ الفرق في القيمة النهائية.']]},
+ ins:[{k:'f',l:'البسط في Transfer Fcn',seg:[['book','\\(K_s=X_0/Y_0\\) كما طُبع'],['fix','\\(K_s=Y_0/X_0\\) المصحح']],v:'book'}],
+ tp:{id:'u2-l2',defs:MO_DEF},
+ calc:(s,P,B)=>{const Y0=P.Km*10,Ks=s.f==='book'?10/Y0:Y0/10,T=P.Tm,W=Math.max(5,5*T),m=Math.max(Y0,Ks*10,10)*1.1;
+  return {facts:[['Y<sub>0</sub> من المنحنى',DCML.fm(B,Y0,2)+' V'],['K<sub>s</sub> المستعمل',DCML.fm(B,Ks,3),s.f==='book'?'bad':'hi'],['نهاية Simulink',DCML.fm(B,Ks*10,2)+' V',s.f==='book'?'bad':'']],
+   plot:{xr:[0,W],yr:[0,m],xl:'t (s)',yl:'V',curves:[{f:t=>Y0*(1-Math.exp(-t/T)),col:'--blue',w:2.8},{f:t=>Ks*10*(1-Math.exp(-t/T)),col:'--live',dash:'6 4',w:2.4}]},
+   cls:s.f==='book'?'bad':'',msg:s.f==='book'?'لا يتطابقان: بالصيغة المقلوبة يصبح البسط مقلوب الكسب، فيستقر منحنى Simulink عند قيمة خاطئة.':'يتطابقان: الكسب = الخرج المستقر ÷ قيمة الخطوة، والنموذج \\(G(s)=K_s/(Ts+1)\\) يصف المحرك.'}}})}
    ]},
 
   {st:6,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 17',
@@ -746,6 +1013,10 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>أسئلة ومناقشة</b></p><ul><li>ارسم المخطط الصندوقي للتجربة</li><li>ما الهدف من استجابة النظام لإشارة الخطوة؟</li><li>ماذا تستخلص من هذه التجربة؟</li></ul>`,ref:'ص 17'},
+    {title:'تحقق سريع: ماذا تستخلص؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['المخطط الصندوقي لهذه التجربة فيه خط راجع من الخرج إلى الدخل.',false,'لا توجد تغذية راجعة: حلقة مفتوحة.'],
+ ['من استجابة الخطوة نعرف نوع النظام وكسبه وثابته الزمني.',true,'ومنها نكتب نموذجه \\(G(s)\\).'],
+ ['بعد زمن يساوي \\(T\\) يكون المحرك قد وصل إلى سرعته النهائية.',false,'بعد \\(T\\) يصل إلى 63.2% فقط، ويحتاج نحو \\(4T\\) إلى \\(5T\\) ليستقر.']]})},
     {tip:String.raw`<details class="c2-q"><summary>1: ارسم المخطط الصندوقي للتجربة.</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> `+box(openLoopSVG({plant:'المحرك (PT1)',sym:'Ks/(Ts+1)',meter:'راسم الذبذبات',u:'X0',y:'Y'}),600)+String.raw`<p>الدخل (من المولد) يذهب إلى المحرك وإلى القناة Y2، والخرج يذهب إلى القناة Y1. لا توجد تغذية راجعة: حلقة مفتوحة.</p></div></details><details class="c2-q"><summary>2: ما الهدف من استجابة النظام لإشارة الخطوة؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> الخطوة أبسط دخل وأشده تغيراً، فمن استجابتها نعرف «شخصية» النظام: نوعه (رتبة أولى أم لا)، وكسبه (إلى أين يصل)، وسرعته (الثابت الزمني)، ومنها نكتب نموذجه الرياضي \(G(s)\) لنستعمله لاحقاً في تصميم الحاكم.</div></details><details class="c2-q"><summary>3: ماذا تستخلص من هذه التجربة؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> المحرك يستجيب كنظام من الرتبة الأولى: لا تجاوز ولا تأرجح، ويصل إلى <span class="ltr">63.2%</span> من سرعته النهائية بعد زمن \(T\) وإلى سرعته النهائية تقريباً بعد \(4T\) إلى \(5T\). نموذجه \(G(s)=K_s/(Ts+1)\) بالقيم المقاسة، والكسب = الخرج ÷ الدخل.</div></details>`,title:'إجابات مقترحة — افتحها بعد أن تحاول'}
    ]},
 
@@ -853,7 +1124,14 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>التجربة الثالثة: استجابة نظام الإضاءة لإشارة الخطوة</b></p><p><b>الهدف من التجربة:</b></p><p>أن يتعرف المتدرب من خلال هذه التجربة على ما يلي:</p><ul><li>الأجهزة المستخدمة في مختبر التحكم <span class="ltr">Com3Lab</span></li><li>إشارة الخطوة وتأثيرها على خرج نظام الإضاءة</li><li>نوعية النظام من خلال الاستجابة</li><li>الكسب والثابت الزمني لنظام الإضاءة</li></ul>`,ref:'ص 18'},
     {tip:String.raw`<p>داخل لوحة <span class="ltr">Light Control</span>: الجهد \(y_L\) يضيء ثنائياً باعثاً للضوء <span class="ltr">(LED)</span>، والضوء يسقط على ترانزستور ضوئي يمرر تياراً يزيد مع شدة الضوء، فيعطي الجهد \(x_L\). الضوء يقطع المسافة في لحظة، والتأخير الوحيد من الدائرة الإلكترونية، لذلك <b>الثابت الزمني صغير جداً</b> (أجزاء من الألف من الثانية).</p>`},
-    {add:String.raw`<p>الفكرة نفسها في حساس إنارة الشوارع: خلية ضوئية تقيس ضوء النهار، فتطفئ المصابيح صباحاً وتشغّلها مساءً.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>الفكرة نفسها في حساس إنارة الشوارع: خلية ضوئية تقيس ضوء النهار، فتطفئ المصابيح صباحاً وتشغّلها مساءً.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: رتّب سلسلة نظام الإضاءة',widget:(el,B)=>DCML.order(el,B,{intro:'من الجهد إلى الجهد: اضغط حلقات السلسلة بترتيب حدوثها داخل لوحة Light Control.',steps:[
+ ['المولد يعطي جهد الدخل \\(y_L\\)','كل شيء يبدأ من جهد الدخل.'],
+ ['الثنائي الباعث للضوء (LED) يضيء','الثنائي يحوّل الجهد إلى ضوء، فهو أول ما يتأثر بالجهد.'],
+ ['الضوء يسقط على الترانزستور الضوئي','الضوء يصل إلى الترانزستور بعد أن يضيء الثنائي.'],
+ ['الترانزستور يمرر تياراً يزيد مع شدة الضوء','التيار يتبع الضوء الساقط عليه.'],
+ ['يظهر جهد الخرج \\(x_L\\)','هذا آخر السلسلة: ما يقرؤه راسم الذبذبات.']],
+ done:'الضوء يقطع المسافة في لحظة، والتأخير الوحيد من الدائرة الإلكترونية، لذلك الثابت الزمني صغير جداً.'})}
    ]},
 
   {st:2,short:'الأجهزة والمكونات',title:'الأجهزة والمكونات',ref:'ص 18',
@@ -868,7 +1146,13 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأجهزة والمكونات:</b></p><ul><li>مصدر التغذية <span class="ltr">(Power Supply)</span></li><li>الكارت الإلكتروني.</li><li>مولد إشارة <span class="ltr">Function Generator</span></li><li>نظام الإضاءة في اللوحة <span class="ltr">COM3LAB</span></li><li>جهاز الكمبيوتر</li></ul>`,ref:'ص 18'},
-    {tip:String.raw`<p>المولد يعطي الدخل (الخطوة)، ونظام الإضاءة هو النظام الذي ندرسه، والكمبيوتر تظهر عليه الأجهزة الافتراضية: المولد وراسم الذبذبات و«راسم الاستجابة لإشارة الخطوة».</p>`}
+    {tip:String.raw`<p>المولد يعطي الدخل (الخطوة)، ونظام الإضاءة هو النظام الذي ندرسه، والكمبيوتر تظهر عليه الأجهزة الافتراضية: المولد وراسم الذبذبات و«راسم الاستجابة لإشارة الخطوة».</p>`},
+    {title:'مختبر مصغّر: في أي تجربة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'ثلاث تجارب في الوحدة الثانية. لكل عنصر اختر التجربة التي يخصها.',cats:['الأولى (حراري)','الثانية (محرك)','الثالثة (إضاءة)'],items:[
+ ['المروحة تشويشاً بجهد <span class="ltr">5 V</span>',0,'تشغيل المروحة على عنصر التسخين في التجربة الأولى (ص 10–11).'],
+ ['خطوة <span class="ltr">10 V</span> وزمن عرض <span class="ltr">5 s</span>',1,'هذا ما تطلبه التجربة الثانية (ص 15).'],
+ ['خطوة 5 فولت وزمن عرض 1 ثانية',2,'هذا ما تطلبه هذه التجربة (ص 18).'],
+ ['ثنائي باعث للضوء وترانزستور ضوئي',2,'هما نظام الإضاءة في لوحة Light Control.'],
+ ['انتظار 3 دقائق قبل تسجيل كل نقطة',0,'في منحنى الخواص الاستاتيكي للنظام الحراري (ص 12).']]})}
    ]},
 
   {st:3,short:'خطوات إجراء التجربة',title:'خطوات إجراء التجربة — الشكل <span class="ltr">(2-2)</span>',ref:'ص 18–19',
@@ -885,7 +1169,14 @@ B.lesson({
     {book:String.raw`<p><b>خطوات إجراء التجربة:</b></p><ul><li>شغل الكمبيوتر و لوحة العمليات ثم وصل التجربة حسب الشكل <span class="ltr">(2-2)</span></li><li>قبل تشغيل التجربة اطلب من المسؤول عن المختبر مراجعة التوصيل ومعايرة الأجهزة.</li><li>افتح راسم الاستجابة لإشارة الخطوة ثم حدد الخطوة على 5 فولت والزمن 1 ثانية.</li><li>قم بتشغيل التجربة وسجل إشارتي القناتين \(Y_1\) و \(Y_2\) على راسم الذبذبات.</li><li>سجل ملحوظاتك.</li></ul>`,ref:'ص 18'},
     {book:box(benchSVG({kind:'light',ins:'osc',inCh:'Y1',outCh:'Y2',wired:true,gen:'5.0 V',u:5,y:4}),760)+String.raw`<p class="sub">الشكل <span class="ltr">(2-2)</span>: توصيل التجربة</p>`,ref:'ص 19'},
     {watch:String.raw`<p>توصيل القناتين معكوس عن التجربة الثانية: هناك <span class="ltr">Y1</span> = الخرج و <span class="ltr">Y2</span> = الدخل، وهنا <span class="ltr">Y1</span> = الدخل و <span class="ltr">Y2</span> = الخرج. انتبه عند القراءة.</p>`},
-    {tip:String.raw`<p>«الزمن <span class="ltr">1</span> ثانية» هو مدة العرض على الشاشة. ولأن الثابت الزمني لنظام الإضاءة صغير جداً، يبدو الخرج على عرض ثانية كاملة <b>قفزة</b> تقريباً؛ لنرى شكل المنحنى نقصّر زمن العرض.</p>`}
+    {tip:String.raw`<p>«الزمن <span class="ltr">1</span> ثانية» هو مدة العرض على الشاشة. ولأن الثابت الزمني لنظام الإضاءة صغير جداً، يبدو الخرج على عرض ثانية كاملة <b>قفزة</b> تقريباً؛ لنرى شكل المنحنى نقصّر زمن العرض.</p>`},
+    {title:'مختبر مصغّر: انتبه للقناتين',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'في الشكل (2-2): '+L('Y1')+' على خط الدخل \\(y_L\\)، و '+L('Y2')+' على الخرج \\(x_L\\) — عكس تجربة المحرك.',cases:[
+ {q:'تريد أن تقرأ القيمة التي استقر عليها الخرج \\(Y_0\\). أي قناة تقرأ؟',opts:[
+  [L('Y1'),false,'Y1 هنا على الدخل؛ في تجربة المحرك كانت على الخرج، فانتبه.'],
+  [L('Y2'),true,'Y2 على \\(x_L\\) في هذا التوصيل.']]},
+ {q:'تريد أن تقرأ قيمة الخطوة \\(X_0\\). أي قناة تقرأ؟',opts:[
+  [L('Y2'),false,'Y2 على الخرج هنا.'],
+  [L('Y1'),true,'Y1 على خط الدخل \\(y_L\\)، فيعرض الخطوة 5 فولت.']]}]})}}
    ]},
 
   {st:4,short:'تسجيل النتائج',title:'تسجيل النتائج: الكسب والثابت الزمني',ref:'ص 19',
@@ -902,7 +1193,19 @@ B.lesson({
     {book:String.raw`<p><b>تسجيل النتائج:</b></p><p>وارسم منحنى استجابة النظام لإشارة الخطوة</p><p>ما نوع النظام؟</p><p>احسب كسب النظام و الثابت الزمني.</p><div class="c2-tbl"><table class="c2-bt"><thead><tr><th>قيمة الخطوة X<sub>0</sub></th><th>القيمة التي استقر عليها الخرج Y<sub>0</sub></th><th>الكسب K<sub>s</sub> = X<sub>0</sub> / Y<sub>0</sub></th><th>الثابت الزمني T</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td></tr></tbody></table></div><p>أكمل النموذج الرياضي لنظام الإضاءة (دالة النظام بدلالة المتغير المركب \(s\))</p><p>\(G(s)=\ldots\ldots\)</p>`,ref:'ص 19'},
     {watch:String.raw`<p>صيغة الكسب في الجدول \(K_s=X_0/Y_0\) مقلوبة كما في التجربة الثانية؛ الصحيح \(K_s=Y_0/X_0\).</p>`,fix:true},
     {title:'الكسب: كما في الكتاب / المصحح',widget:bookFixW(GAIN_BOOK,GAIN_FIX)},
-    {tip:String.raw`<p>نظام الإضاءة من الرتبة الأولى أيضاً، فنموذجه بالشكل نفسه:</p>$$G(s)=\frac{K_s}{T\,s+1}$$<p>والثابت الزمني \(T\) هو الزمن الذي يصل فيه الخرج إلى <span class="ltr">63.2%</span> من قيمته النهائية، لكنه هنا صغير جداً، فلا يُقرأ إلا إذا قصّرنا زمن العرض كثيراً.</p>`}
+    {tip:String.raw`<p>نظام الإضاءة من الرتبة الأولى أيضاً، فنموذجه بالشكل نفسه:</p>$$G(s)=\frac{K_s}{T\,s+1}$$<p>والثابت الزمني \(T\) هو الزمن الذي يصل فيه الخرج إلى <span class="ltr">63.2%</span> من قيمته النهائية، لكنه هنا صغير جداً، فلا يُقرأ إلا إذا قصّرنا زمن العرض كثيراً.</p>`},
+    {title:'مختبر مصغّر: قصّر زمن العرض لترى المنحنى',widget:(el,B)=>DCML.lab(el,B,{intro:'خطوة <span class="ltr">5 V</span> (الكتاب). اختر زمن العرض على راسم الذبذبات، وانظر متى يظهر شكل المنحنى وتظهر نقطة <span class="ltr">63.2%</span>.',
+ predict:{q:'على زمن العرض الذي يطلبه الكتاب (1 ثانية)، كيف يبدو خرج نظام الإضاءة؟',opts:[
+  ['منحنى صاعد بطيء واضح مثل المحرك',false,'المحرك ثابته الزمني أكبر بكثير؛ الإضاءة أسرع.'],
+  ['قفزة تقريباً، ولا يُقرأ منه الثابت الزمني',true,'الصعود كله يحدث في جزء صغير جداً من الشاشة، فنقصّر زمن العرض لنراه.'],
+  ['خط أفقي عند الصفر',false,'الخرج يصعد ويستقر عند \\(Y_0\\)، لكن بسرعة كبيرة.']]},
+ ins:[{k:'w',l:'زمن العرض',seg:[[1,'<span class="ltr">1 s</span> (الكتاب)'],[0.1,'<span class="ltr">0.1 s</span>'],[0.02,'<span class="ltr">0.02 s</span>']],v:1}],
+ tp:{id:'u2-l3',defs:LI_DEF},
+ calc:(s,P,B)=>{const W=s.w,Y=P.KL*5,T=P.TL,n=600,pts=[[0,0]];for(let i=1;i<=n;i++){const t=W*i/n;pts.push([t,Y*(1-Math.exp(-t/T))])}
+  const vis=T/W>0.03,ms=v=>W<0.5?DCML.fm(B,v*1000,0):DCML.fm(B,v,1);
+  return {facts:[['Y<sub>0</sub>',DCML.fm(B,Y,2)+' V'],['الثابت الزمني T',vis?DCML.fm(B,T*1000,1)+' ms':'لا يُقرأ',vis?'hi':'bad'],['نسبة T إلى العرض',DCML.fm(B,100*T/W,1)+' %']],
+   plot:{xr:[0,W],yr:[0,Math.max(5,Y)*1.12],xl:W<0.5?'t (ms)':'t (s)',yl:'V',fx:ms,curves:[{pts:[[0,0],[0,5],[W,5]],col:'--live',dash:'5 4',w:1.8},{pts,col:'--blue',w:2.6}],cur:vis?[T,0.632*Y]:null},
+   msg:vis?'الآن يظهر المنحنى، والنقطة البرتقالية عند \\(t=T\\) (الخرج 63.2% من \\(Y_0\\)).':'الصعود كله في جزء صغير جداً من الشاشة، فيبدو قفزة. قصّر زمن العرض.'}}})}
    ]},
 
   {st:5,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 20',
@@ -917,6 +1220,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>أسئلة ومناقشة</b></p><ul><li>ارسم المخطط الصندوقي للتجربة</li><li>ما الهدف من استجابة النظام لإشارة الخطوة؟</li><li>بما أن الثابت الزمني يعتبر صغيراً جداً في حالة نظام الإضاءة، ماذا تستنتج؟</li><li>ماذا تستخلص من هذه التجربة؟</li></ul>`,ref:'ص 20'},
+    {title:'مختبر مصغّر: رتّب الأنظمة الثلاثة',widget:(el,B)=>DCML.order(el,B,{intro:'رتّب أنظمة الوحدة الثانية من الأسرع استجابة إلى الأبطأ.',steps:[
+ ['نظام الإضاءة','الضوء يتغير في لحظة، وثابته الزمني أجزاء من الألف من الثانية: هو الأسرع.'],
+ ['محرك التيار المستمر','المحرك أسرع من النظام الحراري: يكفيه عرض <span class="ltr">5 s</span>.'],
+ ['النظام الحراري','هو الأبطأ: ننتظر 3 دقائق ليستقر خرجه.']],
+ done:'الثلاثة من الرتبة الأولى ولا تتجاوز قيمتها النهائية؛ الفرق بينها في الثابت الزمني.'})},
     {tip:String.raw`<details class="c2-q"><summary>1: ارسم المخطط الصندوقي للتجربة.</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> `+box(openLoopSVG({plant:'نظام الإضاءة',sym:'LED → phototransistor',meter:'راسم الذبذبات',u:'yL',y:'xL'}),600)+String.raw`</div></details><details class="c2-q"><summary>2: ما الهدف من استجابة النظام لإشارة الخطوة؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> نعرف منها نوع النظام وكسبه وسرعته (الثابت الزمني)، فنكتب نموذجه \(G(s)\).</div></details><details class="c2-q"><summary>3: بما أن الثابت الزمني يعتبر صغيراً جداً في حالة نظام الإضاءة، ماذا تستنتج؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> أن نظام الإضاءة يستجيب تقريباً فوراً: يمكن في كثير من الحسابات اعتباره كسباً فقط \(G(s)\approx K_s\) دون تأخير. ولقياس \(T\) نحتاج زمن عرض قصيراً جداً على راسم الذبذبات. وفي الدائرة المغلقة يسهل التحكم فيه لأنه لا يتأخر.</div></details><details class="c2-q"><summary>4: ماذا تستخلص من هذه التجربة؟</summary><div class="c2-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> نظام الإضاءة من الرتبة الأولى أيضاً (لا تجاوز ولا تأرجح)، لكنه أسرع بكثير من المحرك والنظام الحراري. النموذج \(G(s)=K_s/(Ts+1)\) مع \(T\) صغير جداً.</div></details>`,title:'إجابات مقترحة — افتحها بعد أن تحاول'},
     {tip:String.raw`<p>مقارنة الأنظمة الثلاثة في هذه الوحدة: النظام الحراري بطيء جداً (ننتظر <span class="ltr">3</span> دقائق ليستقر)، والمحرك أسرع منه، ونظام الإضاءة سريع جداً. كلها لا تتجاوز قيمتها النهائية، والفرق بينها في <b>السرعة</b>، أي في الثابت الزمني.</p>`,title:'الأنظمة الثلاثة معاً'}
    ]},

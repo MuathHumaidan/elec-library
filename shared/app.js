@@ -835,5 +835,11 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.matches&&n.matches('.fixnote'))deco(n.parentNode||document);else if(n.querySelector&&n.querySelector('.fixnote'))deco(n)}}).observe(document.documentElement,{childList:true,subtree:true});
   document.addEventListener('DOMContentLoaded',()=>deco(document));
 })();
+/* mini-lab facts: Arabic-only values read right-to-left (values are styled ltr for numbers) */
+(function(){
+  const AR=/[؀-ۿ]/,DG=/[0-9٠-٩]/;
+  function fix(root){(root.querySelectorAll?root:document).querySelectorAll('.ml-facts b').forEach(b=>{const t=b.textContent;const r=AR.test(t)&&!DG.test(t);if(r&&b.dir!=='rtl')b.dir='rtl';else if(!r&&b.dir==='rtl')b.removeAttribute('dir')})}
+  let q=0;new MutationObserver(()=>{if(q)return;q=1;requestAnimationFrame(()=>{q=0;fix(document)})}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+})();
 B.start=function(){window.addEventListener('hashchange',route);route()};
 })(window);

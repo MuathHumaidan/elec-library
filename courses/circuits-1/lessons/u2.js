@@ -214,7 +214,183 @@ B.lesson({
  title:'البطاريات: أنواعها والبطاريات الجافة الأولية',
  summary:'البطارية مجموعة خلايا تنتج الكهرباء بتفاعلات كيميائية كهربائية. تنقسم إلى أولية (تُرمى بعد نفادها) وثانوية (يعاد شحنها). ثم الخلية المنجنية (لكلانشيه) والبطارية الجافة وأجزاؤها، والأنواع الثلاثة للبطاريات الأولية الجافة.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الثانية: البطاريات — الأهداف',ref:'ص 25–26',
    q:'ما الذي يُنتظر منك أن تتقنه حين تنتهي من وحدة البطاريات؟',
@@ -231,7 +407,13 @@ B.lesson({
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة العناصر الرئيسية المكونة للبطارية وفهم النوعين الأساسيين للخلايا: الابتدائية والثانوية، وكذلك معرفة وفهم الطرق المختلفة لتجميع البطاريات.</p>
      <p><b>الأهداف:</b></p>
      <ol><li>أن يعرف المتدرب الأنواع الرئيسية من البطاريات الأولية الجافة.</li><li>أن يعرف المتدرب أنواع البطاريات الثانوية الأكثر شيوعاً مثل البطاريات الحامضية والبطاريات القلوية.</li><li>أن يحدد المتدرب النقاط التي يجب مراعاتها للمحافظة على البطارية وبقائها في حالة جيدة.</li><li>أن يعرف المتدرب سعة البطارية وتيار الشحن، وكيفية تجميع الخلايا في البطاريات.</li><li>أن يتمكن المتدرب من حساب القدرة القصوى التي تعطيها بطارية للحمل.</li><li>أن يحدد المتدرب جودة البطاريات (كفاءة الأمبير/ساعة وكفاءة الواط/ساعة).</li><li>أن يتمكن المتدرب من توصيل الخلايا الكهربائية على التوالي – والتوازي ومشاكل التوصيل.</li></ol>`,ref:'ص 26'},
-    {tip:String.raw`<p>الوحدة في هذا الموقع أربعة دروس: <b>هذا الدرس</b> (الأنواع والبطاريات الجافة الأولية)، ثم <b>البطاريات الثانوية والسعة والجودة</b>، ثم <b>تجميع الخلايا</b>، ثم <b>القدرة القصوى</b>.</p>`}
+    {tip:String.raw`<p>الوحدة في هذا الموقع أربعة دروس: <b>هذا الدرس</b> (الأنواع والبطاريات الجافة الأولية)، ثم <b>البطاريات الثانوية والسعة والجودة</b>، ثم <b>تجميع الخلايا</b>، ثم <b>القدرة القصوى</b>.</p>`},
+    {title:'مختبر مصغّر: أين يُدرس كل هدف؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل هدف من أهداف الوحدة اختر الدرس الذي يغطيه في هذا الموقع.',cats:['هذا الدرس','الثانوية والسعة والجودة','تجميع الخلايا','القدرة القصوى'],items:[
+ ['حساب القدرة القصوى التي تعطيها بطارية للحمل',3,'الهدف 5، في الدرس الرابع من الوحدة.'],
+ ['الأنواع الرئيسية من البطاريات الأولية الجافة',0,'الهدف 1: موضوع هذا الدرس.'],
+ ['توصيل الخلايا على التوالي والتوازي',2,'الهدف 7، في الدرس الثالث.'],
+ ['البطاريات الحامضية والقلوية',1,'الهدف 2: البطاريات الثانوية في الدرس الثاني.'],
+ ['جودة البطاريات (كفاءة الأمبير ساعة والوات ساعة)',1,'الهدف 6، في الدرس الثاني مع البطاريات القلوية.']]})}
    ]},
 
   {st:2,short:'مقدمة',title:'مقدمة: ما البطارية؟',ref:'ص 27',
@@ -250,7 +432,15 @@ B.lesson({
      <p>تُستَخدَم البطاريات بمثابة مصادر مريحة للطاقة الكهربائية. فهي تمد الأجهزة خفيفة الحمل مثل المذياع، والمسجلات الصوتية والتلفاز، بالطاقة الكهربائية. وتمدّ بطارية السيارة بالطاقة الكهربائية اللازمة لإدارة المحرّك، كما تمدّ البطاريات أيضاً سفن الفضاء والغوّاصات بالكهرباء. وخلال فترات انقطاع التيار، تمدّ البطاريات أجهزة الهاتف، وأجهزة إنذار الحرائق والمستشفيات وغيرها من المباني الأساسية بالكهرباء في حالات الطوارئ.</p>`,ref:'ص 27'},
     {tip:String.raw`<p>لكل خلية مقاومة داخلية صغيرة (للخلية المنجنية بين <span class="ltr">0.2</span> و<span class="ltr">0.5</span> أوم كما سيأتي في المحطة 4). إذا وصلنا القطبين بسلك مقاومته شبه صفر يمر تيار يساوي تقريباً \(E/r\): من خلية <span class="ltr">1.5 V</span> يكون بين \(1.5/0.5=3\ \text{A}\) و\(1.5/0.2=7.5\ \text{A}\)، وهو تيار كبير لخلية صغيرة، فتسخن وتفرغ بسرعة.</p>`,title:'لماذا السلك وحده خطر؟'},
     {watch:String.raw`<p>لا تضع بطارية في جيب فيه مفاتيح أو عملات معدنية: قد تلمس القطبين معاً فتصنع قصراً (دائرة بلا حمل) فتسخن البطارية.</p>`},
-    {add:String.raw`<p>من الأمثلة التي ذكرها الكتاب: الأجهزة في المستشفيات وأجهزة إنذار الحرائق تعمل على البطاريات عند انقطاع الكهرباء. وتسمى هذه المنظومات عادة «مصادر الطاقة غير المنقطعة» <span class="ltr">UPS</span>.</p>`}
+    {add:String.raw`<p>من الأمثلة التي ذكرها الكتاب: الأجهزة في المستشفيات وأجهزة إنذار الحرائق تعمل على البطاريات عند انقطاع الكهرباء. وتسمى هذه المنظومات عادة «مصادر الطاقة غير المنقطعة» <span class="ltr">UPS</span>.</p>`},
+    {title:'مختبر مصغّر: سلك وحده بين القطبين',widget:(el,B)=>DCML.lab(el,B,{intro:'خلية منجنية <span class="ltr">1.5 V</span>، ومقاومتها الداخلية بين <span class="ltr">0.2</span> و<span class="ltr">0.5 Ω</span> (من الكتاب، المحطة 4). نصل قطبيها بسلك مقاومته شبه صفر، فلا يحدّ التيار إلا المقاومة الداخلية: \\(I\\approx E/r\\).',
+ predict:{q:'خلية مقاومتها الداخلية <b>أصغر</b> قُصر قطباها بسلك. التيار:',opts:[
+  ['أصغر، فهي أكثر أماناً',false,'المقاومة الداخلية وحدها تحدّ التيار؛ كلما صغرت كبر التيار.'],
+  ['أكبر، فتسخن الخلية أسرع',true,'\\(I\\approx E/r\\): مقاومة أصغر ← تيار أكبر، وكل القدرة تتحول حرارة داخل الخلية.'],
+  ['لا يتغير',false,'التيار يعتمد على المقاومة الداخلية في هذه الحالة.']]},
+ ins:[{k:'r',l:'المقاومة الداخلية r',u:'Ω',min:0.2,max:0.5,step:0.05,v:0.5}],
+ calc:(s,P,B)=>{const I=1.5/s.r;return {facts:[['تيار القصر '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('≈ E ÷ r'),DCML.fm(B,B.round(I,2))+' A','bad'],['حرارة داخل الخلية '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('≈ E × I'),DCML.fm(B,B.round(1.5*I,2))+' W','bad']],bars:[{l:'التيار',v:I,max:7.5,u:'A',col:'--stop'}],
+  msg:'لا حمل يأخذ الطاقة: كلها تتحول حرارة داخل الخلية، فتسخن وتفرغ بسرعة. لذلك لا نصل القطبين بسلك وحده.',cls:'warn'}}})}
    ]},
 
   {st:3,short:'أنواع البطاريات',title:'أنواع البطاريات',ref:'ص 27–28',
@@ -272,7 +462,13 @@ B.lesson({
      <tr><td>بعد نفاد الطاقة</td><td>يُتخلص منها</td><td>يعاد شحنها</td></tr>
      <tr><td>الإلكتروليت غالباً</td><td>جيلاتيني أو معجون (جافة)</td><td>سائل</td></tr>
      <tr><td>مثال من الكتاب</td><td>خلية الكشاف <span class="ltr">1.5 V</span></td><td>بطارية السيارة <span class="ltr">12 V</span></td></tr></tbody></table></div>`,title:'الأولية والثانوية في جدول'},
-    {add:String.raw`<p>البطاريات الأسطوانية الصغيرة في جهاز التحكم عن بعد أولية في الغالب، أما بطارية الجوال فثانوية تعيد شحنها كل يوم.</p>`}
+    {add:String.raw`<p>البطاريات الأسطوانية الصغيرة في جهاز التحكم عن بعد أولية في الغالب، أما بطارية الجوال فثانوية تعيد شحنها كل يوم.</p>`},
+    {title:'مختبر مصغّر: أولية أم ثانوية؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر نوع البطارية.',cats:['أولية','ثانوية (تخزين)'],items:[
+ ['خلية الكشاف اليدوي <span class="ltr">1.5 V</span>',0,'مثال الكتاب للخلية الأولية.'],
+ ['تتوقف عن العمل ويجب التخلص منها بعد استهلاك إحدى موادها',0,'هذا تعريف البطاريات الأولية (ص 27).'],
+ ['بطارية السيارة <span class="ltr">12 V</span> من ست خلايا <span class="ltr">2 V</span>',1,'«أغلب البطاريات الثانوية، والمستعملة في السيارات، فهي بطاريات جهدها 12 فولت».'],
+ ['يعاد استعمالها بعد نفاد طاقتها بإعادة شحنها',1,'هذا تعريف البطاريات الثانوية أو بطاريات التخزين.'],
+ ['أغلب أنواعها تحتوي على إلكتروليت سائل',1,'«وتحتوي أغلب أنواع البطاريات الثانوية على إلكتروليت سائل».']]})}
    ]},
 
   {st:4,short:'البطاريات الجافة الأولية',title:'البطاريات الجافة الأولية: الخلية المنجنية',ref:'ص 28–29',
@@ -294,7 +490,11 @@ B.lesson({
      <p>وهناك ثلاثة أنواع رئيسة من البطاريات الأولية الجافة، هي:</p>
      <ol><li>خلايا الكربون ـ الخارصين.</li><li>الخلايا القاعدية.</li><li>خلايا الزئبق.</li></ol>`,ref:'ص 29'},
     {watch:String.raw`<p>التسمية بين القوسين في الكتاب معكوسة: في الخلية التي تعطي تياراً <b>القطب السالب هو المصعد (الأنود)</b> حيث يتأكسد الزنك، و<b>القطب الموجب هو المهبط (الكاثود)</b>.</p>`,fix:true},
-    {add:String.raw`<p>«الخارصين» هو الاسم العربي القديم للزنك؛ الكتاب يستعمل الكلمتين بالمعنى نفسه. والمحطات الثلاث التالية لكل نوع من الأنواع الثلاثة.</p>`}
+    {add:String.raw`<p>«الخارصين» هو الاسم العربي القديم للزنك؛ الكتاب يستعمل الكلمتين بالمعنى نفسه. والمحطات الثلاث التالية لكل نوع من الأنواع الثلاثة.</p>`},
+    {title:'مختبر مصغّر: بطاقة الخلية المنجنية',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل مادة اختر دورها في الخلية المنجنية (خلية لكلانشيه).',cats:['القطب الموجب','القطب السالب','الإلكتروليت'],items:[
+ ['الزنك \\((\\mathrm{Zn})\\)',1,'«والقطب السالب مصنوع من الزنك».'],
+ ['محلول كلوريد النوشادر <span class="ltr">20%</span> \\((\\mathrm{NH_4Cl})\\)',2,'هو المحلول الإلكتروليتي، ويصير عجينة في البطارية الجافة.'],
+ ['ثاني أكسيد المنجنيز \\((\\mathrm{MnO_2})\\)',0,'«فالقطب الموجب مصنوع من ثاني أوكسيد المنجنيز»؛ ومنه جاء اسم الخلية المنجنية.']]})}
    ]},
 
   {st:5,short:'الكربون ـ الخارصين',title:'خلايا الكربون ـ الخارصين',ref:'ص 29–30',
@@ -340,7 +540,12 @@ B.lesson({
      <tr><td>الإلكتروليت</td><td>معجون كلوريد الأمونيوم وكلوريد الخارصين</td><td>محلول قلوي قوي (هيدروكسيد البوتاسيوم)</td></tr>
      <tr><td>التيار</td><td>أقل</td><td>تيار عالٍ يستمر بكفاءة أعلى</td></tr>
      <tr><td>العمر في لعب الأطفال</td><td>الأساس</td><td>أطول <span class="ltr">5–8</span> مرات</td></tr></tbody></table></div>`,title:'مقارنة بين النوعين'},
-    {add:String.raw`<p>كلمة <span class="ltr">Alkaline</span> المطبوعة على كثير من البطاريات الأسطوانية في الأسواق تعني «قاعدية» (قلوية).</p>`}
+    {add:String.raw`<p>كلمة <span class="ltr">Alkaline</span> المطبوعة على كثير من البطاريات الأسطوانية في الأسواق تعني «قاعدية» (قلوية).</p>`},
+    {title:'مختبر مصغّر: أي الخليتين؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر الخلية التي يصفها الكتاب.',cats:['الكربون ـ الخارصين','القاعدية'],items:[
+ ['الإلكتروليت محلول قلوي قوي من هيدروكسيد البوتاسيوم',1,'هذا إلكتروليت الخلية القاعدية.'],
+ ['الإلكتروليت معجون من كلوريد الأمونيوم وكلوريد الخارصين والماء',0,'هذا إلكتروليت خلية الكربون ـ الخارصين (المحطة السابقة).'],
+ ['قطب سالب من خارصين مسامي يتأكسد بدرجة أسرع',1,'هذا من أوجه اختلاف الخلية القاعدية.'],
+ ['عمرها في لعب الأطفال أطول <span class="ltr">5</span> إلى <span class="ltr">8</span> مرات',1,'لذلك هي أكفأ اقتصادياً في اللعب التي تتطلب كمية عالية من الكهرباء.']]})}
    ]},
 
   {st:7,short:'الزئبق',title:'خلايا الزئبق',ref:'ص 30–31',
@@ -359,7 +564,11 @@ B.lesson({
      <tr><td>القطب السالب</td><td>الخارصين</td><td>أكسيد الخارصين</td></tr>
      <tr><td>القطب الموجب</td><td>أكسيد الزئبقيك</td><td>زئبق</td></tr>
      <tr><td>الإلكتروليت</td><td>هيدروكسيد البوتاسيوم</td><td>دون تغير</td></tr></tbody></table></div>`,title:'خلية الزئبق في جدول'},
-    {add:String.raw`<p>الزئبق مادة سامة، ولهذا قلّ استعمال خلايا الزئبق كثيراً ومُنعت في دول عديدة. وأي بطارية مستهلكة لا تُرمى مع النفايات العادية، بل في حاويات جمع البطاريات إن وُجدت.</p>`}
+    {add:String.raw`<p>الزئبق مادة سامة، ولهذا قلّ استعمال خلايا الزئبق كثيراً ومُنعت في دول عديدة. وأي بطارية مستهلكة لا تُرمى مع النفايات العادية، بل في حاويات جمع البطاريات إن وُجدت.</p>`},
+    {title:'مختبر مصغّر: ماذا يصير بعد الاستهلاك؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل مادة في خلية الزئبق اختر ما يحدث لها أثناء الاستهلاك.',cats:['يتحول إلى أكسيد الخارصين','يتحول إلى زئبق','يبقى دون تغير'],items:[
+ ['أكسيد الزئبقيك (القطب الموجب)',1,'«ويتحوّل أكسيد الزئبقيك إلى زئبق خلال عملية الاستهلاك».'],
+ ['هيدروكسيد البوتاسيوم (الإلكتروليت)',2,'«كما يتبقّى مركّب هيدروكسيد البوتاسيوم دون تغير».'],
+ ['الخارصين (القطب السالب)',0,'«ويتحول الخارصين إلى أكسيد الخارصين».']]})}
    ]},
 
   {recap:[
@@ -481,7 +690,11 @@ B.lesson({
    body:[
     {book:String.raw`<p>صممت البطارية الثانوية بطريقة يمكن بها <b>عكس التفاعلات الكيميائية إلى الاتجاه المضاد</b>. وتُمكّن هذه الميزة من إعادة شحن البطارية بكفاءة بعد نفاد الطاقة الكهربائية التي يمكن توليدها. وأكثر أنواع البطاريات الثانوية شيوعاً هي:</p>
      <ol><li>بطاريات التخزين رصاص ـ حمض (البطاريات الحامضية) الشكل (2-2).</li><li>بطاريات التخزين نيكل ـ كادميوم (البطاريات القلوية).</li></ol>`,ref:'ص 31'},
-    {tip:String.raw`<p>عند <b>التفريغ</b> تتحول المواد الفعالة إلى مواد أخرى وتخرج طاقة كهربائية. وعند <b>الشحن</b> ندخل طاقة كهربائية من شاحن فتعود المواد إلى حالتها الأولى. في البطارية الأولية لا يمكن هذا الرجوع.</p>`}
+    {tip:String.raw`<p>عند <b>التفريغ</b> تتحول المواد الفعالة إلى مواد أخرى وتخرج طاقة كهربائية. وعند <b>الشحن</b> ندخل طاقة كهربائية من شاحن فتعود المواد إلى حالتها الأولى. في البطارية الأولية لا يمكن هذا الرجوع.</p>`},
+    {title:'تحقق سريع: البطاريات الثانوية',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['البطارية الثانوية يمكن إعادة شحنها لأن تفاعلاتها الكيميائية يمكن عكسها إلى الاتجاه المضاد.',true,'هذا نص الكتاب (ص 31).'],
+ ['بطاريات النيكل ـ كادميوم من البطاريات الحامضية.',false,'هي البطاريات القلوية؛ الحامضية هي الرصاص ـ حمض.'],
+ ['أكثر البطاريات الثانوية شيوعاً نوعان: الرصاص ـ حمض، والنيكل ـ كادميوم.',true,'هذان النوعان اللذان ذكرهما الكتاب.']]})}
    ]},
 
   {st:2,short:'الخلايا الحامضية',title:'(أ) الخلايا الحامضية (رصاص ـ حمض)',ref:'ص 31–32',
@@ -523,7 +736,11 @@ B.lesson({
      <p>وللمحافظة على البطارية في حالة جيدة يجب مراعاة الآتي:</p>
      <ol><li>عدم ترك البطارية بدون شحن خاصة عندما يبلغ جهدها أقل قيمة للجهد.</li><li>عدم ترك البطارية فارغة لمدة طويلة.</li><li>يجب بقاء مستوى السائل الإلكتروليتي مغطياً الألواح تماماً وعدم تعريض الألواح للهواء مع إضافة الماء المقطر (فقط) عند اللزوم عند نقص السائل.</li></ol>`,ref:'ص 32'},
     {tip:String.raw`<p>السبب ← الكبرتة ← النتيجة:</p><ul><li><b>السبب:</b> ترك البطارية مفرغة مدة طويلة، أو الشحن الزائد أحياناً.</li><li><b>ما يحدث:</b> كبريتات الرصاص على الألواح لا تعود كلها إلى رصاص وأكسيد رصاص.</li><li><b>النتيجة:</b> المقاومة الداخلية ترتفع والجودة تنقص.</li><li><b>العلاج:</b> الشحن المتوالي عدة مرات بدون تفريغ.</li></ul>`,title:'الكبرتة في أربع كلمات'},
-    {add:String.raw`<p>كثير من بطاريات السيارات اليوم «مغلقة لا تحتاج صيانة»، فلا يضاف إليها ماء؛ أما البطاريات ذات الأغطية فيُفحص مستوى سائلها دورياً.</p>`}
+    {add:String.raw`<p>كثير من بطاريات السيارات اليوم «مغلقة لا تحتاج صيانة»، فلا يضاف إليها ماء؛ أما البطاريات ذات الأغطية فيُفحص مستوى سائلها دورياً.</p>`},
+    {title:'مختبر مصغّر: ماذا تفعل؟',widget:(el,B)=>DCML.cases(el,B,{intro:'ثلاثة مواقف مع بطارية حامضية. اختر ما يقوله الكتاب.',cases:[
+ {q:'انخفض مستوى السائل حتى كادت الألواح تظهر للهواء.',opts:[['أضيف حامض كبريتيك',false,'الكتاب لا يذكر إضافة الحامض.'],['أضيف الماء المقطر فقط',true,'«مع إضافة الماء المقطر (فقط) عند اللزوم عند نقص السائل»، ويجب أن يغطي السائل الألواح تماماً.'],['أتركها كما هي حتى الشحن القادم',false,'يجب ألا تتعرض الألواح للهواء.']]},
+ {q:'بطارية تُركت مفرغة مدة طويلة فأصابتها الكبرتة.',opts:[['الشحن المتوالي عدة مرات بدون تفريغ',true,'«ويمكن إزالة هذه الكبرتة بالشحن المتوالي للبطارية عدة مرات بدون تفريغ».'],['تفريغها تماماً ثم شحنها مرة واحدة',false,'التفريغ يزيد كبريتات الرصاص على الألواح.'],['لا علاج لها',false,'الكتاب يذكر علاجاً للكبرتة.']]},
+ {q:'ما الذي يحدث لمقاومة الخلية الداخلية مع الكبرتة؟',opts:[['تنقص',false,'كبريتات الرصاص المتبقية على الألواح تعيق التفاعل.'],['لا تتغير',false,'الكتاب يذكر تغيراً فيها.'],['ترتفع، وتنقص جودة الخلية',true,'«وينتج عن ذلك ارتفاع في المقاومة الداخلية للخلية ونقص في جودتها».']]}]})}
    ]},
 
   {st:4,short:'الخلايا القلوية',title:'(ب) الخلايا القلوية',ref:'ص 32',
@@ -538,7 +755,12 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>يوجد نوعان شائعا الاستعمال من هذه الخلايا وهي خلية النيكل ـ كادميوم وخلايا النيكل ـ حديد.</p>`,ref:'ص 32'},
-    {tip:String.raw`<p>الاسم يدل على مادتي القطبين: <b>النيكل</b> (إيدروكسيد النيكل) للقطب الموجب في النوعين، ثم <b>الكادميوم</b> أو <b>الحديد</b> للقطب السالب. والإلكتروليت في النوعين قلوي: محلول البوتاس.</p>`}
+    {tip:String.raw`<p>الاسم يدل على مادتي القطبين: <b>النيكل</b> (إيدروكسيد النيكل) للقطب الموجب في النوعين، ثم <b>الكادميوم</b> أو <b>الحديد</b> للقطب السالب. والإلكتروليت في النوعين قلوي: محلول البوتاس.</p>`},
+    {title:'مختبر مصغّر: صنّف الخلية',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل خلية اختر صنفها.',cats:['ثانوية حامضية','ثانوية قلوية','أولية جافة'],items:[
+ ['النيكل ـ حديد',1,'من النوعين الشائعين للخلايا القلوية.'],
+ ['الرصاص ـ حمض',0,'البطاريات الحامضية (المحطة 2).'],
+ ['الكربون ـ الخارصين',2,'من البطاريات الأولية الجافة (الدرس السابق).'],
+ ['النيكل ـ كادميوم',1,'من النوعين الشائعين للخلايا القلوية.']]})}
    ]},
 
   {st:5,short:'نيكل ـ كادميوم',title:'خلايا النيكل ـ كادميوم <span class="ltr">(Nickel – Cadmium)</span>',ref:'ص 33',
@@ -554,7 +776,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>القطب الموجب هنا مصنوع من إيدروكسيد النيكل، بينما القطب السالب من الكادميوم الإسفنجي. والسائل الإلكتروليتي عبارة عن محلول البوتاس بنسبة <b>20%</b>. وتصنع الأقطاب من ألواح من الحديد المطلية بالنيكل وبها ثقوب تحمل المادة الفعالة، والإناء الحاوي يصنع أيضاً من الحديد المطلي بالنيكل. ويلاحظ أن تركيز إيدروكسيد البوتاسيوم لا يتغير أثناء التفاعل ولذا فإنه يمكن استعمال كمية قليلة من السائل الإلكتروليتي مما يجعل البطارية أقل حجماً.</p>
      <p>فمثلاً البطارية الحامضية <b>100 أمبير ساعة تحوي 6.8 لتراً</b> من السائل بينما البطارية القلوية <b>100 أمبير ساعة تحوي 1.2 لتراً</b> من السائل.</p>`,ref:'ص 33'},
-    {tip:String.raw`<p>في الحامضية يدخل حامض الكبريتيك في التفاعل فيقل تركيزه عند التفريغ (المحطة 2)، فنحتاج كمية كبيرة منه. أما في القلوية فالإلكتروليت يوصل التيار ولا يُستهلك، فيكفي قليل منه: <span class="ltr">6.8 L</span> مقابل <span class="ltr">1.2 L</span> لنفس السعة.</p>`}
+    {tip:String.raw`<p>في الحامضية يدخل حامض الكبريتيك في التفاعل فيقل تركيزه عند التفريغ (المحطة 2)، فنحتاج كمية كبيرة منه. أما في القلوية فالإلكتروليت يوصل التيار ولا يُستهلك، فيكفي قليل منه: <span class="ltr">6.8 L</span> مقابل <span class="ltr">1.2 L</span> لنفس السعة.</p>`},
+    {title:'مختبر مصغّر: أجزاء خلية النيكل ـ كادميوم',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل مادة اختر مكانها في الخلية.',cats:['القطب الموجب','القطب السالب','الإلكتروليت','الألواح والإناء'],items:[
+ ['الكادميوم الإسفنجي',1,'«بينما القطب السالب من الكادميوم الإسفنجي».'],
+ ['الحديد المطلي بالنيكل',3,'تصنع منه ألواح الأقطاب (وبها ثقوب تحمل المادة الفعالة) والإناء الحاوي.'],
+ ['إيدروكسيد النيكل',0,'«القطب الموجب هنا مصنوع من إيدروكسيد النيكل».'],
+ ['محلول البوتاس <span class="ltr">20%</span>',2,'وتركيزه لا يتغير أثناء التفاعل، فتكفي كمية قليلة منه.']]})}
    ]},
 
   {st:6,short:'نيكل ـ حديد وجودة القلوية',title:'خلايا النيكل ـ حديد، ومزايا البطاريات القلوية وجودتها',ref:'ص 33',
@@ -573,7 +800,16 @@ B.lesson({
     {book:String.raw`<p>ومن مزايا البطاريات القلوية ثبات المواد الفعالة على الألواح مما يجعلها <b>أكثر تحملاً للصدمات</b> وهي كذلك <b>أخف وزناً وأقل حجماً</b> لنفس السعة.</p>
      <p>وتقدر جودة البطاريات القلوية بالآتي:</p>
      <p>جودة الأمبير ساعة <b>66.6%</b> جودة الوات ساعة <b>50% للكادميوم، 48% للحديد</b>.</p>`,ref:'ص 33'},
-    {tip:String.raw`<p><b>جودة الأمبير ساعة:</b> من كل <span class="ltr">100</span> أمبير ساعة ندخلها عند الشحن نأخذ <span class="ltr">66.6</span> عند التفريغ.</p><p><b>جودة الوات ساعة</b> (الطاقة) أقل منها: <span class="ltr">50%</span> للنيكل ـ كادميوم و<span class="ltr">48%</span> للنيكل ـ حديد، لأن جهد الشحن أعلى من جهد التفريغ، فالطاقة الداخلة أكبر.</p>`,title:'ماذا تعني الجودة؟'}
+    {tip:String.raw`<p><b>جودة الأمبير ساعة:</b> من كل <span class="ltr">100</span> أمبير ساعة ندخلها عند الشحن نأخذ <span class="ltr">66.6</span> عند التفريغ.</p><p><b>جودة الوات ساعة</b> (الطاقة) أقل منها: <span class="ltr">50%</span> للنيكل ـ كادميوم و<span class="ltr">48%</span> للنيكل ـ حديد، لأن جهد الشحن أعلى من جهد التفريغ، فالطاقة الداخلة أكبر.</p>`,title:'ماذا تعني الجودة؟'},
+    {title:'مختبر مصغّر: كم تأخذ مما أدخلت؟',widget:(el,B)=>DCML.lab(el,B,{intro:'الجودة من الكتاب: الأمبير ساعة <span class="ltr">66.6%</span>، والوات ساعة <span class="ltr">50%</span> للكادميوم و<span class="ltr">48%</span> للحديد. اختر ما تدخله بالشحن (أرقام تختارها أنت).',
+ predict:{q:'أدخلت في بطارية قلوية <span class="ltr">150</span> أمبير ساعة بالشحن. كم تأخذ منها عند التفريغ تقريباً؟',opts:[
+  ['<span class="ltr">150</span> أمبير ساعة',false,'الجودة أقل من <span class="ltr">100%</span>، فنأخذ أقل مما أدخلنا.'],
+  ['<span class="ltr">100</span> أمبير ساعة',true,'\\(150\\times0.666\\approx100\\).'],
+  ['<span class="ltr">75</span> أمبير ساعة',false,'هذا بجودة <span class="ltr">50%</span>، وهي جودة الوات ساعة لا الأمبير ساعة.']]},
+ ins:[{k:'q',l:'الأمبير ساعة الداخلة بالشحن',u:'AH',min:0,max:300,step:10,v:150},{k:'t',l:'نوع الخلية',seg:[['cd','نيكل ـ كادميوم'],['fe','نيكل ـ حديد']],v:'cd'},{k:'w',l:'الوات ساعة الداخلة بالشحن',u:'Wh',min:0,max:500,step:10,v:200}],
+ calc:(s,P,B)=>{const ah=s.q*0.666,ew=s.t==='cd'?0.5:0.48;return {facts:[['الأمبير ساعة الخارجة',DCML.fm(B,B.round(ah,1))+' AH','hi'],['الوات ساعة الخارجة',DCML.fm(B,B.round(s.w*ew,1))+' Wh','hi']],
+  bars:[{l:'أمبير ساعة: داخل',v:s.q,max:300,u:'AH',col:'--muted'},{l:'أمبير ساعة: خارج',v:B.round(ah,1),max:300,u:'AH'},{l:'وات ساعة: داخل',v:s.w,max:500,u:'Wh',col:'--muted'},{l:'وات ساعة: خارج',v:s.w*ew,max:500,u:'Wh',col:'--live'}],
+  msg:'جودة الوات ساعة أقل من جودة الأمبير ساعة، لأن جهد الشحن أعلى من جهد التفريغ.'}}})}
    ]},
 
   {st:7,short:'السعة وتيار الشحن',title:'سعة البطارية وتيار الشحن',ref:'ص 33',
@@ -765,7 +1001,14 @@ B.lesson({
      <p>وتجمع الخلايا في مجموعات موصلة على التوالي والتوازي لتكوين بطارية أو مراكم، ونلاحظ في هذه الحالة ما يلي:</p>`,ref:'ص 34'},
     {tip:String.raw`<p>في المحطات التالية نستعمل هذه الرموز:</p>
      <div style="position:relative;overflow-x:auto"><table class="tt"><tbody><tr><th>n</th><td>عدد الخلايا (في الخط الواحد في التجميع المركب)</td></tr><tr><th>m</th><td>عدد الخطوط على التوازي (في التجميع المركب)</td></tr><tr><th>E</th><td>جهد (القوة الدافعة) للخلية الواحدة</td></tr><tr><th>r</th><td>المقاومة الداخلية للخلية الواحدة</td></tr><tr><th>R</th><td>مقاومة الحمل الخارجي</td></tr></tbody></table></div>
-     <p>وكل الحسابات تطبيق لقانون أوم: التيار = الجهد الكلي ÷ المقاومة الكلية (الداخلية + الحمل).</p>`,title:'رموز التجميع'}
+     <p>وكل الحسابات تطبيق لقانون أوم: التيار = الجهد الكلي ÷ المقاومة الكلية (الداخلية + الحمل).</p>`,title:'رموز التجميع'},
+    {title:'مختبر مصغّر: قانون أوم',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر فرق الجهد والمقاومة (أرقام تختارها أنت) وراقب التيار \\(I=V/R\\).',
+ predict:{q:'ضاعفنا المقاومة وبقي الجهد كما هو. التيار:',opts:[
+  ['يتضاعف',false,'المقاومة معارضة للحركة؛ زيادتها لا تزيد التيار.'],
+  ['يقل إلى النصف',true,'\\(I=V/R\\): المقاومة في المقام.'],
+  ['لا يتغير',false,'التيار يعتمد على الجهد والمقاومة معاً.']]},
+ ins:[{k:'V',l:'فرق الجهد V',u:'V',min:0,max:12,step:0.5,v:6},{k:'R',l:'المقاومة R',u:'Ω',min:1,max:20,step:1,v:4}],
+ calc:(s,P,B)=>{const I=s.V/s.R;return {pic:DCML.gauge(B,{v:I,max:12,lab:'A',txt:DCML.fm(B,B.round(I,3))+' A'}),facts:[['I = V ÷ R',DCML.fm(B,B.round(I,3))+' A','hi'],['تحقق: I × R',DCML.fm(B,B.round(I*s.R,3))+' V']]}}})}
    ]},
 
   {st:2,short:'(أ) التوالي',title:'(أ) تجميع التوالي',ref:'ص 35',
@@ -790,7 +1033,17 @@ B.lesson({
      <div class="eq" style="position:relative;overflow-x:auto">$$I=\frac{n\times E}{R}=n\left(\frac{E}{R}\right)$$<span></span></div>
      <p>أي أن التيار يزيد هنا بعدد n مرة من التيار الناتج عن خلية واحدة. ولذلك فإن البطارية تعطي أقصى تيار للحمل إذا كانت مقاومة الخلايا صغيرة جداً بالنسبة لمقاومة الحمل R. وعلى هذا الأساس فإن <b>تجميع التوالي يستعمل في حالة كون مقاومة الحمل كبيرة بالنسبة للمقاومة الداخلية للبطارية</b>.</p>`,ref:'ص 35'},
     {tip:String.raw`<p>في التوالي يكبر <b>الجهد</b> n مرة، لكن <b>المقاومة الداخلية</b> تكبر n مرة أيضاً. فإذا كانت المقاومة الداخلية هي الغالبة (حمل صغير) ألغت كل منهما الأخرى وبقي التيار \(E/r\). وإذا كان الحمل هو الغالب استفدنا من الجهد الكبير.</p>`,title:'لماذا لا يزيد التيار دائماً؟'},
-    {watch:String.raw`<p>الرمز \(\ll\) يعني «أصغر بكثير من»، وليس «أصغر من» فقط. المعادلتان المختصرتان تقريب صالح فقط عندما يكون الفرق كبيراً.</p>`}
+    {watch:String.raw`<p>الرمز \(\ll\) يعني «أصغر بكثير من»، وليس «أصغر من» فقط. المعادلتان المختصرتان تقريب صالح فقط عندما يكون الفرق كبيراً.</p>`},
+    {title:'مختبر مصغّر: أضف خلايا على التوالي',widget:(el,B)=>DCML.lab(el,B,{intro:'كل خلية \\(E=1.5\\ V\\) و\\(r=2\\ \\Omega\\) (أرقام مثال 2-1). غيّر عدد الخلايا n ومقاومة الحمل R (أرقام تختارها أنت)، وقارن بتيار خلية واحدة.',
+ predict:{q:'الحمل صغير جداً (\\(R=0.1\\ \\Omega\\)). زدنا الخلايا على التوالي من <span class="ltr">1</span> إلى <span class="ltr">8</span>. التيار:',opts:[
+  ['يبقى تقريباً \\(E/r\\)',true,'الجهد يكبر n مرة والمقاومة الداخلية n مرة أيضاً، والحمل صغير جداً فلا أثر له: \\(I\\approx E/r\\).'],
+  ['يصبح ثمانية أضعاف',false,'هذا يحدث فقط إذا كان الحمل كبيراً جداً مقارنة بـ \\(nr\\).'],
+  ['يصبح صفراً',false,'التيار لا ينعدم بزيادة الخلايا.']]},
+ ins:[{k:'n',l:'عدد الخلايا n',min:1,max:8,step:1,v:4},{k:'R',l:'مقاومة الحمل R',seg:[[0.1,'0.1 Ω'],[2,'2 Ω'],[20,'20 Ω'],[200,'200 Ω']],v:2}],
+ calc:(s,P,B)=>{const E=1.5,r=2,I=n=>n*E/(s.R+n*r),i=I(s.n),i1=I(1);const pts=[1,2,3,4,5,6,7,8].map(n=>[n,I(n)]);const ym=Math.max(...pts.map(p=>p[1]))*1.15;
+  return {facts:[['الجهد الكلي nE',DCML.fm(B,B.round(s.n*E,2))+' V'],['المقاومة الداخلية nr',DCML.fm(B,s.n*r)+' Ω'],['التيار I',DCML.fm(B,B.round(i,3))+' A','hi'],['التيار ÷ تيار خلية واحدة',DCML.fm(B,B.round(i/i1,2))]],
+   plot:{xr:[1,8],yr:[0,ym],xl:'n',yl:'I (A)',xt:[1,2,3,4,5,6,7,8],curves:[{pts}],dots:pts.map(p=>[p[0],p[1]]),cur:[s.n,i]},
+   msg:s.R<=0.1?'الحمل صغير جداً: التيار يبقى تقريباً \\(E/r\\) مهما زدنا الخلايا.':s.R>=200?'الحمل كبير جداً: التيار يكاد يتضاعف مع n، أي \\(I\\approx n(E/R)\\).':'الحالة الوسطى: التيار يزيد مع n لكن أقل من n مرة.'}}})}
    ]},
 
   {st:3,short:'(ب) التوازي',title:'(ب) تجميع التوازي',ref:'ص 35–36',
@@ -815,7 +1068,17 @@ B.lesson({
     {watch:String.raw`<p>الجملة الأولى عن المقاومة الداخلية ناقصة في الكتاب («لمجموعة خلايا قدره خلية…»). المقصود: <b>المقاومة الداخلية لمجموعة من n خلية، مقاومة كل منها r، تكون \(r/n\) أوم</b>.</p>`,fix:true},
     {tip:String.raw`<p>التوازي <b>لا يرفع الجهد</b>، لكنه يقسم المقاومة الداخلية على n (كأن الخلايا تتقاسم التيار). لذلك يفيد عندما تكون المقاومة الداخلية هي الغالبة، أي مع حمل صغير المقاومة.</p>
      <div style="position:relative;overflow-x:auto"><table class="tt"><thead><tr><th></th><th>التوالي</th><th>التوازي</th></tr></thead><tbody>
-     <tr><td>الجهد</td><td>\(nE\)</td><td>\(E\)</td></tr><tr><td>المقاومة الداخلية</td><td>\(nr\)</td><td>\(r/n\)</td></tr><tr><td>يفيد مع حمل</td><td>كبير</td><td>صغير جداً</td></tr></tbody></table></div>`,title:'التوالي والتوازي معاً'}
+     <tr><td>الجهد</td><td>\(nE\)</td><td>\(E\)</td></tr><tr><td>المقاومة الداخلية</td><td>\(nr\)</td><td>\(r/n\)</td></tr><tr><td>يفيد مع حمل</td><td>كبير</td><td>صغير جداً</td></tr></tbody></table></div>`,title:'التوالي والتوازي معاً'},
+    {title:'مختبر مصغّر: أضف خلايا على التوازي',widget:(el,B)=>DCML.lab(el,B,{intro:'كل خلية \\(E=1.5\\ V\\) و\\(r=2\\ \\Omega\\) (أرقام مثال 2-1). غيّر عدد الخلايا n ومقاومة الحمل R (أرقام تختارها أنت).',
+ predict:{q:'الحمل كبير (\\(R=200\\ \\Omega\\)). زدنا الخلايا على التوازي من <span class="ltr">1</span> إلى <span class="ltr">8</span>. التيار:',opts:[
+  ['يصبح ثمانية أضعاف',false,'هذا يحدث فقط إذا كان الحمل صغيراً جداً مقارنة بـ \\(r/n\\).'],
+  ['يقل',false,'المقاومة الداخلية تقل فلا يقل التيار.'],
+  ['يبقى تقريباً \\(E/R\\)',true,'الجهد يبقى E، والمقاومة الداخلية صغيرة أصلاً مقارنة بالحمل؛ «أي لا فائدة تعود من هذه التوصيلة بهذا الوضع».']]},
+ ins:[{k:'n',l:'عدد الخلايا n',min:1,max:8,step:1,v:4},{k:'R',l:'مقاومة الحمل R',seg:[[0.1,'0.1 Ω'],[2,'2 Ω'],[20,'20 Ω'],[200,'200 Ω']],v:2}],
+ calc:(s,P,B)=>{const E=1.5,r=2,I=n=>E/(s.R+r/n),i=I(s.n),i1=I(1);const pts=[1,2,3,4,5,6,7,8].map(n=>[n,I(n)]);const ym=Math.max(...pts.map(p=>p[1]))*1.15;
+  return {facts:[['الجهد E',DCML.fm(B,E)+' V'],['المقاومة الداخلية r/n',DCML.fm(B,B.round(r/s.n,3))+' Ω'],['التيار I',DCML.fm(B,B.round(i,4))+' A','hi'],['التيار ÷ تيار خلية واحدة',DCML.fm(B,B.round(i/i1,2))]],
+   plot:{xr:[1,8],yr:[0,ym],xl:'n',yl:'I (A)',xt:[1,2,3,4,5,6,7,8],curves:[{pts}],dots:pts.map(p=>[p[0],p[1]]),cur:[s.n,i]},
+   msg:s.R<=0.1?'الحمل صغير جداً: التيار يكاد يتضاعف مع n، أي \\(I\\approx n(E/r)\\). هنا يفيد التوازي.':s.R>=200?'الحمل كبير: التيار يبقى تقريباً \\(E/R\\)؛ التوازي لا يفيد هنا.':'الحالة الوسطى: التيار يزيد مع n لكن أقل من n مرة.'}}})}
    ]},
 
   {st:4,short:'(ج) المركب',title:'(ج) التجميع المركب',ref:'ص 36–37',
@@ -852,7 +1115,17 @@ B.lesson({
      <p>حيث r هي المقاومة الداخلية الكلية للبطارية و R هي مقاومة الحمل.</p>`,ref:'ص 36–37'},
     {tip:String.raw`<p>الحيلة في الكتاب: المقدار بين القوسين مربّع، فأصغر قيمة له صفر، وذلك عندما \(\sqrt{mR}=\sqrt{nr}\). عندها يصغر المقام ويكبر التيار.</p>
      <p>وبكلمات عملية: حمل كبير المقاومة ← خلايا أكثر على التوالي (n كبير)؛ حمل صغير المقاومة ← خطوط أكثر على التوازي (m كبير). وأفضل تشكيل يجعل \(nr/m=R\).</p>`,title:'لماذا هذا الشرط؟'},
-    {watch:String.raw`<p>في معادلة الجودة \(\eta=R/(R+r)\) الحرف r هو المقاومة الداخلية <b>الكلية</b> للبطارية (\(nr/m\) في التجميع المركب)، وليس مقاومة خلية واحدة.</p>`}
+    {watch:String.raw`<p>في معادلة الجودة \(\eta=R/(R+r)\) الحرف r هو المقاومة الداخلية <b>الكلية</b> للبطارية (\(nr/m\) في التجميع المركب)، وليس مقاومة خلية واحدة.</p>`},
+    {title:'مختبر مصغّر: ابحث عن أفضل تشكيل',widget:(el,B)=>DCML.lab(el,B,{intro:'<span class="ltr">12</span> خلية، كل منها \\(E=1.5\\ V\\) و\\(r=1\\ \\Omega\\) (أرقام نختارها للتجربة). اختر عدد الخطوط m (و\\(n=12/m\\) في كل خط) ومقاومة الحمل R.',
+ predict:{q:'الحمل كبير المقاومة. الأفضل لأكبر تيار أن نجعل:',opts:[
+  ['خطوطاً كثيرة على التوازي (m كبير)',false,'هذا يناسب الحمل الصغير المقاومة.'],
+  ['خلايا كثيرة على التوالي في كل خط (n كبير)',true,'المقاومة الداخلية \\(nr/m\\) تكبر حتى تقترب من R الكبيرة: الشرط \\(mR=nr\\).'],
+  ['لا فرق بين التشكيلات',false,'التيار يتغير كثيراً مع التشكيل؛ جرّب.']]},
+ ins:[{k:'m',l:'عدد الخطوط m',seg:[[1,'1 × 12'],[2,'2 × 6'],[3,'3 × 4'],[4,'4 × 3'],[6,'6 × 2'],[12,'12 × 1']],v:3},{k:'R',l:'مقاومة الحمل R',seg:[[0.25,'0.25 Ω'],[1,'1 Ω'],[3,'3 Ω'],[12,'12 Ω']],v:1}],
+ calc:(s,P,B)=>{const E=1.5,r=1,N=12,I=m=>{const n=N/m;return n*E/(s.R+n*r/m)};const n=N/s.m,ri=n*r/s.m,i=I(s.m),best=Math.max(...[1,2,3,4,6,12].map(I));
+  return {facts:[['خلايا كل خط n',String(n)],['المقاومة الداخلية '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('nr/m'),DCML.fm(B,B.round(ri,3))+' Ω',Math.abs(ri-s.R)<1e-9?'hi':''],['التيار I',DCML.fm(B,B.round(i,3))+' A','hi'],['الجودة '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('R ÷ (R + nr/m)'),DCML.fm(B,B.round(100*s.R/(s.R+ri),1))+' %']],
+   bars:[{l:'التيار مقارنة بأفضل تشكيل لهذا الحمل',v:B.round(i,3),max:best,u:'A',col:Math.abs(i-best)<1e-9?'--on':'--blue'}],
+   msg:Math.abs(i-best)<1e-9?(Math.abs(ri-s.R)<1e-9?'أكبر تيار: المقاومة الداخلية = مقاومة الحمل \\((mR=nr)\\)، والجودة <span class="ltr">50%</span>.':'أكبر تيار بين التشكيلات الممكنة: المقاومة الداخلية أقرب ما تكون إلى الحمل.'):'جرّب تشكيلاً تقترب فيه \\(nr/m\\) من R.'}}})}
    ]},
 
   {st:5,short:'مثال (2-1)',title:'مثال <span class="ltr">(2-1)</span>: أربع خلايا بثلاث طرق',ref:'ص 37–39',
@@ -896,7 +1169,10 @@ B.lesson({
     {watch:String.raw`<p>تمرين 1 (ج): طُبع «بكل فرع خليتان <b>متوازيتان</b>» والمقصود على التوالي (كما في مثال 2-1). وفيه أيضاً «خليتان» مع أن الخلايا ثمانٍ؛ انظر الإجابة المقترحة.</p>`,fix:true},
     {tip:String.raw`<p class="sub" style="margin-top:0">الكتاب لا يعطي إجابات. اضغط على التمرين لترى إجابة مقترحة.</p>
      <details class="cx-q"><summary>تمرين 1</summary><div class="cx-ans">أ) \(E=12\ V\)، \(r=8\ \Omega\)، \(I=12/(8+4)=1\ A\). ب) \(E=1.5\ V\)، \(r=1/8=0.125\ \Omega\)، \(I=1.5/4.125\approx0.364\ A\). ج) نص التمرين «فرعين … بكل فرع خليتان» لا يستعمل إلا 4 خلايا من 8؛ <b>بافتراض فرعين بكل منهما أربع خلايا على التوالي</b> (كل الخلايا الثماني): \(E=6\ V\)، \(r=4/2=2\ \Omega\)، \(I=6/(2+4)=1\ A\). (ولو أخذنا النص حرفياً — فرعان × خليتان — لكان \(E=3\ V\)، \(r=1\ \Omega\)، \(I=3/5=0.6\ A\).)</div></details>
-     <details class="cx-q"><summary>تمرين 2</summary><div class="cx-ans">أ) \(5\times2=10\ V\). ب) \(10\ V\) (الفروع على التوازي). ج) \(5\times1.5=7.5\ \Omega\). د) \(7.5/4=1.875\ \Omega\). و) \(I=10/(10+1.875)\approx0.842\ A\).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <details class="cx-q"><summary>تمرين 2</summary><div class="cx-ans">أ) \(5\times2=10\ V\). ب) \(10\ V\) (الفروع على التوازي). ج) \(5\times1.5=7.5\ \Omega\). د) \(7.5/4=1.875\ \Omega\). و) \(I=10/(10+1.875)\approx0.842\ A\).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: تحقق من حل التمرين 2',widget:(el,B)=>DCML.cases(el,B,{intro:'عشرون خلية في أربعة أفرع على التوازي، بكل فرع خمس خلايا على التوالي.',cases:[
+ {q:'المقاومة الكلية على طرفي الدائرة مقارنة بمقاومة الفرع الواحد:',opts:[['أربعة أضعافها',false,'هذا كان سيصح لو وُصلت الأفرع على التوالي.'],['ربعها',true,'أربعة أفرع متساوية على التوازي: \\(7.5/4=1.875\\ \\Omega\\).'],['تساويها',false,'كل فرع إضافي على التوازي يقلل المقاومة الكلية.']]},
+ {q:'لو وصلنا الخلايا العشرين كلها على التوالي بدلاً من ذلك، يصبح الجهد الكلي:',opts:[['<span class="ltr">10 V</span>',false,'هذا جهد التشكيل الذي في التمرين (فرع واحد).'],['<span class="ltr">2 V</span>',false,'هذا جهد خلية واحدة.'],['<span class="ltr">40 V</span>',true,'\\(nE=20\\times2=40\\ V\\).']]}]})}
    ]},
 
   {recap:[
@@ -1049,7 +1325,11 @@ B.lesson({
      <p>وفي حالة مجموعة البطاريات على التوازي فإن أقصى تيار \(I_{max}\) تعطيه المجموعة عندما يكون</p>
      <div class="eq" style="position:relative;overflow-x:auto">$$R\ll \frac{r_i}{n}$$<span></span></div>`,ref:'ص 40'},
     {watch:String.raw`<p>طُبع الشرطان في الكتاب «<span class="ltr">r.i ≪ R</span>» و«<span class="ltr">R ≪ r×i</span>»، والمقصود \(n\,r_i\ll R\) للتوالي و\(R\ll r_i/n\) للتوازي، كما في تجميع التوالي والتوازي (ص 35–36).</p>`,fix:true},
-    {tip:String.raw`<p>الشروط الثلاثة فكرة واحدة: قارن المقاومة الداخلية <b>الكلية</b> للمجموعة بمقاومة الحمل. المختلطة: اجعلهما متساويتين للقدرة القصوى. التوالي: يفيد إذا كانت الداخلية صغيرة جداً. التوازي: يفيد إذا كان الحمل صغيراً جداً.</p>`}
+    {tip:String.raw`<p>الشروط الثلاثة فكرة واحدة: قارن المقاومة الداخلية <b>الكلية</b> للمجموعة بمقاومة الحمل. المختلطة: اجعلهما متساويتين للقدرة القصوى. التوالي: يفيد إذا كانت الداخلية صغيرة جداً. التوازي: يفيد إذا كان الحمل صغيراً جداً.</p>`},
+    {title:'مختبر مصغّر: لكل مجموعة شرطها',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل شرط اختر المجموعة التي يخصها.',cats:['مختلطة: القدرة القصوى','توالي: أقصى تيار','توازي: أقصى تيار'],items:[
+ ['\\(R\\ll r_i/n\\): الحمل صغير جداً بالنسبة لمقاومة المجموعة',2,'التوازي يقسم المقاومة الداخلية على n، فيفيد مع حمل صغير جداً.'],
+ ['\\(m\\times R=n\\times r_i\\)',0,'المقاومة الخارجية = المقاومة الداخلية للمجموعة المختلطة.'],
+ ['\\(n\\,r_i\\ll R\\): المقاومة الداخلية صغيرة جداً بالنسبة للحمل',1,'عندها \\(I\\approx n(E/R)\\): التوالي يضاعف التيار n مرة.']]})}
    ]},
 
   {st:3,short:'مثال (2-2)',title:'مثال <span class="ltr">(2-2)</span>: خمس عشرة خلية تغذي حملاً',ref:'ص 40',
@@ -1070,7 +1350,17 @@ B.lesson({
       <div class="kv-row"><small>(ب)</small><span class="kv res ltr">\(V=I\times R=0.5\times30=15\ V\)</span><span class="kv res ltr">\(V=E-I\times r=21-0.5\times12=15\ V\)</span></div></div>
       <div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div></div>`},
     {tip:String.raw`<p>نص المثال لا يذكر طريقة التوصيل صراحة، والحل يعامل الخلايا على التوالي. ولاحظ أن \(R=30\ \Omega\) أكبر من \(r=12\ \Omega\): البطارية هنا لا تعطي القدرة القصوى (تعطي \(0.5^2\times30=7.5\ W\)، والقصوى \(21^2/(4\times12)\approx9.19\ W\) عند \(R=12\ \Omega\)) لكن جودتها أعلى: \(30/42\approx71\%\).</p>`},
-    {watch:String.raw`<p>رقّم الكتاب هذا المثال «(3-1)» (مكرراً مع المثال السابق)، والصحيح <span class="ltr">(2-2)</span>.</p>`,fix:true}
+    {watch:String.raw`<p>رقّم الكتاب هذا المثال «(3-1)» (مكرراً مع المثال السابق)، والصحيح <span class="ltr">(2-2)</span>.</p>`,fix:true},
+    {title:'مختبر مصغّر: غيّر الحمل على البطارية نفسها',widget:(el,B)=>DCML.lab(el,B,{intro:'البطارية من المثال: \\(E=21\\ V\\) و\\(r=12\\ \\Omega\\). القيمة <span class="ltr">30 Ω</span> للحمل من الكتاب؛ حرّكها (أرقام تختارها أنت) وراقب الجهد على الطرفين والقدرة.',
+ predict:{q:'لو خفضنا الحمل من <span class="ltr">30 Ω</span> إلى <span class="ltr">12 Ω</span>، فإن القدرة في الحمل:',opts:[
+  ['تزيد إلى أكبر قيمة ممكنة',true,'عند \\(R=r=12\\ \\Omega\\) تعطي البطارية أكبر قدرة \\(E^2/4r\\approx9.19\\ W\\)؛ لكن الجودة تنزل إلى <span class="ltr">50%</span>.'],
+  ['تقل لأن الجهد على الطرفين يقل',false,'الجهد يقل فعلاً، لكن التيار يزيد بنسبة أكبر.'],
+  ['لا تتغير',false,'القدرة تعتمد على R؛ جرّب.']]},
+ ins:[{k:'R',l:'مقاومة الحمل R',u:'Ω',min:1,max:60,step:1,v:30}],
+ calc:(s,P,B)=>{const E=21,r=12,I=E/(s.R+r),V=I*s.R,Pw=I*V;const pts=[];for(let R=1;R<=60;R+=1)pts.push([R,E*E*R/((R+r)**2)]);
+  return {facts:[['التيار I',DCML.fm(B,B.round(I,3))+' A'],['الجهد على الطرفين '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('V = E − Ir'),DCML.fm(B,B.round(V,2))+' V','hi'],['القدرة في الحمل',DCML.fm(B,B.round(Pw,2))+' W','hi'],['الجودة '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('R ÷ (R + r)'),DCML.fm(B,B.round(100*s.R/(s.R+r),1))+' %']],
+   plot:{xr:[0,60],yr:[0,10],xl:'R (Ω)',yl:'P (W)',curves:[{pts}],cur:[s.R,Pw]},
+   msg:s.R===12?'\\(R=r\\): أكبر قدرة، ونصفها يضيع داخل البطارية.':s.R===30?'أرقام الكتاب: <span class="ltr">0.5 A</span> و<span class="ltr">15 V</span>.':''}}})}
    ]},
 
   {st:4,short:'مثال (2-3)',title:'مثال <span class="ltr">(2-3)</span>: أحسن تشكيل لأربع وعشرين خلية',ref:'ص 41',
@@ -1122,7 +1412,13 @@ B.lesson({
    body:[
     {book:String.raw`<ol start="3"><li>بطارية تعطي تياراً قدره <span class="ltr">0.6A</span> عندما تكون المقاومة الخارجية <span class="ltr">2.0Ω</span> وتعطي تياراً قدره <span class="ltr">0.2A</span> عندما تكون المقاومة الخارجية <span class="ltr">12Ω</span> أوجد: أ- المقاومة الداخلية. ب- جهد البطارية في حالة اللاحمل.</li></ol>`,ref:'ص 42'},
     {tip:String.raw`<p class="sub" style="margin-top:0">الكتاب لا يعطي إجابات. اضغط لترى إجابة مقترحة.</p>
-     <details class="cx-q"><summary>تمرين 3</summary><div class="cx-ans">\(E=I(R+r)\) في الحالتين: \(0.6(2+r)=0.2(12+r)\) ← \(1.2+0.6r=2.4+0.2r\) ← \(0.4r=1.2\) ← <b>\(r=3\ \Omega\)</b>، ثم \(E=0.6\times(2+3)=\) <b><span class="ltr">3 V</span></b>. (تحقق: \(0.2\times(12+3)=3\ V\).)</div></details>`,title:'إجابة مقترحة (ليست من الكتاب)'}
+     <details class="cx-q"><summary>تمرين 3</summary><div class="cx-ans">\(E=I(R+r)\) في الحالتين: \(0.6(2+r)=0.2(12+r)\) ← \(1.2+0.6r=2.4+0.2r\) ← \(0.4r=1.2\) ← <b>\(r=3\ \Omega\)</b>، ثم \(E=0.6\times(2+3)=\) <b><span class="ltr">3 V</span></b>. (تحقق: \(0.2\times(12+3)=3\ V\).)</div></details>`,title:'إجابة مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: ابحث عن r التي تتفق معها القراءتان',widget:(el,B)=>DCML.lab(el,B,{intro:'من كل قراءة نحسب جهد اللاحمل \\(E=I(R+r)\\). حرّك قيمة r المقترحة حتى تعطي القراءتان الجهد نفسه — عندها تكون r هي المقاومة الداخلية الحقيقية.',
+ ins:[{k:'r',l:'r المقترحة',u:'Ω',min:0,max:6,step:0.5,v:1}],
+ calc:(s,P,B)=>{const e1=0.6*(2+s.r),e2=0.2*(12+s.r),ok=Math.abs(e1-e2)<1e-9;
+  return {facts:[['من القراءة 1: '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('0.6 × (2 + r)'),DCML.fm(B,B.round(e1,2))+' V',ok?'hi':''],['من القراءة 2: '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('0.2 × (12 + r)'),DCML.fm(B,B.round(e2,2))+' V',ok?'hi':'']],
+   bars:[{l:'E من القراءة 1',v:e1,max:4,u:'V'},{l:'E من القراءة 2',v:e2,max:4,u:'V',col:'--live'}],
+   msg:ok?'القراءتان تتفقان: هذه هي المقاومة الداخلية، وجهد اللاحمل هو القيمة المشتركة. قارن بحلك.':'القيمتان مختلفتان؛ البطارية واحدة فلا بد أن يتفق الجهدان. حرّك r.',cls:ok?'':'warn'}}})}
    ]},
 
   {recap:[

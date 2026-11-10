@@ -103,7 +103,183 @@ B.lesson(FIXL({
  title:'آلية اختيار محرك التحريك المناسب',
  summary:'مميزات المحرك الكهربائي، والعوامل الخمسة التي تحكم اختياره، ولماذا يتحدد حجم المحرك بأقصى درجة حرارة يصل إليها، وأنماط التشغيل الزمني الخمسة، ومقدرة المحرك على تحمل الأحمال الزائدة حتى عزم التعثر.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة السابعة: آلية اختيار محرك التحريك المناسب — الأهداف',ref:'ص 80',
    q:'أمامك حمل معين: مضخة أو رافعة أو سير ناقل. على أي أساس تختار له المحرك؟',
@@ -118,7 +294,11 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة العوامل التي يجب مراعاتها عند اختيار المحرك الكهربائي المناسب لقيادة حمل معين.</p>
      <p><b>الأهداف التفصيلية:</b> أن يتمكن المتدرب من اختيار المحرك الكهربائي المناسب لحمل معين اعتماداً على:</p><ul><li>العوامل الكهربائية.</li><li>العوامل الميكانيكية.</li><li>حجم المحرك وقدرته.</li><li>تكلفة المحرك.</li><li>نوع التيار المستخدم، من حيث كونه تياراً مستمراً أو متردداً أحادي أو ثلاثي الأوجه.</li></ul>`,ref:'ص 80'},
-    {tip:String.raw`<p>هذه الوحدة نظرية كلها: لا معادلات ولا أمثلة محلولة ولا أشكال في الكتاب. أهم ما فيها «حجم المحرك» وعلاقته بدرجة الحرارة وطريقة التشغيل الزمني.</p>`}
+    {tip:String.raw`<p>هذه الوحدة نظرية كلها: لا معادلات ولا أمثلة محلولة ولا أشكال في الكتاب. أهم ما فيها «حجم المحرك» وعلاقته بدرجة الحرارة وطريقة التشغيل الزمني.</p>`},
+    {title:'تحقق سريع: أهداف الوحدة',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['تذكر أهداف الوحدة خمسة عوامل لاختيار المحرك المناسب.',true,'الكهربائية، والميكانيكية، وحجم المحرك وقدرته، والتكلفة، ونوع التيار (ص 80).'],
+ ['نوع التيار المستخدم ليس من عوامل اختيار المحرك.',false,'هو العامل الخامس: مستمر أو متردد أحادي أو ثلاثي الأوجه.'],
+ ['في هذه الوحدة معادلات وأمثلة محلولة كثيرة.',false,'الوحدة نظرية كلها: لا معادلات ولا أمثلة محلولة ولا أشكال في الكتاب.']]})}
    ]},
 
   {st:2,short:'مميزات المحرك',title:'تمهيد: مميزات المحرك الكهربائي',ref:'ص 81',
@@ -140,7 +320,12 @@ B.lesson(FIXL({
      <li>سهولة بدء حركته وإيقافه وعكس اتجاه دورانه.</li>
      <li>عدم احتياجه إلى وقت لتجهيزه للعمل.</li>
      <li>سهولة صيانته وقلة تكلفتها.</li></ul>`,ref:'ص 81'},
-    {add:String.raw`<p>«جزء من الألف من الحصان»: محركات صغيرة جداً مثل محرك مروحة تبريد الحاسب. و«عشرات الآلاف من الحصان»: محركات المضخات الكبيرة في محطات ضخ المياه ومحطات التحلية.</p>`}
+    {add:String.raw`<p>«جزء من الألف من الحصان»: محركات صغيرة جداً مثل محرك مروحة تبريد الحاسب. و«عشرات الآلاف من الحصان»: محركات المضخات الكبيرة في محطات ضخ المياه ومحطات التحلية.</p>`},
+    {title:'تحقق سريع: مميزات المحرك الكهربائي',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['يمكن تصميم المحرك الكهربائي بقدرات من جزء من الألف من الحصان إلى عشرات الآلاف من الحصان.',true,'نص الكتاب في ص 81.'],
+ ['المحرك الكهربائي يحتاج وقتاً لتجهيزه قبل العمل.',false,'من مميزاته «عدم احتياجه إلى وقت لتجهيزه للعمل».'],
+ ['عكس اتجاه دوران المحرك الكهربائي صعب.',false,'من مميزاته «سهولة بدء حركته وإيقافه وعكس اتجاه دورانه».'],
+ ['صيانة المحرك الكهربائي سهلة وتكلفتها قليلة.',true,'الميزة الأخيرة في القائمة.']]})}
    ]},
 
   {st:3,short:'عوامل الاختيار',title:'العوامل التي يجب مراعاتها عند اختيار المحرك الكهربائي',ref:'ص 81',
@@ -156,7 +341,13 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>اختيار المحرك الكهربائي يعتمد على الظروف التي سيعمل تحتها ونوع الحمل الذي سيحركه، فالمحرك المطلوب اختياره يجب أن يلبي كل متطلبات الحمل التقنية، وذلك يتطلب دراسة دقيقة وتحليلاً لخواص المحرك والحمل معاً، بالإضافة إلى الدراية التامة بمجمل نظام التحريك وأجهزة التحكم المطلوبة، وفي الوقت نفسه يجب ألا يكون المحرك عالي التكلفة حتى يكتب له النجاح من الناحية الاقتصادية.</p>
      <p>فهناك عدة عوامل يجب مراعاتها عند اختيار المحرك الكهربائي ليناسب إحدى التطبيقات الصناعية، وأهمها:</p>`,ref:'ص 81'},
-    {tip:String.raw`<p>العوامل الخمسة في المحطات التالية (4–8): كهربائية، ميكانيكية، حجم وقدرة، تكلفة، نوع تيار. لكل عامل محطة.</p>`}
+    {tip:String.raw`<p>العوامل الخمسة في المحطات التالية (4–8): كهربائية، ميكانيكية، حجم وقدرة، تكلفة، نوع تيار. لكل عامل محطة.</p>`},
+    {title:'مختبر مصغّر: إلى أي عامل ينتمي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل اعتبار عند اختيار المحرك اختر العامل الذي ينتمي إليه من العوامل الخمسة.',cats:['كهربائي','ميكانيكي','الحجم والقدرة','التكلفة','نوع التيار'],items:[
+ ['قيمة تيار بدء الحركة',0,'«خواص بدء الحركة من حيث قيمة كل من عزم بدء الحركة وتيار بدء الحركة» — عامل كهربائي.'],
+ ['نوع الغلاف الخارجي وطريقة التبريد',1,'أول العوامل الميكانيكية.'],
+ ['هل التحميل مستمر أم قصير الأمد أم متقطع؟',2,'«متطلبات التحميل» من عامل حجم المحرك والقدرة المصمم عليها.'],
+ ['ثمن المحرك وما يستهلكه أثناء التشغيل',3,'التكلفة الابتدائية وتكلفة التشغيل.'],
+ ['المصدر المتوفر: مستمر أم متردد أحادي أم ثلاثي الأوجه',4,'العامل الخامس.']]})}
    ]},
 
   {st:4,short:'العوامل الكهربائية',title:'1- العوامل الكهربائية',ref:'ص 81–82',
@@ -175,7 +366,20 @@ B.lesson(FIXL({
      <li>خواص المحرك أثناء التشغيل والعلاقة بين عزم الدوران والسرعة والعلاقة بين السرعة والتيار، والمفقودات، والكفاءة… إلخ.</li>
      <li>مدى التحكم في سرعة الدوران أثناء التشغيل.</li>
      <li>كيفية إيقاف المحرك وفرملته.</li></ul>`,ref:'ص 81–82'},
-    {add:String.raw`<p>مثال: الرافعة تحتاج عزم بدء كبيراً لأنها تبدأ والحمل معلق، وتحتاج فرملة جيدة. أما المروحة فعزم بدئها صغير لأن الحمل يزيد مع السرعة. لذلك قد لا يصلح لهما المحرك نفسه.</p>`}
+    {add:String.raw`<p>مثال: الرافعة تحتاج عزم بدء كبيراً لأنها تبدأ والحمل معلق، وتحتاج فرملة جيدة. أما المروحة فعزم بدئها صغير لأن الحمل يزيد مع السرعة. لذلك قد لا يصلح لهما المحرك نفسه.</p>`},
+    {title:'مختبر مصغّر: أي عامل كهربائي يهم هنا؟',widget:(el,B)=>DCML.cases(el,B,{intro:'مواقف قصيرة (أمثلة للتدريب، ليست من الكتاب). اختر العامل الكهربائي الذي يحسم كل منها.',cases:[
+ {q:'رافعة تبدأ الحركة والحمل معلق بها.',opts:[
+  ['خواص بدء الحركة (عزم البدء)',true,'تحتاج عزم بدء كبيراً لتبدأ والحمل عليها.'],
+  ['كيفية إيقاف المحرك وفرملته',false,'مهمة للرافعة أيضاً، لكن السؤال عن لحظة البدء.'],
+  ['مدى التحكم في السرعة',false,'البدء بالحمل يحتاج عزماً، لا مدى سرعات.']]},
+ {q:'آلة يلزمها أن تعمل بسرعات مختلفة حسب نوع الشغل.',opts:[
+  ['خواص بدء الحركة',false,'المشكلة ليست في البدء.'],
+  ['مدى التحكم في سرعة الدوران أثناء التشغيل',true,'من العوامل الكهربائية في ص 82.'],
+  ['كيفية الفرملة',false,'المطلوب تغيير السرعة أثناء العمل لا الإيقاف.']]},
+ {q:'مصعد يجب أن يتوقف بنعومة في كل طابق.',opts:[
+  ['كيفية إيقاف المحرك وفرملته',true,'العامل الكهربائي الرابع، وطرق الفرملة الكهربائية درست في الوحدة السادسة.'],
+  ['تيار بدء الحركة',false,'السؤال عن التوقف لا البدء.'],
+  ['الكفاءة',false,'الكفاءة لا تحدد نعومة التوقف.']]}]})}
    ]},
 
   {st:5,short:'العوامل الميكانيكية',title:'2- العوامل الميكانيكية',ref:'ص 82',
@@ -195,7 +399,20 @@ B.lesson(FIXL({
      <li>كيفية نقل الحركة بين المحرك والحمل.</li>
      <li>مستوى الضوضاء الذي يصدره المحرك.</li></ul>`,ref:'ص 82'},
     {tip:String.raw`<p>«الكراسي» هي المحامل (رولمان البلي أو الجلب) التي يدور فيها عمود المحرك. و«نقل الحركة» قد يكون مباشراً بوصلة، أو بسيور، أو بتروس كما في صندوق تروس القطار (الوحدة الخامسة).</p>`},
-    {add:String.raw`<p>محركات المضخات الغاطسة في الآبار تحتاج غلافاً محكماً ضد الماء، ومحركات الأماكن المغبرة تحتاج غلافاً مغلقاً بتبريد خارجي بمروحة؛ وهذا ما يقصده الكتاب بنوع الغلاف والتبريد.</p>`}
+    {add:String.raw`<p>محركات المضخات الغاطسة في الآبار تحتاج غلافاً محكماً ضد الماء، ومحركات الأماكن المغبرة تحتاج غلافاً مغلقاً بتبريد خارجي بمروحة؛ وهذا ما يقصده الكتاب بنوع الغلاف والتبريد.</p>`},
+    {title:'مختبر مصغّر: أي عامل ميكانيكي يهم هنا؟',widget:(el,B)=>DCML.cases(el,B,{intro:'مواقف قصيرة (أمثلة للتدريب، ليست من الكتاب). اختر العامل الميكانيكي الذي يحسم كل منها.',cases:[
+ {q:'محرك سيعمل في مكان مليء بالغبار.',opts:[
+  ['مستوى الضوضاء',false,'الغبار لا يتعلق بالضوضاء.'],
+  ['نوع الغلاف الخارجي ونوع التبريد',true,'غلاف مغلق يمنع دخول الغبار، مع تبريد مناسب.'],
+  ['كيفية نقل الحركة',false,'نقل الحركة لا يحمي المحرك من الغبار.']]},
+ {q:'محرك تهوية في مكتبة أو غرفة مرضى.',opts:[
+  ['مستوى الضوضاء الذي يصدره المحرك',true,'عامل ميكانيكي ذكره الكتاب، ومهم في الأماكن الهادئة.'],
+  ['نوع الكراسي',false,'الكراسي قد تؤثر في الضوضاء، لكن العامل المباشر هنا مستوى الضوضاء.'],
+  ['نوع الغلاف',false,'ليس هو الحاسم في مكان هادئ نظيف.']]},
+ {q:'المحرك سريع والآلة المدارة بطيئة جداً.',opts:[
+  ['نوع التبريد',false,'لا علاقة له بفرق السرعة.'],
+  ['مستوى الضوضاء',false,'لا يحل فرق السرعة.'],
+  ['كيفية نقل الحركة بين المحرك والحمل',true,'مثلاً بصندوق تروس يخفض السرعة، كما في القطار (الوحدة الخامسة).']]}]})}
    ]},
 
   {st:6,short:'حجم المحرك',title:'3- حجم المحرك والقدرة المصمم عليها',ref:'ص 82',
@@ -212,7 +429,11 @@ B.lesson(FIXL({
     {book:String.raw`<p><b>3- حجم المحرك والقدرة المصمم عليها:</b></p><ul>
      <li>متطلبات التحميل من حيث إنه مستمر أو قصير الأمد أو متقطع.</li>
      <li>مقدرة المحرك للتعامل مع أحمال زائدة عن قدرته المقننة.</li></ul>`,ref:'ص 82'},
-    {tip:String.raw`<p>البند الأول (نوع التحميل) في المحطات 10 إلى 14، والبند الثاني (الأحمال الزائدة) في المحطة 15.</p>`}
+    {tip:String.raw`<p>البند الأول (نوع التحميل) في المحطات 10 إلى 14، والبند الثاني (الأحمال الزائدة) في المحطة 15.</p>`},
+    {title:'تحقق سريع: العامل الثالث',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['العامل الثالث يشمل نوع التحميل: مستمر أو قصير الأمد أو متقطع.',true,'البند الأول من العامل الثالث (ص 82).'],
+ ['العامل الثالث يشمل مقدرة المحرك على أحمال زائدة عن قدرته المقننة.',true,'البند الثاني، ومشروح في المحطة 15.'],
+ ['ناقش الكتاب عامل التكلفة بالتفصيل لأهميته.',false,'العامل الذي ناقشه بالتفصيل هو الثالث: حجم المحرك والقدرة المصمم عليها.']]})}
    ]},
 
   {st:7,short:'تكلفة المحرك',title:'4- تكلفة المحرك',ref:'ص 82',
@@ -227,7 +448,11 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>4- تكلفة المحرك:</b> من حيث التكلفة الابتدائية وتكلفة التشغيل.</p>`,ref:'ص 82'},
-    {add:String.raw`<p>محرك يعمل ساعات طويلة كل يوم قد تكون فاتورة الكهرباء التي يستهلكها في سنة أكبر من ثمنه. لذلك قد يكون المحرك الأغلى ذو الكفاءة الأعلى هو الأوفر على المدى الطويل.</p>`}
+    {add:String.raw`<p>محرك يعمل ساعات طويلة كل يوم قد تكون فاتورة الكهرباء التي يستهلكها في سنة أكبر من ثمنه. لذلك قد يكون المحرك الأغلى ذو الكفاءة الأعلى هو الأوفر على المدى الطويل.</p>`},
+    {title:'تحقق سريع: تكلفة المحرك',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['ينظر الكتاب إلى التكلفة الابتدائية فقط.',false,'«من حيث التكلفة الابتدائية وتكلفة التشغيل» (ص 82).'],
+ ['قد يكون المحرك الأغلى ثمناً أوفر إذا كانت تكلفة تشغيله أقل.',true,'لأن التكلفة جانبان؛ وهذا مهم خاصة لمحرك يعمل ساعات طويلة.'],
+ ['يشترط الكتاب أن يلبي المحرك متطلبات الحمل وألا يكون عالي التكلفة.',true,'«وفي الوقت نفسه يجب ألا يكون المحرك عالي التكلفة حتى يكتب له النجاح من الناحية الاقتصادية».']]})}
    ]},
 
   {st:8,short:'نوع التيار',title:'5- نوع التيار المستخدم',ref:'ص 82',
@@ -244,7 +469,11 @@ B.lesson(FIXL({
     {book:String.raw`<p><b>5- نوع التيار المستخدم:</b> من حيث كونه تياراً مستمراً أو متردداً أحادي أو ثلاثي الأوجه.</p>
      <p>مما سبق يتضح أن هناك عوامل كثيرة يجب اعتبارها عند اختيار محرك لقيادة حمل معين، فالمحرك المطلوب اختياره يجب أن يلبي كل متطلبات الحمل التقنية، وفي نفس الوقت يجب ألا يكون عالي التكلفة حتى يكتب له النجاح من الناحية الاقتصادية. والاختيار الموفق للمحرك يتطلب دراسة دقيقة وتحليلاً لخواص المحرك والحمل معاً، بالإضافة إلى الدراية التامة بنظام التحريك وأجهزة التحكم المطلوبة.</p>
      <p>ونظراً لأهمية العامل الثالث، <b>حجم المحرك والقدرة المصمم عليها</b>، فسوف يناقش بالتفصيل في الجزء التالي.</p>`,ref:'ص 82'},
-    {tip:String.raw`<p>نوع التيار يحدده غالباً المصدر المتوفر: البيوت والمحلات الصغيرة فيها غالباً تغذية أحادية الوجه، والمصانع فيها تغذية ثلاثية الأوجه، والمركبات التي تعمل على بطاريات تيارها مستمر.</p>`}
+    {tip:String.raw`<p>نوع التيار يحدده غالباً المصدر المتوفر: البيوت والمحلات الصغيرة فيها غالباً تغذية أحادية الوجه، والمصانع فيها تغذية ثلاثية الأوجه، والمركبات التي تعمل على بطاريات تيارها مستمر.</p>`},
+    {title:'تحقق سريع: نوع التيار والخلاصة',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['أنواع التيار في الكتاب: مستمر، أو متردد أحادي الوجه، أو متردد ثلاثي الأوجه.',true,'نص العامل الخامس (ص 82).'],
+ ['الاختيار الموفق يعني اختيار أكبر محرك متوفر حتى نضمن أنه يكفي.',false,'الكتاب يشترط ألا يكون عالي التكلفة، ويطلب دراسة دقيقة لخواص المحرك والحمل معاً.'],
+ ['الاختيار الموفق يتطلب الدراية بنظام التحريك وأجهزة التحكم المطلوبة.',true,'من خلاصة الكتاب في ص 82.']]})}
    ]},
 
   {st:9,short:'الحرارة تحدد الحجم',title:'حجم المحرك والقدرة المصمم عليها: دور درجة الحرارة',ref:'ص 82–83',
@@ -261,7 +490,18 @@ B.lesson(FIXL({
     {book:String.raw`<p>العوامل التي تتحكم في حجم وقدرة المحرك هي <b>أقصى درجة حرارة يصل إليها المحرك أثناء الخدمة</b> تحت ظروف تشغيل الحمل، من حيث إنه مستمر أو متقطع أو قصير الأمد، و<b>أقصى عزم دوران مطلوب من المحرك</b>. وقد وجد أن المحرك الذي يحقق الشرط الأول الخاص بدرجة الحرارة يحقق أيضاً الشرط الثاني الخاص بالعزم المطلوب.</p>
      <p>والجدير بالذكر هنا أن أقصى درجة حرارة يتم تصميم المحرك على أساسها تعتمد على <b>نوع المواد العازلة</b> المستخدمة في المحرك، وتصنف هذه المواد العازلة إلى أنواع حسب درجة الحرارة القصوى التي تتحملها.</p>`,ref:'ص 82–83'},
     {tip:String.raw`<p>لماذا الحرارة؟ المفقودات في المحرك (في الملفات والحديد) تتحول حرارة، ومفقودات الملفات تزيد مع مربع التيار أي مع الحمل. فترتفع درجة حرارة المحرك تدريجياً — لا فجأة — حتى يتساوى ما يتولد فيه من حرارة مع ما يفقده إلى الجو، ثم تثبت. والعازل هو أضعف جزء: إذا تعدّت الحرارة ما يتحمله يتلف ويقصر عمر المحرك.</p>`},
-    {watch:String.raw`<p>الكتاب لا يذكر أسماء فئات المواد العازلة ولا درجاتها القصوى؛ يكفي أن تعرف أن الحرارة القصوى المسموحة تعتمد على نوع العازل.</p>`}
+    {watch:String.raw`<p>الكتاب لا يذكر أسماء فئات المواد العازلة ولا درجاتها القصوى؛ يكفي أن تعرف أن الحرارة القصوى المسموحة تعتمد على نوع العازل.</p>`},
+    {title:'مختبر مصغّر: الحمل وحرارة المحرك',widget:(el,B)=>DCML.lab(el,B,{intro:'محرك يعمل بصفة مستمرة. حرّك الحمل (نسبة من الحمل الكامل، رقم تختاره أنت) وشاهد الحرارة التي يستقر عندها، والخط الأحمر المتقطع أقصى حرارة صُمم عليها حسب مادة العزل.',
+ predict:{q:'تشغيل مستمر بحمل <span class="ltr">120%</span> من الحمل الكامل. ماذا يحدث لحرارة المحرك؟',opts:[
+  ['تبقى دون القصوى لأن المحرك يتحمل عزماً أكبر',false,'عزم التعثر أكبر فعلاً، لكن الحرارة هي التي تحدد الحجم في التشغيل المستمر.'],
+  ['تتعدى الحرارة القصوى مع استمرار التشغيل',true,'المفقودات في الملفات تزيد مع الحمل، فتستقر الحرارة فوق ما صُمم عليه العزل؛ ولهذا تحدد الحرارة حجم المحرك.'],
+  ['ترتفع ثم تنخفض وحدها',false,'مع حمل ثابت تستقر الحرارة ولا تنخفض.']]},
+ ins:[{k:'x',l:'الحمل (من الحمل الكامل)',u:'%',min:50,max:130,step:5,v:100,dp:0}],
+ tp:{id:'u7-l1',defs:[   {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},   {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},   {k:'th',label:'ثابت زمن التسخين أثناء الدوران',unit:'min',value:30,min:1,max:300,step:1},   {k:'tc',label:'ثابت زمن التبريد والمحرك متوقف',unit:'min',value:60,min:1,max:600,step:1,hint:'عادة أكبر من ثابت التسخين لأن المروحة متوقفة.'},   {k:'a',label:'المفقودات بلا حمل (نسبة من المفقودات عند الحمل الكامل)',unit:'%',value:25,min:0,max:90,step:1}]},
+ calc:(s,P,B)=>{const Tend=Math.max(240,6*P.th),r=heatRun(P,'a',s.x/100,0,0,Tend),y1=Math.ceil(Math.max(P.tmax*1.2,r.max*1.05)/10)*10;
+  return {facts:[['الحرارة التي يستقر عندها',DCML.fm(B,r.max,0)+' °C',r.over?'bad':'hi'],['أقصى حرارة صُمم عليها',DCML.fm(B,P.tmax,0)+' °C']],
+   plot:{xr:[0,Tend],yr:[0,y1],xl:'t (min)',yl:'θ (°C)',curves:[{pts:r.pts,col:r.over?'--stop':'--blue'},{pts:[[0,P.tmax],[Tend,P.tmax]],col:'--stop',dash:'6 4',w:1.6}]},
+   msg:r.over?'الحرارة تتعدى ما يتحمله العزل: المحرك أصغر من هذا الحمل المستمر، فيقصر عمر عزله.':s.x===100?'بالحمل الكامل تبلغ الحرارة قيمتها القصوى بالضبط: هكذا صُمم المحرك.':'الحمل أقل من الكامل فتستقر الحرارة دون القصوى.',cls:r.over?'bad':''}}})}
    ]},
 
   {st:10,short:'أ- المستمر',title:'متطلبات التحميل: خطة التشغيل الزمني — أ- التشغيل المستمر',ref:'ص 83',
@@ -278,7 +518,19 @@ B.lesson(FIXL({
     {book:String.raw`<p>عادة يتم تصميم المحركات الكهربائية على أساس مقدار الزمن الذي يعمل فيه بالحمل المطلوب وكذلك مقدار الزمن الذي يكون فيه متوقف عن العمل أو يدور فيه بدون حمل، على هذا الأساس فإن القواعد التي تتبع لاختيار المحركات الكهربائية تشير لإمكانية تصنيف المحركات حسب خطة التشغيل الزمني لها:</p>
      <p><b>أ- التشغيل المستمر:</b> في هذه الحالة يتم تشغيل المحرك بالحمل الكامل وبصفة مستمرة بحيث تصل درجة الحرارة في جميع أجزاء المحرك إلى قيمتها القصوى التي تم تصميم المحرك على أساسها ولا تتعداها مع استمرار التشغيل لأية فترة بعد ذلك.</p>`,ref:'ص 83'},
     {tip:String.raw`<p>خطة التشغيل الزمني تُبنى على سؤالين: كم من الوقت يعمل المحرك بالحمل؟ وماذا يفعل بقية الوقت: <b>يتوقف</b> أم <b>يدور بلا حمل</b>؟ ومن الإجابتين تخرج الأنماط الخمسة (أ–هـ).</p>`},
-    {add:String.raw`<p>أمثلة على التشغيل المستمر: مضخات المياه في محطات الضخ، ومراوح التهوية في الأنفاق والمصانع، والسيور الناقلة التي تعمل طوال الوردية.</p>`}
+    {add:String.raw`<p>أمثلة على التشغيل المستمر: مضخات المياه في محطات الضخ، ومراوح التهوية في الأنفاق والمصانع، والسيور الناقلة التي تعمل طوال الوردية.</p>`},
+    {title:'مختبر مصغّر: اقرأ الحرارة مع الزمن',widget:(el,B)=>DCML.lab(el,B,{intro:'تشغيل مستمر بالحمل الكامل. حرّك الزمن على المنحنى واقرأ درجة الحرارة.',
+ predict:{q:'بعد أن تصل الحرارة إلى قيمتها القصوى، استمر التشغيل ضعف ذلك الزمن. الحرارة:',opts:[
+  ['تبقى عند القصوى',true,'«ولا تتعداها مع استمرار التشغيل لأية فترة بعد ذلك» (ص 83): يتساوى ما يتولد من حرارة مع ما يفقده المحرك إلى الجو.'],
+  ['تتضاعف',false,'الحرارة لا ترتفع بلا حد؛ تستقر.'],
+  ['تعود إلى حرارة الجو',false,'المحرك ما زال يعمل بالحمل الكامل، فلا يبرد.']]},
+ ins:[{k:'t',l:'الزمن من بدء التشغيل (نسبة من مدى الرسم)',u:'%',min:0,max:100,step:2,v:20,dp:0}],
+ tp:{id:'u7-l1',defs:[   {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},   {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},   {k:'th',label:'ثابت زمن التسخين أثناء الدوران',unit:'min',value:30,min:1,max:300,step:1},   {k:'tc',label:'ثابت زمن التبريد والمحرك متوقف',unit:'min',value:60,min:1,max:600,step:1,hint:'عادة أكبر من ثابت التسخين لأن المروحة متوقفة.'},   {k:'a',label:'المفقودات بلا حمل (نسبة من المفقودات عند الحمل الكامل)',unit:'%',value:25,min:0,max:90,step:1}]},
+ calc:(s,P,B)=>{const Tend=Math.max(240,6*P.th),r=heatRun(P,'a',1,0,0,Tend),tt=Tend*s.t/100;let T=P.amb;for(const p of r.pts){if(p[0]<=tt+1e-9)T=p[1];else break}
+  const y1=Math.ceil(P.tmax*1.2/10)*10;
+  return {facts:[['الزمن',DCML.fm(B,tt,0)+' min'],['درجة الحرارة',DCML.fm(B,T,0)+' °C','hi'],['أقصى حرارة صُمم عليها',DCML.fm(B,P.tmax,0)+' °C']],
+   plot:{xr:[0,Tend],yr:[0,y1],xl:'t (min)',yl:'θ (°C)',curves:[{pts:r.pts},{pts:[[0,P.tmax],[Tend,P.tmax]],col:'--stop',dash:'6 4',w:1.6}],cur:[tt,T]},
+   msg:T>P.tmax-1?'وصلت إلى القصوى واستقرت عندها.':'ما زالت ترتفع تدريجياً، وكلما اقتربت من القصوى صار الارتفاع أبطأ.'}}})}
    ]},
 
   {st:11,short:'ب- قصير الأمد',title:'ب- التشغيل قصير الأمد',ref:'ص 83',
@@ -293,7 +545,19 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>ب- التشغيل قصير الأمد:</b> تعمل الآلة العاملة في هذا النوع من التشغيل بفترات تشغيل متفرقة تمتد كل منها على فترة زمنية محددة، بحيث لا تتعدى درجة الحرارة في جميع أجزاء المحرك قيمتها القصوى التي تم تصميم المحرك على أساسها خلال أي فترة من فترات التشغيل، كما أن فترة الراحة التي تفصل بين فترتي التشغيل <b>تكفي لكي يبرد المحرك</b> ويأخذ درجة حرارة الجو المحيط به، ويطلق على حمل المحرك الذي يعطيه خلال فترة التشغيل اسم <b>الحمل الأمدي</b> (الحمل ذو الفترة المحددة) وهو يقترن دائماً بفترة التشغيل، فيقال مثلاً محرك عشرون حصاناً – ثلاثون دقيقة.</p>`,ref:'ص 83'},
-    {add:String.raw`<p>أمثلة على التشغيل قصير الأمد: محرك فتح بوابة السد أو بوابة المرآب، ومحرك رفع الجسور المتحركة: يعمل دقائق ثم يبقى ساعات متوقفاً.</p>`}
+    {add:String.raw`<p>أمثلة على التشغيل قصير الأمد: محرك فتح بوابة السد أو بوابة المرآب، ومحرك رفع الجسور المتحركة: يعمل دقائق ثم يبقى ساعات متوقفاً.</p>`},
+    {title:'مختبر مصغّر: فترة تشغيل محددة ثم راحة طويلة',widget:(el,B)=>DCML.lab(el,B,{intro:'تشغيل قصير الأمد بالحمل الكامل: فترة تشغيل (رقم تختاره أنت) ثم راحة طويلة يتوقف فيها المحرك.',
+ predict:{q:'خلال فترة الراحة الطويلة في التشغيل قصير الأمد، إلى أين تنزل حرارة المحرك؟',opts:[
+  ['إلى حرارة الجو المحيط تقريباً',true,'«فترة الراحة… تكفي لكي يبرد المحرك ويأخذ درجة حرارة الجو المحيط به» (ص 83).'],
+  ['تبقى عند أعلى قيمة بلغتها',false,'المحرك متوقف، فيبرد.'],
+  ['إلى منتصف المسافة فقط',false,'هذا أقرب إلى التشغيل المتقطع، حيث لا تكفي الراحة.']]},
+ ins:[{k:'on',l:'زمن فترة التشغيل',u:'min',min:5,max:60,step:5,v:30,dp:0}],
+ tp:{id:'u7-l1',defs:[   {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},   {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},   {k:'th',label:'ثابت زمن التسخين أثناء الدوران',unit:'min',value:30,min:1,max:300,step:1},   {k:'tc',label:'ثابت زمن التبريد والمحرك متوقف',unit:'min',value:60,min:1,max:600,step:1,hint:'عادة أكبر من ثابت التسخين لأن المروحة متوقفة.'},   {k:'a',label:'المفقودات بلا حمل (نسبة من المفقودات عند الحمل الكامل)',unit:'%',value:25,min:0,max:90,step:1}]},
+ calc:(s,P,B)=>{const off=Math.max(150,5*P.tc),Tend=Math.min(1200,2*(s.on+off)),r=heatRun(P,'b',1,s.on,off,Tend),y1=Math.ceil(P.tmax*1.2/10)*10;
+  let low=Infinity;r.pts.forEach(p=>{if(p[0]>s.on+off*0.9&&p[0]<=s.on+off)low=Math.min(low,p[1])});
+  return {facts:[['أعلى حرارة',DCML.fm(B,r.max,0)+' °C',r.over?'bad':'hi'],['في آخر الراحة',DCML.fm(B,isFinite(low)?low:P.amb,0)+' °C'],['حرارة الجو',DCML.fm(B,P.amb,0)+' °C']],
+   plot:{xr:[0,Tend],yr:[0,y1],xl:'t (min)',yl:'θ (°C)',curves:[{pts:r.pts,col:r.over?'--stop':'--blue'},{pts:[[0,P.tmax],[Tend,P.tmax]],col:'--stop',dash:'6 4',w:1.6}]},
+   msg:r.max<P.tmax-1?'الحرارة لم تبلغ القصوى خلال فترة التشغيل؛ ولهذا يمكن أن يُعطى المحرك في هذا النمط حملاً أكبر لفترة محددة: «الحمل الأمدي» (مثل: عشرون حصاناً – ثلاثون دقيقة).':'فترة التشغيل طويلة حتى بلغت الحرارة القصوى؛ عندها يصبح كأنه تشغيل مستمر.'}}})}
    ]},
 
   {st:12,short:'ج- المتقطع',title:'ج- التشغيل المتقطع',ref:'ص 83',
@@ -308,7 +572,19 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>ج- التشغيل المتقطع:</b> يكون تشغيل المحرك في هذه الحالة لفترات قصيرة تتخللها فترات من الراحة يتوقف فيها المحرك تماماً، لكن فترات الراحة هذه <b>لا تكفي</b> لكي تنخفض درجة حرارة المحرك إلى الدرجة المطلوبة (وهي درجة حرارة الجو المحيط)، لكنها تنخفض بعض الشيء لكي تعاود الارتفاع في فترة التشغيل التالية إلى درجة حرارة أعلى منها في فترة التشغيل السابقة، وهكذا دون أن تتعدى درجة الحرارة في جميع أجزاء المحرك قيمتها القصوى.</p>`,ref:'ص 83'},
-    {add:String.raw`<p>أمثلة على التشغيل المتقطع: محركات الرافعات والأوناش والمصاعد، تعمل وتتوقف مرات كثيرة في الساعة.</p>`}
+    {add:String.raw`<p>أمثلة على التشغيل المتقطع: محركات الرافعات والأوناش والمصاعد، تعمل وتتوقف مرات كثيرة في الساعة.</p>`},
+    {title:'مختبر مصغّر: راحة قصيرة لا تكفي',widget:(el,B)=>DCML.lab(el,B,{intro:'تشغيل متقطع بالحمل الكامل: <span class="ltr">10 min</span> تشغيل ثم توقف تام. غيّر زمن التوقف (رقم تختاره أنت) وراقب الحرارة من دورة إلى أخرى.',
+ predict:{q:'في التشغيل المتقطع، كيف تكون حرارة المحرك في بداية كل فترة تشغيل؟',opts:[
+  ['مثل حرارة الجو كل مرة',false,'هذا إذا كانت الراحة كافية (قصير الأمد).'],
+  ['أعلى منها في بداية الفترة السابقة',true,'الراحة القصيرة تخفض الحرارة «بعض الشيء» فقط، فتبدأ كل فترة من مستوى أعلى، دون أن تتعدى القصوى (ص 83).'],
+  ['أقل منها في بداية الفترة السابقة',false,'المحرك يتراكم فيه شيء من الحرارة من دورة إلى أخرى.']]},
+ ins:[{k:'off',l:'زمن التوقف بين فترات التشغيل',u:'min',min:2,max:60,step:2,v:10,dp:0}],
+ tp:{id:'u7-l1',defs:[   {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},   {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},   {k:'th',label:'ثابت زمن التسخين أثناء الدوران',unit:'min',value:30,min:1,max:300,step:1},   {k:'tc',label:'ثابت زمن التبريد والمحرك متوقف',unit:'min',value:60,min:1,max:600,step:1,hint:'عادة أكبر من ثابت التسخين لأن المروحة متوقفة.'},   {k:'a',label:'المفقودات بلا حمل (نسبة من المفقودات عند الحمل الكامل)',unit:'%',value:25,min:0,max:90,step:1}]},
+ calc:(s,P,B)=>{const Tend=Math.max(240,Math.min(600,8*(10+s.off))),r=heatRun(P,'c',1,10,s.off,Tend),y1=Math.ceil(P.tmax*1.2/10)*10;
+  const starts=r.segs.filter(g=>g[2]==='load').map(g=>{let T=P.amb;for(const p of r.pts){if(p[0]<=g[0]+1e-9)T=p[1];else break}return T});
+  return {facts:[['بداية الفترة الثانية',DCML.fm(B,starts[1]||P.amb,0)+' °C'],['بداية الفترة الثالثة',DCML.fm(B,starts[2]||P.amb,0)+' °C'],['أعلى حرارة',DCML.fm(B,r.max,0)+' °C',r.over?'bad':'hi']],
+   plot:{xr:[0,Tend],yr:[0,y1],xl:'t (min)',yl:'θ (°C)',curves:[{pts:r.pts,col:r.over?'--stop':'--blue',w:2},{pts:[[0,P.tmax],[Tend,P.tmax]],col:'--stop',dash:'6 4',w:1.6}]},
+   msg:'منشار صاعد: كل فترة تبدأ من حرارة أعلى من سابقتها، ثم تستقر الدورات حول قيمة. كلما قصر التوقف ارتفعت الحرارة أكثر.'}}})}
    ]},
 
   {st:13,short:'د- متواصل/قصير الأمد',title:'د- التشغيل المتواصل بفترات تحميل قصيرة الأمد',ref:'ص 84',
@@ -323,7 +599,18 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>د- التشغيل المتواصل بفترات تحميل قصيرة الأمد:</b> بعد تحميل المحرك لفترة زمنية قصيرة الأمد، يترك في حالة <b>دوران بدون حمل</b> مدة كافية بحيث تهبط درجة حرارته إلى الحد الذي تكون عليه عند دورانه بصفة مستمرة بدون حمل.</p>`,ref:'ص 84'},
-    {tip:String.raw`<p>(د) تشبه (ب)، لكن المحرك في فترة الراحة <b>يدور بلا حمل</b> بدل أن يتوقف. وحتى بلا حمل تبقى في المحرك مفقودات قليلة، فلا تنزل حرارته إلى حرارة الجو.</p>`}
+    {tip:String.raw`<p>(د) تشبه (ب)، لكن المحرك في فترة الراحة <b>يدور بلا حمل</b> بدل أن يتوقف. وحتى بلا حمل تبقى في المحرك مفقودات قليلة، فلا تنزل حرارته إلى حرارة الجو.</p>`},
+    {title:'مختبر مصغّر: يتوقف أم يدور بلا حمل؟',widget:(el,B)=>DCML.lab(el,B,{intro:'فترة حمل كامل <span class="ltr">30 min</span> ثم فترة راحة طويلة. قارن: المحرك يتوقف (ب) أو يبقى دائراً بلا حمل (د).',
+ predict:{q:'في أي الحالتين تبقى حرارة المحرك أعلى في آخر فترة الراحة؟',opts:[
+  ['حين يتوقف',false,'المتوقف يبرد حتى حرارة الجو.'],
+  ['حين يدور بلا حمل',true,'حتى بلا حمل تبقى مفقودات قليلة، فتهبط الحرارة إلى مستوى الدوران بلا حمل لا إلى حرارة الجو (ص 84).'],
+  ['متساويتان',false,'الدوران بلا حمل يُبقي في المحرك شيئاً من الحرارة.']]},
+ ins:[{k:'d',l:'في فترة الراحة',seg:[['b','يتوقف (ب)'],['d','يدور بلا حمل (د)']],v:'d'}],
+ tp:{id:'u7-l1',defs:[   {k:'amb',label:'درجة حرارة الجو المحيط',unit:'°C',value:40,min:-20,max:60,step:1},   {k:'tmax',label:'أقصى درجة حرارة صُمم عليها المحرك (حسب العزل)',unit:'°C',value:120,min:61,max:250,step:1},   {k:'th',label:'ثابت زمن التسخين أثناء الدوران',unit:'min',value:30,min:1,max:300,step:1},   {k:'tc',label:'ثابت زمن التبريد والمحرك متوقف',unit:'min',value:60,min:1,max:600,step:1,hint:'عادة أكبر من ثابت التسخين لأن المروحة متوقفة.'},   {k:'a',label:'المفقودات بلا حمل (نسبة من المفقودات عند الحمل الكامل)',unit:'%',value:25,min:0,max:90,step:1}]},
+ calc:(s,P,B)=>{const off=Math.max(150,5*Math.max(P.tc,P.th)),Tend=Math.min(1200,30+off),r=heatRun(P,s.d,1,30,off,Tend),y1=Math.ceil(P.tmax*1.2/10)*10,end=r.pts[r.pts.length-1][1];
+  return {facts:[['في آخر الراحة',DCML.fm(B,end,0)+' °C','hi'],['حرارة الجو',DCML.fm(B,P.amb,0)+' °C']],
+   plot:{xr:[0,Tend],yr:[0,y1],xl:'t (min)',yl:'θ (°C)',curves:[{pts:r.pts},{pts:[[0,P.amb],[Tend,P.amb]],col:'--muted',dash:'2 4',w:1.4},{pts:[[0,P.tmax],[Tend,P.tmax]],col:'--stop',dash:'6 4',w:1.6}]},
+   msg:s.d==='d'?'يدور بلا حمل: تهبط الحرارة إلى «الحد الذي تكون عليه عند دورانه بصفة مستمرة بدون حمل»، فوق حرارة الجو (الخط الرمادي المنقط).':'يتوقف: يبرد حتى يأخذ حرارة الجو (الخط الرمادي المنقط).'}}})}
    ]},
 
   {st:14,short:'هـ- متواصل/متقطع',title:'هـ- التشغيل المتواصل بفترات تحميل متقطعة',ref:'ص 84',
@@ -400,7 +687,12 @@ B.lesson(FIXL({
      <p><b>7-4</b> ما المقصود بالحمل الأمدي؟</p>
      <p><b>7-5</b> وضح مدى مقدرة المحرك على التعامل مع أحمال زائدة عن قدرته المقننة، وما هو الفيصل في وضع حدود التشغيل للمحرك؟</p>
      <p><b>7-6</b> ما المقصود بعزم التعثر؟</p>`,ref:'ص 86'},
-    {tip:String.raw`<p>إجابات مقترحة لكل الأسئلة في الأسلوب الرسمي لهذا الدرس (اضغط «رسمي» في أعلى الصفحة) تحت «أسئلة متنوعة». الكتاب لا يطبع إجابات.</p>`}
+    {tip:String.raw`<p>إجابات مقترحة لكل الأسئلة في الأسلوب الرسمي لهذا الدرس (اضغط «رسمي» في أعلى الصفحة) تحت «أسئلة متنوعة». الكتاب لا يطبع إجابات.</p>`},
+    {title:'تحقق سريع: قبل أن تجيب عن أسئلة الوحدة',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['الحمل الأمدي يقترن دائماً بفترة التشغيل.',true,'مثل «محرك عشرون حصاناً – ثلاثون دقيقة» (ص 83) — السؤال 7-4.'],
+ ['عزم التعثر أقل من عزم الحمل الكامل.',false,'أكبر منه بحوالي مرة ونصف إلى مرتين — السؤال 7-6.'],
+ ['في التشغيل المستمر الفيصل في حدود التشغيل هو عزم التعثر.',false,'في التشغيل المستمر الفيصل درجة الحرارة القصوى — السؤال 7-5.'],
+ ['في التشغيل قصير الأمد والمتقطع يمكن التحميل فوق الحمل الكامل ما دام العزم لا يتعدى عزم التعثر.',true,'لأن الحرارة لا تبلغ القصوى بسبب فترات التوقف (ص 85).']]})}
    ]},
 
   {st:17,short:'المراجع',title:'المراجع',ref:'ص 87',

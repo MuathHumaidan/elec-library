@@ -110,7 +110,183 @@ B.lesson({
  title:'عناصر أجهزة التزامن الذاتية: CX و CT و CD و CR',
  summary:'الأنواع الأربعة لأجهزة التزامن الذاتية: تركيب كل منها، وموضع الصفر للمرسل والمحول، والفرق بين الدوار البارز والأسطواني والشمسية.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 69',
    q:'أربعة أجهزة صغيرة بأسماء مختصرة، وتطبيقان كبيران… ما الذي ينقله جهاز «ذاتي التزامن» من مكان إلى آخر؟',
@@ -125,7 +301,13 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>الهدف العام:</b> معرفة عناصر واستخدامات الآلات ذاتية التزامن.</p>
      <p><b>الأهداف التفصيلية:</b></p><ol><li>أن يحدد المتدرب عناصر الآلات ذاتية التزامن: مرسل التحكم ومحول التحكم ومستقبل التحكم والمتحكم الفرقي.</li><li>أن يتمكن المتدرب من عمل بعض التطبيقات على استخدام عناصر الآلات ذاتية التزامن في أجهزة نقل البيانات وأجهزة نقل العزم.</li></ol>`,ref:'ص 69'},
-    {tip:String.raw`<p>هذا الدرس عن <b>العناصر الأربعة</b> وتركيبها، والدرس الثاني عن <b>نقل البيانات</b> (كاشف الخطأ والتحكم في الموضع)، والثالث عن <b>نقل العزم</b> ومثاله، والرابع لأسئلة الوحدة.</p>`,title:'خريطة الوحدة'}
+    {tip:String.raw`<p>هذا الدرس عن <b>العناصر الأربعة</b> وتركيبها، والدرس الثاني عن <b>نقل البيانات</b> (كاشف الخطأ والتحكم في الموضع)، والثالث عن <b>نقل العزم</b> ومثاله، والرابع لأسئلة الوحدة.</p>`,title:'خريطة الوحدة'},
+    {title:'مختبر مصغّر: عنصر أم تطبيق؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الهدفان التفصيليان للوحدة: عناصر الآلات ذاتية التزامن، وتطبيقاتها. صنّف كل كلمة.',cats:['عنصر من عناصرها','نوع من تطبيقاتها'],items:[
+ ['مرسل التحكم',0,'من عناصرها الأربعة (الهدف الأول، ص 69).'],
+ ['أجهزة نقل البيانات',1,'من تطبيقاتها (الهدف الثاني، ص 69).'],
+ ['المتحكم الفرقي',0,'من عناصرها الأربعة (ص 69).'],
+ ['أجهزة نقل العزم',1,'من تطبيقاتها (ص 69).'],
+ ['محول التحكم',0,'من عناصرها الأربعة (ص 69).']]})}
    ]},
 
   {st:2,short:'الآلات ذاتية التزامن',title:'ما الآلات ذاتية التزامن؟',ref:'ص 70',
@@ -143,7 +325,11 @@ B.lesson({
      <p>الآلات ذاتية التزامن عبارة عن أجهزة تيار متردد كهرومغناطيسية لها تطبيقات واسعة في نظم التحكم الآلي ذات التغذية العكسية، فيمكن استخدامها <b>كجهاز لنقل بيانات موضع محور ميكانيكي</b> أو <b>كجهاز لنقل العزم</b>.</p>
      <p>سوف نستعرض في هذه الوحدة عناصر الآلات ذاتية التزامن وتركيبها أولا ثم بعض التطبيقات لاستخداماتها.</p>`,ref:'ص 70'},
     {tip:String.raw`<p><b>نظام تحكم ذو تغذية عكسية</b>: نظام يقيس ما حدث فعلاً (موضع المحور مثلاً) ويقارنه بما نريد، ثم يصحح الفرق تلقائياً. أجهزة التزامن الذاتية تقوم في هذه النظم بدور «العين» التي تقيس الزاوية وترسلها بالأسلاك.</p>`,title:'ما التغذية العكسية؟'},
-    {add:String.raw`<p>من الاستخدامات المعروفة لهذه الأجهزة: مؤشر زاوية الدفة في غرفة قيادة السفينة، ومؤشرات اتجاه الهوائيات والرادارات، حيث يتحرك المؤشر البعيد مع المحور الحقيقي وبينهما أسلاك فقط.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>من الاستخدامات المعروفة لهذه الأجهزة: مؤشر زاوية الدفة في غرفة قيادة السفينة، ومؤشرات اتجاه الهوائيات والرادارات، حيث يتحرك المؤشر البعيد مع المحور الحقيقي وبينهما أسلاك فقط.</p>`,title:'من الواقع'},
+    {title:'تحقق سريع: ما الآلات ذاتية التزامن؟',widget:(el,B)=>DCML.tf(el,B,{intro:'اضغط «صح» أو «خطأ» لكل عبارة.',items:[
+ ['كل الآلات ذاتية التزامن أجهزة صغيرة جداً.',false,'قدراتها تتراوح «من قدرات صغيرة جدا ... وقدرات كبيرة قد تصل إلى عشرات من حصان القدرة» (ص 70).'],
+ ['الآلات ذاتية التزامن أجهزة تيار متردد كهرومغناطيسية.',true,'(ص 70).'],
+ ['تستخدم كجهاز لنقل بيانات موضع محور ميكانيكي أو كجهاز لنقل العزم.',true,'(ص 70)، وهما موضوعا الدرسين الثاني والثالث.']]})}
    ]},
 
   {st:3,short:'الأنواع الأربعة',title:'تركيب الآلات ذاتية التزامن: أربعة أنواع أساسية',ref:'ص 70',
@@ -159,7 +345,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>هناك أربعة أنواع أساسية لأجهزة التزامن الذاتية:</p>
      <ol><li>مرسل التحكم — <span class="ltr">The control transmitter (CX)</span></li><li>محول التحكم — <span class="ltr">The control transformer (CT)</span></li><li>المتحكم الفرقي — <span class="ltr">The control differential (CD)</span></li><li>مستقبل التحكم — <span class="ltr">The control receiver (CR)</span></li></ol>`,ref:'ص 70'},
-    {tip:String.raw`<p>الحرف الثاني يدل على وظيفة الجهاز: <span class="ltr">X</span> من <span class="ltr">transmitter</span> (مرسل)، و<span class="ltr">T</span> من <span class="ltr">transformer</span> (محول)، و<span class="ltr">D</span> من <span class="ltr">differential</span> (فرقي)، و<span class="ltr">R</span> من <span class="ltr">receiver</span> (مستقبل). المحطات التالية: محطة لكل نوع.</p>`,title:'كيف تحفظ الرموز؟'}
+    {tip:String.raw`<p>الحرف الثاني يدل على وظيفة الجهاز: <span class="ltr">X</span> من <span class="ltr">transmitter</span> (مرسل)، و<span class="ltr">T</span> من <span class="ltr">transformer</span> (محول)، و<span class="ltr">D</span> من <span class="ltr">differential</span> (فرقي)، و<span class="ltr">R</span> من <span class="ltr">receiver</span> (مستقبل). المحطات التالية: محطة لكل نوع.</p>`,title:'كيف تحفظ الرموز؟'},
+    {title:'مختبر مصغّر: الحرف الثاني يكشف الجهاز',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل رمز اضغط اسم الجهاز.',cats:['مرسل التحكم','محول التحكم','المتحكم الفرقي','مستقبل التحكم'],items:[
+ ['<span class="ltr">CT</span>',1,'<span class="ltr">T</span> من <span class="ltr">transformer</span>: The control transformer (ص 70).'],
+ ['<span class="ltr">CR</span>',3,'<span class="ltr">R</span> من <span class="ltr">receiver</span>: The control receiver (ص 70).'],
+ ['<span class="ltr">CX</span>',0,'<span class="ltr">X</span> من <span class="ltr">transmitter</span>: The control transmitter (ص 70).'],
+ ['<span class="ltr">CD</span>',2,'<span class="ltr">D</span> من <span class="ltr">differential</span>: The control differential (ص 70).']]})}
    ]},
 
   {st:4,short:'مرسل التحكم CX',title:'مرسل التحكم <span class="ltr">(CX)</span>',ref:'ص 70–71',
@@ -180,7 +371,17 @@ B.lesson({
      <p>الشكل (٥-١) يوضح تركيب وكيفية تمثيل مرسل التحكم في الدائرة الكهربائية.</p>`,ref:'ص 70–71'},
     {tip:String.raw`<p>المرسل يعمل مثل <b>محول</b>: ملف الدوار هو الابتدائي، وملفات الثابت الثلاثة هي الثانوي. كل ملف ثابت «يرى» ملف الدوار بزاوية مختلفة، فيأخذ جهداً مختلفاً. هذه الجهود الثلاثة معاً تحمل معلومة الزاوية. والدوار يأخذ تياره عبر حلقتي انزلاق لأنه يدور.</p>`,title:'الفكرة'},
     {add:String.raw`<p>الكتاب لا يعطي معادلة لجهد كل ملف. المعروف أن جهد الملف يكون أكبر ما يمكن عندما ينطبق محوره على محور الدوار، ويقل كلما زادت الزاوية بينهما. وفي تبويب «المختبر» تدير الدوار وترى الجهود الثلاثة.</p>`,title:'جهود الملفات الثلاثة'},
-    {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> النص يقول إن ملفات ثابت المرسل «مركزة»، بينما الشكل (٥-١) مكتوب عليه <span class="ltr">Balanced three-phase distributed winding</span> أي «موزعة».</p>`,fix:true}
+    {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> النص يقول إن ملفات ثابت المرسل «مركزة»، بينما الشكل (٥-١) مكتوب عليه <span class="ltr">Balanced three-phase distributed winding</span> أي «موزعة».</p>`,fix:true},
+    {title:'مختبر مصغّر: أدر دوار المرسل',widget:(el,B)=>DCML.lab(el,B,{intro:'أدر دوار المرسل وراقب الجهد المتولد في كل ملف من ملفات الثابت. الكتاب يقول إن قيمة الجهد «تعتمد على مقدار الزاوية بين محور الملف المعني ومحور ملف الدوار» ولا يعطي معادلة؛ القيم هنا نسبية من النموذج المعروف (جيب تمام الزاوية).',
+ predict:{q:'الدوار في موضع الصفر (محوره منطبق على محور الملف رقم واحد). أي ملفات الثابت يأخذ أكبر جهد؟',opts:[
+  ['الملف <span class="ltr">S2</span>',false,'محور <span class="ltr">S2</span> بعيد عن محور الدوار بزاوية <span class="ltr">120°</span>.'],
+  ['الملف <span class="ltr">S1</span>',true,'محوره منطبق على محور الدوار فيأخذ أكبر جهد. وعند أي زاوية أخرى تتوزع الجهود توزيعاً مختلفاً، وهذا التوزيع هو «معلومة» الموضع.'],
+  ['الملفات الثلاثة بالتساوي',false,'الجهود تختلف لأن كل ملف يصنع زاوية مختلفة مع محور الدوار.']]},
+ ins:[{k:'th',l:'زاوية الدوار من موضع الصفر θ',min:-180,max:180,step:5,v:0,fmt:v=>(v<0?'−':'')+Math.abs(v)+'°'}],ill:true,
+ calc:(s)=>{const V=coilV(s.th);const sg=v=>v<-0.005?' (عكس الطور)':'';
+  return {pic:'<div style="max-width:210px;margin:auto">'+sectionSVG('salient',s.th)+'</div>',
+   bars:['S1','S2','S3'].map((k,i)=>({l:'جهد الملف '+k,v:Math.abs(V[i]),max:1,txt:DCML.fm(B,Math.abs(V[i]),2)+sg(V[i]),col:V[i]<-0.005?'--live':'--blue'})),
+   msg:s.th===0?'موضع الصفر: محور ملف الدوار منطبق على محور الملف رقم واحد (ص 71)، فيأخذ <span class="ltr">S1</span> أكبر جهد.':Math.abs(s.th)===90?'الدوار متعامد على <span class="ltr">S1</span>: جهد <span class="ltr">S1</span> صفر.':''}}})}
    ]},
 
   {st:5,short:'محول التحكم CT',title:'محول التحكم <span class="ltr">(CT)</span>',ref:'ص 71–72',
@@ -203,7 +404,13 @@ B.lesson({
      <tr><td>ملفات الثابت</td><td>ثلاثة ملفات نجمة بزاوية <span class="ltr">120°</span></td><td>ثلاثة ملفات لها معاوقة كبيرة</td></tr>
      <tr><td>موضع الصفر</td><td>الدوار <b>منطبق</b> على الملف رقم واحد</td><td>الدوار <b>متعامد</b> على الملف رقم واحد</td></tr></table>`,title:'المرسل والمحول جنباً إلى جنب'},
     {tip:String.raw`<p>المعاوقة الكبيرة لملفات ثابت المحول تجعله يسحب تياراً صغيراً من المرسل، لذلك يستطيع مرسل واحد أن يغذي عدة محولات تحكم دون أن يُثقل.</p>`,title:'لماذا المعاوقة الكبيرة؟'},
-    {watch:String.raw`<p>لا تخلط بين موضعَي الصفر: في المرسل الدوار <b>منطبق</b> على الملف رقم واحد، وفي المحول <b>متعامد</b> عليه. لذلك إذا كان الجهازان كلاهما في موضع الصفر يكون الدواران متعامدين.</p>`}
+    {watch:String.raw`<p>لا تخلط بين موضعَي الصفر: في المرسل الدوار <b>منطبق</b> على الملف رقم واحد، وفي المحول <b>متعامد</b> عليه. لذلك إذا كان الجهازان كلاهما في موضع الصفر يكون الدواران متعامدين.</p>`},
+    {title:'مختبر مصغّر: مرسل أم محول؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط الجهاز الذي يصفه.',cats:['مرسل التحكم <span class="ltr">CX</span>','محول التحكم <span class="ltr">CT</span>'],items:[
+ ['دوار له قطبان بارزان وعليه ملف أحادي الوجه ذو عدد كبير من اللفات',0,'هذا دوار المرسل (ص 70–71)؛ أما دوار المحول فأسطواني أو على شكل الشمسية.'],
+ ['دوار أسطواني أو على شكل الشمسية، والثغرة منتظمة وصغيرة',1,'«للتقليل من تيار المغنطة» (ص 71–72).'],
+ ['ملفات ثابت لها معاوقة كبيرة',1,'وهذا يتيح «توصيل مرسل واحد لعدة محولات تحكم» (ص 72).'],
+ ['موضع الصفر: ينطبق محور ملف الدوار على محور الملف رقم واحد',0,'هذا تعريف موضع الصفر للمرسل (ص 71)؛ في المحول يكون التعامد بدل الانطباق.'],
+ ['موضع الصفر: يتعامد محور ملف الدوار مع محور الملف رقم واحد',1,'«كما أن موضع الصفر مختلف، بحيث يعرف بأنه عند تعامد محور ملف الدوار مع محور الملف رقم واحد للثابت» (ص 72).']]})}
    ]},
 
   {st:6,short:'المتحكم الفرقي CD',title:'المتحكم الفرقي <span class="ltr">(CD)</span>',ref:'ص 72',
@@ -220,7 +427,11 @@ B.lesson({
     {book:String.raw`<p>كل من عضوه الثابت والدوار على شكل أسطواني، وكل منهما يحمل ملفات ثلاثية، موزعة داخل مجاري وموصلة على شكل نجمة. فهو يشبه محول ثلاثي الأوجه ملفاته الثانوية قابلة للدوران.</p>
      <p>الشكل (٥-٣) يوضح تركيب وكيفية تمثيل المتحكم الفرقي.</p>`,ref:'ص 72'},
     {tip:String.raw`<p>تخيّل محولاً ثلاثي الأوجه: الابتدائي على الثابت والثانوي على الدوار. إذا أدرت الدوار تغيّرت الزاوية بين ملفاته وملفات الثابت، فتتغير الجهود الخارجة من أطرافه <span class="ltr">R1 R2 R3</span>.</p>`,title:'الفكرة'},
-    {add:String.raw`<p>الكتاب لا يشرح كيف يُستخدم المتحكم الفرقي. يوضع عادة بين مرسل ومستقبل، فيخرج منه موضع يساوي <b>مجموع أو فرق</b> زاويتين: زاوية المرسل وزاوية دوار المتحكم الفرقي، ومن هنا اسمه «الفرقي». جرّبه في تبويب «المختبر».</p>`,title:'فيم يُستخدم؟'}
+    {add:String.raw`<p>الكتاب لا يشرح كيف يُستخدم المتحكم الفرقي. يوضع عادة بين مرسل ومستقبل، فيخرج منه موضع يساوي <b>مجموع أو فرق</b> زاويتين: زاوية المرسل وزاوية دوار المتحكم الفرقي، ومن هنا اسمه «الفرقي». جرّبه في تبويب «المختبر».</p>`,title:'فيم يُستخدم؟'},
+    {title:'تحقق سريع: المتحكم الفرقي',widget:(el,B)=>DCML.tf(el,B,{intro:'اضغط «صح» أو «خطأ» لكل عبارة.',items:[
+ ['ثابت المتحكم الفرقي ودواره كلاهما على شكل أسطواني.',true,'(ص 72).'],
+ ['دوار المتحكم الفرقي يحمل ملفاً أحادي الوجه مثل دوار المرسل.',false,'«كل منهما يحمل ملفات ثلاثية، موزعة داخل مجاري وموصلة على شكل نجمة» (ص 72).'],
+ ['المتحكم الفرقي يشبه محولاً ثلاثي الأوجه ملفاته الثانوية قابلة للدوران.',true,'(ص 72).']]})}
    ]},
 
   {st:7,short:'مستقبل التحكم CR',title:'مستقبل التحكم <span class="ltr">(CR)</span>',ref:'ص 73',
@@ -236,7 +447,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>يشبه تماما مرسل التحكم فيتكون من عضو ثابت عليه ملفات ثلاثية، وعضو دوار ذو أقطاب بارزة ويحمل ملفاً أحادي الوجه. إلا أن المستقبل مزود <b>بعنصر كبح</b> على محوره.</p>`,ref:'ص 73'},
     {add:String.raw`<p>المستقبل يوصل بالمرسل فيدور دواره بنفسه ليأخذ زاوية دوار المرسل. عنصر الكبح يمنع دوار المستقبل من التأرجح حول موضعه الجديد أو الدوران المستمر عند التغيّر السريع، فيستقر بسرعة. جرّب «المرسل يدير المستقبل» في تبويب «المختبر».</p>`,title:'لماذا عنصر الكبح؟'},
-    {watch:String.raw`<p>الكتاب لا يعطي شكلاً للمستقبل ولا يعرّف له موضع صفر. ولا تخلط بين المستقبل <span class="ltr">CR</span> (يحرّك محوره بنفسه) والمحول <span class="ltr">CT</span> (يعطي جهداً على دواره).</p>`}
+    {watch:String.raw`<p>الكتاب لا يعطي شكلاً للمستقبل ولا يعرّف له موضع صفر. ولا تخلط بين المستقبل <span class="ltr">CR</span> (يحرّك محوره بنفسه) والمحول <span class="ltr">CT</span> (يعطي جهداً على دواره).</p>`},
+    {title:'مختبر مصغّر: أي الأجهزة الأربعة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط رمز الجهاز.',cats:['<span class="ltr">CX</span>','<span class="ltr">CT</span>','<span class="ltr">CD</span>','<span class="ltr">CR</span>'],items:[
+ ['يشبه مرسل التحكم تماماً، لكن على محوره عنصر كبح',3,'مستقبل التحكم (ص 73).'],
+ ['ثابته ودواره أسطوانيان، وكلاهما يحمل ملفات ثلاثية',2,'المتحكم الفرقي (ص 72).'],
+ ['دواره أسطواني أو شمسية، وملفات ثابته لها معاوقة كبيرة',1,'محول التحكم (ص 71–72).'],
+ ['دواره بقطبين بارزين وملف أحادي الوجه، ولا عنصر كبح على محوره',0,'مرسل التحكم (ص 70–71). المستقبل يشبهه ويزيد عليه عنصر الكبح (ص 73).']]})}
    ]},
 
   {recap:[
@@ -382,7 +598,12 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>الآلات ذاتية التزامن عبارة عن أجهزة تيار متردد كهرومغناطيسية لها تطبيقات واسعة في نظم التحكم الآلي ذات التغذية العكسية، فيمكن استخدامها <b>كجهاز لنقل بيانات موضع محور ميكانيكي</b> أو <b>كجهاز لنقل العزم</b>.</p>`,ref:'ص 70'},
-    {tip:String.raw`<p>الكتاب يضع تحت العنوان (٥-٣) فرعين: (٥-٣-١) أجهزة نقل المعلومات أو البيانات، وهي موضوع هذا الدرس، و(٥-٣-٢) أجهزة نقل العزم في الدرس التالي. الأول ينقل <b>معلومة</b> (زاوية) والثاني ينقل <b>قدرة</b> (عزماً).</p>`,title:'فرعان'}
+    {tip:String.raw`<p>الكتاب يضع تحت العنوان (٥-٣) فرعين: (٥-٣-١) أجهزة نقل المعلومات أو البيانات، وهي موضوع هذا الدرس، و(٥-٣-٢) أجهزة نقل العزم في الدرس التالي. الأول ينقل <b>معلومة</b> (زاوية) والثاني ينقل <b>قدرة</b> (عزماً).</p>`,title:'فرعان'},
+    {title:'مختبر مصغّر: نقل بيانات أم نقل عزم؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل تركيبة اضغط نوع التطبيق الذي تنتمي إليه.',cats:['نقل البيانات (المعلومات)','نقل العزم'],items:[
+ ['كاشف الخطأ: مرسل ومحول تحكم يحوّلان زاوية محور إلى جهد',0,'(ص 73)، وهو موضوع هذا الدرس.'],
+ ['عمود الإدارة الكهربي: محركان تأثيريان بحلقات انزلاق متصلان معاً',1,'(ص 76)، موضوع الدرس التالي.'],
+ ['التحكم في موضع محور خرج طبقاً لمحور دخل',0,'تطبيق لتركيبة كاشف الخطأ، والقدرة فيه يوفرها محرك التحكم (ص 74–75).'],
+ ['إدارة آلة بعيدة بعزم معين وسرعة معينة دون عمود ميكانيكي عادي',1,'هذا غرض عمود الإدارة الكهربي (ص 76).']]})}
    ]},
 
   {st:2,short:'كاشف الخطأ',title:'أجهزة نقل المعلومات: كاشف الخطأ',ref:'ص 73',
@@ -398,7 +619,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>استخدام أجهزة التزامن الذاتية في نظم التحكم الآلي العكسية يعتبر من أهم تطبيقات هذه الأجهزة، الشكل (٥-٤) يبين جزءاً من أحد هذه المنظومات، هذا الجزء من المنظومة يسمى <b>بكاشف الخطأ (error detector)</b>، مهمته الرئيسة هي تحويل توجيه ميكانيكي في شكل زاوية انحراف ميكانيكية لمحور المرسل، إلى إشارة كهربائية تظهر بشكل جهد على أطراف ملف الدوار لمحول التحكم (CT)، فيوفر فائدة عظيمة، ألا وهي الإدلاء بمعلومات عن إزاحة محور بواسطة أسلاك مما يسمح بوضع محول التحكم (CT) بعيدا عن مرسل التحكم (CX).</p>`,ref:'ص 73'},
     {tip:String.raw`<p>لماذا «كاشف <b>الخطأ</b>»؟ لأن الجهد على دوار المحول يظهر فقط عندما يختلف موضع الدوارين عن وضع الاتزان. هذا الاختلاف هو «الخطأ» الذي يريد نظام التحكم إزالته، كما سترى في المحطة الرابعة.</p>`,title:'سر الاسم'},
-    {watch:String.raw`<p>التوصيل بين الجهازين على الترتيب: <span class="ltr">S1–S1</span> و<span class="ltr">S2–S2</span> و<span class="ltr">S3–S3</span>. الدواران لا يتصلان ببعضهما كهربائياً: دوار المرسل يتصل بالمصدر، ودوار المحول يعطي الجهد الخارج.</p>`}
+    {watch:String.raw`<p>التوصيل بين الجهازين على الترتيب: <span class="ltr">S1–S1</span> و<span class="ltr">S2–S2</span> و<span class="ltr">S3–S3</span>. الدواران لا يتصلان ببعضهما كهربائياً: دوار المرسل يتصل بالمصدر، ودوار المحول يعطي الجهد الخارج.</p>`},
+    {title:'مختبر مصغّر: بماذا يتصل كل جزء؟',widget:(el,B)=>DCML.sort(el,B,{intro:'في كاشف الخطأ، الشكل (٥-٤): لكل جزء اضغط ما يتصل به أو ما يظهر عليه.',cats:['مصدر التيار المتردد','ملفات ثابت الجهاز الآخر','جهد الخطأ','التوجيه الميكانيكي (الزاوية)'],items:[
+ ['ملف دوار المرسل <span class="ltr">CX</span>',0,'«تتم تغذية ملف دوار المرسل بتيار متردد» (ص 74).'],
+ ['ملفات ثابت المرسل <span class="ltr">S1</span> و <span class="ltr">S2</span> و <span class="ltr">S3</span>',1,'توصل بملفات ثابت المحول على الترتيب: <span class="ltr">S1–S1</span> و <span class="ltr">S2–S2</span> و <span class="ltr">S3–S3</span>.'],
+ ['ملف دوار المحول <span class="ltr">CT</span>',2,'«إشارة كهربائية تظهر بشكل جهد على أطراف ملف الدوار لمحول التحكم» (ص 73).'],
+ ['محور المرسل',3,'«توجيه ميكانيكي في شكل زاوية انحراف ميكانيكية لمحور المرسل» (ص 73).']]})}
    ]},
 
   {st:3,short:'كيف تعمل؟',title:'كيف تعمل التركيبة؟ وضع الاتزان',ref:'ص 74',
@@ -418,7 +644,17 @@ B.lesson({
      <div class="eq">$$e = E_r \sin\alpha$$</div>`,ref:'ص 74'},
     {tip:String.raw`<p>\(e\) الجهد المتولد على ملف دوار المحول؛ \(E_r\) أقصى قيمة له؛ \(\alpha\) فرق الزاوية عن وضع الاتزان. عند \(\alpha = 0\) (اتزان) يكون \(e = 0\)، وكلما أدرنا المرسل بعيداً عن الاتزان زاد الجهد.</p>`,title:'معاني الرموز'},
     {tip:String.raw`<p>«محاثة متبادلة قابلة للضبط»: كأن ملف دوار المرسل وملف دوار المحول ملفا محول واحد، لكن نستطيع أن نغيّر الزاوية بينهما كما نشاء، وأن نضع كلاً منهما في مكان بعيد عن الآخر. الأسلاك الثلاثة هي التي «تنقل» المجال.</p>`,title:'ما معنى المحاثة المتبادلة هنا؟'},
-    {watch:String.raw`<p>وضع الاتزان لا يشترط أن يكون الجهازان في موضع الصفر: يكفي أن تكون الزاوية بين محوري الملفين <b>تسعين أو مئتين وسبعين درجة</b>. جرّب ذلك بإدارة الدوارين في تبويب «المختبر».</p>`}
+    {watch:String.raw`<p>وضع الاتزان لا يشترط أن يكون الجهازان في موضع الصفر: يكفي أن تكون الزاوية بين محوري الملفين <b>تسعين أو مئتين وسبعين درجة</b>. جرّب ذلك بإدارة الدوارين في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: الجهد على دوار المحول',widget:(el,B)=>DCML.lab(el,B,{intro:'أقصى جهد <span class="ltr">E<sub>r</sub> = 100 V</span> كما في س٥-١١ (ص 81). حرّك فرق الزاوية عن وضع الاتزان α وراقب الجهد على دوار المحول من العلاقة \\(e = E_r\\sin\\alpha\\).',
+ predict:{q:'عند أي فرق زاوية عن وضع الاتزان يظهر أكبر جهد على دوار المحول؟',opts:[
+  ['عند <span class="ltr">α = 0°</span>',false,'<span class="ltr">α = 0</span> هو وضع الاتزان نفسه: <span class="ltr">e = 0</span>.'],
+  ['عند <span class="ltr">α = 180°</span>',false,'<span class="ltr">sin 180° = 0</span>: هذا وضع اتزان آخر، فالزاوية بين الملفين صارت <span class="ltr">270°</span> (ص 74).'],
+  ['عند <span class="ltr">α = 90°</span>',true,'<span class="ltr">sin 90° = 1</span> فيكون <span class="ltr">e = E<sub>r</sub></span>؛ عندها يكون محورا الملفين على خط واحد.']]},
+ ins:[{k:'a',l:'فرق الزاوية عن وضع الاتزان α',min:-180,max:180,step:5,v:0,fmt:v=>(v<0?'−':'')+Math.abs(v)+'°'}],
+ calc:(s)=>{const e=100*Math.sin(s.a*Math.PI/180),z=Math.abs(e)<0.05;
+  return {plot:{xr:[-180,180],yr:[-110,110],xt:[-180,-90,0,90,180],yt:[-100,0,100],fx:v=>(v<0?'−':'')+Math.abs(v)+'°',xl:'α',yl:'e (V)',curves:[{f:x=>100*Math.sin(x*Math.PI/180),col:'--blue',w:3,n:120}],cur:[s.a,e]},
+   facts:[['e = E<sub>r</sub> sin α',(e<-0.05?'−':'')+DCML.fm(B,Math.abs(e),1)+' V','hi'],['الطور',z?'—':e>0?'في طور المصدر':'عكس الطور']],
+   msg:z?'وضع اتزان: لا يتولد أي جهد على ملف دوار المحول (ص 74).':Math.abs(s.a)===60?'هذا وضع س٥-١١: أدير المرسل <span class="ltr">60°</span> عن وضع الاتزان.':''}}})}
    ]},
 
   {st:4,short:'التحكم في الموضع',title:'تطبيق: التحكم في موضع محور الخرج',ref:'ص 74–75',
@@ -445,7 +681,20 @@ B.lesson({
     }},
     {tip:String.raw`<p>محرك التحكم ثنائي الوجه درسته في الوحدة الثالثة: ملف مرجعي جهده ثابت، وملف تحكم يتغير جهده. هنا جهد ملف التحكم هو \(e\) بعد التكبير: إذا كان صفراً وقف المحرك، وإذا ظهر دار، وإذا انعكس طوره (انحراف في الاتجاه الآخر) انعكس الدوران.</p>`,title:'ربط بالوحدة الثالثة'},
     {add:String.raw`<p>بهذه الفكرة يدار هوائي رادار كبير أو مدفع على سفينة ليتبع عجلة صغيرة يديرها المشغّل بيده: المشغّل يحرك «معلومة»، والمحرك القوي يوفر القدرة.</p>`,title:'من الواقع'},
-    {watch:String.raw`<p>القدرة التي تدير الحمل لا تأتي من المرسل ولا من المحول؛ يوفرها <b>محرك التحكم الثنائي الوجه</b>. المرسل والمحول يوفران المعلومة فقط. جرّب الحلقة المغلقة في تبويب «المختبر».</p>`}
+    {watch:String.raw`<p>القدرة التي تدير الحمل لا تأتي من المرسل ولا من المحول؛ يوفرها <b>محرك التحكم الثنائي الوجه</b>. المرسل والمحول يوفران المعلومة فقط. جرّب الحلقة المغلقة في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: ماذا يحدث في الحلقة؟',widget:(el,B)=>DCML.cases(el,B,{intro:'ثلاثة مواقف في تركيبة الشكل (٥-٥). اختر ما يحدث، ثم اقرأ السبب.',cases:[
+ {q:'الدواران متعامدان (وضع الاتزان) ومحور الدخل ساكن. ماذا يفعل محرك التحكم؟',opts:[
+  ['يدور ببطء',false,'لا جهد على دخل المكبر، فلا جهد على ملف التحكم.'],
+  ['يبقى ساكناً',true,'«فإن الجهد الداخل لمكبر القدرة يكون صفرا، فيظل محرك التحكم ساكنا» (ص 74–75).'],
+  ['يدور بأقصى سرعة',false,'لا يوجد خطأ يصححه.']]},
+ {q:'أدرنا محور الدخل بزاوية α ثم تركناه. متى يتوقف المحرك؟',opts:[
+  ['فور ترك محور الدخل',false,'الجهد <span class="ltr">E sin α</span> يبقى موجوداً حتى يلحق دوار المحول بدوار المرسل.'],
+  ['لا يتوقف أبداً',false,'المحرك يدير دوار المحول أيضاً، فيقل الخطأ حتى يصير صفراً.'],
+  ['بعد أن يدير محور الخرج ودوار المحول حتى يعود الاتزان مع دوار المرسل',true,'«يعيد دوار المحول لوضع الاتزان من جديد مع دوار المرسل فيتوقف المحرك عن الدوران» (ص 74–75).']]},
+ {q:'لو فككنا الوصلة الميكانيكية بين محرك التحكم ودوار المحول (وبقي متصلاً بمحور الخرج)، ماذا تتوقع بعد إدارة محور الدخل؟',opts:[
+  ['يستمر المحرك في الدوران، لأن الجهد على دوار المحول لا يعود إلى الصفر',true,'لهذا يربط الكتاب محور محرك التحكم بدوار المحول «وفي نفس الوقت» بمحور الخرج (ص 74–75): دوران دوار المحول هو الذي يلغي الخطأ.'],
+  ['يتوقف المحرك عند الزاوية المطلوبة كالمعتاد',false,'دوار المحول لم يعد يتحرك، فلا شيء يعيد الجهد إلى الصفر.'],
+  ['ينعكس اتجاه الدوران',false,'لا شيء يعكس طور الجهد هنا؛ الخطأ يبقى بالإشارة نفسها.']]}]})}
    ]},
 
   {recap:[
@@ -592,7 +841,12 @@ B.lesson({
     }},
     {tip:String.raw`<p>«عمود الإدارة الكهربي» اسم على مسمى: الأسلاك بين الدوارين تقوم مقام عمود حديدي طويل يربط المحورين، فيدوران معاً بالسرعة نفسها مهما بعدت المسافة. والقدرة التي تسري بين الدوارين تسمى <b>قدرة التزامن</b>.</p>`,title:'الفكرة'},
     {add:String.raw`<p>من استخدامات هذه الفكرة: تحريك طرفي جسر متحرك أو بوابة كبيرة معاً، أو آلتين بعيدتين في خط إنتاج (مثل المطابع) يجب أن تبقيا متزامنتين، دون عمود ميكانيكي طويل بينهما.</p>`,title:'من الواقع'},
-    {watch:String.raw`<p>الجهازان <b>متماثلان</b> في التركيب، والاختلاف في الدور فقط: الجهاز الذي يدخل عليه العزم يعمل <b>مولداً</b>، والجهاز الذي يخرج منه العزم يعمل <b>محركاً</b>. وهما محركان حثيان بحلقات انزلاق، لا بقفص سنجابي، لأننا نحتاج أطراف الدوار.</p>`}
+    {watch:String.raw`<p>الجهازان <b>متماثلان</b> في التركيب، والاختلاف في الدور فقط: الجهاز الذي يدخل عليه العزم يعمل <b>مولداً</b>، والجهاز الذي يخرج منه العزم يعمل <b>محركاً</b>. وهما محركان حثيان بحلقات انزلاق، لا بقفص سنجابي، لأننا نحتاج أطراف الدوار.</p>`},
+    {title:'تحقق سريع: عمود الإدارة الكهربي',widget:(el,B)=>DCML.tf(el,B,{intro:'اضغط «صح» أو «خطأ» لكل عبارة.',items:[
+ [String.raw`بإهمال مفقودات القدرة في النقل يكون العزم المنقول \(T_b\) مساوياً للعزم الأصلي \(T_d\).`,true,'(ص 76).'],
+ ['الجهازان في عمود الإدارة الكهربي محركان حثيان بقفص سنجابي.',false,'«محركين تأثيريين من ذوات الحلقات الانزلاقية» (ص 76)، لأن القوة الدافعة تنتقل بين الدوارين عبر حلقات الانزلاق.'],
+ ['الجهاز الذي يدخل عليه العزم يعمل كمولد، والجهاز الآخر يعمل كمحرك.',true,'(ص 76).'],
+ ['العضوان الثابتان للجهازين يتصلان بمصدرين مختلفين.',false,'«يوصل عضوهما الثابتان علي التوازي معا على نفس المصدر الكهربي» (ص 76)، فيتولد المجال الدائر نفسه في الجهازين.']]})}
    ]},
 
   {st:2,short:'مثال (٥-١)',title:'مثال محلول: تدفق القدرة في عمود الإدارة الكهربي',ref:'ص 77–79',
@@ -628,7 +882,17 @@ B.lesson({
      <p>القدرة الداخلة من المصدر لإدارة المحرك:</p><div class="eq">$$P_{SO}=\frac{P_{mo}}{1-S}=\frac{60}{1-0.45}=109\ \text{Kw}$$</div>
      <p><span class="ltr">Check: \(P_{SO}=P_{mo}+P_{ar}=60+49=109\) Kw</span></p>`,ref:'ص 78–79'},
     {tip:String.raw`<p>(١) \(P\) في \(n_s = 60f/P\) هو عدد <b>أزواج</b> الأقطاب (2 للمحرك ذي الأربعة أقطاب)، وهو نفس \(120f/p\) إذا كان p عدد الأقطاب. (٢) العزم بوحدة kg.m يُحوَّل إلى N.m بالضرب في 9.81، والقسمة على 1000 تجعل القدرة بالكيلوواط: \(P_{mI} = 70.75\times\frac{9.81}{1000}\times86.3\).</p>`,title:'انتبه للوحدات'},
-    {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> \(\omega_r = 2\pi\times825/60 = 86.39\) طُبعت 86.3 (مقطوعة لا مقربة)، و\(\omega_S = 157.08\) طُبعت 157. الفرق لا يغير النتائج المقربة إلى أقرب كيلوواط. وعبارة «عزم قدرة <span class="ltr">70.75 kg.m</span>» المقصود بها «عزم مقداره <span class="ltr">70.75 kg.m</span>».</p>`,fix:true}
+    {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> \(\omega_r = 2\pi\times825/60 = 86.39\) طُبعت 86.3 (مقطوعة لا مقربة)، و\(\omega_S = 157.08\) طُبعت 157. الفرق لا يغير النتائج المقربة إلى أقرب كيلوواط. وعبارة «عزم قدرة <span class="ltr">70.75 kg.m</span>» المقصود بها «عزم مقداره <span class="ltr">70.75 kg.m</span>».</p>`,fix:true},
+    {title:'مختبر مصغّر: غيّر سرعة النقل وتابع القدرات',widget:(el,B)=>DCML.lab(el,B,{intro:'العزم <span class="ltr">70.75 kg.m</span> والأقطاب الأربعة والتردد <span class="ltr">50 Hz</span> من مثال (٥-١). غيّر سرعة النقل (رقم تختاره أنت) وراقب القدرات بمعادلات الحل؛ عند <span class="ltr">825 rpm</span> تحصل على أرقام المثال.',
+ predict:{q:'نُقل العزم نفسه لكن بسرعة أقل من <span class="ltr">825 rpm</span>. ماذا يحدث للقدرة التي تسري بين الدوارين <span class="ltr">P<sub>ar</sub></span>؟',opts:[
+  ['تقل مع السرعة',false,'القدرة الميكانيكية <span class="ltr">P<sub>mI</sub></span> هي التي تقل مع السرعة.'],
+  ['تزيد، لأن الانزلاق يكبر',true,'<span class="ltr">P<sub>ar</sub> = s × T × ω<sub>S</sub></span>: العزم و <span class="ltr">ω<sub>S</sub></span> ثابتان، والانزلاق <span class="ltr">s</span> يكبر كلما قلت السرعة.'],
+  ['لا تتغير',false,'الذي لا يتغير هو <span class="ltr">P<sub>SI</sub> = T ω<sub>S</sub></span>.']]},
+ ins:[{k:'n',l:'سرعة النقل n',min:100,max:1450,step:25,v:825,dp:0,u:'rpm'}],
+ calc:(s)=>{const p=powers(70.75,s.n,4,50),bk=s.n===825;
+  return {facts:[['n<sub>s</sub>',DCML.fm(B,p.ns,0)+' rpm'],['الانزلاق s',DCML.fm(B,p.s,3),'hi'],['ω<sub>r</sub>',DCML.fm(B,p.wr,2)+' rad/s'],['ω<sub>S</sub>',DCML.fm(B,p.ws,2)+' rad/s']],
+   bars:[{l:'P<sub>mI</sub>: من محور الجهاز الأول',v:p.PmI,max:110,dp:1,u:'kW',col:'--blue'},{l:'P<sub>ar</sub>: بين الدوارين',v:p.Par,max:110,dp:1,u:'kW',col:'--on'},{l:'P<sub>SI</sub> = P<sub>mI</sub> + P<sub>ar</sub>',v:p.PSI,max:110,dp:1,u:'kW',col:'--live'},{l:'P<sub>mo</sub>: على محور الجهاز الثاني',v:p.Pmo,max:110,dp:1,u:'kW',col:'--blue'}],
+   msg:bk?'هذه أرقام المثال: <span class="ltr">s = 0.45</span>، و <span class="ltr">P<sub>mI</sub> ≈ 60 kW</span> و <span class="ltr">P<sub>ar</sub> ≈ 49 kW</span> و <span class="ltr">P<sub>SI</sub> ≈ 109 kW</span> (ص 78–79).':'لاحظ أن <span class="ltr">P<sub>SI</sub> = T ω<sub>S</sub></span> لم تتغير، وأن <span class="ltr">P<sub>mo</sub> = P<sub>mI</sub></span> في كل الحالات (بإهمال المفقودات).'}}})}
    ]},
 
   {recap:[
@@ -721,7 +985,11 @@ B.lesson({
      <tr><td>س٤</td><td>«كل من عضوه الثابت والدوار على شكل أسطواني، وكل منهما يحمل ملفات ثلاثية» — ص 72</td></tr></table>`,title:'خريطة الإجابات'},
     {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة؛ الإجابات في «اختبر نفسك» مقترحة من نصه ويعتمدها المدرب.</p>`},
     {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> خيارات س٢ و س٣ متداخلة: (ب) «يتعامد» و(ج) «زاوية تسعون درجة» معناهما واحد، فإذا كانت (ب) صحيحة كانت (ج) صحيحة.</p>`,fix:true},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=quiz]');if(b)b.click()">افتح «اختبر نفسك» وأجب</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=quiz]');if(b)b.click()">افتح «اختبر نفسك» وأجب</button></div>`},
+    {title:'تحقق سريع: موضع الصفر والاستخدامات',widget:(el,B)=>DCML.tf(el,B,{intro:'اضغط «صح» أو «خطأ» لكل عبارة.',items:[
+ ['موضع الصفر في مرسل التحكم ومحول التحكم واحد.',false,'انطباق محور ملف الدوار على محور الملف رقم واحد في المرسل (ص 71)، وتعامده معه في المحول (ص 72).'],
+ ['«يتعامد محور ملف الدوار مع محور الملف» و«توجد زاوية تسعون درجة بينهما» عبارتان بمعنى واحد.',true,'لهذا في خيارات س٢ و س٣ تداخل: إذا صحت (ب) صحت (ج).'],
+ ['من استخدامات الآلات ذاتية التزامن نقل العزم.',true,'«كجهاز لنقل بيانات موضع محور ميكانيكي أو كجهاز لنقل العزم» (ص 70).']]})}
    ]},
 
   {st:2,short:'أسئلة متنوعة',title:'أسئلة متنوعة: اثنا عشر سؤالاً على الوحدة',ref:'ص 81',
@@ -755,7 +1023,16 @@ B.lesson({
      <tr><td>س٥-١٠، س٥-١٢</td><td>عمود الإدارة الكهربي ومثال (٥-١) ص 76–79 (الدرس الثالث)</td></tr></table>`,title:'خريطة الإجابات'},
     {tip:String.raw`<p>في الأسئلة التي تقول «اشرح مع الرسم» ارسم المقطع (الثابت بثلاثة ملفات والدوار) والرمز معاً كما في الأشكال (٥-١) و(٥-٢) و(٥-٣)، واكتب على الرسم أسماء الأجزاء و<span class="ltr">S1 S2 S3</span>. وفي س٥-١١ ارسم توصيل الشكل (٥-٤): <span class="ltr">S1–S1</span> و<span class="ltr">S2–S2</span> و<span class="ltr">S3–S3</span>.</p>`,title:'أسئلة الرسم'},
     {watch:String.raw`<p>في س٥-١٢ انتبه: \(P\) في \(n_s = 60f/P\) هو عدد <b>أزواج</b> الأقطاب (2 لأربعة أقطاب)، والعزم بوحدة kg.m يُضرب في 9.81 ثم يُقسم على 1000 لتخرج القدرة بالكيلوواط، كما في مثال (٥-١). والكتاب لا يعطي إجابات لهذه الأسئلة؛ الإجابات المقترحة في الأسلوب الرسمي يعتمدها المدرب.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حاسبتي س٥-١١ و س٥-١٢</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حاسبتي س٥-١١ و س٥-١٢</button></div>`},
+    {title:'مختبر مصغّر: الخطوة الأولى في س٥-١٢',widget:(el,B)=>DCML.cases(el,B,{intro:'ابدأ س٥-١٢ بخطوات مثال (٥-١). اختر الجواب الصحيح لكل خطوة.',cases:[
+ {q:'محركان بأربعة أقطاب على مصدر <span class="ltr">50 Hz</span>. كم السرعة التزامنية <span class="ltr">n<sub>s</sub></span>؟',opts:[
+  ['<span class="ltr">750 rpm</span>',false,'هذا إذا وضعت عدد الأقطاب 4 في <span class="ltr">60f/P</span>؛ لكن <span class="ltr">P</span> هنا عدد الأزواج (2).'],
+  ['<span class="ltr">1500 rpm</span>',true,'<span class="ltr">n<sub>s</sub> = 60f/P = 60 × 50 / 2 = 1500 rpm</span>، كما في مثال (٥-١).'],
+  ['<span class="ltr">3000 rpm</span>',false,'هذا إذا وضعت عدد الأزواج في <span class="ltr">120f/p</span>؛ الصيغة <span class="ltr">120f/p</span> تأخذ عدد الأقطاب (4).']]},
+ {q:'السرعة في س٥-١٢ <span class="ltr">1000 rpm</span>. كم الانزلاق <span class="ltr">s</span>؟',opts:[
+  ['<span class="ltr">0.5</span>',false,'هذا ناتج القسمة على السرعة الفعلية <span class="ltr">1000</span>؛ القسمة تكون على السرعة التزامنية.'],
+  ['<span class="ltr">0.667</span>',false,'هذا <span class="ltr">1000/1500</span>؛ الانزلاق <span class="ltr">(n<sub>s</sub> − n)/n<sub>s</sub></span>.'],
+  ['<span class="ltr">0.333</span>',true,'<span class="ltr">s = (1500 − 1000)/1500 = 0.333</span>؛ بعدها أكمل القدرات كما في المثال.']]}]})}
    ]},
 
   {recap:[

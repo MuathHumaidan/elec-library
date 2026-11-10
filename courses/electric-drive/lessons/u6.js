@@ -141,7 +141,183 @@ B.lesson(FIXL({
  title:'أنواع الفرامل الكهربائية والفرملة بإعادة التوليد',
  summary:'لماذا نحتاج إلى الفرملة، ومزايا الفرامل الكهربائية على الميكانيكية، وطرقها الثلاث بالمحرك نفسه. ثم الفرملة بإعادة التوليد: تعمل الآلة مولداً وهي موصلة بالمصدر عندما تزيد قوتها الدافعة عن جهده، فتعيد الطاقة إليه، لكنها لا توقف المحرك. مع مثال (6-1).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة السادسة: فرملة المحركات الكهربائية — الأهداف',ref:'ص 66',
    q:'ما الذي يُنتظر منك أن تعرفه عن فرملة المحركات حين تنتهي من هذه الوحدة؟',
@@ -156,7 +332,11 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة أنواع الكوابح (الفرامل) الكهربائية وكيفية تطبيقها على المحركات الكهربائية.</p>
      <p><b>الأهداف التفصيلية:</b></p><ul><li>أن يعرف المتدرب الفرملة بإعادة التوليد وكيفية تطبيقها على محركات التيار المستمر.</li><li>أن يعرف المتدرب الفرملة الديناميكية وكيفية تطبيقها على محركات التيار المستمر.</li><li>أن يعرف المتدرب الفرملة بالتيار المعكوس أو التبديل وكيفية تطبيقها على محركات التيار المستمر.</li><li>أن يعدد المتدرب مميزات وعيوب الطرق المختلفة لأنواع الفرامل الكهربائية.</li></ul>`,ref:'ص 66'},
-    {tip:String.raw`<p>الوحدة ثلاثة دروس، درس لكل طريقة: هذا الدرس (أنواع الفرامل + إعادة التوليد)، ثم الفرملة الديناميكية، ثم الفرملة بالتبديل مع مقارنة الطرق الثلاث.</p>`}
+    {tip:String.raw`<p>الوحدة ثلاثة دروس، درس لكل طريقة: هذا الدرس (أنواع الفرامل + إعادة التوليد)، ثم الفرملة الديناميكية، ثم الفرملة بالتبديل مع مقارنة الطرق الثلاث.</p>`},
+    {title:'مختبر مصغّر: في أي درس؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل طريقة فرملة اختر الدرس الذي يشرحها في هذه الوحدة.',cats:['هذا الدرس','الدرس الثاني','الدرس الثالث'],items:[
+ ['الفرملة بالتيار المعكوس أو التبديل',2,'الدرس الثالث، ومعها مقارنة الطرق الثلاث.'],
+ ['الفرملة بإعادة التوليد',0,'المحطات 5 إلى 7 من هذا الدرس.'],
+ ['الفرملة الديناميكية (باستخدام المقاومة المتغيرة)',1,'الدرس الثاني.']]})}
    ]},
 
   {st:2,short:'لماذا نفرمل؟',title:'أنواع الفرامل الكهربائية: لماذا نحتاج إلى الفرملة؟',ref:'ص 67',
@@ -172,7 +352,12 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>في كثير من التطبيقات الصناعية لابد من تواجد وسيلة لإيقاف وفرملة الكتل المتحركة، ممثلة في المحرك والحمل الميكانيكي المتصل به، لأسباب اقتصادية ولتحقيق السلامة الصناعية، ولا بد أيضاً من تواجد وسيلة للحد من السرعة الزائدة في حالة <b>الأحمال الهابطة</b> تحت تأثير الجاذبية الأرضية، كما في الروافع والأوناش والمصاعد الكهربائية، أو الكتل المنحدرة على مستوى مائل كما يحدث في المركبات الكهربائية. حيث تمتلك هذه الكتل كميات كبيرة من الطاقة الكامنة <span class="ltr">(Potential Energy)</span> التي تتحول إلى طاقة حركة <span class="ltr">(Kinetic Energy)</span> فتكتسب هذه الكتل المتحركة سرعات كبيرة، لذا فإنه يلزم في مثل هذه الحالات بذل <b>عزم مضاد لاتجاه حركة الدوران</b>، للتأثير على الكتل المتحركة لكي يمنع زيادة سرعتها عن الحد المسموح به، وقد يعمل أيضاً على تباطؤ سرعتها حتى تتوقف تماماً. هذا العزم المضاد يمكن توليده والحصول عليه بواسطة النوع المناسب من الفرامل، لذلك فإنه يجب اختيار نوع الفرملة المناسب حسب نوع نظام التحريك، وبصفة عامة فهناك نوعان من الفرامل: <b>الفرامل الميكانيكية</b> و<b>الفرامل الكهربائية</b>.</p>`,ref:'ص 67'},
     {tip:String.raw`<p>للفرملة هدفان ذكرهما الكتاب: <b>منع زيادة السرعة</b> عن الحد المسموح (حمل هابط)، أو <b>التباطؤ حتى التوقف</b> التام. وفي الحالتين المطلوب واحد: عزم يعاكس اتجاه الدوران.</p>`},
-    {add:String.raw`<p>المصعد مثال واضح: حين ينزل وهو ممتلئ، الحمولة «تسحب» المصعد إلى الأسفل، والمحرك هنا لا يدفع بل «يمسك». ونفس الشيء في الحافلة أو القطار وهو ينزل منحدراً طويلاً.</p>`}
+    {add:String.raw`<p>المصعد مثال واضح: حين ينزل وهو ممتلئ، الحمولة «تسحب» المصعد إلى الأسفل، والمحرك هنا لا يدفع بل «يمسك». ونفس الشيء في الحافلة أو القطار وهو ينزل منحدراً طويلاً.</p>`},
+    {title:'تحقق سريع: لماذا نفرمل؟',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['الفرملة تعني أن نبذل عزماً في اتجاه الدوران نفسه.',false,'الفرملة عزم <b>مضاد</b> لاتجاه حركة الدوران (ص 67).'],
+ ['قد تكون الفرملة للحد من السرعة الزائدة فقط، دون إيقاف الحمل.',true,'الكتاب: العزم المضاد يمنع زيادة السرعة عن الحد المسموح، «وقد يعمل أيضاً» على التباطؤ حتى التوقف.'],
+ ['الحمل الهابط في المصعد يكتسب سرعة لأن طاقته الكامنة تتحول إلى طاقة حركة.',true,'نص الكتاب في ص 67.'],
+ ['هناك بصفة عامة ثلاثة أنواع من الفرامل: ميكانيكية وكهربائية وهيدروليكية.',false,'الكتاب يقول: «فهناك نوعان من الفرامل: الفرامل الميكانيكية والفرامل الكهربائية».']]})}
    ]},
 
   {st:3,short:'مزايا الكهربائية',title:'مزايا الفرامل الكهربائية على الميكانيكية',ref:'ص 67–68',
@@ -193,7 +378,12 @@ B.lesson(FIXL({
      <li>يمكن الحصول على تباطؤ أقل بكثير في حالة الفرامل الكهربائية عن نظيرتها الميكانيكية، بحيث يتم الإيقاف بنعومة تامة، حفاظاً على راحة الركاب على ظهر المصعد أو الحافلة الكهربائية.</li></ul>
      <p>في حالة الأحمال الميكانيكية الثقيلة، فإن الفرامل الكهربائية والميكانيكية يستخدمان معاً للتحكم الجيد في فرملة الأجزاء المتحركة.</p>`,ref:'ص 67–68'},
     {tip:String.raw`<p>كل فرملة تحوّل طاقة الحركة إلى شيء آخر. في الفرامل الميكانيكية تتحول حرارةً في أقراص الاحتكاك وتتآكل الأقراص. وفي الفرامل الكهربائية تتحول كهرباء: إما تعود إلى الشبكة، وإما حرارة في مقاومة يمكن التحكم فيها والاستفادة منها.</p>`},
-    {add:String.raw`<p>القطارات والحافلات الكهربائية الحديثة تستعمل الفرامل الكهربائية في أغلب التوقفات، وتبقى الفرامل الميكانيكية للتثبيت النهائي وللطوارئ؛ وهذا ما يقصده الكتاب باستخدام النوعين معاً.</p>`}
+    {add:String.raw`<p>القطارات والحافلات الكهربائية الحديثة تستعمل الفرامل الكهربائية في أغلب التوقفات، وتبقى الفرامل الميكانيكية للتثبيت النهائي وللطوارئ؛ وهذا ما يقصده الكتاب باستخدام النوعين معاً.</p>`},
+    {title:'تحقق سريع: مزايا الفرامل الكهربائية',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['الفرامل الكهربائية أنظف لأنه لا مخلفات احتكاك فيها.',true,'الميزة الثانية في ص 67.'],
+ ['حرارة الفرملة الكهربائية تضيع دائماً ولا يمكن الاستفادة منها.',false,'الكتاب: «يمكن السيطرة على كميات الحرارة الكبيرة… للاستفادة من الحرارة المتولدة»، مثلاً للتدفئة في الشتاء.'],
+ ['التباطؤ في الفرامل الكهربائية أكبر بكثير، فيتوقف المصعد فجأة.',false,'العكس: «تباطؤ أقل بكثير… بحيث يتم الإيقاف بنعومة تامة».'],
+ ['مع الأحمال الميكانيكية الثقيلة تستخدم الفرامل الكهربائية والميكانيكية معاً.',true,'آخر سطر في ص 68.']]})}
    ]},
 
   {st:4,short:'تقسيم الفرامل',title:'تقسيم الفرامل الكهربائية وطرقها الثلاث',ref:'ص 68',
@@ -212,7 +402,12 @@ B.lesson(FIXL({
      <ol><li>الفرملة بإعادة التوليد.</li><li>الفرملة الديناميكية أو باستخدام المقاومة المتغيرة.</li><li>الفرملة بالتيار المعكوس أو التبديل.</li></ol>
      <p>يمكن تطبيق هذه الطرق الثلاث على أنواع آلات التيار المستمر والمتردد الشائعة الاستخدام في الصناعة.</p>`,ref:'ص 68'},
     {tip:String.raw`<p>الفكرة المشتركة في الطرق الثلاث: نجعل <b>تيار المنتج ينعكس</b> فينعكس العزم ويصبح مضاداً للدوران. والفرق بينها أين تذهب الطاقة: تعود إلى المصدر (إعادة التوليد)، أو تتحول حرارة في مقاومة (الديناميكية)، أو تتحول حرارة ومعها طاقة إضافية من المصدر (التبديل).</p>`},
-    {watch:String.raw`<p>يقول الكتاب إن الطرق الثلاث «يمكن تطبيقها على آلات التيار المستمر والمتردد»، لكنه يشرح بعد ذلك تطبيقها على <b>محركات التيار المستمر فقط</b>.</p>`,fix:true}
+    {watch:String.raw`<p>يقول الكتاب إن الطرق الثلاث «يمكن تطبيقها على آلات التيار المستمر والمتردد»، لكنه يشرح بعد ذلك تطبيقها على <b>محركات التيار المستمر فقط</b>.</p>`,fix:true},
+    {title:'مختبر مصغّر: بالمحرك نفسه أم بوحدة مستقلة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'صنّف الفرامل الكهربائية بحسب النوعين في ص 68.',cats:['بالمحرك نفسه','وحدة مستقلة بذاتها'],items:[
+ ['الفرملة بإعادة التوليد',0,'المحرك نفسه يعمل مولداً بعد تعديل دائرته.'],
+ ['وحدة الفرامل باستخدام التيارات الإعصارية',1,'المثال الذي ذكره الكتاب للوحدة المستقلة.'],
+ ['الفرملة الديناميكية',0,'المحرك نفسه يوصل بمقاومة إضافية.'],
+ ['الفرملة بالتيار المعكوس (التبديل)',0,'المحرك نفسه بعد عكس تيار منتجه.']]})}
    ]},
 
   {st:5,short:'إعادة التوليد',title:'فرملة محركات التيار المستمر — 1) الفرملة بإعادة التوليد <span class="ltr">Regenerative Braking</span>',ref:'ص 69',
@@ -264,7 +459,16 @@ B.lesson(FIXL({
      <p>ومنها نحصل على تيار المنتج في حالة المولد:</p>
      <div class="eq">$$I_{a2}=\frac{T_L\,\omega_2}{E_2}$$<span class="eqno">(6-4)</span></div>`,ref:'ص 69–70'},
     {tip:String.raw`<p>(6-1) و(6-2): مع ثبات المجال تتناسب القوة الدافعة مع السرعة. و(6-3) تقول: العزم = القدرة الكهرومغناطيسية \(E\,I_a\) ÷ السرعة الزاوية \(\omega\). ولأن \(E\) و\(\omega\) تتغيران بالنسبة نفسها فإن \(\frac{\omega_2}{E_2}=\frac{\omega_1}{E_1}\)، وهذا ما سيستعمله مثال (6-1) ليحسب \(I_{a2}\) من بيانات المحرك.</p>`},
-    {watch:String.raw`<p>\(\omega\) بوحدة <span class="ltr">rad/s</span> وليست <span class="ltr">rpm</span>: \(\omega=\frac{2\pi n}{60}\). نسيان هذا التحويل خطأ شائع في حساب العزم.</p>`}
+    {watch:String.raw`<p>\(\omega\) بوحدة <span class="ltr">rad/s</span> وليست <span class="ltr">rpm</span>: \(\omega=\frac{2\pi n}{60}\). نسيان هذا التحويل خطأ شائع في حساب العزم.</p>`},
+    {title:'مختبر مصغّر: تيار المولد لا يتغير مع السرعة',widget:(el,B)=>DCML.lab(el,B,{intro:'محرك مثال (6-1): \\(E_1=215\\ \\text{V}\\) عند <span class="ltr">1150 rpm</span>، والمجال ثابت، وعزم الحمل <span class="ltr">190 Nm</span>. حرّك سرعة الآلة وهي مولد (رقم تختاره أنت) وطبّق (6-2) و(6-4).',
+ predict:{q:'زادت سرعة المولد. ماذا يحدث لتيار المنتج \\(I_{a2}\\) اللازم ليعطي عزماً مضاداً <span class="ltr">190 Nm</span>؟',opts:[
+  ['يزيد مع السرعة',false,'\\(\\omega_2\\) تزيد فعلاً، لكن \\(E_2\\) تزيد بالنسبة نفسها.'],
+  ['يقل مع السرعة',false,'النسبة \\(\\omega_2/E_2\\) لا تتغير مع ثبات المجال.'],
+  ['لا يتغير',true,'\\(I_{a2}=T_L\\,\\omega_2/E_2\\) و\\(\\omega_2/E_2=\\omega_1/E_1\\) ثابتة؛ ولهذا يحسب مثال (6-1) التيار من بيانات المحرك مباشرة.']]},
+ ins:[{k:'n',l:'سرعة الآلة n<sub>2</sub>',u:'rpm',min:1150,max:1400,step:10,v:1200,dp:0}],
+ calc:(s,P,B)=>{const w=2*Math.PI*s.n/60,E=215*s.n/1150,I=190*w/E;
+  return {facts:[['ω<sub>2</sub> = 2πn/60',DCML.fm(B,w,2)+' rad/s'],['E<sub>2</sub> = E<sub>1</sub>·n<sub>2</sub>/n<sub>1</sub> (6-2)',DCML.fm(B,E,1)+' V'],['I<sub>a2</sub> = T<sub>L</sub>·ω<sub>2</sub>/E<sub>2</sub> (6-4)',DCML.fm(B,I,1)+' A','hi']],
+   msg:'\\(\\omega_2\\) و\\(E_2\\) تتغيران معاً بالنسبة نفسها، فيبقى \\(I_{a2}\\approx106.4\\ \\text{A}\\) (والكتاب طبعه 104.4 خطأً).'}}})}
    ]},
 
   {st:7,short:'مثال 6-1',title:'مثال <span class="ltr">(6&#8209;1)</span>: أقل سرعة فرملية',ref:'ص 71',
@@ -287,7 +491,17 @@ B.lesson(FIXL({
      <div class="eq">$$E_2=V+I_{a2}R_a=220+104.4\times0.04=224.17\ \text{V}$$</div>
      <div class="eq">$$N_2=N_1\frac{E_2}{E_1}=1150\times\frac{224.17}{215}=1200\ \text{rpm}$$</div>`,ref:'ص 71'},
     {watch:String.raw`<p>خطأ حسابي في الكتاب: \(I_{a2}=190\times120.43/215\) طُبع <b><span class="ltr">104.4&nbsp;A</span></b> والصحيح <b><span class="ltr">106.4&nbsp;A</span></b>، فيصبح \(E_2=224.26\ \text{V}\) بدل 224.17 (والرقم 224.17 نفسه مقطوع من 224.176)، و\(N_2=1199.5\ \text{rpm}\) بدل 1200 (وناتج قسمة أرقام الكتاب نفسها 1199.0). الجواب النهائي ≈ <b><span class="ltr">1200&nbsp;rpm</span></b> سليم في الحالتين. الحل كما في الكتاب والحل المصحح في تبويب «الأمثلة المحلولة».</p>`,fix:true},
-    {tip:String.raw`<p>لماذا \(E_2=V+I_{a2}R_a\) (بإشارة +)؟ لأن الآلة مولد: التيار يخرج منها إلى المصدر، فجهدها الداخلي \(E_2\) يجب أن يغطي جهد المصدر وهبوط الجهد في مقاومة المنتج معاً. في المحرك كانت \(E=V-I_aR_a\).</p>`}
+    {tip:String.raw`<p>لماذا \(E_2=V+I_{a2}R_a\) (بإشارة +)؟ لأن الآلة مولد: التيار يخرج منها إلى المصدر، فجهدها الداخلي \(E_2\) يجب أن يغطي جهد المصدر وهبوط الجهد في مقاومة المنتج معاً. في المحرك كانت \(E=V-I_aR_a\).</p>`},
+    {title:'مختبر مصغّر: الحمل الأثقل يحتاج سرعة فرملة أعلى',widget:(el,B)=>DCML.lab(el,B,{intro:'معطيات مثال (6-1)، وتستطيع تغيير عزم الحمل (رقم تختاره أنت؛ الكتاب <span class="ltr">190 Nm</span>). الحساب بالأرقام الصحيحة دون أخطاء الطباعة.',
+ predict:{q:'لو كان عزم الحمل الهابط أكبر من <span class="ltr">190 Nm</span>، فإن أقل سرعة فرملية \\(N_2\\):',opts:[
+  ['تكبر',true,'العزم الأكبر يحتاج \\(I_{a2}\\) أكبر، فتكبر \\(E_2=V+I_{a2}R_a\\)، والسرعة تتناسب معها.'],
+  ['تصغر',false,'التيار الأكبر يحتاج قوة دافعة أكبر، أي سرعة أعلى لا أقل.'],
+  ['لا تتغير',false,'\\(E_2\\) تعتمد على \\(I_{a2}\\)، و\\(I_{a2}\\) يعتمد على عزم الحمل.']]},
+ ins:[{k:'T',l:'عزم الحمل T<sub>L</sub>',u:'Nm',min:50,max:400,step:10,v:190,dp:0}],
+ calc:(s,P,B)=>{const w1=2*Math.PI*1150/60,I=s.T*w1/215,E2=220+I*0.04,N2=1150*E2/215;
+  return {facts:[['I<sub>a2</sub> = T<sub>L</sub>·ω<sub>1</sub>/E<sub>1</sub>',DCML.fm(B,I,1)+' A'],['E<sub>2</sub> = V + I<sub>a2</sub>·R<sub>a</sub>',DCML.fm(B,E2,2)+' V'],['N<sub>2</sub> = N<sub>1</sub>·E<sub>2</sub>/E<sub>1</sub>',DCML.fm(B,N2,1)+' rpm','hi']],
+   plot:{xr:[50,400],yr:[1170,1240],xl:'T<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (Nm)</tspan>',yl:'N<tspan font-size="9" dy="3">2</tspan><tspan dy="-3"> (rpm)</tspan>',curves:[{f:t=>1150*(220+t*w1/215*0.04)/215}],cur:[s.T,N2],xt:[50,100,200,300,400],yt:[1170,1190,1210,1230]},
+   msg:s.T===190?'أرقام المثال: \\(I_{a2}=106.4\\ \\text{A}\\) (طُبع 104.4)، و\\(N_2\\approx1200\\ \\text{rpm}\\) في الحالتين.':'كل السرعات أعلى من <span class="ltr">1176.7 rpm</span>، وهي السرعة التي تصبح عندها \\(E=V=220\\ \\text{V}\\): تحتها لا تعمل الآلة مولداً.'}}})}
    ]},
 
   {st:8,short:'أسئلة الدرس',title:'أسئلة وتمارين: <span class="ltr">6&#8209;1</span> و<span class="ltr">6&#8209;3</span>',ref:'ص 78',
@@ -303,7 +517,16 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p><b>6-1</b> اذكر مميزات استخدام الفرامل الكهربائية عن نظيرتها الميكانيكية.</p>
      <p><b>6-3</b> محرك تيار مستمر، توازي، <span class="ltr">250&nbsp;V</span>، القوة الدافعة الكهربائية المتولدة <span class="ltr">245&nbsp;V</span>، عندما كانت سرعة المحرك <span class="ltr">1200&nbsp;rpm</span>، مقاومة المنتج <span class="ltr">0.05&nbsp;Ω</span>، وكان الحمل ذا عزم دوران مقداره <span class="ltr">200 N.m</span>. احسب أقل سرعة فرملية للمحرك، إذا كان المطلوب استخدام الفرملة بطريقة التوليد المرتجع، مع الاحتفاظ بثبات تيار المجال.</p>`,ref:'ص 78'},
-    {tip:String.raw`<p><b>لـ 6-1:</b> المزايا الأربع في المحطة الثالثة. <b>لـ 6-3:</b> خطوات مثال (6-1) نفسها: \(\omega_1\) ← \(I_{a2}=T_L\,\omega_1/E_1\) ← \(E_2=V+I_{a2}R_a\) ← \(N_2=N_1E_2/E_1\). الإجابة المقترحة في الأسلوب الرسمي، والحاسبة في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`}
+    {tip:String.raw`<p><b>لـ 6-1:</b> المزايا الأربع في المحطة الثالثة. <b>لـ 6-3:</b> خطوات مثال (6-1) نفسها: \(\omega_1\) ← \(I_{a2}=T_L\,\omega_1/E_1\) ← \(E_2=V+I_{a2}R_a\) ← \(N_2=N_1E_2/E_1\). الإجابة المقترحة في الأسلوب الرسمي، والحاسبة في تبويب «الأمثلة المحلولة» (الكتاب لا يطبع إجابات التمارين).</p>`},
+    {title:'مختبر مصغّر: تحقق من أرقامك في التمرين 6-3',widget:(el,B)=>DCML.cases(el,B,{intro:'حلّ التمرين على ورقة بخطوات مثال (6-1)، ثم اختر ما وصلت إليه. (الكتاب لا يطبع إجابات؛ هذه نتائج الحل المقترح.)',cases:[
+ {q:'تيار المنتج في حالة المولد \\(I_{a2}=T_L\\,\\omega_1/E_1\\):',opts:[
+  ['<span class="ltr">≈ 979.6 A</span>',false,'استعملت <span class="ltr">1200</span> بدل \\(\\omega_1\\) بالراديان في الثانية.'],
+  ['<span class="ltr">≈ 102.6 A</span>',true,'<span class="ltr">200 × 125.66 ÷ 245 ≈ 102.6 A</span>.'],
+  ['<span class="ltr">≈ 16.3 A</span>',false,'استعملت <span class="ltr">1200 ÷ 60 = 20</span> دون الضرب في \\(2\\pi\\).']]},
+ {q:'أقل سرعة فرملية \\(N_2\\):',opts:[
+  ['<span class="ltr">≈ 1199.4 rpm</span>',false,'طرحت هبوط الجهد: \\(E_2=V-I_{a2}R_a\\). في المولد يُجمع.'],
+  ['<span class="ltr">≈ 1224.5 rpm</span>',false,'نسيت هبوط الجهد في المنتج: جعلت \\(E_2=V=250\\ \\text{V}\\) فقط.'],
+  ['<span class="ltr">≈ 1249.6 rpm</span>',true,'\\(E_2=250+102.6\\times0.05=255.13\\ \\text{V}\\)، ثم \\(N_2=1200\\times255.13/245\\).']]}]})}
    ]},
 
   {recap:[
@@ -469,7 +692,17 @@ B.lesson(FIXL({
      <div class="eq">$$E_b=I_b\,R_t=I_b\,(R_a+R)$$<span class="eqno">(6-5)</span></div>
      <p>حيث:</p><ul><li>\(E_b\) هي القوة الدافعة الكهربائية المتولدة عند لحظة الفرملة.</li><li>\(I_b\) أقصى قيمة للتيار أثناء الفرملة (التيار الابتدائي).</li><li>\(R_t=R_a+R\) هي المقاومة الكلية لدائرة المنتج.</li></ul>`,ref:'ص 72–73'},
     {tip:String.raw`<p>المعادلة (6-5) هي قانون أوم لحلقة المنتج المغلقة: المنتج هو المصدر الوحيد في الحلقة (المصدر الخارجي مفصول)، والمقاومة الكلية \(R_a+R\). ومنها: \(R=\dfrac{E_b}{I_b}-R_a\).</p>`},
-    {watch:String.raw`<p>لا تنسَ طرح \(R_a\): المعادلة تعطي المقاومة <b>الكلية</b> \(R_t\)، والمطلوب المقاومة <b>الإضافية</b> \(R=R_t-R_a\).</p>`}
+    {watch:String.raw`<p>لا تنسَ طرح \(R_a\): المعادلة تعطي المقاومة <b>الكلية</b> \(R_t\)، والمطلوب المقاومة <b>الإضافية</b> \(R=R_t-R_a\).</p>`},
+    {title:'مختبر مصغّر: اختر المقاومة الإضافية',widget:(el,B)=>DCML.lab(el,B,{intro:'لحظة الفرملة في مثال (6-2): \\(E_b=207\\ \\text{V}\\) و\\(R_a=0.38\\ \\Omega\\)، وأقصى تيار مسموح <span class="ltr">94.5 A</span>. حرّك المقاومة الإضافية \\(R\\) وطبّق (6-5).',
+ predict:{q:'لو فرملنا ديناميكياً <b>بلا</b> مقاومة إضافية (\\(R=0\\))، كم يكون تيار لحظة الفرملة تقريباً؟',opts:[
+  ['<span class="ltr">≈ 94.5 A</span>',false,'هذا الحد المسموح؛ بلا مقاومة إضافية يتجاوزه كثيراً.'],
+  ['<span class="ltr">≈ 545 A</span>',true,'\\(207/0.38\\approx545\\ \\text{A}\\)، عشرة أضعاف تيار الحمل الكامل تقريباً.'],
+  ['صفر، لأن المصدر مفصول',false,'المنتج نفسه يولد \\(E_b\\) ويدفع التيار في الحلقة.']]},
+ ins:[{k:'R',l:'المقاومة الإضافية R',u:'Ω',min:0,max:4,step:0.01,v:1,dp:2}],
+ calc:(s,P,B)=>{const Rt=0.38+s.R,I=207/Rt,ok=I<=94.5+0.05;
+  return {facts:[['R<sub>t</sub> = R<sub>a</sub> + R',DCML.fm(B,Rt,2)+' Ω'],['I<sub>b</sub> = E<sub>b</sub> ÷ R<sub>t</sub>',DCML.fm(B,I,1)+' A',ok?'hi':'bad'],['مضاعف تيار الحمل الكامل',DCML.fm(B,I/54,2)+' ×',ok?'':'bad']],
+   plot:{xr:[0,4],yr:[0,600],xl:'R (Ω)',yl:'I (A)',curves:[{f:r=>207/(0.38+r),n:120},{pts:[[0,94.5],[4,94.5]],col:'--stop',dash:'5 4',w:1.6}],cur:[s.R,I],xt:[0,1,2,3,4],yt:[0,200,400,600]},
+   msg:ok?(Math.abs(s.R-1.81)<0.015?'هذه قيمة الكتاب: \\(R=1.81\\ \\Omega\\) تجعل التيار <span class="ltr">94.5 A</span> تماماً.':'التيار داخل الحد المسموح (الخط الأحمر المتقطع). أصغر مقاومة تحقق ذلك <span class="ltr">1.81 Ω</span>.'):'التيار فوق الحد المسموح <span class="ltr">94.5 A</span>: زد \\(R\\).',cls:ok?'':'bad'}}})}
    ]},
 
   {st:3,short:'مثال 6-2',title:'مثال <span class="ltr">(6&#8209;2)</span>: قيمة المقاومة الإضافية',ref:'ص 73',
@@ -490,7 +723,16 @@ B.lesson(FIXL({
      <div class="eq">$$E_b=I_b\cdot R_t\ \Rightarrow\ R_t=\frac{207}{94.5}=2.19\ \Omega$$</div>
      <div class="eq">$$R=R_t-R_a=2.19-0.38=1.81\ \Omega$$</div>`,ref:'ص 73'},
     {watch:String.raw`<p>نص المثال يقول «محرك تيار مستمر، <b>توالي</b>»، بينما الشرح والشكل (6-2) لمحرك التوازي — لا يؤثر ذلك على الحل. وقدرة المحرك (<span class="ltr">15</span> حصان) معطاة ولا تُستعمل في الحل.</p>`,fix:true},
-    {tip:String.raw`<p>تحقق سريع: بعد إضافة \(R=1.81\ \Omega\) يكون تيار لحظة الفرملة \(207/(0.38+1.81)=94.5\ \text{A}\) تماماً. ولو لم نضف مقاومة لكان \(207/0.38\approx545\ \text{A}\) — عشرة أضعاف تيار الحمل الكامل تقريباً، وهذا يتلف المنتج.</p>`}
+    {tip:String.raw`<p>تحقق سريع: بعد إضافة \(R=1.81\ \Omega\) يكون تيار لحظة الفرملة \(207/(0.38+1.81)=94.5\ \text{A}\) تماماً. ولو لم نضف مقاومة لكان \(207/0.38\approx545\ \text{A}\) — عشرة أضعاف تيار الحمل الكامل تقريباً، وهذا يتلف المنتج.</p>`},
+    {title:'مختبر مصغّر: افحص خطوتين في الحل',widget:(el,B)=>DCML.cases(el,B,{intro:'موضعان يقع فيهما الخطأ غالباً في مثال (6-2).',cases:[
+ {q:'\\(R_t=E_b/I_b\\). أي تيار نضعه في المقام؟',opts:[
+  ['تيار الحمل الكامل <span class="ltr">54 A</span>',false,'المطلوب ألا يتعدى تيار الفرملة <span class="ltr">1.75</span> منه، فنستعمل التيار الأقصى.'],
+  ['أقصى تيار للفرملة <span class="ltr">94.5 A</span>',true,'\\(R_t=207/94.5=2.19\\ \\Omega\\).'],
+  ['<span class="ltr">1.75 A</span>',false,'<span class="ltr">1.75</span> مضاعف، وليس تياراً.']]},
+ {q:'المقاومة الإضافية \\(R\\):',opts:[
+  ['<span class="ltr">2.19 Ω</span>',false,'هذه المقاومة الكلية؛ نسيت طرح \\(R_a\\).'],
+  ['<span class="ltr">2.57 Ω</span>',false,'جمعت \\(R_a\\) بدل أن تطرحها.'],
+  ['<span class="ltr">1.81 Ω</span>',true,'\\(R=R_t-R_a=2.19-0.38\\).']]}]})}
    ]},
 
   {st:4,short:'محركات التوالي',title:'ملاحظة على محركات التوالي في الطريقتين السابقتين',ref:'ص 74',
@@ -506,7 +748,15 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>عند استخدام الطريقتين السابقتين، في حالة محركات التيار المستمر ذات تغذية التوالي، لابد من <b>فصل ملفات المجال عن ملفات المنتج، وتغذيتها تغذية مستقلة</b> أثناء استخدام الفرامل، حتى يتسنى زيادة تيار المجال للحصول على قيمة القوة الدافعة الكهربائية اللازمة لتحويل الآلة إلى مولد. ومما يجدر بالذكر هنا أن جميع أنواع الآلات الكهربائية تتحول في نعومة تامة من محرك إلى مولد إذا ما انعكس اتجاه تيار المنتج بها.</p>`,ref:'ص 74'},
     {tip:String.raw`<p>في محرك التوالي، لو بقي المجال على التوالي مع المنتج وانعكس تيار المنتج عند الفرملة، لانعكس المجال معه، فتنعكس القوة الدافعة ويضعف التوليد بدل أن يستمر. لذلك يُغذّى المجال تغذية مستقلة أثناء الفرملة.</p>`,title:'لماذا يُفصل المجال؟'},
-    {tip:String.raw`<p>«الطريقتان السابقتان» هما الفرملة بإعادة التوليد (الدرس السابق) والفرملة الديناميكية (هذا الدرس)؛ ففي الاثنتين تعمل الآلة مولداً.</p>`}
+    {tip:String.raw`<p>«الطريقتان السابقتان» هما الفرملة بإعادة التوليد (الدرس السابق) والفرملة الديناميكية (هذا الدرس)؛ ففي الاثنتين تعمل الآلة مولداً.</p>`},
+    {title:'مختبر مصغّر: أين يوصل مجال محرك التوالي أثناء الفرملة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'محرك توالي تحوّل إلى مولد للفرملة (بإعادة التوليد أو ديناميكياً). اختر توصيل ملف المجال وتابع ما يحدث.',
+ predict:{q:'لو بقي ملف المجال على التوالي مع المنتج، وانعكس تيار المنتج عند الفرملة، فإن المجال:',opts:[
+  ['يبقى في اتجاهه',false,'التيار نفسه يمر في الملفين؛ فما يحدث للمنتج يحدث للمجال.'],
+  ['ينعكس معه',true,'التيار المعكوس يمر في ملف المجال أيضاً، فينعكس المجال وتنعكس القوة الدافعة ويضعف التوليد.'],
+  ['يختفي تماماً',false,'لا يختفي؛ بل ينعكس.']]},
+ ins:[{k:'f',l:'ملف المجال أثناء الفرملة',seg:[['s','باقٍ على التوالي مع المنتج'],['x','مفصول ومغذى تغذية مستقلة']],v:'s'}],
+ calc:(s,P,B)=>s.f==='s'?{facts:[['تيار المنتج','<span dir="rtl" style="font-family:var(--font)">ينعكس</span>'],['المجال','<span dir="rtl" style="font-family:var(--font)">ينعكس معه</span>','bad'],['القوة الدافعة','<span dir="rtl" style="font-family:var(--font)">تنعكس</span>','bad']],msg:'المجال يتبع التيار المعكوس، فلا تستمر الآلة مولداً بشكل مستقر. لهذا يشترط الكتاب فصل المجال (ص 74).',cls:'bad'}
+  :{facts:[['تيار المنتج','<span dir="rtl" style="font-family:var(--font)">ينعكس</span>'],['المجال','<span dir="rtl" style="font-family:var(--font)">ثابت</span>','hi'],['القوة الدافعة','<span dir="rtl" style="font-family:var(--font)">باقية</span>','hi']],msg:'هذا ما يطلبه الكتاب: بتغذية مستقلة نستطيع «زيادة تيار المجال للحصول على قيمة القوة الدافعة الكهربائية اللازمة لتحويل الآلة إلى مولد».'}})}
    ]},
 
   {st:5,short:'تمرين 6-4',title:'تمرين من أسئلة الوحدة: <span class="ltr">6&#8209;4</span>',ref:'ص 78',
@@ -521,7 +771,16 @@ B.lesson(FIXL({
    ],
    body:[
     {book:String.raw`<p><b>6-4</b> محرك تيار مستمر، توالي، قدرته <span class="ltr">25</span> حصان، <span class="ltr">240&nbsp;V</span>، مقاومة المنتج <span class="ltr">0.38&nbsp;Ω</span>، وتيار حمله الكامل <span class="ltr">90&nbsp;A</span>، المطلوب فرملته ديناميكياً. احسب قيمة المقاومة الإضافية التي يجب أن توصل مع المنتج لاستهلاك القدرة المتولدة أثناء الفرملة، بفرض أن القوة الدافعة المتولدة عند لحظة الفرملة تساوي <span class="ltr">0.95</span> من قيمة جهد المصدر، وأن أقصى قيمة للتيار أثناء الفرملة ينبغي ألا تتعدى <span class="ltr">1.6</span> من قيمة تيار الحمل الكامل.</p>`,ref:'ص 78'},
-    {tip:String.raw`<p>الخطوات: \(E_b\) ← \(I_b\) ← \(R_t=E_b/I_b\) ← \(R=R_t-R_a\). ولأن المحرك <b>توالي</b> تذكّر ملاحظة المحطة الرابعة: يُغذى مجاله تغذية مستقلة أثناء الفرملة. تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة».</p>`}
+    {tip:String.raw`<p>الخطوات: \(E_b\) ← \(I_b\) ← \(R_t=E_b/I_b\) ← \(R=R_t-R_a\). ولأن المحرك <b>توالي</b> تذكّر ملاحظة المحطة الرابعة: يُغذى مجاله تغذية مستقلة أثناء الفرملة. تحقق من جوابك بالحل المقترح في تبويب «الأمثلة المحلولة».</p>`},
+    {title:'مختبر مصغّر: تحقق من أرقامك في التمرين 6-4',widget:(el,B)=>DCML.cases(el,B,{intro:'حلّ التمرين على ورقة بخطوات مثال (6-2)، ثم اختر ما وصلت إليه. (الكتاب لا يطبع إجابات؛ هذه نتائج الحل المقترح.)',cases:[
+ {q:'أقصى تيار أثناء الفرملة \\(I_b\\):',opts:[
+  ['<span class="ltr">90 A</span>',false,'هذا تيار الحمل الكامل.'],
+  ['<span class="ltr">144 A</span>',true,'<span class="ltr">1.6 × 90 = 144 A</span>.'],
+  ['<span class="ltr">228 A</span>',false,'228 هي \\(E_b\\) بالفولت.']]},
+ {q:'المقاومة الإضافية \\(R\\):',opts:[
+  ['<span class="ltr">≈ 1.20 Ω</span>',true,'\\(R_t=228/144\\approx1.58\\ \\Omega\\)، ثم \\(R=1.58-0.38\\).'],
+  ['<span class="ltr">≈ 1.58 Ω</span>',false,'هذه المقاومة الكلية؛ اطرح \\(R_a\\).'],
+  ['<span class="ltr">≈ 2.15 Ω</span>',false,'قسمت على تيار الحمل الكامل <span class="ltr">90 A</span> بدل أقصى تيار الفرملة: <span class="ltr">228/90 − 0.38</span>.']]}]})}
    ]},
 
   {recap:[
@@ -682,7 +941,16 @@ B.lesson(FIXL({
    body:[
     {book:String.raw`<p>في هذه الطريقة يتم <b>عكس اتجاه عزم دوران المحرك</b>، بحيث يحاول عكس اتجاه دورانه، وذلك بعكس اتجاه التيار إما في ملف المنتج أو في ملف المجال (ولكن ليس في الاثنين معاً)، والأنسب هو عكس اتجاه التيار في ملف المنتج، فتتباطأ سرعة المحرك والحمل حتى تصل إلى الصفر، ثم يبدأ المحرك حركته في الاتجاه المضاد، لذلك فإنه <b>يلزم استخدام جهاز خاص لفصل التيار عن المحرك، عندما تصل سرعته إلى الصفر</b>.</p>`,ref:'ص 74'},
     {tip:String.raw`<p>عزم محرك التيار المستمر يعتمد على اتجاهي المجال وتيار المنتج معاً. عكس أحدهما يعكس العزم؛ وعكس الاثنين يعيد العزم كما كان (سالب × سالب = موجب).</p>`},
-    {add:String.raw`<p>«التبديل» هو الترجمة المعتادة لـ <span class="ltr">Plugging</span>: كأننا «نقلب القابس» والمحرك يدور. وهي طريقة تستعمل حيث يلزم إيقاف سريع، مع وجود مفتاح سرعة صفرية يفصل التيار عند التوقف.</p>`}
+    {add:String.raw`<p>«التبديل» هو الترجمة المعتادة لـ <span class="ltr">Plugging</span>: كأننا «نقلب القابس» والمحرك يدور. وهي طريقة تستعمل حيث يلزم إيقاف سريع، مع وجود مفتاح سرعة صفرية يفصل التيار عند التوقف.</p>`},
+    {title:'مختبر مصغّر: اعكس تياراً وشاهد العزم',widget:(el,B)=>DCML.lab(el,B,{intro:'المحرك يدور للأمام. اعكس تيار المنتج أو تيار المجال (أو كليهما) وشاهد اتجاه العزم بالنسبة لاتجاه الدوران.',
+ predict:{q:'عكسنا تيار المنتج وتيار المجال <b>معاً</b>. ماذا يحدث للعزم؟',opts:[
+  ['ينعكس مرتين فيصبح فرملة أقوى',false,'العكس مرتين يعيد العزم إلى اتجاهه الأصلي.'],
+  ['يبقى في اتجاه الدوران، فلا فرملة',true,'العزم يعتمد على اتجاهي المجال وتيار المنتج معاً: سالب × سالب = موجب؛ ولهذا يقول الكتاب «ولكن ليس في الاثنين معاً».'],
+  ['يصبح صفراً',false,'لا يختفي العزم؛ يعود إلى اتجاهه.']]},
+ ins:[{k:'a',l:'',sw:true,v:0,on:'تيار المنتج: معكوس',off:'تيار المنتج: عادي'},{k:'f',l:'',sw:true,v:0,on:'تيار المجال: معكوس',off:'تيار المجال: عادي'}],
+ calc:(s,P,B)=>{const rev=(s.a?1:0)^(s.f?1:0);
+  return {facts:[['اتجاه العزم',rev?'<span dir="rtl" style="font-family:var(--font)">ضد الدوران</span>':'<span dir="rtl" style="font-family:var(--font)">مع الدوران</span>',rev?'hi':''],['الحالة',rev?'<span dir="rtl" style="font-family:var(--font)">فرملة بالتبديل</span>':'<span dir="rtl" style="font-family:var(--font)">تشغيل عادي</span>']],
+   msg:rev?(s.a?'هذا ما يفضّله الكتاب: عكس تيار المنتج. تتباطأ السرعة حتى الصفر، ثم يدور المحرك عكسياً إن لم يفصل جهاز خاص التيار عند السرعة صفر.':'عكس المجال يعكس العزم أيضاً، لكن الكتاب يقول إن الأنسب عكس تيار المنتج.'):(s.a&&s.f?'العكسان يلغي أحدهما الآخر: لا فرملة.':'لا شيء معكوس: العزم مع الدوران.'),cls:rev?'':(s.a&&s.f?'warn':'')}}})}
    ]},
 
   {st:2,short:'ضعف الجهد والشكل 6-3',title:'ضعف جهد المصدر على المنتج والشكل <span class="ltr">(6&#8209;3)</span>',ref:'ص 74–75',
@@ -701,7 +969,18 @@ B.lesson(FIXL({
     {tip:String.raw`<table class="tt"><thead><tr><th>المزايا</th><th>العيوب</th></tr></thead><tbody>
      <tr><td>طريقة فعالة لفرملة المحرك</td><td>طاقة مهدرة من المصدر، فوق طاقة الكتل المتحركة المطلوب تبديدها</td></tr>
      <tr><td></td><td>احتمال عدم الدقة في فصل المصدر عند وصول السرعة إلى الصفر</td></tr></tbody></table>`,title:'مزايا وعيوب التبديل كما ذكرها الكتاب'},
-    {watch:String.raw`<p>«تماماً كما يحدث عند بدء الحركة»: عند البدء تكون القوة الدافعة صفراً فيكون التيار كبيراً ونضيف مقاومة بدء. وعند التبديل الوضع أسوأ: القوة الدافعة <b>تُضاف</b> إلى الجهد، فالمقاومة المطلوبة أكبر.</p>`}
+    {watch:String.raw`<p>«تماماً كما يحدث عند بدء الحركة»: عند البدء تكون القوة الدافعة صفراً فيكون التيار كبيراً ونضيف مقاومة بدء. وعند التبديل الوضع أسوأ: القوة الدافعة <b>تُضاف</b> إلى الجهد، فالمقاومة المطلوبة أكبر.</p>`},
+    {title:'مختبر مصغّر: لحظة التبديل',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (6-3): \\(V=220\\ \\text{V}\\)، \\(E_b=210.5\\ \\text{V}\\)، \\(R_a=0.1\\ \\Omega\\)، والمقاومة الإضافية \\(R=3.212\\ \\Omega\\). اختر قبل التبديل أو بعده، ووصّل \\(R\\) أو افصلها.',
+ predict:{q:'بعد تبديل طرفي المنتج مباشرة، ما الجهد الذي يدفع التيار في دائرة المنتج؟',opts:[
+  ['\\(V-E_b=9.5\\ \\text{V}\\)',false,'هذا قبل التبديل، حين كانت القوة الدافعة تضاد جهد المصدر.'],
+  ['\\(V+E_b=430.5\\ \\text{V}\\)',true,'القوة الدافعة تصبح مضافة لجهد المصدر: «ضعف جهد المصدر» تقريباً (ص 74).'],
+  ['\\(V=220\\ \\text{V}\\) فقط',false,'المحرك ما زال يدور، فقوته الدافعة ما زالت موجودة وتُضاف.']]},
+ ins:[{k:'p',l:'اللحظة',seg:[['b','قبل التبديل (تشغيل)'],['a','بعد التبديل مباشرة']],v:'a'},{k:'r',l:'',sw:true,v:0,on:'المقاومة الإضافية R: موصلة',off:'المقاومة الإضافية R: غير موصلة'}],
+ calc:(s,P,B)=>{const Rt=0.1+(s.r&&s.p==='a'?3.212:0),U=s.p==='b'?220-210.5:220+210.5,I=U/Rt,bad=I>200;
+  return {facts:[['الجهد الدافع في الدائرة',DCML.fm(B,U,1)+' V'],['R<sub>t</sub>',DCML.fm(B,Rt,3)+' Ω'],['تيار المنتج',DCML.fm(B,I,0)+' A',bad?'bad':'hi']],
+   bars:[{l:'تيار المنتج (المقياس حتى 4400 A)',v:I,max:4400,txt:DCML.fm(B,I,0)+' A',col:bad?'--stop':'--on'}],
+   msg:s.p==='b'?'التشغيل العادي: \\(I_a=(220-210.5)/0.1=95\\ \\text{A}\\)، تيار الحمل الكامل. المقاومة \\(R\\) لا تدخل الدائرة إلا لحظة التبديل.'
+    :(s.r?'مع \\(R\\) يصبح التيار الابتدائي <span class="ltr">130 A</span>، الحد المطلوب في المثال.':'بلا مقاومة إضافية: <span class="ltr">430.5 ÷ 0.1 ≈ 4305 A</span> — أكثر من أربعين ضعف تيار الحمل الكامل، فتتلف ملفات المنتج.'),cls:bad?'bad':''}}})}
    ]},
 
   {st:3,short:'حساب المقاومة والعزم',title:'حساب القوة الدافعة والمقاومة الإضافية وعزم الفرملة',ref:'ص 75',
@@ -751,9 +1030,16 @@ B.lesson(FIXL({
      <tr><td>الديناميكية</td><td>مقاومة \(R\) بعد فصل المصدر</td><td>حرارة في \(R\)</td><td>تتباطأ تدريجياً</td><td>يفضّل خفض \(R\) أو زيادة المجال لتثبيت التيار</td></tr>
      <tr><td>التبديل</td><td>المصدر معكوس الطرفين مع \(R\) على التوالي</td><td>حرارة في \(R\)، ومعها طاقة إضافية من المصدر</td><td>نعم بسرعة — ثم يعكس إن لم يُفصل</td><td>ضعف الجهد على المنتج؛ يلزم جهاز فصل عند السرعة صفر</td></tr></tbody></table></div>`,title:'جدول المقارنة (تلخيص من نص الكتاب)'},
     {tip:String.raw`<p>المعادلتان اللتان تحسب بهما المقاومة:</p>
-     <div class="eq">$$\text{Dynamic:}\quad E_b=I_b(R_a+R)$$<span class="eqno">(6-5)</span></div>
-     <div class="eq">$$\text{Plugging:}\quad E_b+V=I_b(R_a+R)$$<span class="eqno">(6-7)</span></div>
-     <p>الفرق الوحيد إضافة \(V\) في التبديل، لأن المصدر باقٍ في الدائرة ومعكوس.</p>`}
+     <p>الديناميكية:</p><div class="eq">$$E_b=I_b\,R_t$$<span class="eqno">(6-5)</span></div>
+     <p>التبديل:</p><div class="eq">$$E_b+V=I_b\,R_t$$<span class="eqno">(6-7)</span></div><p>حيث \(R_t=R_a+R\) في الحالتين.</p>
+     <p>الفرق الوحيد إضافة \(V\) في التبديل، لأن المصدر باقٍ في الدائرة ومعكوس.</p>`},
+    {title:'مختبر مصغّر: أي طريقة هذه؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عبارة اختر طريقة الفرملة التي تصفها.',cats:['إعادة التوليد','الديناميكية','التبديل'],items:[
+ ['الطاقة تعود إلى المصدر',0,'المحرك يبقى موصلاً بالمصدر ويعمل مولداً (ص 69).'],
+ ['يُفصل المنتج عن المصدر ويوصل بمقاومة إضافية',1,'الطاقة تتحول حرارة في \\(R\\) (ص 72).'],
+ ['يلزم جهاز يفصل التيار عند السرعة صفر',2,'وإلا بدأ المحرك يدور في الاتجاه المضاد (ص 74).'],
+ ['تخفض السرعة فقط ولا توقف المحرك',0,'تحتاج \\(E\\gt V\\)، وهذا لا يتحقق في السرعات المنخفضة.'],
+ ['طاقة مهدرة من المصدر فوق طاقة الكتل المتحركة',2,'من عيوب التبديل التي ذكرها الكتاب (ص 75).'],
+ ['المقاومة من \\(E_b=I_b(R_a+R)\\)',1,'المعادلة (6-5)؛ وفي التبديل نضيف \\(V\\): (6-7).']]})}
    ]},
 
   {st:5,short:'مثال 6-3',title:'مثال <span class="ltr">(6&#8209;3)</span>: المقاومة وعزم الفرملة بالتبديل',ref:'ص 76–77',
@@ -784,7 +1070,17 @@ B.lesson(FIXL({
      <div class="eq">$$I_{b0.5}=\frac{220+105.25}{3.3123}=98.2\ \text{A}$$</div>
      <div class="eq">$$T_{b0.5}=293\times\frac{98.2}{95}=302\ \text{Nm}$$</div>`,ref:'ص 76–77'},
     {watch:String.raw`<p>في الجزء الثالث طُبع \(V+E_{b0.5}=220+210.5=430.5\ \text{V}\)، والصحيح \(220+105.25=325.25\ \text{V}\)، وهو ما استُعمل فعلاً في السطر التالي (\(I_{b0.5}=98.2\ \text{A}\) صحيح). وطُبع \(R_t\) في ذلك السطر 3.3123 والسابق 3.312 (الدقيق 3.3115) — لا أثر له. وطُبع \(T_{b0.5}=302\ \text{Nm}\) والناتج 302.9 ≈ <b><span class="ltr">303 Nm</span></b>. وفي ص 77 تكررت أسطر حساب \(T_f\) و\(T_b\) دون جديد. الحل كما في الكتاب والحل المصحح في تبويب «الأمثلة المحلولة».</p>`,fix:true},
-    {tip:String.raw`<p>الرمز \(I_f\) في \(T_f/T_b=I_f/I_b\) يعني هنا <b>تيار الحمل الكامل</b> (<span class="ltr">95&nbsp;A</span>، و f من full load)، لا تيار المجال. وعزم الحمل الكامل \(T_f\) حُسب من القدرة المقننة <span class="ltr">18.4&nbsp;kW</span> والسرعة <span class="ltr">600&nbsp;rpm</span>.</p>`}
+    {tip:String.raw`<p>الرمز \(I_f\) في \(T_f/T_b=I_f/I_b\) يعني هنا <b>تيار الحمل الكامل</b> (<span class="ltr">95&nbsp;A</span>، و f من full load)، لا تيار المجال. وعزم الحمل الكامل \(T_f\) حُسب من القدرة المقننة <span class="ltr">18.4&nbsp;kW</span> والسرعة <span class="ltr">600&nbsp;rpm</span>.</p>`},
+    {title:'مختبر مصغّر: سطر 430.5 عند نصف السرعة',widget:(el,B)=>DCML.lab(el,B,{intro:'في الجزء الثالث من المثال طُبع \\(V+E_{b0.5}=430.5\\ \\text{V}\\). بدّل بين المطبوع والصحيح، وشاهد أيهما يتفق مع ما يحدث فعلاً عند نصف السرعة (\\(R_t=3.312\\ \\Omega\\)).',
+ predict:{q:'لو كان الجهد الدافع عند نصف السرعة <span class="ltr">430.5 V</span> كما طُبع، كم يكون تيار الفرملة؟',opts:[
+  ['<span class="ltr">≈ 98.2 A</span>',false,'هذا ما في الكتاب، لكنه ناتج <span class="ltr">325.25 ÷ 3.3123</span> لا 430.5.'],
+  ['<span class="ltr">130 A</span>، مثل لحظة بدء الفرملة',true,'وهذا مستحيل: القوة الدافعة نقصت إلى النصف فلا بد أن ينقص التيار. فالسطر المطبوع خطأ، والصحيح <span class="ltr">325.25 V</span>.'],
+  ['صفر',false,'الصفر لا يكون حتى عند التوقف في التبديل (يبقى \\(V/R_t\\)).']]},
+ ins:[{k:'u',l:'الجهد الدافع عند نصف السرعة',seg:[[430.5,'430.5 V (كما طُبع)'],[325.25,'325.25 V (الصحيح)']],v:325.25}],
+ calc:(s,P,B)=>{const I=s.u/3.3123,T=293*I/95,bk=s.u>400;
+  return {facts:[['I<sub>b0.5</sub>',DCML.fm(B,I,1)+' A',bk?'bad':'hi'],['T<sub>b0.5</sub> = 293 × I ÷ 95',DCML.fm(B,T,1)+' Nm',bk?'bad':'hi']],
+   bars:[{l:'تيار لحظة بدء الفرملة',v:130,max:140,txt:'130 A',col:'--muted'},{l:'تيار الفرملة عند نصف السرعة',v:I,max:140,txt:DCML.fm(B,I,1)+' A',col:bk?'--stop':'--on'}],
+   msg:bk?'التيار لم ينقص مع أن السرعة نقصت إلى النصف — يناقض قاعدة ص 75. السطر المطبوع خطأ.':'\\(220+105.25=325.25\\ \\text{V}\\) يعطي <span class="ltr">98.2 A</span> كما في الكتاب، والعزم <span class="ltr">302.9 ≈ 303 Nm</span> (طُبع 302).',cls:bk?'bad':''}}})}
    ]},
 
   {st:6,short:'مثال 6-4',title:'مثال <span class="ltr">(6&#8209;4)</span>: محرك <span class="ltr">400&nbsp;V</span> بالتبديل',ref:'ص 77',
@@ -811,7 +1107,16 @@ B.lesson(FIXL({
      <div class="eq">$$I_{b0.5}=\frac{400+190}{2.6}=226.92\ \text{A}$$</div>
      <div class="eq">$$T_{b0.5}=1209.2\times\frac{226.92}{200}=1371.96\ \text{Nm}$$</div>`,ref:'ص 77'},
     {watch:String.raw`<p>\(T_f=380\times200/62.8\) طُبع <b>1209.2</b> والناتج <b>1210.2</b> Nm؛ ثم \(T_b\) طُبع 1815.3 وهو ناتج 1210.2 × 1.5 (أي أن 1209.2 خطأ في النقل)، بينما \(T_{b0.5}=1371.96\) حُسب بالرقم الخاطئ 1209.2، والصحيح <b><span class="ltr">1373.1 Nm</span></b>. الحل كما في الكتاب والحل المصحح في تبويب «الأمثلة المحلولة».</p>`,fix:true},
-    {watch:String.raw`<p>الكتاب غير متسق في حساب عزم الحمل الكامل: في مثال (6-3) من القدرة المقننة الخارجة \(P/\omega\)، وفي مثال (6-4) من القدرة الكهرومغناطيسية \(E_bI_a/\omega\) (لأن المثال لا يعطي القدرة المقننة).</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب غير متسق في حساب عزم الحمل الكامل: في مثال (6-3) من القدرة المقننة الخارجة \(P/\omega\)، وفي مثال (6-4) من القدرة الكهرومغناطيسية \(E_bI_a/\omega\) (لأن المثال لا يعطي القدرة المقننة).</p>`,fix:true},
+    {title:'مختبر مصغّر: راجع حساب العزم',widget:(el,B)=>DCML.cases(el,B,{intro:'احسب بالحاسبة ثم اختر. (الأرقام من مثال (6-4).)',cases:[
+ {q:'عزم الحمل الكامل \\(T_f=\\dfrac{380\\times200}{62.8}\\):',opts:[
+  ['<span class="ltr">1209.2 Nm</span>',false,'هذا ما طُبع، وهو خطأ في النقل.'],
+  ['<span class="ltr">1210.2 Nm</span>',true,'<span class="ltr">76000 ÷ 62.8 = 1210.2</span>؛ والكتاب نفسه استعمل 1210.2 في \\(T_b=1815.3\\).'],
+  ['<span class="ltr">1815.3 Nm</span>',false,'هذا العزم الابتدائي للفرملة \\(T_b\\)، لا عزم الحمل الكامل.']]},
+ {q:'عزم الفرملة عند نصف السرعة \\(T_{b0.5}=T_f\\times\\dfrac{226.92}{200}\\) بالرقم الصحيح لـ \\(T_f\\):',opts:[
+  ['<span class="ltr">1371.96 Nm</span>',false,'هذا ناتج الرقم الخاطئ 1209.2.'],
+  ['<span class="ltr">1373.1 Nm</span>',true,'<span class="ltr">1210.2 × 1.1346 ≈ 1373.1 Nm</span>.'],
+  ['<span class="ltr">1815.3 Nm</span>',false,'هذا عند لحظة بدء الفرملة؛ عند نصف السرعة ينقص التيار فينقص العزم.']]}]})}
    ]},
 
   {st:7,short:'أسئلة الدرس',title:'أسئلة وتمارين: <span class="ltr">6&#8209;2</span> و<span class="ltr">6&#8209;5</span>',ref:'ص 78',
@@ -829,7 +1134,16 @@ B.lesson(FIXL({
      <p><b>6-5</b> محرك للتيار المستمر (تغذية مستقلة)، <span class="ltr">25</span> حصان، <span class="ltr">400&nbsp;V</span>، ومقاومة المنتج <span class="ltr">0.2&nbsp;Ω</span>، سرعته عند الحمل الكامل <span class="ltr">450&nbsp;rpm</span>، كفاءته عند الحمل الكامل <span class="ltr">74.6&#37;</span>، مطلوب فرملته بالتيار المعكوس (التبديل) احسب:</p>
      <ul><li>قيمة المقاومة التي يجب توصيلها على التوالي مع دائرة المنتج، إذا كان أقصى تيار أثناء الفرملة ينبغي ألا يتعدى ضعف تيار الحمل الكامل.</li><li>أقصى عزم فرملي.</li><li>قيمة العزم عندما يتوقف المحرك.</li></ul>`,ref:'ص 78'},
     {tip:String.raw`<p><b>لـ 6-2:</b> لكل طريقة اذكر: كيف يُوصل المنتج (الأشكال 6-1 و6-2 و6-3)، وأين تذهب الطاقة، والمعادلة التي تحسب بها المقاومة — جدول المحطة الرابعة يلخص ذلك.</p>
-     <p><b>لـ 6-5:</b> تيار الحمل الكامل غير معطى مباشرة؛ يُحسب من القدرة والكفاءة والجهد. والكتاب لا يعطي تحويل الحصان إلى واط في هذه الوحدة؛ الحل المقترح في تبويب «الأمثلة المحلولة» يستعمل <span class="ltr">1 hp = 746&nbsp;W</span>.</p>`}
+     <p><b>لـ 6-5:</b> تيار الحمل الكامل غير معطى مباشرة؛ يُحسب من القدرة والكفاءة والجهد. والكتاب لا يعطي تحويل الحصان إلى واط في هذه الوحدة؛ الحل المقترح في تبويب «الأمثلة المحلولة» يستعمل <span class="ltr">1 hp = 746&nbsp;W</span>.</p>`},
+    {title:'مختبر مصغّر: قرارات في التمرين 6-5',widget:(el,B)=>DCML.cases(el,B,{intro:'قراران يحددان حل التمرين قبل الأرقام. (الأرقام في الأسباب من الحل المقترح، بافتراض <span class="ltr">1 hp = 746 W</span>.)',cases:[
+ {q:'تيار الحمل الكامل غير معطى. كيف نحسبه؟',opts:[
+  ['\\(I_f=\\dfrac{P_o}{V}\\)',false,'نسيت الكفاءة: القدرة الداخلة أكبر من القدرة الخارجة.'],
+  ['\\(I_f=\\dfrac{P_o}{\\eta\\,V}\\)',true,'\\(P_o=25\\times746=18650\\ \\text{W}\\)، \\(P_{in}=18650/0.746=25000\\ \\text{W}\\)، \\(I_f=25000/400=62.5\\ \\text{A}\\).'],
+  ['\\(I_f=\\dfrac{P_o\\,\\eta}{V}\\)',false,'الضرب في الكفاءة يعطي قدرة أقل؛ والداخل إلى المحرك أكبر من الخارج منه.']]},
+ {q:'عندما يتوقف المحرك (السرعة صفر)، أي تيار يمر في المنتج؟',opts:[
+  ['لا تيار',false,'في التبديل يبقى المصدر موصلاً، فيبقى تيار.'],
+  ['\\((V+E_b)/R_t\\)',false,'هذا عند لحظة بدء الفرملة، حين كانت \\(E_b\\) في أعلاها.'],
+  ['\\(V/R_t\\)',true,'عند التوقف \\(E_b=0\\): مع \\(R_t=787.5/125=6.3\\ \\Omega\\) يكون التيار ≈ <span class="ltr">63.5 A</span>، والعزم يتناسب معه.']]}]})}
    ]},
 
   {recap:[

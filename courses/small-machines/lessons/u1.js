@@ -443,7 +443,183 @@ B.lesson({
  title:'محركات الخطوة: تعريفها واستخداماتها وأنواعها',
  summary:'ما المحرك متدرج الحركة، ولماذا يُستخدم حيث نحتاج حركة دورانية بزاوية ثابتة يمكن التحكم في عددها وسرعتها وموضع توقفها بدقة.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:String.raw`أهداف الوحدة`,title:String.raw`ماذا ستتعلم في هذه الوحدة؟`,ref:String.raw`ص 7`,
    q:String.raw`قبل أن تبدأ: ما الأشياء التي يُفترض أن تقدر عليها بعد أن تنهي الوحدة الأولى؟`,
@@ -456,7 +632,13 @@ B.lesson({
      [String.raw`أن يتمكن المتدرب من حساب خطوة المحرك`,true,String.raw`خطوة المحرك تُحسب من المعادلة (١-١) في الدرس الثالث (ص 15).`]]}}],
    body:[
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة تركيب وأنواع محركات الخطوة واستخداماتها.</p><p><b>الأهداف التفصيلية:</b></p><ol><li>أن يعرف المتدرب تركيب وأنواع محركات الخطوة.</li><li>أن يعرف المتدرب التطبيقات التي تستخدم فيها محركات الخطوة.</li><li>أن يميز المتدرب بين أنواع محركات الخطوة.</li><li>أن يفهم المتدرب كيفية عمل محركات الخطوة.</li><li>أن يتمكن المتدرب من حساب خطوة المحرك.</li><li>أن يتمكن المتدرب من كتابة الجداول المنطقية لدوران محركات الخطوة في الاتجاه المطلوب.</li></ol>`,ref:'ص 7'},
-    {tip:String.raw`<p>لاحظ أن آخر هدفين عمليان: <b>حساب الخطوة</b> و<b>كتابة الجداول المنطقية</b>. هذان ما ستتدرب عليه كثيراً في الدروس القادمة وفي أسئلة آخر الوحدة.</p>`}]},
+    {tip:String.raw`<p>لاحظ أن آخر هدفين عمليان: <b>حساب الخطوة</b> و<b>كتابة الجداول المنطقية</b>. هذان ما ستتدرب عليه كثيراً في الدروس القادمة وفي أسئلة آخر الوحدة.</p>`},
+    {title:'مختبر مصغّر: أي هدف يخدمه هذا السؤال؟',widget:(el,B)=>DCML.sort(el,B,{intro:'هذه أسئلة ستقابلها في الوحدة. اضغط الهدف الذي يخدمه كل سؤال، ثم اقرأ السبب.',cats:['التركيب والأنواع','التطبيقات','حساب الخطوة','الجداول المنطقية'],items:[
+ ['ما الفرق بين دوار محرك الممانعة المتغيرة ودوار محرك الأقطاب الدائمة؟',0,'هذا سؤال عن تركيب الأنواع والتمييز بينها (الدروس الثاني والرابع والخامس).'],
+ ['لماذا يناسب محرك الخطوة طابعة الحاسب وآلات القطع؟',1,'هذا سؤال عن التطبيقات التي تستخدم فيها محركات الخطوة (هذا الدرس، ص 8).'],
+ ['محرك فيه ثلاث مجموعات ودوار بثمانية أسنان: كم درجة يدور مع كل نبضة؟',2,'هذا تطبيق للمعادلة (١-١) التي ستدرسها في الدرس الثالث.'],
+ ['اكتب بالأصفار والآحاد ترتيب تغذية المجموعات ليدور المحرك مع عقارب الساعة.',3,'هذا هو «الجدول المنطقي لدوران المحرك في الاتجاه المطلوب» (الدروس الثاني إلى السادس).']]})}
+   ]},
 
   {st:2,short:String.raw`ما محرك الخطوة؟`,title:String.raw`محركات الخطوة (Stepping Motors)`,ref:String.raw`ص 8`,
    q:String.raw`المحرك العادي يدور ما دام موصولاً بالمصدر… فكيف نجعل محركاً يدور زاوية محددة بالضبط ثم يقف؟`,
@@ -470,7 +652,22 @@ B.lesson({
    body:[
     {book:String.raw`<p>تسمى أيضًا <b>المحركات متدرجة الحركة</b>، وقد عرفت منذ زمن بعيد، إلا أن إنتاجها تجاريًا بدأ في <b>الستينيات الميلادية</b>، بعد التقدم العلمي الذي أحرز في مجال إلكترونيات القدرة، وفي إمكانية توصيل وفصل تيار مستمر ذي قيمة عالية في ملفات المحركات، ولقد بدأ التفكير في استخدامها عندما بدأ الطلب على جهاز يمكن أن يعطي حركة دورانية في صورة <b>انحراف زاوي ثابت</b>. ومن أهم مميزات هذا النوع من المحركات أنه <b>يمكن التحكم في عدد دوراته وسرعة دورانه وزاوية التوقف بدقة</b>.</p>`,ref:'ص 8'},
     {tip:String.raw`<p>«انحراف زاوي ثابت» يعني أن الدوار يتحرك بقفزات متساوية اسمها <b>الخطوة</b>. كل مرة نوصل فيها التيار إلى ملفات مجموعة ونفصله (نبضة) يتقدم الدوار خطوة واحدة ثم يقف ممسكاً بمكانه.</p><ul><li>عدد النبضات ← الزاوية الكلية (أين يقف).</li><li>سرعة النبضات ← سرعة الدوران.</li></ul>`,title:'الفكرة في سطرين'},
-    {watch:String.raw`<p>محرك الخطوة يُغذّى بـ<b>تيار مستمر</b> يوصل ويفصل في ملفاته بالترتيب، ولا يُوصل مباشرة بمصدر متردد كالمحركات العادية. لهذا احتاج إنتاجه إلى تقدم إلكترونيات القدرة.</p>`}]},
+    {watch:String.raw`<p>محرك الخطوة يُغذّى بـ<b>تيار مستمر</b> يوصل ويفصل في ملفاته بالترتيب، ولا يُوصل مباشرة بمصدر متردد كالمحركات العادية. لهذا احتاج إنتاجه إلى تقدم إلكترونيات القدرة.</p>`},
+    {title:'مختبر مصغّر: النبضات تحدد الزاوية والسرعة',widget:(el,B)=>DCML.lab(el,B,{intro:'محرك خطوته <span class="ltr">15°</span> (محرك الشكل <span class="ltr">(١-٢)</span>، ص 10). اختر عدد النبضات وسرعة إرسالها (أرقام تختارها أنت)، وشاهد أين يقف المؤشر على عمود المحرك.',
+ predict:{q:'أرسلنا إلى هذا المحرك <span class="ltr">6</span> نبضات ثم توقفنا. ماذا يفعل الدوار؟',opts:[
+  ['يستمر في الدوران ما دام المحرك موصولاً',false,'محرك الخطوة لا يدور دوراناً مستمراً: كل نبضة تقدّمه خطوة واحدة فقط، ثم يقف ممسكاً بمكانه.'],
+  ['يدور <span class="ltr">6°</span> ويقف',false,'كل نبضة تعطي خطوة كاملة من خطوات المحرك، أي <span class="ltr">15°</span> لا <span class="ltr">1°</span>.'],
+  ['يدور <span class="ltr">90°</span> ثم يقف ويثبت مكانه',true,'كل نبضة خطوة: <span class="ltr">6 × 15° = 90°</span>. لهذا نعرف مكان التوقف من عدد النبضات وحده.']]},
+ ins:[{k:'n',l:'عدد النبضات المرسلة',min:0,max:24,step:1,v:6,dp:0},{k:'r',l:'سرعة إرسال النبضات (نبضة في الثانية)',seg:[[1,'1'],[4,'4'],[10,'10']],v:4}],
+ calc:(s,P,B)=>{const th=s.n*15,cx=110,cy=100,R=72,D=Math.PI/180,pt=(a,r)=>[(cx-r*Math.sin(a*D)).toFixed(1),(cy-r*Math.cos(a*D)).toFixed(1)];
+  let t='';for(let k=0;k<24;k++){const [x1,y1]=pt(k*15,R),[x2,y2]=pt(k*15,R-(k%6?6:12));t+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--fg)" stroke-width="${k%6?1:2}"/>`}
+  const a=th%360,[px,py]=pt(a,R-16);const big=a>180?1:0,[ax,ay]=pt(a,R+8),[sx,sy]=pt(0,R+8);
+  const arc=a>0?`<path d="M${sx} ${sy}A${R+8} ${R+8} 0 ${big} 0 ${ax} ${ay}" fill="none" stroke="var(--blue)" stroke-width="3"/>`:'';
+  const pic=`<svg viewBox="0 0 220 200" role="img" aria-label="مؤشر على عمود المحرك" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/>${t}${arc}<line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="var(--live)" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="8" fill="var(--fg)"/><text x="${cx}" y="${cy-R-14}" text-anchor="middle" font-size="12" fill="var(--muted)">0°</text></svg>`;
+  const rpm=s.r*15/360*60;
+  return {pic,facts:[['الزاوية الكلية',DCML.fm(B,th,0)+'°','hi'],['عدد الدورات',DCML.fm(B,th/360,th%360?2:0)],['زمن الحركة',DCML.fm(B,s.n/s.r,1)+' s'],['السرعة أثناء الحركة',DCML.fm(B,rpm,1)+' rpm']],
+   msg:s.n===0?'لم نرسل نبضات: الدوار واقف في مكانه.':`<span class="ltr">${s.n} × 15° = ${th}°</span> ضد عقارب الساعة. عدد النبضات يحدد <b>أين يقف</b>، وسرعة إرسالها تحدد <b>سرعة الدوران</b> فقط.`}}})}
+   ]},
 
   {st:3,short:String.raw`استخداماته`,title:String.raw`أين يُستخدم محرك الخطوة؟`,ref:String.raw`ص 8`,
    q:String.raw`ما الذي يجمع بين الطابعة وذراع الروبوت وآلة القطع؟`,
@@ -484,7 +681,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>يمكن ربط محرك الخطوة مع الحاسب الآلي أو المعالجات الصغيرة، التي تتحكم في أداء وظائف محددة لبعض الآلات مثل <b>آلات القطع</b> حيث يمكن استخدام هذا النوع من المحركات مع صندوق للتروس لتثبيت آلة القطع والقطعة المراد تشكيلها خلال فترة التشغيل، مثال آخر لاستخدامات محركات الخطوة، هو استعمالها في <b>طابعات الحاسب الآلي</b>، حيث يكون من المطلوب دوران المحرك بزاوية محددة، لتحريك ورق الطباعة مسافة محددة، حسب الفواصل بين الأسطر، ثم ثباته بعد ذلك حتى الانتهاء من طباعة السطر، وكذلك يستعمل محرك الخطوة في <b>مشغل الأقراص المرنة أو المدمجة</b> في أجهزة الحاسب الآلي. ويستخدم هذا المحرك في <b>التطبيقات الروبوتية</b> نظرًا لإمكانية التحكم في إيقافه عند زاوية محددة وفي تطبيقات أخرى كثيرة لا حصر لها في الصناعة والأجهزة الطبية والعدادات الرقمية.</p>`,ref:'ص 8'},
     {tip:String.raw`<p>في كل هذه الأمثلة نحتاج الشيء نفسه: <b>حركة بمقدار معروف ثم وقوف في مكان معروف</b>، دون حساسات معقدة. الحاسب يرسل عدداً من النبضات، فيعرف أين وقف المحرك.</p>`},
-    {add:String.raw`<p>تجد محركات الخطوة اليوم في <b>الطابعات ثلاثية الأبعاد</b> (تحريك رأس الطباعة والقاعدة)، وفي <b>ماكينات التفريز والقطع الصغيرة <span class="ltr">CNC</span></b>، وفي <b>كاميرات المراقبة</b> التي تدور وتقف على زاوية محددة.</p>`,title:'اليوم'}]},
+    {add:String.raw`<p>تجد محركات الخطوة اليوم في <b>الطابعات ثلاثية الأبعاد</b> (تحريك رأس الطباعة والقاعدة)، وفي <b>ماكينات التفريز والقطع الصغيرة <span class="ltr">CNC</span></b>، وفي <b>كاميرات المراقبة</b> التي تدور وتقف على زاوية محددة.</p>`,title:'اليوم'},
+    {title:'تحقق سريع: لماذا محرك الخطوة هنا؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 8).',items:[
+ ['في الطابعة يدور المحرك باستمرار طوال طباعة السطر.',false,'الكتاب: يدور «بزاوية محددة، لتحريك ورق الطباعة مسافة محددة… ثم ثباته بعد ذلك حتى الانتهاء من طباعة السطر».'],
+ ['يمكن ربط محرك الخطوة مع الحاسب الآلي أو المعالجات الصغيرة التي تتحكم في وظائف بعض الآلات.',true,'هذا نص الكتاب، ومن أمثلته آلات القطع.'],
+ ['في آلات القطع يُستعمل محرك الخطوة مع صندوق للتروس لتثبيت آلة القطع والقطعة المراد تشكيلها.',true,'هذا ما يذكره الكتاب عن آلات القطع.'],
+ ['يُستخدم في التطبيقات الروبوتية لأن قدرته أكبر من المحركات الأخرى.',false,'السبب في الكتاب هو إمكانية التحكم في إيقافه عند زاوية محددة، لا القدرة.']]})}
+   ]},
 
   {st:4,short:String.raw`أنواعه`,title:String.raw`أنواع محركات الخطوة`,ref:String.raw`ص 8`,
    q:String.raw`يقول الكتاب «نوعين رئيسيين» ثم يعدّد ثلاثة بنود… فكيف نفهم ذلك؟`,
@@ -498,7 +701,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>هناك أنواع كثيرة من محركات الخطوة، ولكن يمكن تقسيمها إلى نوعين رئيسيين:</p><ol><li>محركات الخطوة ذات الممانعة المغناطيسية المتغيرة <span class="ref">ص 8</span></li><li>محركات الخطوة ذات الأقطاب المغناطيسية الدائمة <span class="ref">ص 15</span></li><li>محركات الخطوة ذات الأقطاب المغناطيسية الدائمة على طول المحور الدوار: محرك الخطوة الهجين <span class="ltr">Hybrid stepper motor</span> <span class="ref">ص 18</span></li></ol>`,ref:'ص 8، 15، 18'},
     {watch:String.raw`<p>يقول الكتاب (ص 8) «يمكن تقسيمها إلى <b>نوعين</b> رئيسيين» ثم يعرض <b>ثلاثة</b> بنود مرقمة. يُفهم من النص (ص 18) أن الهجين «شكل آخر من أشكال محركات الخطوة ذات الأقطاب المغناطيسية الدائمة»، فيكون النوعان الرئيسيان: الممانعة المتغيرة، والأقطاب الدائمة (ومنها الهجين).</p>`,fix:true},
-    {tip:String.raw`<p>الفرق الأساسي في <b>الدوار</b>: في الممانعة المتغيرة حديد مسنن فقط، وفي الأقطاب الدائمة مغناطيس. ستدرس كل نوع في درس مستقل: الممانعة المتغيرة في الدرسين الثاني والثالث، والأقطاب الدائمة في الرابع، والهجين في الخامس والسادس.</p>`}]},
+    {tip:String.raw`<p>الفرق الأساسي في <b>الدوار</b>: في الممانعة المتغيرة حديد مسنن فقط، وفي الأقطاب الدائمة مغناطيس. ستدرس كل نوع في درس مستقل: الممانعة المتغيرة في الدرسين الثاني والثالث، والأقطاب الدائمة في الرابع، والهجين في الخامس والسادس.</p>`},
+    {title:'مختبر مصغّر: إلى أي نوع ينتمي هذا الوصف؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الفرق بين الأنواع في الدوار أولاً. اختر النوع المناسب لكل وصف.',cats:['الممانعة المتغيرة','الأقطاب الدائمة','الهجين'],items:[
+ ['الدوار قطعة حديد ذات أسنان بارزة، بلا مغناطيس ولا ملفات.',0,'«العضو الدوار يتركب من أسنان بارزة» من شرائح الحديد (ص 9).'],
+ ['الدوار أسطوانة عليها أربعة أقطاب مغناطيسية دائمة.',1,'هذا محرك الشكل <span class="ltr">(١-٨)</span> ذو الأقطاب الدائمة (ص 15).'],
+ ['مغناطيس دائم على طول محور الدوار، وفي كل طرف قطعة حديد مسننة، والطرفان مزاحان نصف سن.',2,'هذا تركيب المحرك الهجين في الشكل <span class="ltr">(١-١١)</span> (ص 18).'],
+ ['لا بد أن يحتوي الثابت على ثلاث مجموعات على الأقل ليدور في الاتجاهين.',0,'هذا شرط محركات الممانعة المتغيرة (ص 11)؛ محرك الأقطاب الدائمة تكفيه مجموعتان.']]})}
+   ]},
 
   {st:5,short:String.raw`الشكل (١-١)`,title:String.raw`قطاع في محرك خطوة حقيقي: الشكل (١-١)`,ref:String.raw`ص 9`,
    q:String.raw`لو فتحت محرك خطوة من طابعة قديمة، ماذا سترى بداخله؟`,
@@ -512,7 +721,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>الشكل (١-١) يوضح قطاعًا في أحد محركات الخطوة ذات الممانعة المتغيرة يحتوي على ثمانية أقطاب على عضوه الثابت.</p><p class="sub">شكل (١-١) قطاع في محرك خطوة ذي الممانعة المتغيرة.</p>`,ref:'ص 9'},
     {tip:String.raw`<p>في الصورة: <b>ثمانية أقطاب</b> بارزة نحو الداخل وعلى كل منها <b>ملف نحاسي</b>، و<b>دوار من الحديد</b> على محيطه أسنان كثيرة دقيقة، و<b>محمل كروي</b> في المركز، و<b>أربعة أسلاك</b> خارجة لتغذية الملفات. لا يوجد على الدوار أي ملف ولا أي سلك.</p>`},
-    {add:String.raw`<p>كلما كثرت أسنان الدوار صغرت الخطوة وزادت دقة المحرك؛ لذلك ترى في المحركات الحقيقية أسناناً دقيقة كثيرة. ستعرف السبب بالحساب في الدرس الثالث.</p>`,title:'لماذا الأسنان كثيرة؟'}]},
+    {add:String.raw`<p>كلما كثرت أسنان الدوار صغرت الخطوة وزادت دقة المحرك؛ لذلك ترى في المحركات الحقيقية أسناناً دقيقة كثيرة. ستعرف السبب بالحساب في الدرس الثالث.</p>`,title:'لماذا الأسنان كثيرة؟'},
+    {title:'مختبر مصغّر: ما الجزء المظلّل؟',widget:(el,B)=>{const pic=h=>`<span style="display:block;max-width:230px;margin:0 auto 6px">${photoSVG(h)}</span>`;
+ const O=[['الأقطاب الثمانية','poles'],['الملفات','coils'],['الدوار المسنن','rotor'],['المحمل الكروي','bearing']];
+ const TX={poles:'ثمانية أقطاب بارزة على العضو الثابت.',coils:'على كل قطب ملف نحاسي؛ تغذية الملفات بالتتابع هي التي تُدير المحرك.',rotor:'الدوار من الحديد وعلى محيطه أسنان كثيرة دقيقة، ولا يوجد عليه ملف.',bearing:'محمل كروي في المركز يحمل عمود الدوار.'};
+ const mk=k=>({q:pic(k)+'رسم مبسّط للشكل <span class="ltr">(١-١)</span>: ما الجزء المظلّل (أو المحاط بالأزرق)؟',opts:O.map(([l,v])=>[l,v===k,TX[v]])});
+ DCML.cases(el,B,{intro:'ثلاثة أسئلة على أجزاء المحرك المفتوح في الشكل <span class="ltr">(١-١)</span>.',cases:[mk('rotor'),mk('coils'),mk('bearing')]})}}
+   ]},
 
   {recap:[
    String.raw`محرك الخطوة (المحرك متدرج الحركة) يدور بانحراف زاوي ثابت مع كل نبضة ثم يثبت، فيمكن التحكم في عدد دوراته وسرعته وزاوية توقفه بدقة (ص 8).`,
@@ -574,7 +789,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>العضو الثابت لمحرك الخطوة ذي الممانعة المتغيرة، مجزأ على طول محوره إلى عدة مجموعات من الأقطاب (<span class="ltr">Stacks</span>)، المستقلة مغناطيسيًا عن بعضها، كل مجموعة من الأقطاب، يمكن إثارتها مغناطيسيًا بواسطة ملفات مستقلة (<span class="ltr">Phases</span>)، العضو الدوار يتركب من <b>أسنان بارزة</b>، كل من العضو الثابت والدوار يصنع من <b>شرائح الحديد</b>، لإمكانية التغيير السريع للمجال المغناطيسي دون أن يكون مصحوبًا بمفاقيد التيارات الدوامية (<span class="ltr">eddy current losses</span>). كل مجموعة (<span class="ltr">Stack</span>) من مجموعات العضو الثابت، ملفوفة بملفات كي تعطي مجالًا مغناطيسيًا في اتجاه قطر المحرك، وبحيث تكون <b>الأقطاب المتجاورة مختلفة في قطبيتها</b> عن بعضها.</p>`,ref:'ص 8–9'},
     {tip:String.raw`<p><b>الممانعة المغناطيسية</b> هي «صعوبة» مرور خطوط المجال. الهواء ممانعته كبيرة والحديد ممانعته صغيرة. عندما تُغذّى مجموعة، تسحب خطوطُ مجالها أقرب أسنان الحديد إليها حتى يصير طريق المجال أقصر ما يمكن عبر الحديد (أقل ممانعة)، أي حتى تنطبق الأسنان على الأقطاب. لذلك سُمّي «ذا الممانعة المتغيرة».</p>`,title:'لماذا هذا الاسم؟'},
-    {tip:String.raw`<p><span class="ltr">Stack</span> = مجموعة أقطاب (شريحة من الثابت)، و<span class="ltr">Phase</span> = ملفات تلك المجموعة. في هذا الدرس نسمّي المجموعات <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">C</span>.</p>`,title:'كلمتان ستتكرران'}]},
+    {tip:String.raw`<p><span class="ltr">Stack</span> = مجموعة أقطاب (شريحة من الثابت)، و<span class="ltr">Phase</span> = ملفات تلك المجموعة. في هذا الدرس نسمّي المجموعات <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">C</span>.</p>`,title:'كلمتان ستتكرران'},
+    {title:'تحقق سريع: مكوّنات محرك الممانعة المتغيرة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 8–9).',items:[
+ ['على الدوار ملفات تُغذّى بالتيار مثل الثابت.',false,'الدوار «يتركب من أسنان بارزة» من شرائح الحديد فقط؛ الملفات على الثابت.'],
+ ['كل مجموعة أقطاب (Stack) مستقلة مغناطيسياً عن المجموعات الأخرى، ولها ملفاتها المستقلة (Phase).',true,'هذا نص الكتاب: مجموعات «مستقلة مغناطيسياً» يمكن إثارتها «بواسطة ملفات مستقلة».'],
+ ['الثابت والدوار من شرائح الحديد لإمكان التغيير السريع للمجال دون مفاقيد التيارات الدوامية.',true,'هذا سبب الشرائح كما يذكره الكتاب.'],
+ ['الدوار ينجذب إلى القطب المغذّى لأنه مغناطيس دائم.',false,'الدوار هنا حديد بلا مغناطيس؛ ينجذب لأن طريق المجال عبر الحديد أسهل (ممانعة أقل) من الهواء.']]})}
+   ]},
 
   {st:2,short:String.raw`تركيب الشكل (١-٢)`,title:String.raw`تركيب المحرك في الشكل (١-٢)`,ref:String.raw`ص 9–10`,
    q:String.raw`كم سناً على الدوار؟ وكم قطباً في كل مجموعة؟ ولماذا العددان متساويان؟`,
@@ -588,7 +809,19 @@ B.lesson({
    body:[
     {book:String.raw`<p>الرسم التوضيحي في الشكل (١-٢) يوضح تركيب محرك خطوة ذي الممانعة المتغيرة، المحرك المبين يحتوي على <b>عضو دوار ذي ثمانية أسنان</b>، و<b>عضو ثابت ذي ثلاث مجموعات من ثمانية أقطاب</b> على طول العضو الدوار، (وقد أمكن إنتاج محركات يحتوي عضوها الثابت على أكثر من ثلاث وحتى <b>سبع مجموعات</b> من الأقطاب، كل مجموعة بها عدد من الأقطاب مساوٍ لعدد أسنان الدوار). كل مجموعة مستقلة تمامًا بدوائرها المغناطيسية عن المجموعات الأخرى.</p>`+box(motorSVG(MOT.vr3,[1,0,0],0),660)+String.raw`<p class="sub">الشكل (١-٢) تركيب محرك الخطوة ذي الممانعة المتغيرة.</p>`,ref:'ص 9–10'},
     {tip:String.raw`<p>لأن عدد الأقطاب يساوي عدد الأسنان، فعندما تُغذّى مجموعة تنطبق <b>كل</b> أسنان الدوار على <b>كل</b> أقطابها في وقت واحد، فيثبت الدوار بقوة. والمجموعات الثلاث متشابهة تماماً، والفرق الوحيد بينها <b>زاوية</b> تركيبها حول المحور (المحطة التالية).</p>`},
-    {watch:String.raw`<p>الشكل يرسم المجموعات الثلاث جنباً إلى جنب لتراها معاً، لكنها في المحرك الحقيقي <b>خلف بعضها على المحور نفسه</b>، والدوار واحد يمر فيها كلها.</p>`}]},
+    {watch:String.raw`<p>الشكل يرسم المجموعات الثلاث جنباً إلى جنب لتراها معاً، لكنها في المحرك الحقيقي <b>خلف بعضها على المحور نفسه</b>، والدوار واحد يمر فيها كلها.</p>`},
+    {title:'مختبر مصغّر: غذِّ مجموعة واحدة وعُدّ الأسنان',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر المجموعة المغذّاة في محرك الشكل <span class="ltr">(١-٢)</span>، وشاهد كيف تنطبق أسنان الدوار على أقطابها، وكم تبعد عن أقطاب المجموعتين الأخريين.',
+ predict:{q:'عند تغذية المجموعة <span class="ltr">A</span>، كم سناً من أسنان الدوار الثمانية ينطبق على أقطابها في اللحظة نفسها؟',opts:[
+  ['سنّ واحد فقط، الأقرب إلى أحد الأقطاب',false,'لو انطبق سن واحد لبقيت الأقطاب الأخرى تشدّ الأسنان في اتجاهات مختلفة.'],
+  ['الأسنان الثمانية كلها',true,'في كل مجموعة عدد من الأقطاب «مساوٍ لعدد أسنان الدوار» (ص 10)، فتنطبق الأسنان كلها على الأقطاب كلها معاً.'],
+  ['سنّان متقابلان فقط',false,'المجموعة هنا ثمانية أقطاب لا قطبان؛ القطبان المتقابلان هما تصميم الشكل <span class="ltr">(١-٧)</span>.']]},
+ ins:[{k:'g',l:'المجموعة المغذّاة',seg:[[0,'A'],[1,'B'],[2,'C']],v:0}],
+ calc:(s,P,B)=>{const M=MOT.vr3,ph=[0,0,0];ph[s.g]=1;const th=settle(M,ph,0);
+  const off=k=>{const d=mod(th-M.e[k]+22.5,45)-22.5;return Math.abs(d)<0.05?0:d};
+  return {pic:motorSVG(M,ph,th,{noflux:1,compact:el.clientWidth<480}),
+   facts:M.labels.map((L,k)=>['المجموعة '+L,off(k)===0?'منطبقة':DCML.fm(B,Math.abs(off(k)),0)+'°',k===s.g?'hi':'']),
+   msg:`المجموعة <span class="ltr">${M.labels[s.g]}</span> مغذّاة: أسنان الدوار الثمانية على أقطابها الثمانية. أما المجموعتان الأخريان فأقطابهما مزاحة عن الأسنان <span class="ltr">15°</span>، وهذه الإزاحة هي التي ستصنع الخطوة.`}}})}
+   ]},
 
   {st:3,short:String.raw`كيفية العمل`,title:String.raw`كيفية عمل المحرك`,ref:String.raw`ص 10`,
    q:String.raw`المجموعات الثلاث متشابهة تماماً… فما الفرق الصغير بينها الذي يجعل الدوار يخطو؟`,
@@ -603,7 +836,19 @@ B.lesson({
    body:[
     {book:String.raw`<p>عند تغذية ملفات المجموعة "<span class="ltr">A</span>" بتيار مستمر، فإن أسنان الدوار تتجه وتثبت بحيث تكون محاورها منطبقة مع محاور أقطاب المجموعة "<span class="ltr">A</span>" للعضو الثابت، حيث إن المجموعة "<span class="ltr">B</span>" تشبه المجموعة "<span class="ltr">A</span>" من جميع الوجوه، ما عدا أنها <b>مختلفة معها في الزاوية بمقدار خمس عشرة درجة ضد اتجاه عقارب الساعة</b>، فإذا فصلت ملفات المجموعة "<span class="ltr">A</span>" وغذيت ملفات المجموعة "<span class="ltr">B</span>" بتيار مستمر، فإن المحرك سيولد عزم دوران يدفع الدوار خمس عشرة درجة في عكس اتجاه عقارب الساعة، ويثبت بحيث تكون محاور الدوار منطبقة مع محاور المجموعة "<span class="ltr">B</span>". المجموعة "<span class="ltr">C</span>" أيضًا لها أقطاب مختلفة في الزاوية بمقدار خمس عشرة درجة ضد اتجاه عقارب الساعة، بالنسبة للمجموعة "<span class="ltr">B</span>"، وعند فصل ملفات المجموعة "<span class="ltr">B</span>" وتغذية ملفات المجموعة "<span class="ltr">C</span>"، فإن المحرك سيولد عزم دوران يدفع الدوار خمس عشرة درجة أخرى في عكس اتجاه عقارب الساعة، ثم تكرر العملية بتغذية ملفات المجموعة "<span class="ltr">A</span>" من جديد وهكذا.</p>`,ref:'ص 10'},
     {tip:String.raw`<p>تغذية <span class="ltr">A</span> ← الأسنان على أقطاب <span class="ltr">A</span> ← نفصل <span class="ltr">A</span> ونغذي <span class="ltr">B</span> ← أقرب قطب من <span class="ltr">B</span> يسحب السن <span class="ltr">15°</span> ← الأسنان على أقطاب <span class="ltr">B</span> ← نفصل <span class="ltr">B</span> ونغذي <span class="ltr">C</span> ← <span class="ltr">15°</span> أخرى ← نعود إلى <span class="ltr">A</span>.</p>`,title:'السلسلة في سطر'},
-    {add:String.raw`<p>المسافة بين سنّين متجاورين في هذا الدوار ثُمن دورة، لأن فيه ثمانية أسنان، وتساوي ثلاث خطوات من خطوات هذا المحرك. بعد ثلاث خطوات (<span class="ltr">A</span> ثم <span class="ltr">B</span> ثم <span class="ltr">C</span> ثم <span class="ltr">A</span>) يكون كل سن قد وصل إلى مكان السن الذي قبله، فتتكرر الحركة نفسها.</p>`,title:'لماذا تتكرر بعد ثلاث خطوات؟'}]},
+    {add:String.raw`<p>المسافة بين سنّين متجاورين في هذا الدوار ثُمن دورة، لأن فيه ثمانية أسنان، وتساوي ثلاث خطوات من خطوات هذا المحرك. بعد ثلاث خطوات (<span class="ltr">A</span> ثم <span class="ltr">B</span> ثم <span class="ltr">C</span> ثم <span class="ltr">A</span>) يكون كل سن قد وصل إلى مكان السن الذي قبله، فتتكرر الحركة نفسها.</p>`,title:'لماذا تتكرر بعد ثلاث خطوات؟'},
+    {title:'مختبر مصغّر: غذِّ المجموعات بنفسك',widget:(el,B)=>{let th=0,last=0;return DCML.lab(el,B,{intro:'الدوار يبدأ منطبقاً على أقطاب <span class="ltr">A</span>. اضغط المجموعة التي تريد تغذيتها بعد ذلك (واحدة كل مرة)، وشاهد إلى أين يتحرك الدوار.',
+ predict:{q:'الدوار منطبق على أقطاب <span class="ltr">A</span>. فصلنا <span class="ltr">A</span> وغذّينا <span class="ltr">C</span> مباشرة (بدل <span class="ltr">B</span>). ماذا يحدث؟',opts:[
+  ['يدور <span class="ltr">30°</span> ضد عقارب الساعة',false,'أقطاب <span class="ltr">C</span> مزاحة <span class="ltr">30°</span> عن السن الذي كان على <span class="ltr">A</span>، لكن هناك سناً آخر أقرب إليها.'],
+  ['لا يتحرك، لأن C ليست المجموعة التالية في الترتيب',false,'الدوار لا يعرف «الترتيب»؛ ينجذب إلى أقرب قطب مغذّى.'],
+  ['يدور <span class="ltr">15°</span> مع عقارب الساعة',true,'الأسنان تنجذب «للقطب الأقرب» (ص 11): أقرب سن إلى أقطاب <span class="ltr">C</span> على بعد <span class="ltr">15°</span> في اتجاه عقارب الساعة.']]},
+ ins:[{k:'g',l:'المجموعة المغذّاة الآن',seg:[[0,'A'],[1,'B'],[2,'C']],v:0}],
+ calc:(s,P,B)=>{const M=MOT.vr3,ph=[0,0,0];ph[s.g]=1;let d=0;if(s.g!==last){const t0=th;th=settle(M,ph,th);th=Math.round(th*100)/100;d=th-t0;last=s.g}
+  const dir=v=>v>0?'ضد عقارب الساعة':'مع عقارب الساعة';
+  return {pic:motorSVG(M,ph,th,{noflux:1,compact:el.clientWidth<480}),
+   facts:[['المغذّاة الآن',M.labels[s.g],'hi'],['حركة هذه الضغطة',d?DCML.fm(B,Math.abs(d),0)+'° '+(d>0?'⟲':'⟳'):'0°'],['الزاوية من البداية',DCML.fm(B,Math.abs(th),0)+'° '+(th>0?'⟲':th<0?'⟳':'')]],
+   msg:d?`دار الدوار <span class="ltr">${DCML.fm(B,Math.abs(d),0)}°</span> ${dir(d)} إلى أقرب أسنان لأقطاب <span class="ltr">${M.labels[s.g]}</span>. جرّب الترتيب <span class="ltr">A, B, C</span> ثم <span class="ltr">A, C, B</span>.`:'اضغط مجموعة أخرى غير المغذّاة الآن.'}}})}}
+   ]},
 
   {st:4,short:String.raw`اتجاه الدوران`,title:String.raw`اتجاه الدوران، ولماذا ثلاث مجموعات على الأقل؟`,ref:String.raw`ص 10–11`,
    q:String.raw`كيف نعكس اتجاه الدوران دون أن نغيّر أي سلك في المحرك؟`,
@@ -642,7 +887,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>الجداول التالية توضح التسلسل المنطقي لتتابع تغذية ملفات مجموعات العضو الثابت ليخطو المحرك خطوة كاملة.</p>`+String.raw`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:start">`+String.raw`<div>`+tblFig(SEQ.t11,['A','B','C'])+String.raw`<p class="sub">الجدول (١-١) التسلسل المنطقي لتتابع تغذية الأوجه بحيث يخطو المحرك خطوات كاملة ضد عقارب الساعة.</p>`+String.raw`</div>`+String.raw`<div>`+tblFig(SEQ.t12,['A','B','C'])+String.raw`<p class="sub">الجدول (١-٢) التسلسل المنطقي لتتابع تغذية الأوجه بحيث يخطو المحرك خطوات كاملة مع عقارب الساعة.</p>`+String.raw`</div>`+String.raw`</div>`,ref:'ص 11'},
     {tip:String.raw`<p><b>1</b> = المجموعة مغذّاة، و<b>0</b> = غير مغذّاة. اقرأ الجدول من الأعلى إلى الأسفل: كل صف خطوة. عمود «الخطوة» أضفناه للترتيب فقط، والكتاب يعرض الأعمدة <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">C</span>.</p>`},
-    {tip:String.raw`<p>قارن الجدولين: الصف الأول واحد في الاثنين (<span class="ltr">A</span>)، ثم يتبادل <span class="ltr">B</span> و<span class="ltr">C</span> مكانيهما. هذا كل ما يلزم لعكس الاتجاه.</p>`,title:'ملاحظة سريعة'}]},
+    {tip:String.raw`<p>قارن الجدولين: الصف الأول واحد في الاثنين (<span class="ltr">A</span>)، ثم يتبادل <span class="ltr">B</span> و<span class="ltr">C</span> مكانيهما. هذا كل ما يلزم لعكس الاتجاه.</p>`,title:'ملاحظة سريعة'},
+    {title:'مختبر مصغّر: صنّف التسلسل',widget:(el,B)=>DCML.sort(el,B,{intro:'كل قوس صف من جدول بالترتيب <span class="ltr">(A, B, C)</span>، والسهم يعني «الصف التالي». صنّف كل تسلسل.',cats:['كاملة ضد عقارب الساعة','كاملة مع عقارب الساعة','ليس خطوة كاملة'],items:[
+ ['<span class="ltr">(1,0,0) → (0,1,0) → (0,0,1)</span>',0,'هذا الجدول <span class="ltr">(١-١)</span>: <span class="ltr">A</span> ثم <span class="ltr">B</span> ثم <span class="ltr">C</span>.'],
+ ['<span class="ltr">(1,0,0) → (0,0,1) → (0,1,0)</span>',1,'هذا الجدول <span class="ltr">(١-٢)</span>: <span class="ltr">A</span> ثم <span class="ltr">C</span> ثم <span class="ltr">B</span>، أي الترتيب المعكوس.'],
+ ['<span class="ltr">(0,1,0) → (0,0,1) → (1,0,0)</span>',0,'<span class="ltr">B</span> ثم <span class="ltr">C</span> ثم <span class="ltr">A</span>: الترتيب الدوري نفسه للجدول <span class="ltr">(١-١)</span> لكنه يبدأ من صف آخر، فالاتجاه ضد عقارب الساعة.'],
+ ['<span class="ltr">(1,0,0) → (1,1,0) → (0,1,0)</span>',2,'في الصف الثاني مجموعتان مغذّاتان معاً؛ هذا تسلسل نصف الخطوة (الجدول <span class="ltr">(١-٣)</span> في الدرس القادم).']]})}
+   ]},
 
   {st:6,short:String.raw`موجات الجهد`,title:String.raw`موجات الجهد في الخطوة الكاملة`,ref:String.raw`ص 11–12`,
    q:String.raw`لو رسمنا الجهد على كل مجموعة مع الزمن، كيف سيبدو الجدول؟`,
@@ -657,7 +908,18 @@ B.lesson({
    body:[
     {book:String.raw`<p>موجات الجهد الموصل مع مجموعات الثابت مبينة في الشكل (١-٣) في حالة دوران المحرك ضد عقارب الساعة وفي الشكل (١-٤) في حالة دوران المحرك مع عقارب الساعة.</p>`+waveFig(SEQ.t11,['A','B','C'],9,0)+String.raw`<p class="sub">الشكل (١-٣) موجات الجهد الموصل مع مجموعات الثابت في حالة دوران المحرك ضد عقارب الساعة.</p>`+waveFig(SEQ.t12,['A','B','C'],10,0)+String.raw`<p class="sub">الشكل (١-٤) موجات الجهد الموصل مع مجموعات الثابت في حالة دوران المحرك مع عقارب الساعة.</p>`,ref:'ص 11–12'},
     {tip:String.raw`<p>كل عمود في الرسم صف من الجدول. في الشكل (١-٣) تنتقل النبضة <span class="ltr">A</span> ← <span class="ltr">B</span> ← <span class="ltr">C</span>، وفي الشكل (١-٤) <span class="ltr">A</span> ← <span class="ltr">C</span> ← <span class="ltr">B</span>. والجهد موجب فقط (أو صفر)، لأن الدوار الحديدي لا يحتاج عكس القطبية.</p>`},
-    {add:String.raw`<p>عملياً تُخرج هذه النبضات دائرةٌ إلكترونية اسمها «مشغّل محرك الخطوة» <span class="ltr">(Stepper driver)</span>: يرسل إليها الحاسب نبضة لكل خطوة وإشارة للاتجاه، وهي التي تولّد التتابع على الملفات.</p>`,title:'من الواقع'}]},
+    {add:String.raw`<p>عملياً تُخرج هذه النبضات دائرةٌ إلكترونية اسمها «مشغّل محرك الخطوة» <span class="ltr">(Stepper driver)</span>: يرسل إليها الحاسب نبضة لكل خطوة وإشارة للاتجاه، وهي التي تولّد التتابع على الملفات.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: اقرأ الموجات فترةً فترة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الشكل، ثم حرّك الفترة الزمنية، واقرأ أي مجموعة عليها جهد وأين يكون الدوار.',
+ predict:{q:'في الشكل <span class="ltr">(١-٤)</span> (مع عقارب الساعة)، أي مجموعة عليها جهد في الفترة الثانية؟',opts:[
+  ['المجموعة <span class="ltr">B</span>',false,'الفترة الثانية من الشكل <span class="ltr">(١-٣)</span> هي <span class="ltr">B</span>، لأنه ضد عقارب الساعة.'],
+  ['المجموعة <span class="ltr">C</span>',true,'الشكل <span class="ltr">(١-٤)</span> يرسم الجدول <span class="ltr">(١-٢)</span>: <span class="ltr">A</span> ثم <span class="ltr">C</span> ثم <span class="ltr">B</span>.'],
+  ['المجموعتان <span class="ltr">A</span> و<span class="ltr">C</span> معاً',false,'في الخطوة الكاملة مجموعة واحدة فقط في كل فترة.']]},
+ ins:[{k:'f',l:'الشكل',seg:[['t11','الشكل (١-٣) ضد عقارب الساعة'],['t12','الشكل (١-٤) مع عقارب الساعة']],v:'t11'},{k:'c',l:'الفترة الزمنية',min:1,max:6,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const sq=SEQ[s.f],r=sq.rows[s.c-1],g=r.indexOf(1),th=(s.c-1)*15;
+  return {pic:waveSVG(cyc(sq,6),['A','B','C'],false,{cur:s.c-1}),
+   facts:[['عليها جهد',['A','B','C'][g],'hi'],['الصف في الجدول',sq.tab],['دوران الدوار من البداية',th+'° '+(th?(sq.dir>0?'⟲':'⟳'):'')]],
+   msg:`العمود المظلّل هو الصف <span class="ltr">${s.c}</span> من الجدول <span class="ltr">${sq.tab}</span>: <span class="ltr">A = ${r[0]}, B = ${r[1]}, C = ${r[2]}</span>.`}}})}
+   ]},
 
   {recap:[
    String.raw`محرك الممانعة المتغيرة: ثابت مجزأ على طول محوره إلى مجموعات (Stacks) مستقلة لكل منها ملفات (Phases)، ودوار حديدي بأسنان بارزة، والثابت والدوار من شرائح الحديد (ص 8–9).`,
@@ -733,7 +995,19 @@ B.lesson({
     {book:String.raw`<p>يمكن للمحرك أن يخطو بنصف خطوة إذا اتبعنا التسلسل المنطقي التالي:</p>`+String.raw`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:start">`+String.raw`<div>`+tblFig(SEQ.t13,['A','B','C'])+String.raw`<p class="sub">الجدول (١-٣) التسلسل المنطقي لتتابع تغذية الأوجه بحيث يخطو المحرك بنصف خطوة ضد عقارب الساعة.</p>`+String.raw`</div>`+String.raw`<div>`+tblFig(SEQ.t14,['A','B','C'])+String.raw`<p class="sub">الجدول (١-٤) التسلسل المنطقي لتتابع تغذية الأوجه بحيث يخطو المحرك بنصف خطوة مع عقارب الساعة.</p>`+String.raw`</div>`+String.raw`</div>`,ref:'ص 12'},
     {tip:String.raw`<p>عند تغذية <span class="ltr">A</span> و<span class="ltr">B</span> معاً تشدّ أقطاب <span class="ltr">A</span> الأسنان نحوها وأقطاب <span class="ltr">B</span> نحوها، فيقف الدوار في المنتصف بينهما. لذلك يتناوب الجدول: مجموعة واحدة، ثم مجموعتان، ثم مجموعة واحدة… وكل صف يحرك الدوار <b>نصف خطوة</b>.</p>`,title:'كيف يقف في المنتصف؟'},
     {tip:String.raw`<p>في محرك الشكل (١-٢) (خطوته <span class="ltr">15°</span>) تكون نصف الخطوة <span class="ltr">15° ÷ 2</span>، وفي محرك الشكل (١-٧) (خطوته <span class="ltr">30°</span>) تكون <span class="ltr">30° ÷ 2</span>. الكتاب لم يكتب ناتج القسمة صراحة.</p>`,title:'كم تكون نصف الخطوة؟'},
-    {watch:String.raw`<p>الجدول (١-٣) فيه سبعة صفوف: الصف السابع يعيد الصف الأول (<span class="ltr">A</span> وحدها) ليُظهر أن الدورة تتكرر. عدد نصف الخطوات المختلفة ستة.</p>`}]},
+    {watch:String.raw`<p>الجدول (١-٣) فيه سبعة صفوف: الصف السابع يعيد الصف الأول (<span class="ltr">A</span> وحدها) ليُظهر أن الدورة تتكرر. عدد نصف الخطوات المختلفة ستة.</p>`},
+    {title:'مختبر مصغّر: امشِ في جدول نصف الخطوة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الجدول، ثم حرّك رقم الصف، وشاهد المجموعات المغذّاة ووضع الدوار في محرك الشكل <span class="ltr">(١-٢)</span>.',
+ predict:{q:'الدوار على أقطاب <span class="ltr">A</span>. غذّينا <span class="ltr">A</span> و<span class="ltr">B</span> معاً (الصف الثاني من الجدول <span class="ltr">(١-٣)</span>). أين يقف الدوار؟',opts:[
+  ['يبقى على أقطاب <span class="ltr">A</span> لأنها مغذّاة',false,'أقطاب <span class="ltr">B</span> تشدّ الأسنان أيضاً، فلا يبقى الدوار على <span class="ltr">A</span>.'],
+  ['في المنتصف بين وضعي <span class="ltr">A</span> و<span class="ltr">B</span>',true,'كل مجموعة تشدّ نحوها، فيقف الدوار في المنتصف: نصف خطوة من <span class="ltr">15°</span>.'],
+  ['يقفز إلى أقطاب <span class="ltr">B</span> مباشرة',false,'هذا ما يحدث لو غذّينا <span class="ltr">B</span> وحدها (الخطوة الكاملة).']]},
+ ins:[{k:'t',l:'الجدول',seg:[['t13','(١-٣) ضد عقارب الساعة'],['t14','(١-٤) مع عقارب الساعة']],v:'t13'},{k:'r',l:'رقم الصف',min:1,max:7,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const M=MOT.vr3,sq=SEQ[s.t],ph=sq.rows[s.r-1];let th=0;for(let i=0;i<s.r;i++)th=settle(M,sq.rows[i],th);th=Math.round(th*100)/100;
+  const on=M.labels.filter((L,k)=>ph[k]);
+  return {pic:motorSVG(M,ph,th,{noflux:1,compact:el.clientWidth<480}),
+   facts:[['المغذّاة',on.join(' و '),'hi'],['عدد المجموعات المغذّاة',String(on.length)],['الدوار من البداية',DCML.fm(B,Math.abs(th),1)+'° '+(th>0?'⟲':th<0?'⟳':'')]],
+   msg:on.length>1?`مجموعتان معاً: الدوار في المنتصف بين وضعيهما. كل صف يحرّك الدوار نصف خطوة.`:(s.r===7?'الصف السابع يعيد الصف الأول (<span class="ltr">A</span> وحدها): بدأت الدورة من جديد.':'مجموعة واحدة: الدوار منطبق على أقطابها.')}}})}
+   ]},
 
   {st:2,short:String.raw`موجات نصف الخطوة`,title:String.raw`موجات الجهد في نصف الخطوة`,ref:String.raw`ص 13`,
    q:String.raw`ماذا يحدث لشكل النبضات عندما تتداخل المجموعات؟`,
@@ -747,7 +1021,18 @@ B.lesson({
    body:[
     {book:String.raw`<p>موجات الجهد الموصل مع مجموعات الثابت في حالة دوران المحرك بنصف خطوة ضد عقارب الساعة مبينة بالشكل (١-٥).</p>`+waveFig(SEQ.t13,['A','B','C'],12,0)+String.raw`<p class="sub">الشكل (١-٥) موجات الجهد في حالة دوران المحرك بنصف خطوة ضد عقارب الساعة.</p>`+String.raw`<p>موجات الجهد الموصل مع مجموعات الثابت في حالة دوران المحرك بنصف خطوة مع عقارب الساعة مبينة بالشكل (١-٦).</p>`+waveFig(SEQ.t14,['A','B','C'],12,0)+String.raw`<p class="sub">الشكل (١-٦) موجات الجهد في حالة دوران المحرك بنصف خطوة <b>مع</b> عقارب الساعة.</p>`,ref:'ص 13'},
     {watch:String.raw`<p>تعليق الشكل (١-٦) في الكتاب (ص 13) مكتوب «موجات الجهد في حالة دوران المحرك بنصف خطوة <b>ضد</b> عقارب الساعة»، والصحيح «<b>مع</b> عقارب الساعة»: النص الذي قبله يقول «مع»، ومحتوى الموجات <span class="ltr">A</span> ثم <span class="ltr">AC</span> ثم <span class="ltr">C</span> ثم <span class="ltr">CB</span> ثم <span class="ltr">B</span> ثم <span class="ltr">BA</span> يطابق الجدول (١-٤). كتبنا التعليق المصحح أعلاه.</p>`,fix:true},
-    {tip:String.raw`<p>اقرأ الموجات عموداً عموداً: كل عمود صف من الجدول. حيث ترى نبضتين في العمود نفسه فهذه خطوة تُغذّى فيها مجموعتان، والدوار في المنتصف.</p>`}]},
+    {tip:String.raw`<p>اقرأ الموجات عموداً عموداً: كل عمود صف من الجدول. حيث ترى نبضتين في العمود نفسه فهذه خطوة تُغذّى فيها مجموعتان، والدوار في المنتصف.</p>`},
+    {title:'مختبر مصغّر: أين تتداخل النبضات؟',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الشكل وحرّك الفترة الزمنية. لاحظ الفترات التي يكون فيها جهد على مجموعتين في وقت واحد.',
+ predict:{q:'في الفترات من <span class="ltr">1</span> إلى <span class="ltr">6</span> من الشكل <span class="ltr">(١-٥)</span>، في كم فترة تكون مجموعتان مغذّاتين معاً؟',opts:[
+  ['ولا فترة',false,'هذا وصف الخطوة الكاملة (الشكل <span class="ltr">(١-٣)</span>)، لا نصف الخطوة.'],
+  ['ثلاث فترات (الثانية والرابعة والسادسة)',true,'الجدول يتناوب: مجموعة واحدة ثم مجموعتان؛ الصفوف <span class="ltr">AB</span> و<span class="ltr">BC</span> و<span class="ltr">CA</span>.'],
+  ['الفترات الست كلها',false,'لو كانت مجموعتان في كل فترة لما وقف الدوار على أقطاب مجموعة واحدة أبداً.']]},
+ ins:[{k:'t',l:'الشكل',seg:[['t13','(١-٥) ضد عقارب الساعة'],['t14','(١-٦) مع عقارب الساعة']],v:'t13'},{k:'c',l:'الفترة الزمنية',min:1,max:6,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const sq=SEQ[s.t],r=sq.rows[s.c-1],on=['A','B','C'].filter((L,k)=>r[k]),th=(s.c-1)*7.5;
+  return {pic:waveSVG(cyc(sq,6),['A','B','C'],false,{cur:s.c-1}),
+   facts:[['عليها جهد',on.join(' و '),on.length>1?'hi':''],['الصف من الجدول',sq.tab],['الدوار من البداية',DCML.fm(B,th,1)+'° '+(th?(sq.dir>0?'⟲':'⟳'):'')]],
+   msg:on.length>1?'نبضتان في العمود نفسه: هذه خطوة تُغذّى فيها مجموعتان، والدوار في المنتصف بينهما.':'نبضة واحدة في هذا العمود: الدوار على أقطاب مجموعة واحدة.'}}})}
+   ]},
 
   {st:3,short:String.raw`تصميم آخر (١-٧)`,title:String.raw`تصميم آخر: المجموعات الثلاث في مستوى واحد`,ref:String.raw`ص 14`,
    q:String.raw`هل يجب أن تكون المجموعات «شرائح» خلف بعضها؟ أم يمكن وضعها كلها في دائرة واحدة؟`,
@@ -763,7 +1048,19 @@ B.lesson({
     {book:String.raw`<p>الشكل (١-٧) يوضح تصميمًا آخر من محركات الخطوة ذات الممانعة المتغيرة، المحرك المبين يتكون من <b>ثلاث مجموعات</b> على العضو الثابت، <b>كل مجموعة تتكون من قطبين</b>، ولكن المجموعات الثلاث وضعت في <b>نفس المستوى</b> بحيث يكون كل قطبين متقابلين مجموعة واحدة، (بدلًا من تجزئة العضو الثابت إلى عدة أجزاء، كل جزء يختص بمجموعة أقطاب)، ملفات قطبي المجموعة الواحدة موصلة على التوالي، بحيث يكتسب أحد القطبين مغناطيسية تجعل منه قطبًا مغناطيسيًا شماليًا والآخر قطبًا جنوبيًا، العضو الدوار يحتوي على <b>أربعة أسنان</b>. الشكل (١-٧أ) يوضح وضع الدوار، أثناء تغذية المجموعة <span class="ltr">A</span> فقط، والشكل (١-٧ب) يوضح وضع الدوار، أثناء تغذية المجموعة <span class="ltr">B</span> فقط، وبمقارنة وضعي الدوار السابقين، يتبين أن الدوار دار خطوة كاملة ضد عقارب الساعة. بمقارنة وضع الدوار، أثناء تغذية المجموعة <span class="ltr">C</span> المبين بالشكل (١-٧ج) مع وضعه أثناء تغذية المجموعة <span class="ltr">B</span>، يتضح أن الدوار دار خطوة أخرى ضد عقارب الساعة. التسلسل المنطقي لتغذية المجموعات لتشغيل المحرك بخطوة كاملة في كل من اتجاهي الحركة، هو نفس التسلسل الموضح بالجداول السابقة ١-١ و ١-٢. <b>على المتدرب استنتاج الجداول المنطقية لحركة المحرك بنصف خطوة ومقارنتها بالجداول ١-٣ و ١-٤.</b></p>`+row3([[motorSVG(MOT.vr7,[1,0,0],0,{s:1.15}),'(أ) A مغذّاة'],[motorSVG(MOT.vr7,[0,1,0],30,{s:1.15,marks:[[60,0,30,'30°']]}),'(ب) B مغذّاة'],[motorSVG(MOT.vr7,[0,0,1],60,{s:1.15,marks:[[60,30,60,'30°']]}),'(ج) C مغذّاة']])+String.raw`<p class="sub">الشكل (١-٧) تصميم آخر لمحركات الخطوة ذات الممانعة المتغيرة.</p>`,ref:'ص 14'},
     {watch:String.raw`<p>كتب الكتاب (ص 14) «نفس التسلسل الموضح بالجداول السابقة <b>١-٢ و ٢-٢</b>» والصحيح الجدولان (١-١) و(١-٢)، وهو ما كتبناه أعلاه.</p>`,fix:true},
     {tip:String.raw`<p>هنا كل مجموعة <b>قطبان متقابلان</b> فقط (ستة أقطاب في دائرة واحدة)، بدل ثماني أقطاب في كل شريحة. ملفا القطبين على التوالي، فيصير أحدهما <span class="ltr">N</span> والآخر <span class="ltr">S</span>، ويمر المجال من قطب إلى المقابل له عبر سنّي الدوار. والجداول هي نفسها، لكن الزاوية تختلف لأن عدد الأسنان مختلف.</p>`},
-    {tip:String.raw`<p>تمرين الكتاب (استنتاج جدول نصف الخطوة لهذا المحرك) موجود في تبويب «المختبر»: اكتب الصفوف ثم قارنها بالجدول (١-٣).</p>`,title:'تمرين الكتاب'}]},
+    {tip:String.raw`<p>تمرين الكتاب (استنتاج جدول نصف الخطوة لهذا المحرك) موجود في تبويب «المختبر»: اكتب الصفوف ثم قارنها بالجدول (١-٣).</p>`,title:'تمرين الكتاب'},
+    {title:'مختبر مصغّر: الجدول نفسه على محركين',widget:(el,B)=>{let th=0,last=0,mo='';return DCML.lab(el,B,{intro:'اختر المحرك، ثم غذِّ المجموعات بالترتيب <span class="ltr">A, B, C</span> كما في الجدول <span class="ltr">(١-١)</span>، وقارن مقدار الخطوة.',
+ predict:{q:'طبّقنا الجدول <span class="ltr">(١-١)</span> نفسه على محرك الشكل <span class="ltr">(١-٢)</span> ومحرك الشكل <span class="ltr">(١-٧)</span>. أيهما يدور زاوية أكبر في كل خطوة؟',opts:[
+  ['محرك الشكل <span class="ltr">(١-٢)</span>، لأن فيه أقطاباً أكثر',false,'كثرة الأقطاب والأسنان تصغّر الخطوة لا تكبّرها.'],
+  ['متساويان، لأن الجدول واحد',false,'الجدول يحدد ترتيب التغذية والاتجاه فقط، أما مقدار الخطوة فيحدده تركيب المحرك.'],
+  ['محرك الشكل <span class="ltr">(١-٧)</span>',true,'دواره بأربعة أسنان فقط، فخطوته <span class="ltr">30°</span> مقابل <span class="ltr">15°</span> لمحرك الشكل <span class="ltr">(١-٢)</span> (ص 15).']]},
+ ins:[{k:'m',l:'المحرك',seg:[['vr3','الشكل (١-٢)'],['vr7','الشكل (١-٧)']],v:'vr7'},{k:'g',l:'المجموعة المغذّاة الآن',seg:[[0,'A'],[1,'B'],[2,'C']],v:0}],
+ calc:(s,P,B)=>{const M=MOT[s.m],ph=[0,0,0];ph[s.g]=1;if(s.m!==mo){mo=s.m;th=settle(M,ph,0);last=s.g}let d=0;
+  if(s.g!==last){const t0=th;th=Math.round(settle(M,ph,th)*100)/100;d=th-t0;last=s.g}
+  return {pic:motorSVG(M,ph,th,s.m==='vr3'?{noflux:1,compact:el.clientWidth<480}:{noflux:1}),
+   facts:[['المغذّاة الآن',M.labels[s.g],'hi'],['حركة هذه الضغطة',d?DCML.fm(B,Math.abs(d),0)+'° '+(d>0?'⟲':'⟳'):'0°'],['عدد أسنان الدوار',String(M.P)]],
+   msg:d?`خطوة هذا المحرك <span class="ltr">${DCML.fm(B,Math.abs(d),0)}°</span>. بدّل المحرك وكرر الضغطات نفسها.`:'اضغط المجموعة التالية في الترتيب.'}}})}}
+   ]},
 
   {st:4,short:String.raw`حساب الخطوة`,title:String.raw`حساب خطوة المحرك`,ref:String.raw`ص 15`,
    q:String.raw`محركان من النوع نفسه: أحدهما يخطو <span class="ltr">15°</span> والآخر <span class="ltr">30°</span>… ما الذي يحدد مقدار الخطوة؟`,
@@ -867,7 +1164,18 @@ B.lesson({
     {book:String.raw`<p>يمكن زيادة العزم المتولد من محرك الخطوة باستخدام <b>مغناطيسات دائمة قوية على العضو الدوار</b>، لتزويد المحرك بوسيلة دائمة على الدوار لتأسيس مجال مغناطيسي قوي ذي قيمة ثابتة، الشكل (١-٨) يوضح محركًا من هذا النوع ذا <b>مجموعتين من أربعة أقطاب</b> على عضوه الثابت تثار مغناطيسيًا بواسطة مجموعتين من الملفات كل منها مستقلة عن الأخرى، العضو الدوار يتكون من <b>أربعة أقطاب مغناطيسية دائمة</b> على شكل أسطوانة دائرية. لحساب خطوة المحرك تستخدم نفس العلاقة المعطاة بالمعادلة (١-١) (يكون الناتج <b>45 درجة</b>).</p>`+row3([[motorSVG(MOT.pm,[1,0],0,{s:1.15}),'شكل (١-٨أ) Phase a'],[motorSVG(MOT.pm,[0,1],45,{s:1.15,marks:[[62,0,45,'45°']]}),'شكل (١-٨ب) Phase b']])+String.raw`<p class="sub">الشكل (١-٨) محرك خطوة ذو أقطاب مغناطيسية دائمة.</p>`,ref:'ص 15'},
     {tip:String.raw`<p>في المعادلة (١-١) هنا: <span class="ltr">N = 2</span> (مجموعتان على الثابت) و<span class="ltr">P = 4</span> (أربعة أقطاب دائمة على الدوار)، فتكون <span class="ltr">θ = 360 ÷ (2 × 4) = 45°</span> كما يقول الكتاب.</p>`,title:'من أين جاءت 45 درجة؟'},
     {tip:String.raw`<p>الدوار هنا <b>مغناطيس</b> له شمال وجنوب. قطبه الجنوبي ينجذب إلى قطب الثابت الشمالي <b>ويتنافر</b> مع الجنوبي. هذا الشدّ والدفع معاً يعطي عزماً أكبر من دوار الحديد الذي ينجذب فقط.</p>`},
-    {add:String.raw`<p>محركات الخطوة الصغيرة ذات الأقطاب الدائمة رخيصة، وتجدها مثلاً في <b>ريش توجيه الهواء في المكيفات</b> التي تتحرك يميناً ويساراً وتقف عند زاوية تختارها بجهاز التحكم.</p>`,title:'من الواقع'}]},
+    {add:String.raw`<p>محركات الخطوة الصغيرة ذات الأقطاب الدائمة رخيصة، وتجدها مثلاً في <b>ريش توجيه الهواء في المكيفات</b> التي تتحرك يميناً ويساراً وتقف عند زاوية تختارها بجهاز التحكم.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: اعكس قطبية A',widget:(el,B)=>{let th=0,last=1;return DCML.lab(el,B,{intro:'المجموعة <span class="ltr">A</span> وحدها مغذّاة في محرك الشكل <span class="ltr">(١-٨)</span>. اعكس قطبية تغذيتها وشاهد ماذا يفعل الدوار المغناطيسي.',
+ predict:{q:'في محرك الممانعة المتغيرة لا يهم اتجاه التيار، لأن الدوار حديد. ماذا يحدث هنا إذا عكسنا قطبية تغذية <span class="ltr">A</span>؟',opts:[
+  ['لا يتغير شيء، كما في دوار الحديد',false,'الدوار هنا مغناطيس: القطب الذي كان يجذبه صار يدفعه.'],
+  ['يدور الدوار حتى يقابل كل قطب من الثابت قطباً مخالفاً له من الدوار',true,'«يتجاذب كل قطبين مختلفين» (ص 16): عكس القطبية يجعل الوضع القديم وضع تنافر، فيدور الدوار <span class="ltr">90°</span> إلى الوضع الجديد.'],
+  ['يتوقف المحرك، لأن القطبية المعكوسة تلغي المجال',false,'المجال لا يُلغى؛ تتبادل الأقطاب الشمالية والجنوبية أماكنها فقط.']]},
+ ins:[{k:'p',l:'قطبية تغذية المجموعة A',seg:[[1,'موجبة (A)'],[-1,'سالبة (−A)']],v:1}],
+ calc:(s,P,B)=>{const M=MOT.pm,ph=[s.p,0];let d=0;if(s.p!==last){const t0=th;th=Math.round(settle(M,ph,th)*100)/100;d=th-t0;last=s.p}
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['التغذية',s.p>0?'A':'−A','hi'],['حركة الدوار الآن',d?DCML.fm(B,Math.abs(d),0)+'°':'0°']],
+   msg:d?'الوضع السابق صار وضع تنافر، فدار الدوار حتى تقابل الأقطاب المختلفة. هذا الدفع والشدّ معاً من أسباب العزم الأكبر لهذا النوع.':'كل قطب من الثابت يقابله قطب مخالف من الدوار: الدوار ثابت في مكانه.'}}})}}
+   ]},
 
   {st:2,short:String.raw`كيف يعمل؟`,title:String.raw`كيفية عمل المحركات ذات الأقطاب المغناطيسية الدائمة`,ref:String.raw`ص 16`,
    q:String.raw`في محرك الممانعة احتجنا ثلاث مجموعات على الأقل… فكيف يكفي هذا المحرك مجموعتان؟`,
@@ -908,7 +1216,19 @@ B.lesson({
    body:[
     {book:String.raw`<p>يمكن تشغيل المحرك بنصف خطوة إذا تم اتباع التسلسل المنطقي المبين بالجدول ١-٦</p>`+String.raw`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:start">`+String.raw`<div>`+tblFig(SEQ.t16,['A','B'])+String.raw`<p class="sub">الجدول (١-٦) يبين التسلسل المنطقي لتتابع توصيل المجموعات بحيث يخطو المحرك المبين بالشكل (١-٨) بنصف خطوة 22.5 درجة عكس عقارب الساعة.</p>`+String.raw`</div>`+String.raw`</div>`+String.raw`<p>الشكل (١-١٠) يبين موجات الجهد الموصل مع المجموعتين (<span class="ltr">A&amp;B</span>) في حالة دوران المحرك بنصف خطوة ضد عقارب الساعة. كما يمكن تشغيل المحرك في اتجاه عقارب الساعة، بخطوة كاملة أو بنصف خطوة، إذا تم <b>عكس ترتيب تسلسل تغذية مجموعات العضو الثابت</b>، المبينة في الجداول (١-٥) و (١-٦) على الترتيب.</p>`+waveFig(SEQ.t16,['A','B'],10,1)+String.raw`<p class="sub">الشكل (١-١٠) موجات الجهد في حالة دوران المحرك المبين بالشكل (١-٨) بنصف خطوة ضد عقارب الساعة.</p>`,ref:'ص 17'},
     {tip:String.raw`<p>عكس الترتيب يعني أن تقرأ الجدول من الأسفل إلى الأعلى. للخطوة الكاملة مع عقارب الساعة: <span class="ltr">A, -B, -A, B, A</span>. جرّب كتابته في تحدي تبويب «المختبر».</p>`,title:'كيف أعكس الترتيب؟'},
-    {watch:String.raw`<p>الجدول (١-٦) في الكتاب ينتهي عند الصف الثامن ولا يكرر صف البداية في آخره كما تفعل الجداول الأخرى؛ هذا ليس خطأً، فالصف التاسع سيكون <span class="ltr">A = 1</span> و<span class="ltr">B = 0</span> من جديد.</p>`}]},
+    {watch:String.raw`<p>الجدول (١-٦) في الكتاب ينتهي عند الصف الثامن ولا يكرر صف البداية في آخره كما تفعل الجداول الأخرى؛ هذا ليس خطأً، فالصف التاسع سيكون <span class="ltr">A = 1</span> و<span class="ltr">B = 0</span> من جديد.</p>`},
+    {title:'مختبر مصغّر: الجدول (١-٦) وعكسه',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الجدول (الجدول المعكوس مستنتج بعكس ترتيب الصفوف كما يقول الكتاب، ص 17)، ثم حرّك رقم الصف وشاهد الدوار.',
+ predict:{q:'في <b>عكس</b> الجدول <span class="ltr">(١-٦)</span> (مع عقارب الساعة)، ما الصف الذي يأتي بعد الصف <span class="ltr">A = 1, B = 0</span>؟',opts:[
+  ['<span class="ltr">A = 1, B = 1</span>',false,'هذا الصف الثاني في الجدول <span class="ltr">(١-٦)</span> نفسه، أي ضد عقارب الساعة.'],
+  ['<span class="ltr">A = 1, B = −1</span>',true,'عكس الترتيب يعني أن تقرأ الجدول من الأسفل: آخر صف في الجدول <span class="ltr">(١-٦)</span> هو <span class="ltr">A = 1, B = −1</span>.'],
+  ['<span class="ltr">A = 0, B = 1</span>',false,'هذا انتقال خطوة كاملة <span class="ltr">45°</span>، لا نصف خطوة.']]},
+ ins:[{k:'t',l:'الجدول',seg:[['t16','(١-٦) ضد عقارب الساعة'],['t16r','عكس (١-٦) مع عقارب الساعة']],v:'t16'},{k:'r',l:'رقم الصف',min:1,max:8,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const M=MOT.pm,sq=SEQ[s.t],ph=sq.rows[s.r-1];let th=0;for(let i=0;i<s.r;i++)th=settle(M,sq.rows[i],th);th=Math.round(th*100)/100;
+  const sg=v=>v>0?'1':v<0?'−1':'0';
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['الصف',`A = ${sg(ph[0])}, B = ${sg(ph[1])}`,'hi'],['الدوار من البداية',DCML.fm(B,Math.abs(th),1)+'° '+(th>0?'⟲':th<0?'⟳':'')]],
+   msg:(ph[0]&&ph[1])?'المجموعتان مغذّاتان: الدوار في المنتصف بين وضعيهما، أي نصف خطوة <span class="ltr">22.5°</span> عن الصف السابق.':'مجموعة واحدة مغذّاة: الدوار على أقطابها.'}}})}
+   ]},
 
   {recap:[
    String.raw`محرك الأقطاب الدائمة: مغناطيسات دائمة قوية على الدوار تزيد العزم؛ وفي الشكل (١-٨) مجموعتان من أربعة أقطاب ودوار بأربعة أقطاب دائمة (ص 15).`,
@@ -983,7 +1303,13 @@ B.lesson({
     {book:String.raw`<p>شكل آخر من أشكال محركات الخطوة ذات الأقطاب المغناطيسية الدائمة، وتركيبه كما في الشكل (١-١١)، العضو الثابت مكون من <b>مجموعتين من الأقطاب</b>، كل مجموعة مكونة من <b>قطبين</b>، ملفات أقطاب المجموعة الواحدة موصلة على التوالي، لتُكون عند تغذيتها بتيار مستمر قطبًا شماليًا وآخر جنوبيًا. العضو الدوار مثبت عليه <b>مغناطيس دائم في اتجاه محوره</b>، يوجد على كل طرف من أطراف الدوار قطعة من الحديد، بها <b>خمسة أسنان</b>، بحيث تكتسب جميع الأسنان عند أحد طرفي الدوار قطبية مغناطيسية شمالية، وتكتسب الأسنان التي عند الطرف الآخر للدوار قطبية جنوبية، مجموعة الأقطاب الشمالية مرتبة بحيث <b>تنحرف بنصف خطوة</b>، عن مجموعة الأقطاب الجنوبية.</p>`+box(hybLong(),440)+box(motorSVG(MOT.hy,[1,0],0),560)+String.raw`<p class="sub">الشكل (١-١١) محرك الخطوة من النوع الهجين.</p>`,ref:'ص 18'},
     {tip:String.raw`<p>«تنحرف بنصف خطوة» تعني هنا أن أسنان الطرف الشمالي مزاحة <b>نصف المسافة بين سنّين</b> عن أسنان الطرف الجنوبي. لو نظرت من طرف المحرك لرأيت أسنان الطرفين متناوبة: سن جنوبي ثم سن شمالي ثم جنوبي… حول المحيط.</p>`,title:'ماذا يعني «نصف خطوة» هنا؟'},
     {tip:String.raw`<p>المغناطيس يجعل كل أسنان طرف <b>جنوبية</b> وكل أسنان الطرف الآخر <b>شمالية</b>، دائماً وحتى بلا تغذية. أما الملفات فتحدد أي قطب من الثابت يكون شمالياً أو جنوبياً، فتجذب أسنان الطرف المناسب.</p>`},
-    {add:String.raw`<p>أغلب محركات الخطوة في الطابعات ثلاثية الأبعاد وماكينات <span class="ltr">CNC</span> الصغيرة من النوع الهجين، وخطوتها صغيرة جداً لأن على طرفي دوارها أسناناً كثيرة دقيقة، فتعطي حركة ناعمة ودقيقة.</p>`,title:'من الواقع'}]},
+    {add:String.raw`<p>أغلب محركات الخطوة في الطابعات ثلاثية الأبعاد وماكينات <span class="ltr">CNC</span> الصغيرة من النوع الهجين، وخطوتها صغيرة جداً لأن على طرفي دوارها أسناناً كثيرة دقيقة، فتعطي حركة ناعمة ودقيقة.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: أين يوجد هذا الجزء؟',widget:(el,B)=>DCML.sort(el,B,{intro:'المحرك الهجين يجمع أفكار النوعين. اختر مكان كل جزء بحسب الشكل <span class="ltr">(١-١١)</span>.',cats:['على العضو الثابت','على العضو الدوار'],items:[
+ ['ملفات المجموعتين <span class="ltr">A-A′</span> و<span class="ltr">B-B′</span>، وملفا المجموعة الواحدة على التوالي',0,'الثابت «مكون من مجموعتين من الأقطاب… ملفات أقطاب المجموعة الواحدة موصلة على التوالي» (ص 18).'],
+ ['مغناطيس دائم في اتجاه المحور',1,'المغناطيس الدائم على الدوار «على طول المحور»؛ لذلك سُمّي هذا النوع بهذا الاسم.'],
+ ['قطعتا حديد مسننتان، في كل منهما خمسة أسنان',1,'في كل طرف من طرفي الدوار قطعة حديد بخمسة أسنان، والطرفان مزاحان نصف سن.'],
+ ['أربعة أقطاب: <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">A′</span> و<span class="ltr">B′</span>',0,'هذه أقطاب الثابت: مجموعتان، في كل مجموعة قطبان.']]})}
+   ]},
 
   {st:2,short:String.raw`طرفا الدوار`,title:String.raw`التناظر بين طرفي الدوار`,ref:String.raw`ص 18`,
    q:String.raw`للدوار طرفان مختلفان في القطبية… فهل يعمل كل طرف وحده؟ أم يعملان معاً؟`,
@@ -996,7 +1322,13 @@ B.lesson({
      [String.raw`كل الأسنان بالقدر نفسه`,false,String.raw`كل قطب يجذب أسنان طرف واحد فقط، المخالفة له.`]]}}],
    body:[
     {book:String.raw`<p>التناظر بين أي من مجموعات الثابت وكل من مجموعتي أقطاب الدوار، يجعل من الواضح أن تسلك كل مجموعة أقطاب للدوار السلوك نفسه مع أحد قطبي الثابت، أي أنه عند تغذية المجموعة (<span class="ltr">A-A′</span>)، فإن العلاقة بين القطب الشمالي <span class="ltr">A</span> ومجموعة الأقطاب الجنوبية للدوار، هي نفس العلاقة بين القطب الجنوبي <span class="ltr">A′</span> ومجموعة الأقطاب الشمالية للدوار، ويمكن ذكر العلاقة نفسها عند تغذية المجموعة (<span class="ltr">B-B′</span>).</p>`,ref:'ص 18'},
-    {tip:String.raw`<p>المعنى: يكفي أن نتابع <b>طرفاً واحداً</b> لنفهم الحركة. ما يحدث بين القطب <span class="ltr">A</span> وأسنان الطرف الجنوبي يحدث بالضبط بين القطب <span class="ltr">A′</span> وأسنان الطرف الشمالي، والطرفان على عمود واحد فيدوران معاً. لهذا ستتابع الأمثلة القادمة أسنان الطرف <span class="ltr">S</span> فقط.</p>`,title:'لماذا هذا مهم؟'}]},
+    {tip:String.raw`<p>المعنى: يكفي أن نتابع <b>طرفاً واحداً</b> لنفهم الحركة. ما يحدث بين القطب <span class="ltr">A</span> وأسنان الطرف الجنوبي يحدث بالضبط بين القطب <span class="ltr">A′</span> وأسنان الطرف الشمالي، والطرفان على عمود واحد فيدوران معاً. لهذا ستتابع الأمثلة القادمة أسنان الطرف <span class="ltr">S</span> فقط.</p>`,title:'لماذا هذا مهم؟'},
+    {title:'مختبر مصغّر: أي أسنان ينجذب إليها هذا القطب؟',widget:(el,B)=>DCML.sort(el,B,{intro:'تذكّر: أسنان طرف <span class="ltr">S</span> كلها جنوبية، وأسنان طرف <span class="ltr">N</span> كلها شمالية، والقطبان المختلفان يتجاذبان.',cats:['أسنان الطرف S','أسنان الطرف N'],items:[
+ ['القطب <span class="ltr">A</span> وهو شمالي (<span class="ltr">A-A′</span> موجبة)',0,'القطب الشمالي يجذب الأسنان الجنوبية: <span class="ltr">S1</span> على <span class="ltr">A</span> في الوضع (أ).'],
+ ['القطب <span class="ltr">A′</span> وهو جنوبي',1,'القطب الجنوبي يجذب الأسنان الشمالية: <span class="ltr">N1</span> على <span class="ltr">A′</span>. هذا هو التناظر الذي يذكره الكتاب (ص 18).'],
+ ['القطب <span class="ltr">B</span> بعد تغذيته شمالياً',0,'يجذب السن الجنوبي الأقرب (<span class="ltr">S2</span>)، فيدور الدوار.'],
+ ['القطب <span class="ltr">B′</span> وهو جنوبي في الوقت نفسه',1,'يجذب السن الشمالي <span class="ltr">N2</span> في الطرف الآخر، فيعمل الطرفان معاً في الاتجاه نفسه.']]})}
+   ]},
 
   {st:3,short:String.raw`طريقة العمل`,title:String.raw`طريقة عمل المحرك الهجين`,ref:String.raw`ص 19–20`,
    q:String.raw`إذا فصلنا <span class="ltr">A-A′</span> وغذّينا <span class="ltr">B-B′</span>، أي سن سيلحق بالقطب B؟ وكم يدور الدوار؟`,
@@ -1032,7 +1364,21 @@ B.lesson({
    body:[
     {book:String.raw`<p>خطوة المحرك تحسب بتطبيق المعادلة (١-١)، جداول التسلسل المنطقي لحركة المحرك بخطوة كاملة وبنصف خطوة ضد عقارب الساعة، هي نفس الجداول ١-٥ و ١-٦ على الترتيب. كما يمكن عكس اتجاه خطوة المحرك بعكس التسلسل الوارد في الجداول المذكورة.</p>`,ref:'ص 21'},
     {watch:String.raw`<p>كتب الكتاب (ص 21) «خطوة المحرك تحسب بتطبيق المعادلة <b>(٢-١)</b>» والصحيح المعادلة (١-١)، وهو ما كتبناه أعلاه.</p>`,fix:true},
-    {tip:String.raw`<p>الكتاب يقول إن الخطوة <span class="ltr">18°</span> ويحيل إلى المعادلة (١-١) دون أن يبيّن الحساب. المعادلة تعطي <span class="ltr">18°</span> إذا عُدّت أسنان الدوار في <b>الطرفين معاً</b>: <span class="ltr">P = 5 + 5 = 10</span> (لأن أسنان الطرفين متناوبة حول المحيط كأنها عشرة أسنان)، و<span class="ltr">N = 2</span>، فتكون <span class="ltr">θ = 360 ÷ (2 × 10) = 18°</span>. لو عددنا أسنان طرف واحد فقط لحصلنا على <span class="ltr">36°</span>، وهذا لا يطابق ما يحدث في الشكل (١-١٢).</p>`,title:'كيف تعطي المعادلة 18°؟'}]},
+    {tip:String.raw`<p>الكتاب يقول إن الخطوة <span class="ltr">18°</span> ويحيل إلى المعادلة (١-١) دون أن يبيّن الحساب. المعادلة تعطي <span class="ltr">18°</span> إذا عُدّت أسنان الدوار في <b>الطرفين معاً</b>: <span class="ltr">P = 5 + 5 = 10</span> (لأن أسنان الطرفين متناوبة حول المحيط كأنها عشرة أسنان)، و<span class="ltr">N = 2</span>، فتكون <span class="ltr">θ = 360 ÷ (2 × 10) = 18°</span>. لو عددنا أسنان طرف واحد فقط لحصلنا على <span class="ltr">36°</span>، وهذا لا يطابق ما يحدث في الشكل (١-١٢).</p>`,title:'كيف تعطي المعادلة 18°؟'},
+    {title:'مختبر مصغّر: أي جدول تستعمل؟',widget:(el,B)=>DCML.cases(el,B,{intro:'المحرك الهجين يستعمل جداول محرك الأقطاب الدائمة (ص 21). اختر الجدول لكل حالة.',cases:[
+ {q:'تريد أن يخطو المحرك الهجين خطوات كاملة ضد عقارب الساعة، بتغذية مجموعة واحدة في كل مرة.',opts:[
+  ['الجدول <span class="ltr">(١-١)</span>',false,'هذا جدول محرك الممانعة ذي المجموعات الثلاث، والهجين فيه مجموعتان فقط ويحتاج عكس القطبية.'],
+  ['الجدول <span class="ltr">(١-٥)</span>',true,'الكتاب: جداول الهجين للخطوة الكاملة ونصف الخطوة ضد عقارب الساعة «هي نفس الجداول ١-٥ و ١-٦».'],
+  ['الجدول <span class="ltr">(١-٦)</span>',false,'الجدول <span class="ltr">(١-٦)</span> لنصف الخطوة.']]},
+ {q:'تريد نصف خطوة ضد عقارب الساعة.',opts:[
+  ['الجدول <span class="ltr">(١-٥)</span>',false,'هذا للخطوة الكاملة.'],
+  ['الجدول <span class="ltr">(١-٣)</span>',false,'هذا نصف خطوة لمحرك الممانعة بثلاث مجموعات.'],
+  ['الجدول <span class="ltr">(١-٦)</span>',true,'نصف الخطوة ضد عقارب الساعة للهجين هو الجدول <span class="ltr">(١-٦)</span> (ص 21).']]},
+ {q:'تريد خطوات كاملة مع عقارب الساعة.',opts:[
+  ['عكس ترتيب الجدول <span class="ltr">(١-٥)</span>',true,'«يمكن عكس اتجاه خطوة المحرك بعكس التسلسل الوارد في الجداول المذكورة» (ص 21).'],
+  ['الجدول <span class="ltr">(١-٥)</span> بجهد أعلى',false,'الجهد لا يغيّر الاتجاه؛ الترتيب هو الذي يحدده.'],
+  ['الجدول <span class="ltr">(١-٢)</span>',false,'هذا جدول محرك الممانعة ذي المجموعات الثلاث.']]}]})}
+   ]},
 
   {recap:[
    String.raw`المحرك الهجين: ثابت بمجموعتين كل منهما قطبان (<span class="ltr">A-A′</span> و<span class="ltr">B-B′</span>)، ودوار عليه مغناطيس دائم في اتجاه محوره، وفي كل طرف قطعة حديد بخمسة أسنان، وأسنان الطرفين مزاحة نصف سن (ص 18).`,
@@ -1133,7 +1479,14 @@ B.lesson({
     {book:String.raw`<p>عندما يتم فصل (<span class="ltr">A-A′</span>) وتغذية (<span class="ltr">B-B′</span>) ومازال الدوار في الوضع (١-١٢أ)، فيحسب العزم من:</p><div class="eq">$$T=T_m\left[\sin\angle^{S2}_{N}+\sin\angle^{S1}_{N}-\sin\angle^{S3}_{N}+\cos\angle^{S5}_{S}-\cos\angle^{S4}_{S}\right]$$<span class="eqno">(١-٢)</span></div><p>استعملت <b>الإشارة الموجبة للعزم الذي يعمل ضد اتجاه عقارب الساعة</b>، والإشارة السالبة للعزم الذي يعمل مع عقارب الساعة، وبإدخال قيم الزوايا المذكورة في المعادلة (١-٢) ينتج:</p><div class="eq">$$\begin{aligned}T&=T_m\left[\sin 18^\circ+\sin 90^\circ-\sin 54^\circ+\cos 18^\circ-\cos 54^\circ\right]\\T&=T_m\left[0.309+1.0-0.809+0.951-0.588\right]\\T&=0.863\,T_m\end{aligned}$$<span class="eqno">(١-٣)</span></div><p>لأن محصلة العزم موجبة، فسيخطو الدوار <span class="ltr">18°</span> ضد عقارب الساعة، حتى يصل إلى وضع الاتزان المبين بالشكل (١-١٢ب).</p>`,ref:'ص 19–21'},
     {tip:String.raw`<p>\(\angle^{S2}_{N}\) هي الزاوية بين محور سن الدوار <span class="ltr">S2</span> ومحور القطب الشمالي للثابت (<span class="ltr">B</span> بعد تغذيته)، و\(\angle^{S5}_{S}\) هي الزاوية بين السن <span class="ltr">S5</span> والقطب الجنوبي (<span class="ltr">B′</span>). الأسنان <span class="ltr">S1</span> و<span class="ltr">S2</span> و<span class="ltr">S3</span> جنوبية فتنجذب إلى <span class="ltr">B</span> الشمالي (جيب)، و<span class="ltr">S4</span> و<span class="ltr">S5</span> جنوبية فتتنافر مع <span class="ltr">B′</span> الجنوبي (جيب تمام). الإشارة تحدد هل يشدّ السن الدوار ضد عقارب الساعة (+) أم معها (−).</p>`,title:'كيف تقرأ الرموز؟'},
     {watch:String.raw`<p>المعادلة (١-٢) تعدّ أسنان الطرف <span class="ltr">S</span> فقط (<span class="ltr">S1…S5</span>) ولا تذكر مساهمة أسنان الطرف <span class="ltr">N</span>، كما أن رمز الزاوية \(\angle^{S2}_{N}\) لم يُعرّف صراحة في الكتاب (فسرناه من سياق الشكل). الحساب نفسه صحيح: <span class="ltr">0.309 + 1.0 − 0.809 + 0.951 − 0.588 = 0.863</span>.</p>`,fix:true},
-    {tip:String.raw`<p>الحل نفسه مع تغيير الزوايا تجده في تبويب «الأمثلة المحلولة»، و«مستكشف العزم» في تبويب «المختبر» يُظهر كيف يتغير كل حد إذا تحرك الدوار.</p>`,title:'للتدريب'}]},
+    {tip:String.raw`<p>الحل نفسه مع تغيير الزوايا تجده في تبويب «الأمثلة المحلولة»، و«مستكشف العزم» في تبويب «المختبر» يُظهر كيف يتغير كل حد إذا تحرك الدوار.</p>`,title:'للتدريب'},
+    {title:'مختبر مصغّر: إشارة كل حد في المعادلة (١-٢)',widget:(el,B)=>DCML.sort(el,B,{intro:'لحظة تغذية <span class="ltr">B-B′</span> والدوار في الوضع (١-١٢أ): في أي اتجاه يدفع كل سن الدوار؟ الموجب ضد عقارب الساعة والسالب معها (ص 21). مجموع الحدود الخمسة <span class="ltr">0.863 T<sub>m</sub></span>.',cats:['+ (ضد عقارب الساعة)','− (مع عقارب الساعة)'],items:[
+ ['<span class="ltr">S2</span>: تجاذب مع <span class="ltr">B</span> الشمالي، والزاوية <span class="ltr">18°</span>',0,'الحد <span class="ltr">+sin 18° = +0.309</span>: <span class="ltr">S2</span> يُشدّ نحو <span class="ltr">B</span> ضد عقارب الساعة.'],
+ ['<span class="ltr">S1</span>: تجاذب مع <span class="ltr">B</span>، والزاوية <span class="ltr">90°</span>',0,'الحد <span class="ltr">+sin 90° = +1.0</span>: أكبر حد، لأن عزم التجاذب أقصى ما يمكن عند <span class="ltr">90°</span>.'],
+ ['<span class="ltr">S3</span>: تجاذب مع <span class="ltr">B</span>، والزاوية <span class="ltr">54°</span>',1,'الحد <span class="ltr">−sin 54° = −0.809</span>: <span class="ltr">S3</span> على الجهة الأخرى من <span class="ltr">B</span>، فيُشدّ مع عقارب الساعة.'],
+ ['<span class="ltr">S5</span>: تنافر مع <span class="ltr">B′</span> الجنوبي، والزاوية <span class="ltr">18°</span>',0,'الحد <span class="ltr">+cos 18° = +0.951</span>: التنافر يُحسب بجيب التمام، ويدفع ضد عقارب الساعة.'],
+ ['<span class="ltr">S4</span>: تنافر مع <span class="ltr">B′</span>، والزاوية <span class="ltr">54°</span>',1,'الحد <span class="ltr">−cos 54° = −0.588</span>: يدفع مع عقارب الساعة. المحصلة موجبة، فيخطو الدوار <span class="ltr">18°</span> ضد عقارب الساعة.']]})}
+   ]},
 
   {st:3,short:String.raw`المجموعتان معاً`,title:String.raw`تغذية المجموعتين في نفس الوقت`,ref:String.raw`ص 21`,
    q:String.raw`إذا كان قطب واحد يشدّ الدوار بعزم ما… فماذا لو شدّه قطبان في الوقت نفسه؟`,
@@ -1147,7 +1500,20 @@ B.lesson({
    body:[
     {book:String.raw`<p>يمكن أيضًا تشغيل المحرك بخطوة كاملة في كل من اتجاهي الحركة بتغذية مجموعتي العضو الثابت في نفس الوقت، وذلك <b>للحصول على عزم أكبر</b> من الحالة السابقة، إذا اتبع التسلسل المنطقي الموضح في الجداول ١-٧ و ١-٨.</p>`+String.raw`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:start">`+String.raw`<div>`+tblFig(SEQ.t17,['A','B'])+String.raw`<p class="sub">الجدول (١-٧) يبين التسلسل المنطقي لتتابع توصيل المجموعات بحيث تتم تغذية مجموعتي الثابت معًا ويخطو المحرك بخطوة كاملة 18 درجة ضد عقارب الساعة.</p>`+String.raw`</div>`+String.raw`<div>`+tblFig(SEQ.t18,['A','B'])+String.raw`<p class="sub">الجدول (١-٨) يبين التسلسل المنطقي لتتابع توصيل المجموعات بحيث تتم تغذية مجموعتي الثابت معًا ويخطو المحرك بخطوة كاملة 18 درجة مع عقارب الساعة.</p>`+String.raw`</div>`+String.raw`</div>`,ref:'ص 21'},
     {tip:String.raw`<p>في الجدول (١-٧) لا يوجد صفر أبداً: كل صف فيه المجموعتان (موجبة أو سالبة). الدوار يقف دائماً بين وضعي المجموعتين، لكن المسافة بين صف وصف تبقى خطوة كاملة <span class="ltr">18°</span>. ولأن قطبين يشدّان معاً بدل قطب واحد، يكون العزم أكبر.</p>`},
-    {tip:String.raw`<p>قارن الجدولين: الجدول (١-٨) هو الجدول (١-٧) بترتيب معكوس من الصف الثاني، أي أن عكس الاتجاه هنا أيضاً بعكس ترتيب التسلسل.</p>`,title:'لاحظ'}]},
+    {tip:String.raw`<p>قارن الجدولين: الجدول (١-٨) هو الجدول (١-٧) بترتيب معكوس من الصف الثاني، أي أن عكس الاتجاه هنا أيضاً بعكس ترتيب التسلسل.</p>`,title:'لاحظ'},
+    {title:'مختبر مصغّر: مجموعة واحدة أم مجموعتان؟',widget:(el,B)=>DCML.lab(el,B,{intro:'قارن الجدول <span class="ltr">(١-٥)</span> (مجموعة واحدة في كل صف) بالجدول <span class="ltr">(١-٧)</span> (المجموعتان معاً) في المحرك الهجين. حرّك رقم الصف.',
+ predict:{q:'في الجدول <span class="ltr">(١-٧)</span> تُغذّى <span class="ltr">A</span> و<span class="ltr">B</span> معاً في كل صف. ما الذي يتغير مقارنة بالجدول <span class="ltr">(١-٥)</span>؟',opts:[
+  ['يقف الدوار بين وضعي المجموعتين، وتبقى الخطوة من صف إلى صف <span class="ltr">18°</span>',true,'الجدول <span class="ltr">(١-٧)</span>: «يخطو المحرك بخطوة كاملة 18 درجة»، والعزم أكبر لأن أقطاب المجموعتين تشدّ معاً (ص 21).'],
+  ['تصبح الخطوة نصف خطوة <span class="ltr">9°</span>',false,'نصف الخطوة يأتي من التناوب بين مجموعة ومجموعتين (الجدول <span class="ltr">(١-٦)</span>)، لا من تغذية المجموعتين في كل صف.'],
+  ['يدور المحرك في الاتجاه المعاكس',false,'الجدول <span class="ltr">(١-٧)</span> ضد عقارب الساعة مثل الجدول <span class="ltr">(١-٥)</span>.']]},
+ ins:[{k:'t',l:'الجدول',seg:[['t15','(١-٥) مجموعة واحدة'],['t17','(١-٧) المجموعتان معاً']],v:'t15'},{k:'r',l:'رقم الصف',min:1,max:4,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const M=MOT.hy,sq=SEQ[s.t],ph=sq.rows[s.r-1];let th=0,prev=0;for(let i=0;i<s.r;i++){prev=th;th=settle(M,sq.rows[i],th)}th=Math.round(th*100)/100;
+  const sg=v=>v>0?'1':v<0?'−1':'0',n=ph.filter(v=>v).length*2;
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['الصف',`A = ${sg(ph[0])}, B = ${sg(ph[1])}`,'hi'],['الدوار من البداية',DCML.fm(B,th,0)+'° ⟲'],['أقطاب الثابت المغذّاة',n+' / 4']],
+   bars:[{l:'أقطاب الثابت التي تشدّ الدوار',v:n,max:4,txt:n+' / 4',col:n>2?'--on':'--blue'}],
+   msg:n>2?'المجموعتان مغذّاتان: أربعة أقطاب تشدّ الدوار بدل قطبين، لذلك العزم أكبر. والدوار يقف بين وضعي المجموعتين.':'مجموعة واحدة: قطبان فقط يشدّان الدوار.'}}})}
+   ]},
 
   {st:4,short:String.raw`موجات الجهد`,title:String.raw`موجات الجهد عند تغذية المجموعتين معاً`,ref:String.raw`ص 22`,
    q:String.raw`كيف تبدو الموجات إذا لم يكن في الجدول أي صفر؟`,
@@ -1160,7 +1526,19 @@ B.lesson({
      [String.raw`لا، المجموعتان مغذّاتان دائماً بجهد موجب أو سالب`,true,String.raw`كل صف في الجدول فيه 1 أو -1 للمجموعتين، فالموجتان مربعتان بلا فترات صفرية.`]]}}],
    body:[
     {book:String.raw`<p>الشكل (١-١٣) يبين موجات الجهد الموصل مع مجموعات الثابت في الحالتين السابقتين:</p>`+waveFig(SEQ.t17,['A','B'],8,1)+String.raw`<p class="sub">الشكل (١-١٣أ) موجات الجهد الموصل لمجموعتي الثابت في حالة تغذية المجموعتين في نفس الوقت ودوران المحرك بخطوة كاملة ضد عقارب الساعة.</p>`+waveFig(SEQ.t18,['A','B'],8,1)+String.raw`<p class="sub">الشكل (١-١٣ب) موجات الجهد الموصل لمجموعتي الثابت في حالة تغذية المجموعتين في نفس الوقت ودوران المحرك بخطوة كاملة مع عقارب الساعة.</p>`,ref:'ص 22'},
-    {tip:String.raw`<p>الموجتان متماثلتان في الشكل، والفرق بينهما <b>إزاحة خطوة واحدة</b>. في (أ) تتغير <span class="ltr">V<sub>A</sub></span> أولاً، وفي (ب) تتغير <span class="ltr">V<sub>B</sub></span> أولاً، وهذا وحده يعكس الاتجاه.</p>`}]},
+    {tip:String.raw`<p>الموجتان متماثلتان في الشكل، والفرق بينهما <b>إزاحة خطوة واحدة</b>. في (أ) تتغير <span class="ltr">V<sub>A</sub></span> أولاً، وفي (ب) تتغير <span class="ltr">V<sub>B</sub></span> أولاً، وهذا وحده يعكس الاتجاه.</p>`},
+    {title:'مختبر مصغّر: اقرأ VA و VB فترةً فترة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الشكل وحرّك الفترة الزمنية، واقرأ إشارة جهد كل مجموعة.',
+ predict:{q:'في الشكل <span class="ltr">(١-١٣أ)</span>، ما إشارة <span class="ltr">V<sub>A</sub></span> في الفترة الثانية؟',opts:[
+  ['موجبة',false,'الصف الثاني من الجدول <span class="ltr">(١-٧)</span> هو <span class="ltr">A = −1, B = 1</span>.'],
+  ['صفر',false,'في هذا التشغيل لا يوجد صفر أبداً: المجموعتان مغذّاتان دائماً.'],
+  ['سالبة',true,'الشكل <span class="ltr">(١-١٣أ)</span> يرسم الجدول <span class="ltr">(١-٧)</span>، وصفه الثاني <span class="ltr">A = −1, B = 1</span>.']]},
+ ins:[{k:'t',l:'الشكل',seg:[['t17','(١-١٣أ) ضد عقارب الساعة'],['t18','(١-١٣ب) مع عقارب الساعة']],v:'t17'},{k:'c',l:'الفترة الزمنية',min:1,max:8,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const sq=SEQ[s.t],cols=cyc(sq,8),r=cols[s.c-1],sg=v=>v>0?'+':'−';
+  const ch=s.c>1?[0,1].filter(k=>cols[s.c-2][k]!==r[k]).map(k=>'V'+'AB'[k]).join(''):'';
+  return {pic:waveSVG(cols,['A','B'],true,{cur:s.c-1}),
+   facts:[['V<sub>A</sub>',sg(r[0]),r[0]<0?'bad':'hi'],['V<sub>B</sub>',sg(r[1]),r[1]<0?'bad':'hi'],['تغيّرت في هذه الفترة',ch||'—']],
+   msg:'المجموعتان مغذّاتان في كل فترة؛ في كل انتقال تنعكس إشارة مجموعة واحدة فقط.'}}})}
+   ]},
 
   {recap:[
    String.raw`عزم التجاذب بين قطبين مختلفين يخضع لجيب الزاوية (أقصاه عند <span class="ltr">90°</span>)، وعزم التنافر بين قطبين متشابهين يخضع لجيب تمام الزاوية (أقصاه عند الصفر) (ص 19).`,
@@ -1268,7 +1646,12 @@ B.lesson({
      [String.raw`الأقطاب المتجاورة مختلفة في قطبيتها`,true,String.raw`«وبحيث تكون الأقطاب المتجاورة مختلفة في قطبيتها عن بعضها» (ص 9).`],
      [String.raw`الأقطاب المتقابلة لها نفس القطبية`,false,String.raw`السؤال عن الأقطاب المتجاورة، والكتاب يصفها بأنها مختلفة.`]]}},
     {tip:String.raw`<p>س٤: «للحصول على عزم أكبر» (ص 21) هي الإجابة المباشرة من النص. ويمكن أن يُقبل معها «لدوران المحرك بخطوة كاملة» لأن الجدولين (١-٧) و(١-٨) يعطيان خطوة كاملة. لاحظ أن نصف الخطوة يغذي مجموعتين معاً في بعض الخطوات فقط وبالتناوب مع مجموعة واحدة. (يقرر المدرب هل يقبل الإجابتين.)</p>`,title:'عن س٤'},
-    {watch:String.raw`<p>الكتاب لا يعطي إجابات لأسئلته؛ الإجابات في بطاقات «توقّع» مقترحة منا من نص الكتاب، ويُستحسن أن يراجعها المدرب.</p>`}]},
+    {watch:String.raw`<p>الكتاب لا يعطي إجابات لأسئلته؛ الإجابات في بطاقات «توقّع» مقترحة منا من نص الكتاب، ويُستحسن أن يراجعها المدرب.</p>`},
+    {title:'تحقق سريع: س٤ من زاوية أخرى',widget:(el,B)=>DCML.tf(el,B,{intro:'«تغذية مجموعتين في نفس الوقت» تظهر في أكثر من جدول في الوحدة. احكم على كل عبارة.',items:[
+ ['تغذية المجموعتين معاً في كل الصفوف (الجدول <span class="ltr">(١-٧)</span>) تعطي عزماً أكبر.',true,'هذا نص الكتاب (ص 21): «وذلك للحصول على عزم أكبر من الحالة السابقة».'],
+ ['التناوب بين مجموعة واحدة ومجموعتين (الجدولان <span class="ltr">(١-٣)</span> و<span class="ltr">(١-٦)</span>) يعطي نصف خطوة.',true,'عند تغذية مجموعتين يقف الدوار في المنتصف، فكل صف يحرّكه نصف خطوة.'],
+ ['تغذية مجموعتين في نفس الوقت تعكس اتجاه الدوران.',false,'الاتجاه يُعكس بعكس ترتيب تسلسل التغذية، لا بتغذية مجموعتين.']]})}
+   ]},
 
   {st:2,short:String.raw`أسئلة متنوعة`,title:String.raw`أسئلة متنوعة: س ١-١ إلى س ١-٦`,ref:String.raw`ص 24`,
    q:String.raw`أسئلة شرح ومقارنة. لكل سؤال درس تجد فيه الجواب كاملاً.`,
@@ -1283,7 +1666,14 @@ B.lesson({
     {book:String.raw`<ul style="list-style:none;padding:0"><li><b>س ١-١:</b> اذكر الفرق بين محركات الخطوة ذات الممانعة المتغيرة وذات الأقطاب الدائمة.</li><li><b>س ١-٢:</b> كيف يمكن حساب خطوة محرك الخطوة.</li><li><b>س ١-٣:</b> اذكر أمثلة لاستخدامات المحركات متدرجة الحركة.</li><li><b>س ١-٤:</b> كيف يتم عكس اتجاه دوران محرك الخطوة.</li><li><b>س ١-٥:</b> اشرح مع الرسم تركيب ونظرية عمل محركات الخطوة ذات الممانعة المتغيرة.</li><li><b>س ١-٦:</b> اشرح مع الرسم تركيب ونظرية عمل محركات الخطوة ذات الأقطاب الدائمة.</li><li><b>س ١-٦:</b> اشرح مع الرسم تركيب ونظرية عمل محركات الخطوة الهجين.</li></ul>`,ref:'ص 24'},
     {tip:String.raw`<ul><li><b>س ١-١:</b> الدرسان الثاني والرابع (الدوار، العزم، عدد المجموعات، نوع التغذية).</li><li><b>س ١-٢:</b> المعادلة (١-١) في الدرس الثالث.</li><li><b>س ١-٣:</b> الدرس الأول.</li><li><b>س ١-٤:</b> الدروس الثاني والرابع والخامس.</li><li><b>س ١-٥:</b> الدرسان الثاني والثالث (الشكلان ١-٢ و١-٧).</li><li><b>س ١-٦:</b> الدرس الرابع (الشكل ١-٨)، والهجين في الدرسين الخامس والسادس (الشكلان ١-١١ و١-١٢).</li></ul>`,title:'أين تجد الجواب؟'},
     {tip:String.raw`<p>في أسئلة «اشرح مع الرسم» يُنتظر منك: رسم الشكل، ثم التركيب (الثابت والدوار)، ثم طريقة العمل خطوة بخطوة مع ترتيب التغذية واتجاه الدوران. إجابات مقترحة كاملة تجدها في الشرح الرسمي لهذا الدرس.</p>`,title:'كيف تجيب'},
-    {watch:String.raw`<p>رقم السؤال «س ١-٦» مكرر مرتين في الكتاب (ص 24: الأقطاب الدائمة، والهجين)، والسؤال الأخير في ص 26 معنون «تمرين ١-١٠» بدل «س ١-١٠».</p>`,fix:true}]},
+    {watch:String.raw`<p>رقم السؤال «س ١-٦» مكرر مرتين في الكتاب (ص 24: الأقطاب الدائمة، والهجين)، والسؤال الأخير في ص 26 معنون «تمرين ١-١٠» بدل «س ١-١٠».</p>`,fix:true},
+    {title:'مختبر مصغّر: جواب س ١-١ في جدول',widget:(el,B)=>DCML.sort(el,B,{intro:'س ١-١ يسأل عن الفرق بين النوعين. صنّف كل صفة، ثم اكتب الفروق في جوابك بالترتيب نفسه.',cats:['الممانعة المتغيرة','الأقطاب الدائمة'],items:[
+ ['الدوار حديد ذو أسنان بارزة',0,'(ص 9): «العضو الدوار يتركب من أسنان بارزة».'],
+ ['على الدوار مغناطيسات دائمة قوية',1,'(ص 15): مغناطيسات دائمة على الدوار لتأسيس مجال قوي ثابت.'],
+ ['لا يقل عدد مجموعات الثابت عن ثلاث',0,'(ص 11): ليخطو في الاتجاهين لا بد من ثلاث مجموعات على الأقل.'],
+ ['تكفيه مجموعتان، مع عكس قطبية التغذية',1,'الجدول <span class="ltr">(١-٥)</span> فيه <span class="ltr">−A</span> و<span class="ltr">−B</span>، لأن الدوار مغناطيس يفرّق بين الشمالي والجنوبي.'],
+ ['عزمه أكبر',1,'(ص 15): «يمكن زيادة العزم المتولد… باستخدام مغناطيسات دائمة قوية على العضو الدوار».']]})}
+   ]},
 
   {st:3,short:String.raw`س ١-٧`,title:String.raw`س ١-٧: محرك الشكل (١-١٤)`,ref:String.raw`ص 24`,
    q:String.raw`أربع مجموعات وستة أسنان… كم خطوته؟ وبأي ترتيب نغذي المجموعات ليدور مع عقارب الساعة؟`,
@@ -1298,7 +1688,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>س ١-٧:</b> محرك الخطوة المبين بالشكل (١-١٤)، من النوع ذي الممانعة المغناطيسية المتغيرة، العضو الثابت يحتوي على أربع مجموعات من الأقطاب، كل مجموعة بها قطبان، الدوار يحتوي على ستة أسنان، المطلوب:</p><ul style="list-style:none;padding:0"><li>أ. حساب خطوة المحرك.</li><li>ب. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بخطوة كاملة.</li><li>ج. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بنصف خطوة.</li><li>د. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بخطوة كاملة.</li><li>هـ. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بنصف خطوة.</li><li>و. موجات الجهد المغذي للمجموعات في الحالتين ب، ج، د، هـ.</li><li>ز. هل يمكن استبدال الدوار بآخر، ذي أقطاب مغناطيسية دائمة؟ ولماذا؟</li></ul>`,ref:'ص 24'},
     {tip:String.raw`<ol><li>احسب الخطوة من المعادلة (١-١) بـ <span class="ltr">N = 4</span> و<span class="ltr">P = 6</span>.</li><li>انظر إلى الشكل: إذا غُذّيت <span class="ltr">B</span> فأي سن أقرب إليها؟ وفي أي اتجاه سيتحرك؟ هذا يحدد الاتجاه الذي يعطيه الترتيب <span class="ltr">A, B, C, D</span>.</li><li>للخطوة الكاملة: مجموعة واحدة في كل صف. لنصف الخطوة: أضف بين كل صفين صفاً فيه المجموعتان معاً.</li><li>لعكس الاتجاه اعكس الترتيب.</li></ol>`,title:'خطوات الحل'},
-    {tip:String.raw`<p>الجداول المقترحة وموجاتها في الشرح الرسمي لهذا الدرس، ويمكنك تشغيل محرك الشكل (١-١٤) بكل جدول في تبويب «المختبر».</p>`,title:'للتحقق'}]},
+    {tip:String.raw`<p>الجداول المقترحة وموجاتها في الشرح الرسمي لهذا الدرس، ويمكنك تشغيل محرك الشكل (١-١٤) بكل جدول في تبويب «المختبر».</p>`,title:'للتحقق'},
+    {title:'مختبر مصغّر: اكتشف الاتجاه في محرك الشكل (١-١٤)',widget:(el,B)=>{let th=0,last=0;return DCML.lab(el,B,{intro:'الدوار يبدأ على أقطاب <span class="ltr">A</span>. غذِّ المجموعات واحدة واحدة، واكتشف الترتيب الذي يدير المحرك مع عقارب الساعة (البند ب).',
+ predict:{q:'غذّينا <span class="ltr">A</span> ثم <span class="ltr">B</span> في محرك الشكل <span class="ltr">(١-١٤)</span>. ماذا يحدث؟',opts:[
+  ['يدور <span class="ltr">15°</span> مع عقارب الساعة',false,'جرّب في الأسفل: السن الأقرب إلى أقطاب <span class="ltr">B</span> يقع في الجهة الأخرى.'],
+  ['يدور <span class="ltr">15°</span> ضد عقارب الساعة',true,'السن الأقرب إلى <span class="ltr">B</span> على بعد خطوة واحدة <span class="ltr">15°</span> ضد عقارب الساعة؛ إذن الترتيب <span class="ltr">A, B, C, D</span> يدير المحرك ضد عقارب الساعة، وعكسه مع عقارب الساعة.'],
+  ['يدور <span class="ltr">45°</span> لأن أقطاب B تبعد <span class="ltr">45°</span> عن أقطاب A',false,'الدوار يتجه إلى أقرب سن، لا إلى السن الذي كان على <span class="ltr">A</span>.']]},
+ ins:[{k:'g',l:'المجموعة المغذّاة الآن',seg:[[0,'A'],[1,'B'],[2,'C'],[3,'D']],v:0}],
+ calc:(s,P,B)=>{const M=MOT.q17,ph=[0,0,0,0];ph[s.g]=1;let d=0;if(s.g!==last){const t0=th;th=Math.round(settle(M,ph,th)*100)/100;d=th-t0;last=s.g}
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['المغذّاة الآن',M.labels[s.g],'hi'],['حركة هذه الضغطة',d?DCML.fm(B,Math.abs(d),0)+'° '+(d>0?'⟲':'⟳'):'0°'],['الزاوية من البداية',DCML.fm(B,Math.abs(th),0)+'° '+(th>0?'⟲':th<0?'⟳':'')]],
+   msg:d?`دار الدوار ${d>0?'ضد':'مع'} عقارب الساعة. تابع الأسنان المرقمة لتعرف أي سن انتقل إلى أي قطب.`:'اضغط مجموعة أخرى.'}}})}}
+   ]},
 
   {st:4,short:String.raw`س ١-٨`,title:String.raw`س ١-٨: محرك بخمس مجموعات`,ref:String.raw`ص 25`,
    q:String.raw`سؤال بلا شكل: كيف ترسم المحرك بنفسك من المعطيات؟`,
@@ -1313,7 +1714,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>س ١-٨:</b> محرك الخطوة من النوع ذي الممانعة المغناطيسية المتغيرة، العضو الثابت يحتوي على خمس مجموعات من الأقطاب، كل مجموعة بها قطبان، الدوار يحتوي على أربعة أسنان، المطلوب:</p><ul style="list-style:none;padding:0"><li>أ. حساب خطوة المحرك.</li><li>ب. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بخطوة كاملة.</li><li>ج. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بنصف خطوة.</li><li>د. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بخطوة كاملة.</li><li>هـ. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بنصف خطوة.</li><li>و. موجات الجهد المغذي للمجموعات في الحالتين ب، ج، د، هـ.</li><li>ز. هل يمكن استبدال الدوار بآخر، ذي أقطاب مغناطيسية دائمة؟ ولماذا؟</li></ul>`,ref:'ص 25'},
     {tip:String.raw`<p>ارسم عشرة أقطاب (خمس مجموعات × قطبان) حول الدوار، والدوار بأربعة أسنان. ثم سمِّ المجموعات بالترتيب الذي يجعل كل تغذية جديدة تحرك الدوار خطوة واحدة. ولأن السؤال بلا شكل، يجب أن تذكر في إجابتك الترتيب الذي اخترته.</p>`,title:'نصيحة'},
-    {tip:String.raw`<p>الحل المقترح وجداوله في الشرح الرسمي لهذا الدرس، ومحرك «س ١-٨» موجود في تبويب «المختبر».</p>`,title:'للتحقق'}]},
+    {tip:String.raw`<p>الحل المقترح وجداوله في الشرح الرسمي لهذا الدرس، ومحرك «س ١-٨» موجود في تبويب «المختبر».</p>`,title:'للتحقق'},
+    {title:'مختبر مصغّر: نبضة بعد نبضة في محرك س ١-٨',widget:(el,B)=>DCML.lab(el,B,{intro:'خمس مجموعات تُغذّى بالترتيب <span class="ltr">A, B, C, D, E</span> (خطوة كاملة). ترتيب الأقطاب حول الثابت في الرسم من اختيارنا لأن السؤال بلا شكل. حرّك عدد النبضات.',
+ predict:{q:'كم نبضة يحتاج هذا المحرك (خمس مجموعات، أربعة أسنان) ليكمل دورة كاملة بخطوات كاملة؟',opts:[
+  ['<span class="ltr">5</span> نبضات، نبضة لكل مجموعة',false,'خمس نبضات تعيد التغذية إلى <span class="ltr">A</span> لكن الدوار لم يدر إلا <span class="ltr">5 × 18° = 90°</span>.'],
+  ['<span class="ltr">20</span> نبضة',true,'الخطوة <span class="ltr">360 ÷ (5 × 4) = 18°</span>، فالدورة <span class="ltr">360 ÷ 18 = 20</span> نبضة، وهو المقام <span class="ltr">N·P</span> نفسه.'],
+  ['<span class="ltr">4</span> نبضات، نبضة لكل سن',false,'كل نبضة تحرّك الدوار خطوة واحدة <span class="ltr">18°</span>، لا سنّاً كاملاً.']]},
+ ins:[{k:'n',l:'عدد النبضات',min:0,max:20,step:1,v:0,dp:0}],
+ calc:(s,P,B)=>{const M=MOT.q18,sq=genSeq(M,'fa'),R=sq.rows.slice(0,5);let th=0;for(let i=0;i<=s.n;i++)th=settle(M,R[i%5],th);th=Math.round(th*100)/100;const ph=R[s.n%5];
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['المغذّاة الآن',M.labels[s.n%5],'hi'],['الزاوية الكلية',DCML.fm(B,th,0)+'°'],['الدورات',DCML.fm(B,th/360,2)]],
+   msg:s.n===20?'دورة كاملة بعد <span class="ltr">20</span> نبضة.':s.n&&s.n%5===0?`عادت التغذية إلى <span class="ltr">A</span>، لكن الدوار دار <span class="ltr">${s.n*18}°</span> فقط.`:''}}})}
+   ]},
 
   {st:5,short:String.raw`س ١-٩`,title:String.raw`س ١-٩: المحرك الهجين في الشكل (١-١٥)`,ref:String.raw`ص 25`,
    q:String.raw`ثلاثة أسنان فقط في كل طرف… كيف تثبت أن الدوار متزن في الوضع المرسوم؟`,
@@ -1327,7 +1739,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>س ١-٩:</b> للمحرك متدرج الحركة من النوع الهجين، المبين بالشكل (١-١٥)، أوجد:</p><ul style="list-style:none;padding:0"><li>أ. خطوة المحرك.</li><li>ب. الجدول المنطقي لحركة المحرك بخطوة كاملة ضد عقارب الساعة.</li><li>ج. موجات الجهد الموصل بالمجموعات لحركة المحرك بخطوة كاملة ضد عقارب الساعة.</li><li>د. أثبت أن الدوار متزن بالوضع المبين بالشكل.</li><li>هـ. احسب قيمة العزم المتولد عند فصل المجموعة ١ وتغذية المجموعة ٢ بدلالة أقصى عزم.</li></ul>`,ref:'ص 25'},
     {tip:String.raw`<ul><li><b>أ:</b> طبّق المعادلة (١-١) كما فعلنا في الهجين ذي الخمسة أسنان (الدرس الخامس): عُدّ أسنان الطرفين معاً.</li><li><b>ب و ج:</b> مثل الجدول (١-٥) والشكل (١-٩) بعد كتابة 1 و2 بدل <span class="ltr">A</span> و<span class="ltr">B</span>.</li><li><b>هـ:</b> بطريقة المعادلة (١-٢): لكل سن حدّ جيب (تجاذب) أو جيب تمام (تنافر)، والموجب ضد عقارب الساعة.</li></ul>`,title:'خطوات الحل'},
-    {watch:String.raw`<p>طريقة عدّ <span class="ltr">P</span> للهجين (أسنان الطرفين معاً) استنتاج منا لأن الكتاب لا يبيّنها، والحل المقترح في الشرح الرسمي ينبّه إلى أن المدرب يقرر طريقة العد واختيار الحدود في البند (هـ).</p>`}]},
+    {watch:String.raw`<p>طريقة عدّ <span class="ltr">P</span> للهجين (أسنان الطرفين معاً) استنتاج منا لأن الكتاب لا يبيّنها، والحل المقترح في الشرح الرسمي ينبّه إلى أن المدرب يقرر طريقة العد واختيار الحدود في البند (هـ).</p>`},
+    {title:'مختبر مصغّر: الجدول (ب) على محرك الشكل (١-١٥)',widget:(el,B)=>DCML.lab(el,B,{intro:'المجموعتان <span class="ltr">1</span> و<span class="ltr">2</span> تُغذّيان مثل الجدول <span class="ltr">(١-٥)</span> بعد كتابة <span class="ltr">1</span> و<span class="ltr">2</span> بدل <span class="ltr">A</span> و<span class="ltr">B</span>. حرّك رقم الصف وراقب أي أسنان تقابل الأقطاب.',
+ predict:{q:'نريد أن يخطو المحرك ضد عقارب الساعة، وبدأنا بالصف <span class="ltr">1 = 1, 2 = 0</span> في الجدول. ما الصف التالي؟',opts:[
+  ['<span class="ltr">1 = −1, 2 = 0</span>',false,'عكس قطبية المجموعة نفسها مباشرة يحرّك الدوار خطوتين لا خطوة.'],
+  ['<span class="ltr">1 = 0, 2 = 1</span>',true,'مثل الصف الثاني في الجدول <span class="ltr">(١-٥)</span>: نفصل المجموعة 1 ونغذي المجموعة 2.'],
+  ['<span class="ltr">1 = 1, 2 = 1</span>',false,'هذا صف من صفوف نصف الخطوة (مثل الجدول <span class="ltr">(١-٦)</span>).']]},
+ ins:[{k:'r',l:'رقم الصف',min:1,max:5,step:1,v:1,dp:0}],
+ calc:(s,P,B)=>{const M=MOT.hy3,R=genSeq(M,'fa').rows;let th=0;for(let i=0;i<s.r;i++)th=settle(M,R[i%4],th);th=Math.round(th*100)/100;const ph=R[(s.r-1)%4],sg=v=>v>0?'1':v<0?'−1':'0';
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['الصف',`1 = ${sg(ph[0])}, 2 = ${sg(ph[1])}`,'hi'],['الدوار من البداية (نموذج المختبر)',DCML.fm(B,th,0)+'° ⟲']],
+   msg:'في كل صف يقف الدوار متزناً حيث يقابل كل قطب مغذّى سنّاً مخالفاً له في القطبية (البند د). طريقة عدّ <span class="ltr">P</span> لحساب الخطوة يقررها المدرب (انظر التنبيه).'+(s.r===5?' الصف الخامس يعيد الصف الأول.':'')}}})}
+   ]},
 
   {st:6,short:String.raw`تمرين ١-١٠`,title:String.raw`تمرين ١-١٠: محرك الشكل (١-١٦)`,ref:String.raw`ص 26`,
    q:String.raw`هل رأيت هذا المحرك من قبل في الوحدة؟`,
@@ -1341,7 +1764,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>تمرين ١-١٠:</b> محرك الخطوة المبين بالشكل (١-١٦)، من النوع ذي الممانعة المغناطيسية المتغيرة، العضو الثابت يحتوي على ثلاث مجموعات من الأقطاب، كل مجموعة بها قطبان، الدوار يحتوي على أربعة أسنان، المطلوب:</p><ul style="list-style:none;padding:0"><li>أ. حساب خطوة المحرك.</li><li>ب. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بخطوة كاملة.</li><li>ج. التسلسل المنطقي لتغذية المجموعات بحيث يدور المحرك مع عقارب الساعة بنصف خطوة.</li><li>د. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بخطوة كاملة.</li><li>هـ. التسلسل المنطقي لتغذية المجموعات، بحيث يدور المحرك عكس عقارب الساعة بنصف خطوة.</li><li>و. موجات الجهد المغذي للمجموعات في الحالتين ب، ج، د، هـ.</li><li>ز. هل يمكن استبدال الدوار بآخر، ذي أقطاب مغناطيسية دائمة؟ ولماذا؟</li></ul>`,ref:'ص 26'},
     {tip:String.raw`<p>لأنه مثل محرك الشكل (١-٧)، فجداوله هي الجداول (١-١) إلى (١-٤) بعد كتابة 1 و2 و3 بدل <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">C</span>، بشرط أن يكون ترتيب المجموعات حول الثابت كما في الشكل (١-٧). تحقق من ذلك في الشكل قبل أن تكتب الجداول.</p>`,title:'اختصار'},
-    {tip:String.raw`<p>البند (ز) في الأسئلة الثلاثة: تذكّر أن دوار الأقطاب الدائمة يحتاج عكس قطبية التغذية (الجدول ١-٥)، فتتغير الجداول. ناقش إجابتك مع المدرب.</p>`,title:'عن البند (ز)'}]},
+    {tip:String.raw`<p>البند (ز) في الأسئلة الثلاثة: تذكّر أن دوار الأقطاب الدائمة يحتاج عكس قطبية التغذية (الجدول ١-٥)، فتتغير الجداول. ناقش إجابتك مع المدرب.</p>`,title:'عن البند (ز)'},
+    {title:'مختبر مصغّر: غذِّ محرك الشكل (١-١٦)',widget:(el,B)=>{let th=0,last=0;return DCML.lab(el,B,{intro:'الدوار يبدأ على أقطاب المجموعة <span class="ltr">1</span>. غذِّ المجموعات واحدة واحدة، وقارن الخطوة والاتجاه بمحرك الشكل <span class="ltr">(١-٧)</span>.',
+ predict:{q:'غذّينا المجموعة <span class="ltr">1</span> ثم المجموعة <span class="ltr">2</span>. كم يدور الدوار؟',opts:[
+  ['<span class="ltr">15°</span>',false,'<span class="ltr">15°</span> خطوة محرك الشكل <span class="ltr">(١-٢)</span> ذي الأسنان الثمانية.'],
+  ['<span class="ltr">30°</span>',true,'<span class="ltr">360 ÷ (3 × 4) = 30°</span>، مثل محرك الشكل <span class="ltr">(١-٧)</span>.'],
+  ['<span class="ltr">90°</span>',false,'<span class="ltr">90°</span> هي المسافة بين سنّين متجاورين في دوار بأربعة أسنان، وتساوي ثلاث خطوات.']]},
+ ins:[{k:'g',l:'المجموعة المغذّاة الآن',seg:[[0,'1'],[1,'2'],[2,'3']],v:0}],
+ calc:(s,P,B)=>{const M=MOT.f116,ph=[0,0,0];ph[s.g]=1;let d=0;if(s.g!==last){const t0=th;th=Math.round(settle(M,ph,th)*100)/100;d=th-t0;last=s.g}
+  return {pic:motorSVG(M,ph,th,{noflux:1}),
+   facts:[['المغذّاة الآن',M.labels[s.g],'hi'],['حركة هذه الضغطة',d?DCML.fm(B,Math.abs(d),0)+'° '+(d>0?'⟲':'⟳'):'0°']],
+   msg:d?`الترتيب <span class="ltr">1, 2, 3</span> هنا مثل <span class="ltr">A, B, C</span> في محرك الشكل <span class="ltr">(١-٧)</span>.`:'اضغط مجموعة أخرى.'}}})}}
+   ]},
 
   {recap:[
    String.raw`الاختبار الذاتي يراجع: دوار الممانعة المتغيرة أسنان بارزة، ودوار الأقطاب الدائمة مغناطيس، وثلاث مجموعات على الأقل، والأقطاب المتجاورة مختلفة القطبية (ص 23).`,

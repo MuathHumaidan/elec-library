@@ -167,7 +167,183 @@ B.lesson({
  title:'المحرك العام: لماذا يعمل على التيارين؟ وتركيبه',
  summary:'محرك التوالي العام يعمل على التيار المستمر والمتردد لأن تياري المجال والمنتج ينعكسان معاً فيبقى العزم في اتجاه واحد. ونتعرف على أجزائه والتحسينات اللازمة لتشغيله بالتيار المتردد.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 58',
    q:'محركان في وحدة واحدة: المحرك العام والمحرك التنافري… ما الذي يجمعهما، وما الذي يفرّق بينهما؟',
@@ -182,7 +358,11 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>الهدف العام:</b> معرفة تركيب وخواص واستخدام كل من محرك التوالي العام والمحرك التنافري.</p>
      <p><b>الأهداف التفصيلية:</b></p><ol><li>أن يعرف المتدرب تركيب وكيفية عمل محرك التوالي العام.</li><li>أن يعرف المتدرب خواص واستخدامات محرك التوالي العام.</li><li>أن يعرف المتدرب تركيب وكيفية عمل المحرك التنافري.</li><li>أن يعرف المتدرب خواص واستخدامات المحرك التنافري.</li></ol>`,ref:'ص 58'},
-    {tip:String.raw`<p>هذا الدرس والدرس الثاني عن <b>المحرك العام</b> (كيف يعمل، تركيبه، دائرته المكافئة وخواصه ومثال محلول)، والدرس الثالث عن <b>المحرك التنافري</b>، والدرس الرابع لأسئلة الوحدة.</p>`,title:'خريطة الوحدة'}
+    {tip:String.raw`<p>هذا الدرس والدرس الثاني عن <b>المحرك العام</b> (كيف يعمل، تركيبه، دائرته المكافئة وخواصه ومثال محلول)، والدرس الثالث عن <b>المحرك التنافري</b>، والدرس الرابع لأسئلة الوحدة.</p>`,title:'خريطة الوحدة'},
+    {title:'تحقق سريع: محركا الوحدة',widget:(el,B)=>DCML.tf(el,B,{intro:'اضغط «صح» أو «خطأ» لكل عبارة؛ ستجد تفصيلها في دروس الوحدة.',items:[
+ ['المحرك العام يعمل على كل من مصدري التيار المستمر والتيار المتردد.',true,'«من هنا جاءت التسمية بالمحرك العام» (ص 59).'],
+ ['دوار المحرك التنافري يأخذ تياره من المصدر مباشرة عبر الفرش.',false,'فرشه مقصورة، وملف المنتج «يستمد التيار من ملفات العضو الثابت بالتأثير» (ص 64).'],
+ ['تدرس الوحدة لكل محرك: تركيبه وكيفية عمله، ثم خواصه واستخداماته.',true,'هذه الأهداف التفصيلية الأربعة (ص 58).']]})}
    ]},
 
   {st:2,short:'لماذا «عام»؟',title:'محرك التوالي العام: لماذا يعمل على التيارين؟',ref:'ص 59',
@@ -238,7 +418,13 @@ B.lesson({
      <tr><td>شرارة بين الفرش والمبدل</td><td>فرش ذات مقاومة كبيرة، أقطاب بينية، قطع مبدل أكثر</td></tr></table>`,title:'ثلاث مشكلات وحلولها'},
     {book:String.raw`<p><b>أجزاء الشكل (٤-١) «محرك التوالي العام»:</b> ماسك الفرش، ياي، فرش كربونيه، مروحه، مبدل، عضو متحرك، جسم المحرك، محور المحرك، نقط ارتكاز، نقط تزييت.</p>`,ref:'ص 60'},
     {add:String.raw`<p>الكتاب يذكر أسماء بعض الأجزاء فقط على الشكل. وظائفها: <b>الياي</b> يضغط الفرشة على المبدل لتبقى ملامسة له، و<b>ماسك الفرش</b> يثبّتها مقابل المبدل، و<b>المروحة</b> تدور مع المحور وتدفع الهواء للتبريد، و<b>نقط الارتكاز</b> تحمل المحور وتسمح له بالدوران، و<b>نقط التزييت</b> أماكن وضع الزيت لتقليل الاحتكاك. الرسم المفكك التفاعلي للشكل في الأسلوب الرسمي.</p>`,title:'وظائف أجزاء الشكل'},
-    {watch:String.raw`<p>الفرش ذات المقاومة الكبيرة غرضها <b>كبح الشرارة</b> عند المبدل، وليس تقليل تيار المحرك كله. وسبب الشرارة على التيار المتردد هو <b>جهود التحويل</b> التي تتولد في ملفات المنتج.</p>`}
+    {watch:String.raw`<p>الفرش ذات المقاومة الكبيرة غرضها <b>كبح الشرارة</b> عند المبدل، وليس تقليل تيار المحرك كله. وسبب الشرارة على التيار المتردد هو <b>جهود التحويل</b> التي تتولد في ملفات المنتج.</p>`},
+    {title:'مختبر مصغّر: لماذا هذا التعديل؟',widget:(el,B)=>DCML.sort(el,B,{intro:'كل تعديل أدناه أُدخل على محرك التوالي ليعمل جيداً على التيار المتردد. اضغط المشكلة التي يعالجها.',cats:['المفاقيد الحديدية','تعويض نقص لفات المجال','الشرارة بين الفرش والمبدل'],items:[
+ ['صنع الإطار الخارجي والأقطاب البارزة من شرائح الحديد',0,'«للتقليل من المفاقيد الحديدية التي تكون مصاحبة للتيار المتردد ومتناسبة مع تردد المصدر» (ص 59–60).'],
+ ['لف ملفات المجال بعدد أقل من اللفات',0,'«للتقليل من المجال المغناطيسي وبالتالي التقليل من المفاقيد الحديدية» (ص 59–60).'],
+ ['زيادة عدد الموصلات في ملفات المنتج',1,'«لتعويض النقص في عدد لفات ملف المجال نزيد من عدد الموصلات في ملفات المنتج» (ص 59–60).'],
+ ['فرش كربونية ذات مقاومة مادية كبيرة',2,'«لكبح الشرارة الكهربائية» التي تسببها جهود التحويل في ملفات المنتج (ص 59–60).'],
+ ['إضافة أقطاب بينية وزيادة عدد قطع المبدل',2,'«لتقليل فرق الجهد بين القطع المتجاورة، مما يقلل من الشرارة الكهربائية» (ص 59–60).']]})}
    ]},
 
   {recap:[
@@ -397,7 +583,18 @@ B.lesson({
     }},
     {book:String.raw`<p><b>مخطط الطور (Phasor diagram) في الشكل (٤-٢):</b> التيار \(I_a\) مرجع أفقي، ثم \(I_aR_s\) و\(I_aX_s\) و\(I_aR_a\) و\(I_aX_a\) ثم \(E_a\)، ومجموعها \(V_1\).</p>`,ref:'ص 61'},
     {tip:String.raw`<p>في مخطط الطور: الجهد على المقاومة في طور التيار (أفقي)، والجهد على المعاوقة الحثية متعامد عليه (رأسي)، و\(E_a\) مرسوم في طور التيار. لذلك يميل \(V_1\) عن التيار بزاوية \(\phi\)، وهي زاوية معامل القدرة. جرّبه حياً في تبويب «المختبر».</p>`},
-    {watch:String.raw`<p>المعادلة (٤-١) طرح <b>مركّب</b> (بالمقدار والزاوية)، لا طرح أرقام عادية: لا يصح أن تكتب \(E_a = V_1 - I_a\times\) (مجموع المقاومات والمعاوقات) بالأرقام فقط. وانتبه: \(\cos\phi\) تدخل في قدرة الدخل (٤-٤) فقط.</p>`}
+    {watch:String.raw`<p>المعادلة (٤-١) طرح <b>مركّب</b> (بالمقدار والزاوية)، لا طرح أرقام عادية: لا يصح أن تكتب \(E_a = V_1 - I_a\times\) (مجموع المقاومات والمعاوقات) بالأرقام فقط. وانتبه: \(\cos\phi\) تدخل في قدرة الدخل (٤-٤) فقط.</p>`},
+    {title:'مختبر مصغّر: غيّر تيار المحرك وتابع المعادلات',widget:(el,B)=>DCML.lab(el,B,{intro:'الجهد <span class="ltr">120 V</span> وثوابت الملفات والمفاقيد <span class="ltr">80 W</span> من مثال (٤-١). حرّك تيار المحرك (رقم تختاره أنت) وراقب الجهد المتولد والقدرات من المعادلات (٤-١) إلى (٤-٦)، على أن \\(E_a\\) في طور التيار كما يلاحظ الكتاب (ص 62). عند <span class="ltr">17.58 A</span> تحصل على أرقام المثال.',
+ predict:{q:'زاد التيار الذي يسحبه المحرك والجهد ثابت. ماذا يحدث للجهد المتولد \\(E_a\\)؟',opts:[
+  ['يزيد مع التيار',false,'التيار الأكبر يعني هبوط جهد أكبر على مقاومات الملفات ومعاوقاتها.'],
+  ['يقل، لأن هبوط الجهد على الملفات يزيد',true,'في المعادلة (٤-١) يُطرح من \\(V_1\\) هبوط الجهد على الملفات، وهذا الهبوط يكبر مع \\(I_a\\).'],
+  ['لا يتغير لأن جهد المصدر ثابت',false,'جهد المصدر ثابت، لكن الجزء الذي تمتصه الملفات يتغير مع التيار.']]},
+ ins:[{k:'I',l:'تيار المحرك I<sub>a</sub>',min:4,max:24,step:0.02,v:17.58,dp:2,u:'A'}],
+ calc:(s)=>{const r=phasorCalc(120,s.I,1.36,1.6,0.65,1.2);if(!r.ok)return {msg:'لا حل عند هذا التيار.',cls:'warn'};
+  const Pd=r.E*s.I,Po=Pd-80,Pin=120*s.I*r.pf,eta=Po/Pin*100,bk=Math.abs(s.I-17.58)<0.011;
+  return {facts:[['E<sub>a</sub> (٤-١)',DCML.fm(B,r.E,2)+' V','hi'],['معامل القدرة cos φ',DCML.fm(B,r.pf,3)],['P<sub>d</sub> (٤-٢)',DCML.fm(B,Pd,0)+' W'],['P<sub>o</sub> (٤-٣)',DCML.fm(B,Po,0)+' W'],['P<sub>in</sub> (٤-٤)',DCML.fm(B,Pin,0)+' W'],['الكفاءة η (٤-٦)',DCML.fm(B,eta,1)+' %','hi']],
+   bars:[{l:'P<sub>in</sub> القدرة الداخلة',v:Pin,max:3000,dp:0,u:'W',col:'--live'},{l:'P<sub>d</sub> القدرة المتولدة',v:Pd,max:3000,dp:0,u:'W'},{l:'P<sub>o</sub> قدرة الخرج',v:Math.max(0,Po),max:3000,dp:0,u:'W',col:'--on'}],
+   msg:bk?'هذه معطيات المثال: معامل القدرة <span class="ltr">0.912</span> يخرج من الدائرة نفسها، و\\(E_a\\) ≈ <span class="ltr">74.1 V</span> بالحساب المصحح (الكتاب طبع <span class="ltr">74.05</span>)، و <span class="ltr">P<sub>o</sub> ≈ 1222 W</span> و <span class="ltr">η ≈ 63.5%</span>.':''}}})}
    ]},
 
   {st:2,short:'الخواص والاستخدامات',title:'خواص المحرك العام واستخداماته',ref:'ص 61',
@@ -426,7 +623,17 @@ B.lesson({
       el.querySelector('[data-rs]').onclick=rs;
     }},
     {add:String.raw`<p>افتح مكنسة كهربائية أو خلاطاً أو مثقاباً قديماً تجد المحرك صغيراً وعليه مبدل وفرشتان كربونيتان، وهذه الفرش تتآكل مع الاستعمال وتُستبدل. والصوت العالي لهذه الأجهزة يرجع جزء منه إلى سرعتها العالية.</p>`,title:'من بيتك'},
-    {watch:String.raw`<p><span class="ltr">15000</span> لفة في الدقيقة سرعة «قد تصل» إليها هذه المحركات، وليست سرعة كل محرك عام. والمحور الأفقي في الشكل (٤-٣) بالنسبة <span class="ltr">(pu)</span> لا باللفة في الدقيقة.</p>`}
+    {watch:String.raw`<p><span class="ltr">15000</span> لفة في الدقيقة سرعة «قد تصل» إليها هذه المحركات، وليست سرعة كل محرك عام. والمحور الأفقي في الشكل (٤-٣) بالنسبة <span class="ltr">(pu)</span> لا باللفة في الدقيقة.</p>`},
+    {title:'مختبر مصغّر: التيار نفسه على جهد مستمر ثم متردد',widget:(el,B)=>DCML.lab(el,B,{intro:'المحرك نفسه (ثوابت مثال (٤-١)) يسحب التيار نفسه مرة من جهد مستمر <span class="ltr">120 V</span> ومرة من جهد متردد <span class="ltr">120 V</span>. قارن الجهد المتولد \\(E_a\\) في الحالتين: عند المجال نفسه تكون السرعة أعلى حيث \\(E_a\\) أكبر. (المقارنة تهمل التشبع، وهو السبب الثاني في الكتاب.)',
+ predict:{q:'عند التيار نفسه، على أي مصدر يكون الجهد المتولد \\(E_a\\) أكبر؟',opts:[
+  ['على الجهد المستمر',true,'على المستمر لا توجد معاوقة حثية: \\(E_a = V - I(R_a+R_s)\\). أما على المتردد فـ«معاوقة ملفات المنتج وملفات المجال تمتص جزءاً من جهد المصدر» (ص 61).'],
+  ['على الجهد المتردد',false,'على المتردد يُطرح أيضاً هبوط المعاوقة الحثية \\(X_a+X_s\\).'],
+  ['متساويان',false,'جرّب في الأسفل: الفرق يكبر كلما زاد التيار.']]},
+ ins:[{k:'I',l:'تيار المحرك (رقم تختاره أنت)',min:4,max:24,step:0.02,v:17.58,dp:2,u:'A'}],
+ calc:(s)=>{const dc=120-s.I*(1.36+0.65),r=phasorCalc(120,s.I,1.36,1.6,0.65,1.2),ac=r.ok?r.E:0;
+  return {bars:[{l:'E<sub>a</sub> على الجهد المستمر',v:dc,max:120,dp:2,u:'V'},{l:'E<sub>a</sub> على الجهد المتردد',v:ac,max:120,dp:2,u:'V',col:'--live'}],
+   facts:[['الفرق',DCML.fm(B,dc-ac,2)+' V','hi'],['E<sub>a</sub> متردد ÷ مستمر',DCML.fm(B,ac/dc*100,1)+' %']],
+   msg:'\\(E_a\\) على المتردد أصغر، فالسرعة أقل عند المجال نفسه: السبب الأول في الكتاب، وهو ما يظهر في الشكل (٤-٣) حيث منحنى A.C تحت منحنى D.C.'}}})}
    ]},
 
   {st:3,short:'مثال (٤-١)',title:'مثال محلول: محرك عام <span class="ltr">120 V</span>',ref:'ص 62–63',
@@ -451,7 +658,14 @@ B.lesson({
     {book:String.raw`<p>يلاحظ أن زاوية الوجه للقوة الدافعة الكهربائية المتولدة لها نفس قيمة زاوية الوجه للتيار.</p>`,ref:'ص 62'},
     {tip:String.raw`<p>ترتيب الحل: (١) \(E_a\) من (٤-١) بالأعداد المركبة، (٢) \(P_d\) من (٤-٢)، (٣) \(P_o\) من (٤-٣)، (٤) \(\omega_m\) ثم \(T_o\) من (٤-٥)، (٥) \(P_{in}\) من (٤-٤)، (٦) \(\eta\) من (٤-٦).</p>`,title:'خطة الحل'},
     {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> (١) استعمل الكتاب زاوية التيار <span class="ltr">24.58°</span> بينما <span class="ltr">cos⁻¹(0.912) = 24.22°</span>. (٢) طُبع <span class="ltr">17.58 × 3.446 = 60.68</span> والصحيح <span class="ltr">60.58</span>. (٣) النتيجة المطبوعة <span class="ltr">74.05∠−24.2</span> لا تخرج من السطر الذي قبلها (يعطي <span class="ltr">73.74∠−24.1</span>)، لكنها قريبة من الحساب الصحيح بالزاوية 24.22° الذي يعطي <span class="ltr">74.10∠−24.2 V</span>. أثر ذلك صغير، وفي تبويب «الأمثلة المحلولة» تجد الحل كما في الكتاب والحل المصحح.</p>`,fix:true},
-    {watch:String.raw`<p>معطيان في السؤال لم يُستخدما في الحل: «60 هيرتز» و«زوج واحد من الأقطاب». لا تبحث عن مكان لهما في المعادلات.</p>`}
+    {watch:String.raw`<p>معطيان في السؤال لم يُستخدما في الحل: «60 هيرتز» و«زوج واحد من الأقطاب». لا تبحث عن مكان لهما في المعادلات.</p>`},
+    {title:'مختبر مصغّر: من أي معادلة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل كمية في حل مثال (٤-١) اضغط رقم المعادلة التي تحسبها.',cats:['(٤-١)','(٤-٢)','(٤-٣)','(٤-٤)','(٤-٥)','(٤-٦)'],items:[
+ ['الجهد المتولد \\(E_a\\)',0,'\\(E_a = V_1 - I_a(R_a+R_s+jX_a+jX_s)\\) بالأعداد المركبة، ونتيجته في الكتاب \\(74.05\\angle{-24.2^\\circ}\\) V.'],
+ ['القدرة المتولدة \\(P_d\\)',1,'\\(P_d = E_a I_a\\)، وهي أول ما يحتاج \\(E_a\\).'],
+ ['قدرة الخرج \\(P_o\\)',2,'\\(P_o = P_d - P_{losses}\\)، والمفاقيد الحديدية والميكانيكية في المثال <span class="ltr">80 W</span>، فتكون <span class="ltr">1222 W</span>.'],
+ ['القدرة الداخلة \\(P_{in}\\)',3,'\\(P_{in} = V_1 I_a\\cos\\phi\\) — هنا يدخل معامل القدرة <span class="ltr">0.912</span>.'],
+ ['العزم المتولد \\(T_o\\)',4,'\\(T_o = P_o/\\omega_m\\) مع \\(\\omega_m = 2\\pi N_m/60\\)، فيكون <span class="ltr">1.46 N.m</span>.'],
+ ['الكفاءة \\(\\eta\\)',5,'\\(\\eta = P_o/P_{in}\\)، وفي المثال <span class="ltr">63.5%</span>.']]})}
    ]},
 
   {recap:[
@@ -589,7 +803,13 @@ B.lesson({
      <tr><td>الثابت</td><td>أقطاب بارزة عليها ملفات المجال</td><td>مثل ثابت المحرك الحثي أحادي الوجه، ملفات موزعة</td></tr>
      <tr><td>الدوار</td><td>منتج بمبدل وفرش</td><td>منتج بمبدل وفرش (مثل آلة التيار المستمر)</td></tr>
      <tr><td>الفرش</td><td>متصلة بالمصدر على التوالي مع المجال</td><td>مقصورة على نفسها، ومحورها بزاوية α</td></tr></table>`,title:'قارن بالمحرك العام'},
-    {watch:String.raw`<p>الزاوية α هي زاوية <b>محور الفرش</b> بالنسبة لمحور ملفات الثابت، أي زاوية نضبطها بتحريك ماسك الفرش، وليست زاوية دوران الدوار.</p>`}
+    {watch:String.raw`<p>الزاوية α هي زاوية <b>محور الفرش</b> بالنسبة لمحور ملفات الثابت، أي زاوية نضبطها بتحريك ماسك الفرش، وليست زاوية دوران الدوار.</p>`},
+    {title:'مختبر مصغّر: العام أم التنافري أم كلاهما؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط المحرك الذي ينطبق عليه.',cats:['المحرك العام','المحرك التنافري','كلاهما'],items:[
+ ['العضو الثابت يشبه ثابت المحرك الحثي أحادي الوجه، وملفاته موزعة على محيطه كله',1,'(ص 63). أما ثابت المحرك العام فأقطاب بارزة عليها ملفات المجال.'],
+ ['دوار عليه ملفات منتج موصلة بالمبدل (عضو التبديل)',2,'دوار التنافري «يشبه تماما العضو الدوار لآلات التيار المستمر» (ص 63)، والمحرك العام تركيبه تركيب آلة التيار المستمر ذات تغذية التوالي (ص 59).'],
+ ['الفرش الكربونية موصلة ببعضها (مقصورة)',1,'«تقصر الفرش الكربونية لهذا المحرك» (ص 63).'],
+ ['تيار المنتج يأتيه من المصدر بالتوصيل المباشر',0,'في المحرك العام «يمر فيه التيار بالتوصيل المباشر من المصدر الكهربائي» (ص 64).'],
+ ['خصائصه وسرعته تتوقف على الزاوية α بين محور الفرش ومحور ملفات الثابت',1,'هذه الزاوية خاصة بالمحرك التنافري لأن فرشه مقصورة ويُحرَّك ماسكها؛ في المحرك العام الفرش متصلة بالمصدر (ص 63).']]})}
    ]},
 
   {st:2,short:'نظرية العمل',title:'نظرية العمل: ملف تحويل وملف مجال من ملف واحد',ref:'ص 63–64',
@@ -650,7 +870,18 @@ B.lesson({
      ['لا يدور حتى نعيد الفرش إلى موقعها',false,'المحرك يدور بمجرد أن تبتعد الفرش عن موقع المعاوقة الكبيرة.'],
      ['عكس عقارب الساعة، أي عكس اتجاه إزاحة الفرش',true,'«فيدور المحرك في اتجاه معاكس لاتجاه إزاحة الفرش من موقع المعاوقة الكبيرة» (ص 65). ولعكس الدوران نزيح الفرش إلى الجهة الأخرى.']]}},
     {tip:String.raw`<p>ابدأ دائماً من موقع المعاوقة الكبيرة (أقل تيار بدء)، ثم أزح الفرش نحو الإزاحة المطلوبة. الكتاب لا يعطي معادلة للعزم بدلالة α؛ يكفي أن تتذكر أنه صفر عند الطرفين ويظهر بينهما. جرّب ذلك بالسحب في تبويب «المختبر».</p>`,title:'خطوات التشغيل'},
-    {watch:String.raw`<p>لعكس اتجاه الدوران لا نعكس المصدر؛ نزيح الفرش من موقع المعاوقة الكبيرة <b>إلى الجهة الأخرى</b> (استنتاج من الجملة الأخيرة في ص 65، وهو السؤال س٤-٤).</p>`}
+    {watch:String.raw`<p>لعكس اتجاه الدوران لا نعكس المصدر؛ نزيح الفرش من موقع المعاوقة الكبيرة <b>إلى الجهة الأخرى</b> (استنتاج من الجملة الأخيرة في ص 65، وهو السؤال س٤-٤).</p>`},
+    {title:'مختبر مصغّر: حرّك الفرش',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر موقع الفرش، واتجاه إزاحتها عن موقع المعاوقة الكبيرة، وراقب العزم وتيار العضو الثابت واتجاه الدوران كما يصفها الكتاب (ص 64–65). المقارنة هنا وصفية بلا أرقام.',
+ predict:{q:'أين يجب أن تكون الفرش لحظة توصيل المحرك بالمصدر؟',opts:[
+  ['في موقع المعاوقة الصغيرة <span class="ltr">(α = 0°)</span>',false,'هناك يمر أكبر تيار في العضو الثابت ولا يوجد عزم.'],
+  ['في أي موقع، لا فرق',false,'الموقع يحدد تيار البدء: أكبره عند الصفر وأقله عند تسعين درجة.'],
+  ['في موقع المعاوقة الكبيرة <span class="ltr">(α = 90°)</span>',true,'«عند بدء حركة المحرك التنافري يجب أن تكون الفرش في موقع المعاوقة الكبيرة حيث يكون تيار البدء في هذه الحالة أقل ما يمكن» (ص 65).']]},
+ ins:[{k:'pos',l:'موقع الفرش',seg:[['90','موقع المعاوقة الكبيرة <span class="ltr">α = 90°</span>'],['m','مُزاحة عن موقع المعاوقة الكبيرة'],['0','موقع المعاوقة الصغيرة <span class="ltr">α = 0°</span>']],v:90},
+      {k:'dir',l:'اتجاه إزاحة الفرش (عند اختيار «مُزاحة»)',seg:[['cw','مع عقارب الساعة'],['ccw','عكس عقارب الساعة']],v:'cw'}],
+ calc:(s)=>{if(s.pos===90)return {facts:[['عزم الدوران','لا يوجد','bad'],['تيار العضو الثابت','أصغر قيمة']],msg:'المحرك يشبه محولاً ثانويه مفتوح: يتلاشى ملف التحويل فيتلاشى تيار المنتج والعزم (ص 65). من هنا نبدأ التشغيل لأن تيار البدء أقل ما يمكن، ثم نزيح الفرش.'};
+  if(s.pos===0)return {facts:[['عزم الدوران','لا يوجد','bad'],['تيار العضو الثابت','أكبر قيمة','bad']],msg:'المحرك يشبه محولاً ثانويه مقصور: يتلاشى ملف المجال فيتلاشى العزم، وتمر أكبر قيمة لتيار العضو الثابت (ص 65). لا تبدأ التشغيل من هنا.',cls:'warn'};
+  const cw=s.dir==='cw';return {facts:[['عزم الدوران','يوجد','hi'],['تيار العضو الثابت','بين القيمتين'],['اتجاه الدوران',cw?'عكس العقارب':'مع العقارب','hi']],
+   msg:'يدور المحرك <b>عكس اتجاه إزاحة الفرش</b>: أزحتها '+(cw?'مع':'عكس')+' عقارب الساعة فيدور '+(cw?'عكسها':'معها')+' (ص 65). ولعكس الدوران نزيح الفرش إلى الجهة الأخرى.'}}})}
    ]},
 
   {recap:[
@@ -772,7 +1003,12 @@ B.lesson({
      <tr><td>س٣</td><td>الشكل (٤-٣) وسببا اختلاف الخواص — ص 61</td></tr>
      <tr><td>س٤</td><td>«ذو قدرة عالية مقارنة بحجمه» — ص 61</td></tr></table>`,title:'خريطة الإجابات'},
     {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لهذا الاختبار. الإجابات في تبويب «اختبر نفسك» مقترحة من نص الكتاب ويعتمدها المدرب. وانتبه لعبارة «الإجابة أو الإجابات»: قد يكون في السؤال أكثر من خيار صحيح.</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=quiz]');if(b)b.click()">افتح «اختبر نفسك» وأجب</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=quiz]');if(b)b.click()">افتح «اختبر نفسك» وأجب</button></div>`},
+    {title:'تحقق سريع قبل الاختبار',widget:(el,B)=>DCML.tf(el,B,{intro:'عبارات من نص الوحدة تساعدك في الأسئلة الأربعة. اضغط «صح» أو «خطأ».',items:[
+ ['عند تشغيل محرك التوالي بالتيار المتردد تحدث شرارة كهربائية بين الفرش الكربونية والمبدل.',true,'سببها جهود التحويل في ملفات المنتج (ص 59).'],
+ ['سرعة المحرك العام على الجهد المتردد أعلى منها على الجهد المستمر بالقيمة نفسها.',false,'العكس: معاوقة الملفات تمتص جزءاً من جهد المصدر، فتكون السرعة أقل على المتردد (ص 61).'],
+ ['المحرك العام ذو قدرة عالية مقارنة بحجمه.',true,'لذلك يستخدم في الأجهزة المنزلية كالمكانس والخلاطات وفي المثقاب (ص 61).'],
+ ['المحرك العام يعمل على التيار المتردد فقط.',false,'«محرك يعمل على كل من مصدري التيار المستمر والتيار المتردد» (ص 59).']]})}
    ]},
 
   {st:2,short:'أسئلة متنوعة',title:'أسئلة متنوعة: سبعة أسئلة على الوحدة',ref:'ص 66–67',
@@ -795,7 +1031,16 @@ B.lesson({
      <p><b>س٤-٧:</b> محرك توالٍ عام 220 فولت، 60 هيرتز، ذو زوجين من الأقطاب، يدور بسرعة 6000 لفة في الدقيقة ويسحب تياراً مقداره 7 أمبير ومعامل القدرة 0.90 متأخر، وثوابت ملفات المنتج والمجال (التوالي) كالآتي: معاوقة ملف المنتج: \(Z_a = 5.5 + j\,7.4\ \Omega\)؛ معاوقة ملف التوالي: \(Z_s = 3.5 + j\,3.2\ \Omega\). احسب: معامل القدرة و الجهد المتولد وقدرة الخرج و العزم المتولد و كفاءة المحرك، إذا كانت المفاقيد الحديدية والميكانيكية 70 وات.</p>`,ref:'ص 67'},
     {tip:String.raw`<p>في س٤-٦ و س٤-٧ تُعطى المعاوقة على شكل \(Z = R + jX\): الجزء الحقيقي هو المقاومة \(R\) والجزء التخيلي هو المعاوقة الحثية \(X\). فمثلاً في س٤-٦: \(R_a = 6.15\ \Omega\) و\(X_a = 9.4\ \Omega\). بعدها اتبع خطوات مثال (٤-١) بالمعادلات من (٤-١) إلى (٤-٦).</p>`,title:'قبل أن تحل المسألتين'},
     {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> س٤-٧ يعطي معامل القدرة (0.90) ثم يطلب حسابه. وإذا حسبناه من الدائرة كما في مثال (٤-١) (الجهد المتولد في طور التيار) نجد <span class="ltr">sin φ = 7 × 10.6 / 220 = 0.337</span> أي <span class="ltr">pf ≈ 0.94</span> لا 0.90؛ فالمعطيات غير متسقة. الحل المقترح في تبويب «الأمثلة المحلولة» يستعمل المعطى 0.90.</p>`,fix:true},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حاسبتي س٤-٦ و س٤-٧</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح حاسبتي س٤-٦ و س٤-٧</button></div>`},
+    {title:'مختبر مصغّر: كيف تعكس اتجاه الدوران؟ (س٤-٣ و س٤-٤)',widget:(el,B)=>DCML.cases(el,B,{intro:'اختر ما تفعله في كل محرك، ثم اقرأ السبب.',cases:[
+ {q:'محرك عام يدور، ونريد عكس اتجاه دورانه. ماذا نفعل؟',opts:[
+  ['نعكس طرفي المصدر',false,'عكس المصدر يعكس التيار في الملفين معاً، فيبقى اتجاه العزم كما هو؛ ولهذا يعمل المحرك على التيار المتردد أصلاً (ص 59).'],
+  ['نعكس أطراف ملف المجال وحده، أو ملف المنتج وحده، بالنسبة للآخر',true,'عكس ملف واحد فقط يعكس اتجاه العزم (الدرس الأول، المحطة الثانية).'],
+  ['نزيح الفرش عن موقعها',false,'هذه طريقة المحرك التنافري، لا المحرك العام.']]},
+ {q:'محرك تنافري بدأ من موقع المعاوقة الكبيرة وأُزيحت فرشه مع عقارب الساعة، فدار عكسها. نريده أن يدور في الاتجاه الآخر. ماذا نفعل؟',opts:[
+  ['نزيد الإزاحة في الاتجاه نفسه',false,'زيادة الإزاحة في الاتجاه نفسه لا تعكس الدوران.'],
+  ['نعيد الفرش إلى موقع المعاوقة الكبيرة ثم نزيحها عكس عقارب الساعة',true,'«فيدور المحرك في اتجاه معاكس لاتجاه إزاحة الفرش من موقع المعاوقة الكبيرة» (ص 65).'],
+  ['نعكس طرفي المصدر',false,'الكتاب يربط اتجاه دوران المحرك التنافري باتجاه إزاحة الفرش، لا بالمصدر (ص 65).']]}]})}
    ]},
 
   {recap:[

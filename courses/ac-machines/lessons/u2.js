@@ -328,7 +328,183 @@ B.lesson({
  title:'التركيب ونظرية المجال المغناطيسي المزدوج الدوار',
  summary:'المحرك الحثي أحادي الوجه ملف أحادي الوجه على الثابت وقفص سنجابي على الدوار. مجاله النابض يساوي مجالين دوارين متعاكسين، فلا يملك عزم بدء، لكنه يستمر في الدوران في الاتجاه الذي يُدفع فيه. ونحسب الانزلاق الأمامي والخلفي.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 72',
    q:'قبل أن تبدأ: ما الذي ينتظر منك الكتاب أن تعرفه في نهاية الوحدة الثانية؟',
@@ -344,7 +520,12 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>الأهداف التفصيلية:</b></p><ol><li>أن يلم المتدرب بأنواع و تركيب و استخدامات المحركات الحثية أحادية الوجه.</li><li>أن يفهم المتدرب نظرية عمل المحركات الحثية أحادية الوجه.</li><li>أن يلم المتدرب بأنواع وخواص وتطبيقات المحركات الحثية أحادية الوجه.</li><li>أن يعرف المتدرب تركيب وكيفية عمل الأنواع المختلفة من المحركات الحثية أحادية الوجه.</li><li>أن يفهم المتدرب كيفية تحليل المجال المغناطيسي إلى مجالين دوارين كأساس لحساب العزم المتولد في المحركات الحثية أحادية الوجه.</li><li>أن يعرف المتدرب استخدامات المحركات الحثية أحادية الوجه.</li><li>أن يميز المتدرب بين الطرق المختلفة لبدء حركة المحركات الحثية أحادية الوجه ومميزات كل منها.</li><li>أن يعرف المتدرب منحنيات الخواص لأنواع المحركات الحثية أحادية الوجه.</li></ol>`,ref:'ص 72'},
     {tip:String.raw`<p>الوحدة كلها تدور حول سؤال واحد: المحرك أحادي الوجه لا يبدأ الدوران وحده، فكيف نبدؤه؟ هذا الدرس يشرح <b>لماذا</b> لا يبدأ، والدروس التالية تشرح <b>طرق البدء</b> الخمس، ولكل طريقة اسم ومنحنى واستخدامات.</p><p class="sub">الكتاب لا يذكر في هذه الوحدة الوقت المتوقع ولا الوسائل ولا المتطلبات السابقة.</p>`,title:'خريطة الوحدة'},
-    {watch:String.raw`<p>ترقيم الصفحات في الحقيبة: بعد ص 72 تأتي ص 74 مباشرة (لا توجد صفحة مطبوعة برقم 73). أرقام الصفحات هنا هي المطبوعة.</p>`}
+    {watch:String.raw`<p>ترقيم الصفحات في الحقيبة: بعد ص 72 تأتي ص 74 مباشرة (لا توجد صفحة مطبوعة برقم 73). أرقام الصفحات هنا هي المطبوعة.</p>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'تأكد أنك قرأت أهداف الوحدة (ص 72).',items:[
+  ['الهدف العام للوحدة يشمل طرق بدء حركة المحركات الحثية أحادية الوجه واستخداماتها.',true,'نصه: «معرفة أنواع وتركيب ونظرية عمل وخواص المحركات الحثية أحادية الوجه وطرق بدء حركتها واستخداماتها».'],
+  ['هذه الوحدة تدرس المحركات الحثية ثلاثية الأوجه.',false,'الوحدة الثانية عن المحركات الحثية <b>أحادية</b> الوجه؛ ثلاثية الأوجه درستها في الوحدة الأولى.'],
+  ['من الأهداف فهم تحليل المجال المغناطيسي إلى مجالين دوارين كأساس لحساب العزم.',true,'هذا الهدف الخامس، وتطبقه في المحطات 3 إلى 5 من هذا الدرس.'],
+  ['الأهداف تكتفي بذكر طرق البدء دون المقارنة بينها.',false,'الهدف السابع: «أن يميز المتدرب بين الطرق المختلفة لبدء حركة المحركات الحثية أحادية الوجه ومميزات كل منها».']]})}
    ]},
 
   {st:2,short:'التركيب',title:'التركيب: ما الذي يختلف عن المحرك ثلاثي الأوجه؟',ref:'ص 74',
@@ -362,7 +543,12 @@ B.lesson({
     {book:String.raw`<p>تتكون المحركات الحثية أحادية الوجه من <b>ملفات أحادية الوجه على العضو الثابت</b>، و<b>عضو دوار ذو قفص سنجابي</b> كما يبين ذلك الشكل (2-1)، فتركيبها يشبه المحركات الحثية ثلاثية الأوجه ذات القفص السنجابي، عدا ما يختص بملفات العضو الثابت حيث تكون أحادية الوجه. هذه الملفات موزعة في مجاري العضو الثابت بطريقة تجعلنا نحصل على قوة دافعة مغناطيسية موزعة توزيع جيبي في الفراغ، وبالتالي نحصل على منحنى جيبي لكثافة الفيض المغناطيسي في الثغرة الهوائية.</p>
      <p>ومن أهم سمات هذه المحركات أنها <b>لا تمتلك عزم لبدء الحركة</b>، ولكن إذا بدأت حركتها بأي وسيلة مساعدة في اتجاه معين فسوف تستمر في الدوران في نفس ذلك الاتجاه.</p>`,ref:'ص 74'},
     {tip:String.raw`<p>«موزعة توزيعاً جيبياً في الفراغ» معناها: لو مشيت على محيط الثغرة الهوائية وقِست الفيض في كل نقطة، لوجدته يكبر ويصغر على شكل موجة جيبية؛ أكبر ما يكون عند محور الملف، وصفر في المنتصف بين قطبين.</p><p>والجملة الثانية هي مشكلة الوحدة كلها: المحرك <b>لا يبدأ وحده</b>، لكنه إذا بدأ في اتجاه ما يستمر فيه.</p>`},
-    {watch:String.raw`<p>«لا يمتلك عزماً لبدء الحركة» لا يعني أنه محرك ضعيف: بعد أن يبدأ يدور ويحمل حمله بشكل عادي. المشكلة في لحظة البدء فقط.</p>`}
+    {watch:String.raw`<p>«لا يمتلك عزماً لبدء الحركة» لا يعني أنه محرك ضعيف: بعد أن يبدأ يدور ويحمل حمله بشكل عادي. المشكلة في لحظة البدء فقط.</p>`},
+    {title:'مختبر مصغّر: مثله أم يختلف عنه؟',widget:(el,B)=>DCML.sort(el,B,{intro:'قارن المحرك الحثي أحادي الوجه بالمحرك الحثي ثلاثي الأوجه ذي القفص السنجابي. لكل بند اختر.',cats:['مثل ثلاثي الأوجه','يختلف عنه'],items:[
+  ['العضو الدوار',0,'قفص سنجابي في المحركين (ص 74).'],
+  ['ملفات العضو الثابت',1,'هنا أحادية الوجه؛ وهذا ما استثناه الكتاب: «عدا ما يختص بملفات العضو الثابت حيث تكون أحادية الوجه».'],
+  ['بدء الحركة وحده عند توصيله بالمصدر',1,'المحرك أحادي الوجه «لا يمتلك عزم لبدء الحركة»، ويحتاج وسيلة مساعدة.'],
+  ['الاستمرار في الدوران بعد أن يبدأ',0,'إذا بدأ حركته بأي وسيلة مساعدة في اتجاه معين فسيستمر في الدوران في نفس الاتجاه (ص 74).']]})}
    ]},
 
   {st:3,short:'المجال المزدوج الدوار',title:'نظرية المجال المغناطيسي المزدوج الدوار',ref:'ص 74–75',
@@ -385,7 +571,20 @@ B.lesson({
      <div class="eq">$$B_1 = \tfrac{1}{2}B_{1\max}\cos(\theta-\omega_s t) + \tfrac{1}{2}B_{1\max}\cos(\theta+\omega_s t)$$<span class="eqno">(2-3)</span></div>
      <p>حيث يمثل الحد الأول مجالاً مغناطيسياً جيبياً دوارا بالسرعة التزامنية وذو كثافة عظمى \(\tfrac12 B_{1\max}\)، كما يمثل الحد الثاني مجالاً مغناطيسياً جيبياً دوارا بنفس الكثافة العظمى، ويدور المجالان في اتجاهين متضادين بنفس السرعة التزامنية \(\omega_s\) حول محيط الثغرة الهوائية. كلاهما يولد عزم دوران في الاتجاه الذي يدور فيه، كما في حالة المحركات الحثية ثلاثية الأوجه.</p>`,ref:'ص 75'},
     {tip:String.raw`<p>كل مجال من المجالين يشبه المجال الدوار في المحرك ثلاثي الأوجه، ويحاول أن يسحب الدوار معه في اتجاهه. فالمحرك أحادي الوجه يشبه <b>محركين ثلاثيي الأوجه على عمود واحد يحاول كل منهما الدوران عكس الآخر</b>. إذا كان الدوار ساكناً يتساوى الشدّان فلا يتحرك.</p>`,title:'الفكرة ببساطة'},
-    {tip:String.raw`<p>\(F_1\) القوة الدافعة المغناطيسية لملف الثابت و\(F_{1\max}\) قيمتها العظمى؛ \(B_1\) كثافة الفيض في الثغرة و\(B_{1\max}\) قيمتها العظمى؛ \(\omega_s\) السرعة الزاوية التزامنية (التردد الزاوي للمصدر)؛ \(t\) الزمن؛ \(\theta\) الموضع الزاوي على محيط الثغرة. الكتاب لا يذكر الوحدات.</p>`,title:'الرموز'}
+    {tip:String.raw`<p>\(F_1\) القوة الدافعة المغناطيسية لملف الثابت و\(F_{1\max}\) قيمتها العظمى؛ \(B_1\) كثافة الفيض في الثغرة و\(B_{1\max}\) قيمتها العظمى؛ \(\omega_s\) السرعة الزاوية التزامنية (التردد الزاوي للمصدر)؛ \(t\) الزمن؛ \(\theta\) الموضع الزاوي على محيط الثغرة. الكتاب لا يذكر الوحدات.</p>`,title:'الرموز'},
+    {title:'مختبر مصغّر: مجال نابض = مجالان دواران',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`الرسم يبين توزيع الفيض حول محيط الثغرة الهوائية \(\theta\) في لحظة واحدة. حرّك الزمن \(\omega_s t\) وراقب الموجات الثلاث في المعادلة (2-3). القيم منسوبة إلى \(B_{1\max}\).`,
+ predict:{q:String.raw`في اللحظة \(\omega_s t = 90^\circ\): كم تكون قيمة \(B_1\) في نقاط الثغرة كلها؟`,opts:[
+  [String.raw`\(B_{1\max}\) عند \(\theta = 90^\circ\)`,false,'قمة الموجة النابضة لا تتحرك عن محور الملف؛ اللذان يتحركان هما قمتا المجالين الدوارين.'],
+  ['صفر في كل النقاط',true,String.raw`لأن \(\cos 90^\circ = 0\) في المعادلة (2-2). وفي هذه اللحظة تقع قمة كل مجال دوار مكان قاع الآخر فيلغي أحدهما الآخر.`],
+  [String.raw`\(\tfrac12 B_{1\max}\) في كل النقاط`,false,'هذه قمة كل مجال دوار وحده، وليست مجموعهما.']]},
+ ins:[{k:'w',l:String.raw`الزمن \(\omega_s t\)`,min:0,max:360,step:15,v:0,fmt:v=>v+'°'}],
+ calc:(s,v,B)=>{const w=s.w*Math.PI/180,R=Math.PI/180,c=Math.cos(w);
+  const wrap=a=>((a+180)%360+360)%360-180;
+  return {facts:[['قمة المجال الأمامي عند θ',DCML.fm(B,wrap(s.w),0)+'°'],['قمة المجال الخلفي عند θ',DCML.fm(B,wrap(-s.w),0)+'°'],['B₁ عند <bdi class="ltr">θ = 0°</bdi> (محور الملف)',DCML.fm(B,c,2)+' B₁max','hi']],
+   plot:{xr:[-180,180],yr:[-1,1],xt:[-180,-90,0,90,180],yt:[-1,-0.5,0,0.5,1],fx:v=>v+'°',xl:'θ',yl:'B / B₁max',
+    curves:[{f:x=>0.5*Math.cos(x*R-w),col:'--live',dash:'6 4',w:2.2},{f:x=>0.5*Math.cos(x*R+w),col:'--blue',dash:'6 4',w:2.2},{f:x=>c*Math.cos(x*R),col:'--fg',w:3}]},
+   msg:Math.abs(c)<1e-9?'المجموع صفر في كل مكان: المجالان الدواران متعاكسان تماماً في هذه اللحظة.':
+    String.raw`المنقّط البرتقالي (الأمامي) يتحرك نحو اليمين والمنقّط الأخضر (الخلفي) نحو اليسار كلما زاد الزمن، أما الخط الداكن (مجموعهما \(B_1\)) فقمته تبقى عند \(\theta = 0\) وتكبر وتصغر فقط: هذا هو المجال النابض.`}}})}
    ]},
 
   {st:4,short:'تحليل المجال النابض',title:'تحليل المجال النابض إلى مجالين دوارين: الشكل <span class="ltr">(2-2)</span>',ref:'ص 75–76',
@@ -405,7 +604,23 @@ B.lesson({
      <tr><td>1</td><td>أفقيان متعاكسان</td><td>صفر</td></tr><tr><td>2</td><td>مائلان إلى أسفل</td><td>رأسية لأسفل (متوسطة)</td></tr><tr><td>3</td><td>منطبقان رأسياً لأسفل</td><td>رأسية لأسفل بأقصى قيمة</td></tr>
      <tr><td>4</td><td>تجاوز كل منهما الآخر</td><td>رأسية لأسفل (متوسطة)</td></tr><tr><td>5</td><td>أفقيان متعاكسان (تبادلا المكان)</td><td>صفر</td></tr><tr><td>6</td><td>مائلان إلى أعلى</td><td>رأسية لأعلى</td></tr></tbody></table></div>
      <p>المركّبتان الأفقيتان للسهمين متساويتان ومتعاكستان دائماً فتلغي إحداهما الأخرى، ويبقى المجموع الرأسي فقط. لذلك تتحرك المحصلة صعوداً ونزولاً على المحور: هذا هو المجال النابض. وتشاهد الحركة كاملة في تبويب «المختبر».</p>`,title:'اقرأ الشكل لحظة لحظة'},
-    {watch:String.raw`<p>رقم المعادلة (2-3) مكرر في الكتاب (ص 75): استُعمل مرة لتحليل \(B_1\) إلى حدّين، ومرة للمعادلة \(\vec B = \vec B_f + \vec B_b\). أبقينا الرقمين كما طُبعا.</p>`,fix:true}
+    {watch:String.raw`<p>رقم المعادلة (2-3) مكرر في الكتاب (ص 75): استُعمل مرة لتحليل \(B_1\) إلى حدّين، ومرة للمعادلة \(\vec B = \vec B_f + \vec B_b\). أبقينا الرقمين كما طُبعا.</p>`,fix:true},
+    {title:'مختبر مصغّر: اجمع السهمين بنفسك',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`السهم البرتقالي \(\vec B_f\) يدور عكس عقارب الساعة، والأخضر \(\vec B_b\) مع عقارب الساعة، وطول كل منهما \(\tfrac12 B_{1\max}\). حرّك زاوية الدوران وراقب المحصلة \(\vec B\) (الداكن).`,
+ predict:{q:'عند جمع السهمين، ماذا يحدث لمركّبتيهما الأفقيتين؟',opts:[
+  ['تُجمعان فتميل المحصلة يميناً أو يساراً',false,'لو حدث ذلك لدارت المحصلة، والكتاب يقول إنها «دائماً في اتجاه رأسي».'],
+  ['تلغي إحداهما الأخرى دائماً، فتبقى المحصلة على المحور الرأسي',true,'السهمان يدوران بالسرعة نفسها في اتجاهين متعاكسين، فمركّبتاهما الأفقيتان متساويتان ومتعاكستان في كل لحظة.'],
+  ['تلغي إحداهما الأخرى في لحظة واحدة فقط',false,'الإلغاء يحدث في كل لحظة، لا في لحظة واحدة.']]},
+ ins:[{k:'a',l:'زاوية دوران كل سهم من الوضع الرأسي',min:0,max:360,step:15,v:30,fmt:v=>v+'°'}],
+ calc:(s,v,B)=>{const R=Math.PI/180,cx=120,cy=120,L=80,a=s.a;
+  const tip=g=>[cx+L*Math.cos(g*R),cy-L*Math.sin(g*R)];
+  const f=tip(90+a),b=tip(90-a),vy=Math.cos(a*R);const hf=-0.5*Math.sin(a*R);
+  let g=`<svg viewBox="0 0 240 240" role="img" aria-label="السهمان الدواران ومحصلتهما" style="font-family:var(--font);max-width:260px;margin-inline:auto" direction="ltr"><circle cx="${cx}" cy="${cy}" r="${L}" fill="none" stroke="var(--line)" stroke-width="1.5"/><path d="M${cx} 22V218" stroke="var(--line)" stroke-dasharray="4 4"/>`;
+  g+=`<path d="M${f[0].toFixed(1)} ${f[1].toFixed(1)}L${(f[0]+b[0]-cx).toFixed(1)} ${(f[1]+b[1]-cy).toFixed(1)}L${b[0].toFixed(1)} ${b[1].toFixed(1)}" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+  g+=arrow(cx,cy,f[0],f[1],'--live',3)+arrow(cx,cy,b[0],b[1],'--blue',3);
+  if(Math.abs(vy)>0.03)g+=arrow(cx,cy,cx,cy-vy*2*L*0.98,'--fg',3.6);
+  g+=`<text x="${(f[0]+(f[0]<cx?-6:6)).toFixed(1)}" y="${(f[1]-6).toFixed(1)}" font-size="14" font-weight="700" fill="var(--live)" font-family="var(--mono)" text-anchor="${f[0]<cx?'end':'start'}">Bf</text><text x="${(b[0]+(b[0]<cx?-6:6)).toFixed(1)}" y="${(b[1]-6).toFixed(1)}" font-size="14" font-weight="700" fill="var(--blue)" font-family="var(--mono)" text-anchor="${b[0]<cx?'end':'start'}">Bb</text></svg>`;
+  return {pic:g,facts:[['المركّبة الأفقية لـ Bf',DCML.fm(B,hf,2)+' B₁max'],['المركّبة الأفقية لـ Bb',DCML.fm(B,-hf,2)+' B₁max'],['المحصلة B (رأسية دائماً)',(Math.abs(vy)<0.005?'0':(vy>0?'↑ ':'↓ ')+DCML.fm(B,Math.abs(vy),2))+' B₁max','hi']],
+   msg:Math.abs(vy)<0.005?'السهمان أفقيان متعاكسان: المحصلة صفر.':Math.abs(Math.abs(vy)-1)<0.005?String.raw`السهمان منطبقان: المحصلة أكبر ما يمكن \(\tfrac12 B_{1\max} + \tfrac12 B_{1\max} = B_{1\max}\).`:'المركّبتان الأفقيتان تلغي إحداهما الأخرى، والمحصلة رأسية فقط.'}}})}
    ]},
 
   {st:5,short:'العزم مع السرعة',title:'منحنى العزم مع السرعة: لماذا لا يوجد عزم بدء؟',ref:'ص 76–77',
@@ -423,7 +638,19 @@ B.lesson({
     {book:String.raw`<p>في حالة سكون العضو الدوار وعند بدء الحركة يكون عزم الدوران الناتج عن المجال الأمامي، مساوياً ومضاداً في الاتجاه للعزم الناتج عن المجال الخلفي، مما يجعل <b>محصلة عزم الدوران المؤثر على العضو الدوار مساوية للصفر</b> فلا يكون هناك عزم لبدء الحركة، وهي إحدى خصائص هذا النوع من المحركات. ولكن إذا بدأ المحرك حركته الدورانية بوسيلة مساعدة في اتجاه معين فسيستمر في الدوران في نفس ذلك الاتجاه (يمكن اعتبار عزم الدوران الناشئ عن المجال الخلفي كعزم دوران فرملي يعيق حركة دوران المحرك).</p>`,ref:'ص 77'},
     {tip:String.raw`<p>اتبع المنحنى الداكن (المحصلة): عند الصفر تماماً قيمته صفر. لو دفعنا الدوار قليلاً إلى اليمين صارت المحصلة موجبة فتدفعه أكثر في الاتجاه نفسه، ولو دفعناه إلى اليسار صارت سالبة فتدفعه أكثر إلى اليسار. لهذا يستمر المحرك في <b>أي اتجاه نبدؤه فيه</b>.</p><p>ولاحظ أن قمة المحصلة أقل قليلاً من قمة الأمامي: المجال الخلفي يبقى «فرملة» صغيرة طوال التشغيل.</p>`,title:'اقرأ المنحنى'},
     {add:String.raw`<p>محرك مروحة أو مكيف تلف جزء البدء فيه (مثل المكثف الذي ستدرسه لاحقاً): عند التشغيل تسمع طنيناً ويسخن المحرك لكنه لا يدور، لأن العزم عند السكون صفر. الفنيون يتعرفون على هذا العطل من الطنين بلا دوران.</p>`,title:'من الواقع'},
-    {watch:String.raw`<p>لا تحاول تدوير محرك موصول بالكهرباء بيدك لتجربة ذلك. والطنين بلا دوران لا يترك طويلاً: التيار عند السكون كبير، ويسخن الملف بسرعة.</p>`}
+    {watch:String.raw`<p>لا تحاول تدوير محرك موصول بالكهرباء بيدك لتجربة ذلك. والطنين بلا دوران لا يترك طويلاً: التيار عند السكون كبير، ويسخن الملف بسرعة.</p>`},
+    {title:'مختبر مصغّر: من يغلب عند كل سرعة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك سرعة الدوار على منحنى الشكل (2-3) المبسّط (شكل المنحنيات فقط، بلا قيم للعزم). السرعة الموجبة: مع المجال الأمامي، والسالبة: عكسه.',
+ predict:{q:'دفعنا الدوار الساكن دفعة صغيرة عكس اتجاه المجال الأمامي (سرعة سالبة صغيرة). ماذا تفعل محصلة العزم؟',opts:[
+  ['تعيده إلى السكون',false,'المحصلة عند السرعة السالبة سالبة أيضاً، فهي لا تعيده بل تدفعه في اتجاهه.'],
+  ['تقلبه ليدور مع المجال الأمامي',false,'المجال الخلفي هو الغالب في هذا الجانب من المنحنى.'],
+  ['تدفعه أكثر في الاتجاه المعاكس الذي بدأ فيه',true,'«إذا بدأ المحرك حركته الدورانية بوسيلة مساعدة في اتجاه معين فسيستمر في الدوران في نفس ذلك الاتجاه» (ص 77).']]},
+ ins:[{k:'n',l:'سرعة الدوار <bdi class="ltr">n / n<sub>s</sub></bdi>',min:-0.95,max:0.95,step:0.05,v:0.3,dp:2}],
+ calc:(s,v,B)=>{const n=Math.abs(s.n)<1e-9?0:s.n,tf=Tfw(n),tb=Tbw(n),tt=Ttot(n);
+  const sg=x=>Math.abs(x)<1e-6?'صفر':x>0?'موجب (+)':'سالب (−)';
+  return {facts:[['عزم المجال الأمامي',sg(tf)],['عزم المجال الخلفي',sg(tb)],['المحصلة',sg(tt),Math.abs(tt)<1e-6?'bad':'hi']],
+   plot:{xr:[-1,1],yr:[-1.15,1.15],xt:[-1,-0.5,0,0.5,1],yt:[0],noYt:true,fx:v=>DCML.fm(B,v,1),xl:'n / ns',yl:'T',
+    curves:[{f:Tfw,col:'--live',dash:'6 4',w:2},{f:Tbw,col:'--blue',dash:'6 4',w:2},{f:Ttot,col:'--fg',w:3}],cur:[n,tt]},
+   msg:n===0?'الدوار ساكن: العزمان متساويان ومتعاكسان، فالمحصلة صفر ولا يبدأ المحرك وحده (ص 77).':n>0?'المحصلة موجبة: تدفع الدوار في اتجاه دورانه نفسه. والعزم الخلفي السالب يعمل كفرملة صغيرة.':'المحصلة سالبة: تدفع الدوار في الاتجاه المعاكس الذي يدور فيه، فيستمر فيه.',cls:n===0?'warn':''}}})}
    ]},
 
   {st:6,short:'الانزلاق الأمامي والخلفي',title:'الانزلاق الأمامي والانزلاق الخلفي',ref:'ص 77',
@@ -484,7 +711,16 @@ B.lesson({
      [String.raw`<span class="ltr">0.96</span>`,false,String.raw`هذا ما طُبع، لكنه \((1-S)\) وليس \((2-S)\). الرقم 0.96 صحيح في الفرع (ج) فقط.`],
      [String.raw`<span class="ltr">0.04</span>`,false,'هذا الانزلاق الأمامي المعطى في السؤال.']]}},
     {watch:String.raw`<p>في حل مثال (2-1) ص 78 طُبع \(S_b = 2 - 0.04 = 0.96\)، والصحيح <b>1.96</b>. (الكتاب نفسه ذكر في ص 77 أن \(S_b = 1.95\) عند \(S = 0.05\)). الرقم 0.96 هو \((1 - S)\) المستعمل صحيحاً في الفرع (ج). الفرعان (ب) و(ج) صحيحان. في «الأمثلة المحلولة» حاسبتان: كما في الكتاب، والمصحح.</p>`,fix:true},
-    {tip:String.raw`<p>الجهد <span class="ltr">230 V</span> معطى لا يدخل في الحل: السرعات والانزلاق لا تعتمد عليه.</p>`}
+    {tip:String.raw`<p>الجهد <span class="ltr">230 V</span> معطى لا يدخل في الحل: السرعات والانزلاق لا تعتمد عليه.</p>`},
+    {title:'مختبر مصغّر: غيّر المعطيات وراقب النتائج',widget:(el,B)=>DCML.lab(el,B,{intro:'البداية بمعطيات مثال (2-1): أربعة أقطاب، 60 Hz، انزلاق 4%. بعدها غيّرها بأرقام تختارها أنت.',
+ predict:{q:String.raw`لو كان المحرك ذا ستة أقطاب بالانزلاق نفسه (4%)، ماذا يحدث للانزلاق الخلفي \(S_b\)؟`,opts:[
+  ['يقل، لأن سرعة المحرك قلّت',false,String.raw`السرعتان تقلان فعلاً، لكن \(S_b\) نسبة لا تعتمد على عدد الأقطاب.`],
+  [String.raw`يبقى 1.96، لأنه يعتمد على \(S\) فقط`,true,String.raw`المعادلة (2-5): \(S_b = 2 - S\)، ولا يدخل فيها عدد الأقطاب ولا التردد.`],
+  ['يزيد',false,String.raw`\(S_b = 2 - S\) لا يتغير ما دام \(S\) ثابتاً.`]]},
+ ins:[{k:'S',l:'الانزلاق S',min:0.01,max:0.1,step:0.01,v:0.04,dp:2},{k:'p',l:'عدد الأقطاب p',seg:[[2,'2'],[4,'4'],[6,'6'],[8,'8']],v:4},{k:'f',l:'تردد المصدر <bdi class="ltr">f<sub>s</sub></bdi>',seg:[[50,'50 Hz'],[60,'60 Hz']],v:60}],
+ calc:(s,v,B)=>{const ns=120*s.f/s.p,n=ns*(1-s.S),bk=Math.abs(s.S-0.04)<1e-9&&s.p===4&&s.f===60;
+  return {facts:[['<bdi class="ltr">S<sub>b</sub> = 2 − S</bdi> <bdi class="ltr">(2-5)</bdi>',DCML.fm(B,2-s.S,2),'hi'],['<bdi class="ltr">n<sub>s</sub> = 120 f<sub>s</sub> / p</bdi>',DCML.fm(B,ns,0)+' rpm'],['<bdi class="ltr">n = n<sub>s</sub>(1 − S)</bdi>',DCML.fm(B,n,0)+' rpm']],
+   msg:bk?String.raw`هذه معطيات مثال (2-1): \(S_b = 1.96\) (وطُبع في الكتاب 0.96 خطأً)، \(n_s = 1800\) و\(n = 1728\ \text{rpm}\) كما في الكتاب.`:'لاحظ: الأقطاب والتردد تغيّر السرعتين فقط، أما الانزلاق الخلفي فلا يتغير إلا بتغيير S.'}}})}
    ]},
 
   {recap:[
@@ -645,7 +881,13 @@ B.lesson({
     {tip:String.raw`<div class="tablebox"><table class="tt"><thead><tr><th>النوع (الاسم يصف طريقة البدء)</th><th>الصفحة</th><th>الدرس هنا</th></tr></thead><tbody>
      <tr><td>المحرك المشطور الوجه (Split-Phase)</td><td>78–81</td><td>2.2</td></tr><tr><td>المحرك ذو مكثف البدء (Capacitor-Start)</td><td>82–83</td><td>2.3</td></tr>
      <tr><td>المحرك ذو المكثف الدائم (Permanent-Capacitor)</td><td>84</td><td>2.4</td></tr><tr><td>المحرك ذو المكثفين (Two-Values Capacitor)</td><td>85–86</td><td>2.4</td></tr><tr><td>المحرك ذو الوجه المظلل (Shaded-Pole)</td><td>87–88</td><td>2.5</td></tr></tbody></table></div>
-     <p>الفكرة المشتركة في الأنواع الأربعة الأولى: نضيف <b>ملفاً ثانياً</b> (مساعداً) تياره مختلف في الزاوية عن تيار الملف الرئيسي، فيتكوّن مجال دوار يبدأ به المحرك. والذي يختلف هو <b>كيف</b> نصنع فرق الزاوية، و<b>متى</b> نفصل الملف المساعد.</p>`,title:'أين ستجد كل نوع؟'}
+     <p>الفكرة المشتركة في الأنواع الأربعة الأولى: نضيف <b>ملفاً ثانياً</b> (مساعداً) تياره مختلف في الزاوية عن تيار الملف الرئيسي، فيتكوّن مجال دوار يبدأ به المحرك. والذي يختلف هو <b>كيف</b> نصنع فرق الزاوية، و<b>متى</b> نفصل الملف المساعد.</p>`,title:'أين ستجد كل نوع؟'},
+    {title:'مختبر مصغّر: صنّف الأنواع الخمسة',widget:(el,B)=>DCML.sort(el,B,{intro:'ماذا يحدث للملف المساعد في كل نوع بعد أن يبدأ المحرك؟ (ستدرس كل نوع في درسه، فارجع إلى هنا بعدها إن أردت.)',cats:['ملف مساعد يُفصل بعد البدء','ملف مساعد يبقى عاملاً','لا يوجد ملف مساعد'],items:[
+  ['المحرك المشطور الوجه',0,'يُفصل الملف المساعد بمفتاح الطرد المركزي عند نحو 75% من سرعة التزامن (ص 79).'],
+  ['المحرك ذو مكثف البدء',0,'«يتم فصل الملف المساعد بعد بدء الحركة مثل النوع السابق» (ص 82).'],
+  ['المحرك ذو المكثف الدائم',1,'«تظل الملفات المساعدة عاملة مع الملفات الرئيسة أثناء التشغيل المستمر» (ص 84).'],
+  ['المحرك ذو المكثفين',1,'المكثف الدائم يبقى موصلاً مع الملف المساعد طوال التشغيل؛ الذي يُفصل هو مكثف البدء وحده (ص 85).'],
+  ['المحرك ذو الوجه المظلل',2,'يبدأ بحلقة نحاسية مقصورة حول جزء من كل قطب (الملف المظلِل)، لا بملف مساعد (ص 87).']]})}
    ]},
 
   {st:2,short:'الملفان والتياران',title:'المحرك المشطور الوجه: ملفان وتياران مختلفان',ref:'ص 78–79',
@@ -664,7 +906,16 @@ B.lesson({
      ['يصلان معاً لأنهما على المصدر نفسه',false,'لو وصلا معاً لما نشأ مجال دوار، ولبقي المحرك بلا عزم بدء.'],
      [String.raw`تيار الملف المساعد <span class="ltr">I<sub>a</sub></span>، لأن تأخره عن الجهد أصغر`,true,'الكتاب: تيار المساعد متقدم عن تيار الرئيسي، فيصل المجال إلى قمته على محور المساعد أولاً ثم على محور الرئيسي.']]}},
     {tip:String.raw`<p>الملف الذي مقاومته كبيرة نسبةً إلى ممانعته يتصرف «كمقاومة» أكثر، فيقترب تياره من الجهد في الزاوية. والملف الذي ممانعته كبيرة يتصرف «كملف» أكثر، فيتأخر تياره كثيراً.</p><p>والمجال يصل قمته على محور المساعد ثم على محور الرئيسي، والمحوران بينهما 90° في الفراغ: كأن القمة «انتقلت» من مكان إلى مكان، وهذا هو المجال الدوار.</p>`,title:'لماذا يتقدم تيار المساعد؟'},
-    {watch:String.raw`<p>«متقدم» هنا نسبي: تيار المساعد في هذا المحرك ما زال متأخراً عن الجهد، لكنه أقل تأخراً من تيار الرئيسي. لذلك الزاوية بين التيارين أقل كثيراً من 90°، والنظام «غير متزن».</p>`}
+    {watch:String.raw`<p>«متقدم» هنا نسبي: تيار المساعد في هذا المحرك ما زال متأخراً عن الجهد، لكنه أقل تأخراً من تيار الرئيسي. لذلك الزاوية بين التيارين أقل كثيراً من 90°، والنظام «غير متزن».</p>`},
+    {title:'مختبر مصغّر: مقاومة الملف المساعد وفرق الزاوية',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`معاوقتا مثال (2-2) عند البدء: \(Z_m = 1.2 + j25\ \Omega\) و\(Z_a = 12 + j5\ \Omega\) على \(110\ \text{V}\). غيّر مقاومة الملف المساعد \(R_a\) (أرقام تختارها أنت، والبداية بقيمة الكتاب) وراقب الزاوية بين التيارين.`,
+ predict:{q:'لو لففنا الملف المساعد بسلك أغلظ (مقاومة أقل)، ماذا يحدث للزاوية بين تياري الملفين؟',opts:[
+  ['تصغر، فيضعف عزم البدء',true,String.raw`بنقص \(R_a\) تصغر نسبة المقاومة إلى الممانعة، فيتأخر \(I_a\) أكثر ويقترب من \(I_m\). لهذا يستعمل الكتاب «أسلاك ذات مساحة مقطع صغيرة» للمساعد.`],
+  ['تكبر',false,'العكس: المقاومة الكبيرة هي التي تقرّب تيار المساعد من الجهد فتبعده عن تيار الرئيسي.'],
+  ['لا تتغير، لأن الملفين على الجهد نفسه',false,'الجهد واحد، لكن زاوية كل تيار تحددها نسبة المقاومة إلى الممانعة في ملفه.']]},
+ ins:[{k:'R',l:'مقاومة الملف المساعد <bdi class="ltr">R<sub>a</sub></bdi>',min:1,max:30,step:1,v:12,u:'Ω',dp:0}],
+ calc:(s,v,B)=>{const V=Cx(110,0),Im=cdiv(V,Cx(1.2,25)),Ia=cdiv(V,Cx(s.R,5)),al=cang(Ia)-cang(Im);
+  return {pic:phasorSVG(Im,Ia,{alpha:al,h:340,dy:-125}),facts:[['زاوية <bdi class="ltr">I<sub>a</sub></bdi> عن الجهد',DCML.fm(B,cang(Ia),1)+'°'],['زاوية <bdi class="ltr">I<sub>m</sub></bdi> عن الجهد',DCML.fm(B,cang(Im),1)+'°'],['الزاوية بين التيارين',DCML.fm(B,al,1)+'°','hi']],
+   msg:s.R===12?'هذه قيمة الكتاب: الزاوية بين التيارين <bdi class="ltr">64.63°</bdi> تقريباً، أقل من <bdi class="ltr">90°</bdi>؛ لذلك عزم بدء هذا المحرك «متوسط».':s.R<12?String.raw`مقاومة أقل: \(I_a\) يتأخر أكثر فيقترب من \(I_m\)، والزاوية بينهما تصغر.`:String.raw`مقاومة أكبر: \(I_a\) يقترب من الجهد، والزاوية تكبر، لكنها لا تصل إلى <bdi class="ltr">90°</bdi> بالمقاومة وحدها.`}}})}
    ]},
 
   {st:3,short:'مفتاح الطرد المركزي',title:'مفتاح الطرد المركزي ومنحنى العزم: الشكل <span class="ltr">(2-4)</span>',ref:'ص 78–79',
@@ -704,7 +955,16 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>هدفنا أن تكون <b>نسبة المقاومة إلى الممانعة</b> في الملف المساعد كبيرة. السلك الرفيع يرفع المقاومة، ووضعه قرب فتحة المجرى يخفض الممانعة الحثية. الأمران معاً يجعلان تياره أقرب إلى الجهد في الزاوية، فيكبر الفرق بينه وبين تيار الرئيسي.</p>`,title:'لماذا الجزء العلوي؟'},
-    {watch:String.raw`<p>لأن الملف المساعد مصمم للعمل لحظات فقط، فإن بقاءه موصلاً (مثلاً إذا التصق مفتاح الطرد المركزي مغلقاً) يسخّنه حتى يتلف.</p>`}
+    {watch:String.raw`<p>لأن الملف المساعد مصمم للعمل لحظات فقط، فإن بقاءه موصلاً (مثلاً إذا التصق مفتاح الطرد المركزي مغلقاً) يسخّنه حتى يتلف.</p>`},
+    {title:'مختبر مصغّر: ماذا لو؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+  {q:'وضع المصمم الملف المساعد في قاع المجرى بدلاً من الجزء العلوي. ماذا يحدث لممانعته الحثية؟',opts:[
+   ['تقل',false,'الكتاب يقلل الممانعة الحثية بوضع الملف في «الجزء العلوي من مجاري العضو الثابت»، فوضعه في القاع يعطي العكس.'],
+   ['تزيد، فتقل نسبة المقاومة إلى الممانعة ويصغر فرق الزاوية بين التيارين',true,'نحن نريد نسبة مقاومة إلى ممانعة كبيرة للمساعد؛ والجزء العلوي من المجرى يخفض الممانعة (ص 80).'],
+   ['لا تتأثر بمكانه في المجرى',false,'مكانه في المجرى يؤثر؛ ولهذا ذكر الكتاب الجزء العلوي تحديداً.']]},
+  {q:'التصق مفتاح الطرد المركزي مغلقاً، فبقي الملف المساعد ذو السلك الرفيع موصلاً أثناء التشغيل. ما النتيجة المتوقعة؟',opts:[
+   ['يزيد عزم المحرك دون أي ضرر',false,'السلك الرفيع لا يتحمل التشغيل المستمر.'],
+   ['يتوقف المحرك فوراً',false,'المحرك يستمر في الدوران، لكن الملف المساعد يسخن.'],
+   ['يسخن الملف المساعد وقد يتلف، لأنه صُمم للعمل أثناء البدء فقط',true,'«لا يشكل استخدام أسلاك ذات مساحة مقطع صغير للملفات المساعدة أي خطر عليها، حيث إنها لا تستعمل إلا أثناء فترة بدء الحركة فقط» (ص 80).']]}]})}
    ]},
 
   {st:5,short:'الخصائص والتطبيقات',title:'الخصائص والتطبيقات',ref:'ص 80',
@@ -720,7 +980,12 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>كلما اقتربت الزاوية بين التيارين من 90° صار المجال الدوار أقرب إلى المتزن وزاد عزم البدء. في المحرك المشطور نصنع الفرق بين التيارين بالمقاومة فقط (سلك رفيع للمساعد)، فلا تصل الزاوية إلى 90°؛ لذلك عزم البدء «متوسط». المكثف في الدرس التالي يوصلها إلى 90°.</p>`},
-    {add:String.raw`<p>لاحظ أن الأحمال في القائمة خفيفة عند البدء: المروحة والشفاط ومضخة الطرد المركزي تحتاج عزماً قليلاً وهي ساكنة، ثم يكبر حملها مع السرعة. أما الضاغط الذي يبدأ وعليه ضغط فيحتاج نوعاً عزم بدئه أكبر.</p>`,title:'لماذا هذه الأحمال؟'}
+    {add:String.raw`<p>لاحظ أن الأحمال في القائمة خفيفة عند البدء: المروحة والشفاط ومضخة الطرد المركزي تحتاج عزماً قليلاً وهي ساكنة، ثم يكبر حملها مع السرعة. أما الضاغط الذي يبدأ وعليه ضغط فيحتاج نوعاً عزم بدئه أكبر.</p>`,title:'لماذا هذه الأحمال؟'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن خصائص المحرك المشطور الوجه وتطبيقاته (ص 80).',items:[
+  ['عزم بدء المحرك المشطور الوجه متوسط القيمة.',true,'«لها عزم بدء حركة متوسط القيمة».'],
+  ['تيار البدء في هذا المحرك مرتفع.',false,'الكتاب: «وتيار منخفض أثناء بدء الحركة».'],
+  ['يستعمل في المراوح والشفاطات ومضخات الطرد المركزي.',true,'وفي الأجهزة المنزلية والمكتبية أيضاً.'],
+  ['من التطبيقات التي يذكرها الكتاب لهذا المحرك الضواغط.',false,'الضواغط ذكرها الكتاب لتطبيقات المحرك ذي مكثف البدء (ص 83)، لأنها تحتاج عزم بدء كبيراً.']]})}
    ]},
 
   {st:6,short:'مثال (2-2)',title:'مثال <span class="ltr">(2-2)</span>: تيارات المحرك المشطور عند البدء',ref:'ص 80–81',
@@ -749,7 +1014,16 @@ B.lesson({
     {watch:String.raw`<p>أخطاء في حل مثال (2-2) ص 80–81:</p><ol><li>\(110 \div 25.03 = 4.39\) A وليس <b>4 A</b>، والكتاب أكمل الحل بالقيمة 4 (\(0.192 - j3.995\) متسق مع 4). بالقيمة الصحيحة: \(I_m = 4.39\angle -87.25^\circ = 0.211 - j4.385\)، و \(I_t = 8.02 - j7.64 = 11.08\angle -43.61^\circ\) A، ومعامل القدرة <b>0.724</b> بدل 0.742.</li>
      <li>حتى بالقيمة 4 A: \(0.192 + 7.81 = 8.00\) وليس 8.02، فيكون \(I_t = 10.80\angle -42.18^\circ\) A و \(\cos = 0.741\).</li>
      <li>الزاوية بين التيارين طُبعت \(-64.63^\circ\) ثم «by 64.62°» في السطر التالي (فرق تقريب؛ الصحيح 64.63°). ولا يذكر الكتاب صراحة أن معامل القدرة متأخر.</li></ol><p>والزاوية بين التيارين (64.63°) لا تتأثر بالخطأ. في «الأمثلة المحلولة» حاسبتان: كما في الكتاب، والمصحح.</p>`,fix:true},
-    {tip:String.raw`<p>الزاوية بين التيارين <span class="ltr">64.63°</span> أقل كثيراً من 90°: هذا بالأرقام ما قلناه في المحطة السابقة عن عزم البدء «المتوسط».</p>`}
+    {tip:String.raw`<p>الزاوية بين التيارين <span class="ltr">64.63°</span> أقل كثيراً من 90°: هذا بالأرقام ما قلناه في المحطة السابقة عن عزم البدء «المتوسط».</p>`},
+    {title:'مختبر مصغّر: أثر خطأ الخطوة الأولى',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`قارن الحلّين: الكتاب أكمل بالقيمة \(I_m = 4\ \text{A}\)، والصحيح \(110 \div 25.03 = 4.39\ \text{A}\). تيار المساعد \(8.46\angle -22.62^\circ\ \text{A}\) في الحالتين.`,
+ predict:{q:String.raw`إذا صحّحنا \(I_m\) من 4 إلى 4.39 A، ماذا يحدث لمعامل القدرة الكلي؟`,opts:[
+  ['يزيد',false,String.raw`\(I_m\) متأخر كثيراً (\(-87.25^\circ\))، فزيادته تجعل التيار الكلي أكثر تأخراً لا أقل.`],
+  ['لا يتغير',false,'التيار الكلي مجموع التيارين، فأي تغيير في أحدهما يغير زاويته.'],
+  ['يقل قليلاً (من 0.742 إلى 0.724)',true,String.raw`التيار الأكثر تأخراً كبر، فزادت زاوية التيار الكلي من \(-42.11^\circ\) إلى \(-43.61^\circ\) تقريباً.`]]},
+ ins:[{k:'c',l:String.raw`قيمة \(I_m\) المستعملة`,seg:[[0,'كما طُبع: 4 A'],[1,'المصحح: 4.39 A']],v:0}],
+ calc:(s,v,B)=>{const Im=cpol(s.c?110/25.03:4,-87.252),Ia=cpol(110/13,-22.62),It=cadd(Im,Ia);
+  return {pic:phasorSVG(Im,Ia,{h:300,dy:-100}),facts:[['التيار الكلي <bdi class="ltr">I<sub>t</sub></bdi>',(s.c?'11.08':'10.8')+' A','hi'],['زاوية <bdi class="ltr">I<sub>t</sub></bdi>',(s.c?'−43.61':'−42.11')+'°'],['معامل القدرة',s.c?'0.724':'0.742'],['الزاوية بين <bdi class="ltr">I<sub>a</sub></bdi> و <bdi class="ltr">I<sub>m</sub></bdi>','<bdi class="ltr">64.63°</bdi>']],
+   msg:s.c?'الحل المصحح: التيار الكلي أكبر قليلاً ومعامل القدرة أقل قليلاً من الكتاب.':'كما في الكتاب: 10.8 A ومعامل قدرة 0.742. أما الزاوية بين التيارين (<bdi class="ltr">64.63°</bdi>) فصحيحة في الحالتين، لأنها لا تعتمد على مقدار التيار.'}}})}
    ]},
 
   {recap:[
@@ -873,7 +1147,12 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>ثلاثة أنواع تخرج من هذه الجملة: <b>مكثف للبدء فقط</b> (هذا الدرس)، و<b>مكثف دائم للتشغيل</b>، و<b>مكثفان: واحد للبدء وواحد للتشغيل</b> (الدرس التالي).</p>`},
-    {add:String.raw`<p>المكثف الأسطواني الملاصق لمحرك المكيف أو المضخة أو الغسالة من أكثر القطع التي يستبدلها الفنيون. وعليه تُكتب سعته بالميكروفاراد <span class="ltr">(µF)</span> وجهده، ويجب أن يُستبدل بمكثف بالقيم نفسها.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>المكثف الأسطواني الملاصق لمحرك المكيف أو المضخة أو الغسالة من أكثر القطع التي يستبدلها الفنيون. وعليه تُكتب سعته بالميكروفاراد <span class="ltr">(µF)</span> وجهده، ويجب أن يُستبدل بمكثف بالقيم نفسها.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: متى يعمل المكثف؟',widget:(el,B)=>DCML.sort(el,B,{intro:String.raw`الكتاب: المكثف يُستعمل «أثناء بدء الحركة أو أثناء التشغيل أو كليهما». لكل مكثف من الدروس 2.3 و2.4 اختر متى يكون موصلاً.`,cats:['أثناء البدء فقط','طوال الوقت (البدء والتشغيل)'],items:[
+  ['مكثف المحرك ذي مكثف البدء',0,'يُفصل مع الملف المساعد بعد بدء الحركة (ص 82).'],
+  ['مكثف المحرك ذي المكثف الدائم',1,'«تظل الملفات المساعدة عاملة مع الملفات الرئيسة أثناء التشغيل المستمر» ومعها المكثف (ص 84).'],
+  [String.raw`المكثف \(C_1\) الورقي المشبع بالزيت في المحرك ذي المكثفين`,1,'«يوصل على التوالي بصفة مستديمة مع الملفات المساعدة» (ص 85).'],
+  [String.raw`المكثف \(C_2\) ذو السائل الكهربي في المحرك ذي المكثفين`,0,'يوصل مع مفتاح طرد مركزي خاص به «ليعملا معاً أثناء فترة البدء فقط» (ص 85).']]})}
    ]},
 
   {st:2,short:'مكثف البدء: زاوية 90°',title:'المحرك ذو مكثف البدء: تيار يتقدم بتسعين درجة',ref:'ص 82–83',
@@ -890,7 +1169,16 @@ B.lesson({
      ['منطبق على V تماماً',false,String.raw`لو انطبق لكانت الزاوية بين التيارين تساوي زاوية تأخر \(I_m\) فقط، وهي أقل من 90°.`],
      ['متقدم عن V (فوق محور الجهد)',true,String.raw`المكثف يجعل تيار الفرع يتقدم عن الجهد، و\(I_m\) متأخر تحته، فتتسع الزاوية بينهما حتى 90° (الشكل 2-7).`]]}},
     {tip:String.raw`<p>في المحرك المشطور كان التياران كلاهما تحت محور الجهد (متأخرين)، فالزاوية بينهما محدودة. المكثف يرفع \(I_a\) فوق المحور (متقدماً)، و\(I_m\) يبقى تحته، فتصير الزاوية بينهما مجموع الزاويتين، ويمكن أن تصل إلى 90°.</p><p>ومع 90° يصبح المجال الدوار عند البدء قريباً من مجال «محرك متزن ذو وجهين»: مجال دوار منتظم في اتجاه واحد.</p>`,title:'ما الذي تغيّر عن المشطور؟'},
-    {tip:String.raw`<p>«تشغيل متقطع» معناه أن المكثف والملف المساعد يعملان ثوانيَ قليلة عند كل بدء ثم يُفصلان، فلا يحتاجان أن يتحملا العمل المستمر، فيكونان أرخص.</p>`,title:'تشغيل متقطع'}
+    {tip:String.raw`<p>«تشغيل متقطع» معناه أن المكثف والملف المساعد يعملان ثوانيَ قليلة عند كل بدء ثم يُفصلان، فلا يحتاجان أن يتحملا العمل المستمر، فيكونان أرخص.</p>`,title:'تشغيل متقطع'},
+    {title:'مختبر مصغّر: ابحث عن <bdi class="ltr">90°</bdi> بنفسك',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`معاوقتا مثال (2-3) عند البدء: \(Z_m = 4.2 + j3.8\ \Omega\) و\(Z_a = 8.8 + j3.3\ \Omega\)، على \(127\ \text{V}\) و\(60\ \text{Hz}\). المكثف على التوالي مع المساعد يطرح ممانعته: \(Z_a = 8.8 + j(3.3 - X_c)\). حرّك \(X_c\) حتى تصبح الزاوية بين التيارين <bdi class="ltr">90°</bdi>.`,
+ predict:{q:String.raw`نبدأ بلا مكثف (\(X_c = 0\)) ثم نزيد \(X_c\) تدريجياً. ماذا يحدث لتيار الملف المساعد \(I_a\)؟`,opts:[
+  ['يتأخر عن الجهد أكثر',false,'المكثف يعاكس الممانعة الحثية، فيقل التأخر لا يزيد.'],
+  ['يتغير مقداره فقط، وتبقى زاويته كما هي',false,String.raw`زاوية \(I_a\) تحددها نسبة \((3.3 - X_c)\) إلى \(8.8\)، فتتغير بتغير \(X_c\).`],
+  ['يقترب من الجهد ثم يتقدم عليه، فتكبر الزاوية بينه وبين تيار الرئيسي',true,String.raw`عندما تصبح \(X_c\) أكبر من \(3.3\ \Omega\) تصير معاوقة المساعد سعوية، فيتقدم \(I_a\) على الجهد.`]]},
+ ins:[{k:'X',l:'ممانعة المكثف <bdi class="ltr">X<sub>c</sub></bdi> (أرقام تختارها أنت)',min:0,max:20,step:0.02,v:4,u:'Ω',dp:2}],
+ calc:(s,v,B)=>{const V=Cx(127,0),Im=cdiv(V,Cx(4.2,3.8)),Ia=cdiv(V,Cx(8.8,3.3-s.X)),al=cang(Ia)-cang(Im),ok=Math.abs(al-90)<0.25;
+  return {pic:phasorSVG(Im,Ia,{alpha:al,ok,h:330,dy:-20}),facts:[['زاوية <bdi class="ltr">I<sub>a</sub></bdi> عن الجهد',DCML.fm(B,cang(Ia),2)+'°'],['زاوية <bdi class="ltr">I<sub>m</sub></bdi> عن الجهد',DCML.fm(B,cang(Im),2)+'°'],['الزاوية بين التيارين',DCML.fm(B,al,2)+'°',ok?'hi':''],['السعة <bdi class="ltr">c = 1 / (377·X<sub>c</sub>)</bdi>',s.X>0?DCML.fm(B,1e6/(377*s.X),0)+' µF':'—']],
+   msg:ok?String.raw`وصلت إلى <bdi class="ltr">90°</bdi> تقريباً: \(X_c \approx 12.98\ \Omega\) و\(c \approx 204\ \mu F\)، وهو حل مثال (2-3). عندها يكافئ المحرك عند البدء «محركاً متزناً ذا وجهين».`:al<90?'الزاوية أقل من <bdi class="ltr">90°</bdi>: زد <bdi class="ltr">X<sub>c</sub></bdi>.':'الزاوية تجاوزت <bdi class="ltr">90°</bdi>: أنقص <bdi class="ltr">X<sub>c</sub></bdi>.',cls:ok?'':'warn'}}})}
    ]},
 
   {st:3,short:'العزم والتطبيقات',title:'العزم الكبير عند البدء والتطبيقات: الشكل <span class="ltr">(2-6)</span>',ref:'ص 83',
@@ -907,7 +1195,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>التطبيقات:</b> يستخدم هذا النوع من المحركات في <b>الضواغط والمضخات والثلاجات، وأجهزة التبريد والتكييف</b> وفي الأحمال التي تتطلب عزماً كبيراً لبدء حركتها.</p>`,ref:'ص 83'},
     {tip:String.raw`<p>قارن الشكلين (2-4) و(2-6): عزم البدء في المشطور حوالي <span class="ltr">1.25 pu</span> وفي ذي مكثف البدء حوالي <span class="ltr">3.3 pu</span> (مقروءة من الشكلين). وبعد سرعة الفصل يتشابه المحركان، لأن كليهما يكمل بالملف الرئيسي فقط.</p>`,title:'قارن المنحنيين'},
-    {watch:String.raw`<p>المكثف في هذا المحرك «مكثف بدء»: يعمل لحظات فقط. إذا لم يفتح مفتاح الطرد المركزي بقي المكثف والملف المساعد في الدائرة فيسخنان ويتلفان.</p>`}
+    {watch:String.raw`<p>المكثف في هذا المحرك «مكثف بدء»: يعمل لحظات فقط. إذا لم يفتح مفتاح الطرد المركزي بقي المكثف والملف المساعد في الدائرة فيسخنان ويتلفان.</p>`},
+    {title:'مختبر مصغّر: قارن عزم البدء',widget:(el,B)=>DCML.lab(el,B,{intro:'منحنيا العزم مع السرعة للنوعين، مقروءان من الشكلين (2-4) و(2-6) تقريباً، وكل منحنى بوحدة pu لمحركه. اختر النوع وحرّك السرعة.',
+ predict:{q:'عند السرعة صفر (لحظة البدء): أي النوعين عزمه أكبر نسبةً إلى منحناه؟',opts:[
+  ['المشطور الوجه',false,'عزم بدئه «متوسط القيمة» (ص 80)؛ فرق الزاوية فيه أقل من <bdi class="ltr">90°</bdi>.'],
+  ['ذو مكثف البدء',true,'«من أهم خصائصه العزم الكبير المتولد عند بدء الحركة» (ص 83)، لأن المكثف يوصل الزاوية بين التيارين إلى <bdi class="ltr">90°</bdi>.'],
+  ['متساويان',false,'الشكلان مختلفان بوضوح عند السرعة صفر.']]},
+ ins:[{k:'t',l:'النوع',seg:[['split','المشطور الوجه (2-4)'],['cstart','ذو مكثف البدء (2-6)']],v:'cstart'},{k:'n',l:'السرعة (pu)',min:0,max:1,step:0.05,v:0,dp:2}],
+ calc:(s,v,B)=>{const c=CUR[s.t],sw=c.sw,on=s.n<sw,T=on?c.both(s.n):c.main(s.n);
+  return {facts:[['العزم عند هذه السرعة (تقريباً)',DCML.fm(B,T,1)+' pu','hi'],['الملف المساعد',on?'موصل':'مفصول'],['عزم البدء عند <bdi class="ltr">n = 0</bdi> (تقريباً)',DCML.fm(B,c.both(0),2)+' pu']],
+   plot:{xr:[0,1],yr:[0,4],xt:[0,0.25,0.5,0.75,1],yt:[0,1,2,3,4],xl:'Speed (pu)',yl:'T (pu)',fx:v=>DCML.fm(B,v,2),
+    curves:[{f:x=>x<=sw?c.both(x):NaN,col:'--blue',w:2.8},{f:c.main,col:'--fg',dash:'7 5',w:2}],cur:[s.n,T]},
+   msg:s.n===0?(s.t==='cstart'?'عزم البدء كبير: الملفان موصلان والزاوية بين تياريهما <bdi class="ltr">90°</bdi>.':'عزم البدء متوسط: الزاوية بين التيارين أقل من <bdi class="ltr">90°</bdi>.'):on?'الملفان يعملان معاً حتى سرعة الفصل.':'فُصل الملف المساعد: المحرك يكمل على منحنى «الرئيسي فقط» (المتقطع).'}}})}
    ]},
 
   {st:4,short:'مثال (2-3)',title:'مثال <span class="ltr">(2-3)</span>: كم سعة المكثف اللازمة؟',ref:'ص 86',
@@ -932,7 +1231,13 @@ B.lesson({
      [String.raw`<span class="ltr">90°</span>`,false,'هكذا يصبح المجموع أكبر من 90°؛ الزاوية بين التيارين هي مجموع التقدم والتأخر.'],
      [String.raw`<span class="ltr">47.86°</span>`,true,String.raw`\(\theta_a = 90 - \theta_m = 90 - 42.14 = 47.86^\circ\)، فيكون المجموع 90°.`]]}},
     {tip:String.raw`<p>\(I_m\) متأخر عن الجهد بالزاوية \(\theta_m = 42.14^\circ\). نريد \(I_a\) متقدماً عن الجهد بزاوية \(\theta_a\) بحيث يكون المجموع 90°. المكثف يطرح ممانعته من ممانعة الملف المساعد، فتصبح معاوقة الفرع \(8.8 + j(3.3 - X_c)\)، وزاويتها \(-\tan^{-1}\frac{X_c - 3.3}{8.8}\) (سالبة = سعوية)، فيتقدم \(I_a\) بهذه الزاوية. و\(\omega = 2\pi\times 60 = 377\) rad/s.</p>`,title:'لماذا 90 − θm؟'},
-    {watch:String.raw`<p>في حل مثال (2-3) ص 86 قُرّب \(\tan(47.86^\circ) = 1.105\) إلى 1.1. بلا تقريب: \(X_c = 13.03\ \Omega\) و \(C = 203.6\ \mu F\). الفرق تقريب فقط ولا يغيّر النتيجة العملية (حوالي 204 µF). الجهد 127V لا يُستخدم في الحل.</p>`}
+    {watch:String.raw`<p>في حل مثال (2-3) ص 86 قُرّب \(\tan(47.86^\circ) = 1.105\) إلى 1.1. بلا تقريب: \(X_c = 13.03\ \Omega\) و \(C = 203.6\ \mu F\). الفرق تقريب فقط ولا يغيّر النتيجة العملية (حوالي 204 µF). الجهد 127V لا يُستخدم في الحل.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات الحل',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط خطوات حل مثال (2-3) بالترتيب الذي في الكتاب.',steps:[
+  [String.raw`زاوية معاوقة الرئيسي: \(\theta_m = \tan^{-1}(3.8/4.2) = 42.14^\circ\)`,'نبدأ بالملف الذي نعرف معاوقته كاملة.'],
+  [String.raw`الزاوية المطلوبة لمعاوقة المساعد: \(\theta_a = 90 - \theta_m = 47.86^\circ\)`,String.raw`نحتاج \(\theta_m\) أولاً لنعرف كم يلزم للمساعد.`],
+  [String.raw`\(\tan^{-1}\left(\frac{X_c-3.3}{8.8}\right) = 47.86\) ومنها \(X_c = 12.98\ \Omega\)`,String.raw`لا نحسب \(X_c\) قبل أن نعرف الزاوية المطلوبة \(\theta_a\).`],
+  [String.raw`السعة: \(c = \frac{1}{\omega X_c} = \frac{1}{377\times 12.98} = 204\ \mu F\)`,String.raw`السعة آخر خطوة، لأنها تحتاج \(X_c\).`]],
+ done:'هذا ترتيب الكتاب: زاوية الرئيسي ← الزاوية المطلوبة للمساعد ← ممانعة المكثف ← السعة.'})}
    ]},
 
   {recap:[
@@ -1048,7 +1353,12 @@ B.lesson({
     {book:String.raw`<p>تصمم الملفات المساعدة والمكثف على أساس التشغيل المستمر، بحيث يصبح المحرك مكافئ لمحرك مثالي ذو وجهين <b>عند حمل بعينه</b>، فيختفي وجود المجال الخلفي مما يؤدي إلى <b>تحسين الكفاءة</b>، كما تختفي أيضا الضجة التي كان يسببها المجال الخلفي، فتكون النتيجة <b>محرك هادئ الصوت</b> أثناء التشغيل، كما يؤدي استخدام المكثف الدائم إلى <b>تحسين معامل القدرة</b> أثناء التشغيل ويستخدم هذا النوع من المحركات في التطبيقات التي تتطلب هدوءاً في الصوت أثناء تشغيلها.</p>`,ref:'ص 84'},
     {html:String.raw`<figure class="fig"><div style="max-width:420px;margin-inline:auto"><svg viewBox="0 0 360 320" role="img" aria-label="منحنى العزم مع السرعة للمحرك ذي المكثف الدائم" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="324" height="282" rx="16" fill="#FBF6EE"/><path d="M64 176.6H330" stroke="#D9D2C3" stroke-width="1"/><text x="56" y="181.6" text-anchor="end" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">1.0</text><path d="M64 91.2H330" stroke="#D9D2C3" stroke-width="1"/><text x="56" y="96.2" text-anchor="end" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">2.0</text><path d="M64 34V262H336" fill="none" stroke="#2C4A40" stroke-width="2.5"/><text x="64" y="280" text-anchor="middle" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">0</text><text x="317.3" y="280" text-anchor="middle" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">1.0</text><text x="207" y="298" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40" direction="ltr" unicode-bidi="embed">Speed (pu)</text><text x="29" y="151.0" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40" direction="ltr" transform="rotate(-90 29 151.0)">Torque (pu)</text><g data-tip="منحنى المحرك ذي المكثف الدائم: منحنى واحد بلا خط فصل، يبدأ بعزم منخفض."><path d="M64 202.2 L68.2 200.5 L72.4 198.8 L76.7 197.1 L80.9 195.4 L85.1 193.8 L89.3 192.1 L93.6 190.4 L97.8 188.6 L102 186.8 L106.2 184.9 L110.4 183 L114.7 180.9 L118.9 178.7 L123.1 176.5 L127.3 174.3 L131.6 172 L135.8 169.7 L140 167.3 L144.2 164.8 L148.4 162.2 L152.7 159.6 L156.9 156.8 L161.1 154 L165.3 151 L169.6 147.9 L173.8 144.6 L178 141.1 L182.2 137.6 L186.4 133.9 L190.7 130.2 L194.9 126.4 L199.1 122.7 L203.3 119 L207.6 115.3 L211.8 111.8 L216 108.3 L220.2 104.7 L224.4 100.8 L228.7 96.6 L232.9 92.3 L237.1 88.1 L241.3 84 L245.6 80.2 L249.8 76.8 L254 74 L258.2 71.8 L262.4 70.4 L266.7 69.9 L270.9 70.4 L275.1 72.4 L279.3 76.5 L283.6 83.3 L287.8 93.6 L292 107.4 L296.2 124.5 L300.4 144.7 L304.7 168.1 L308.9 196.5 L313.1 229.2 L317.3 262" fill="none" stroke="#E8735A" stroke-width="4.5" stroke-linecap="round"/><path d="M64 202.2 L68.2 200.5 L72.4 198.8 L76.7 197.1 L80.9 195.4 L85.1 193.8 L89.3 192.1 L93.6 190.4 L97.8 188.6 L102 186.8 L106.2 184.9 L110.4 183 L114.7 180.9 L118.9 178.7 L123.1 176.5 L127.3 174.3 L131.6 172 L135.8 169.7 L140 167.3 L144.2 164.8 L148.4 162.2 L152.7 159.6 L156.9 156.8 L161.1 154 L165.3 151 L169.6 147.9 L173.8 144.6 L178 141.1 L182.2 137.6 L186.4 133.9 L190.7 130.2 L194.9 126.4 L199.1 122.7 L203.3 119 L207.6 115.3 L211.8 111.8 L216 108.3 L220.2 104.7 L224.4 100.8 L228.7 96.6 L232.9 92.3 L237.1 88.1 L241.3 84 L245.6 80.2 L249.8 76.8 L254 74 L258.2 71.8 L262.4 70.4 L266.7 69.9 L270.9 70.4 L275.1 72.4 L279.3 76.5 L283.6 83.3 L287.8 93.6 L292 107.4 L296.2 124.5 L300.4 144.7 L304.7 168.1 L308.9 196.5 L313.1 229.2 L317.3 262" fill="none" stroke="transparent" stroke-width="16"/></g></svg></div><figcaption><b>الشكل <span class="ltr">(2-8)</span></b> منحنى خواص المحرك ذو المكثف الدائم (مبسّط، القيم مقروءة من الشكل تقريباً): منحنى واحد يبدأ بعزم منخفض (حوالي <span class="ltr">0.7 pu</span>) ولا يوجد خط فصل. <span class="ref">ص 84</span></figcaption></figure>`},
     {tip:String.raw`<p>تذكّر الدرس الأول: الملف الواحد يصنع مجالاً أمامياً ومجالاً خلفياً متساويين، والخلفي «يفرمل» ويسبب ضجيجاً. عندما يعمل الملفان والمكثف معاً بتيارين بينهما 90° ومقداريهما مناسبين، يصبح المجال دواراً منتظماً في اتجاه واحد ويختفي الخلفي. لكن المكثف يُختار لحمل واحد معيّن، فلا يختفي الخلفي تماماً إلا عند هذا الحمل. وبما أن المكثف مختار للتشغيل لا للبدء، يكون عزم البدء منخفضاً.</p>`,title:'لماذا يختفي المجال الخلفي؟'},
-    {add:String.raw`<p>مراوح السقف ومراوح وحدات التكييف الخارجية تعمل غالباً بهذا النوع: مكثف صغير موصول دائماً، ومحرك هادئ لا يحتاج عزم بدء كبيراً.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>مراوح السقف ومراوح وحدات التكييف الخارجية تعمل غالباً بهذا النوع: مكثف صغير موصول دائماً، ومحرك هادئ لا يحتاج عزم بدء كبيراً.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن المحرك ذي المكثف الدائم (ص 84).',items:[
+  ['المحرك ذو المكثف الدائم يحتاج مفتاح طرد مركزي لفصل الملف المساعد.',false,'«فيمكن تبسيط تركيب المحرك، بالاستغناء عن مفتاح الطرد المركزي».'],
+  ['عند حمل بعينه يكافئ محركاً مثالياً ذا وجهين، فيختفي المجال الخلفي وتتحسن الكفاءة.',true,'وتختفي معه الضجة التي كان يسببها المجال الخلفي.'],
+  ['استعمال المكثف الدائم يسيء معامل القدرة أثناء التشغيل.',false,'العكس: «يؤدي استخدام المكثف الدائم إلى تحسين معامل القدرة أثناء التشغيل».'],
+  ['يُختار هذا المحرك للتطبيقات التي تتطلب هدوءاً في الصوت.',true,'لأن ضجة المجال الخلفي تختفي.']]})}
    ]},
 
   {st:2,short:'المكثفان',title:'المحرك ذو المكثفين (Two-Values Capacitor Motor)',ref:'ص 85',
@@ -1066,7 +1376,18 @@ B.lesson({
     {book:String.raw`<p>يستخدم المكثف \(C_1\) من <b>النوع الورقي المشبع بالزيت</b> ويوصل على التوالي بصفة مستديمة، مع الملفات المساعدة لتحسين خواص التشغيل. كما يستخدم المكثف \(C_2\) من <b>النوع ذي السائل الكهربي</b> لتحسين عزم بدء الحركة، حيث يوصل مع مفتاح طرد مركزي خاص به، على التوازي مع المكثف الدائم، ليعملا معاً أثناء فترة البدء فقط، ويعتبر هذا النوع من المحركات <b>أكثر تكلفة</b> من الأنواع السابقة، ويستخدم في التطبيقات التي تتطلب <b>تشغيلاً هادئاً مع عزم كبير لبدء الحركة</b>.</p>`,ref:'ص 85'},
     {html:String.raw`<figure class="fig"><div style="max-width:420px;margin-inline:auto"><svg viewBox="0 0 360 320" role="img" aria-label="منحنى العزم مع السرعة للمحرك ذي المكثفين" style="font-family:var(--font)" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="324" height="282" rx="16" fill="#FBF6EE"/><path d="M64 194.7H330" stroke="#D9D2C3" stroke-width="1"/><text x="56" y="199.7" text-anchor="end" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">1.0</text><path d="M64 127.5H330" stroke="#D9D2C3" stroke-width="1"/><text x="56" y="132.5" text-anchor="end" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">2.0</text><path d="M64 60.2H330" stroke="#D9D2C3" stroke-width="1"/><text x="56" y="65.2" text-anchor="end" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">3.0</text><path d="M64 34V262H336" fill="none" stroke="#2C4A40" stroke-width="2.5"/><text x="64" y="280" text-anchor="middle" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">0</text><text x="317.3" y="280" text-anchor="middle" font-size="12" font-weight="600" fill="#2C4A40" direction="ltr" unicode-bidi="embed">1.0</text><text x="207" y="298" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40" direction="ltr" unicode-bidi="embed">Speed (pu)</text><text x="29" y="151.0" text-anchor="middle" font-size="13" font-weight="700" fill="#2C4A40" direction="ltr" transform="rotate(-90 29 151.0)">Toque (pu)</text><g data-tip="سرعة الفصل ⟦Switching Speed⟧: يفتح مفتاح ⟦C2⟧ فيخرج، ويبقى ⟦C1⟧."><path d="M254 40V262" stroke="#7A8F86" stroke-width="2" stroke-dasharray="6 5"/><path d="M254 40V262" stroke="transparent" stroke-width="16"/></g><text x="248" y="52" text-anchor="end" font-size="11.5" font-weight="700" fill="#7A8F86" direction="ltr" unicode-bidi="embed">Switching Speed</text><g data-tip="⟦Permanent Capacitor⟧: المكثف الدائم ⟦C1⟧ وحده بعد الفصل."><path d="M64 228.4 L68.2 226.7 L72.4 225.1 L76.7 223.5 L80.9 221.9 L85.1 220.3 L89.3 218.7 L93.6 217.1 L97.8 215.4 L102 213.7 L106.2 211.9 L110.4 210.1 L114.7 208.2 L118.9 206.2 L123.1 204.2 L127.3 202.2 L131.6 200.1 L135.8 198 L140 195.8 L144.2 193.5 L148.4 191.2 L152.7 188.9 L156.9 186.4 L161.1 183.9 L165.3 181.3 L169.6 178.5 L173.8 175.7 L178 172.7 L182.2 169.7 L186.4 166.6 L190.7 163.4 L194.9 160.2 L199.1 157 L203.3 153.8 L207.6 150.6 L211.8 147.4 L216 144.3 L220.2 141 L224.4 137.2 L228.7 133.3 L232.9 129.2 L237.1 125.1 L241.3 121.1 L245.6 117.4 L249.8 114.1 L254 111.3 L258.2 109.2 L262.4 107.8 L266.7 107.3 L270.9 107.6 L275.1 109 L279.3 112.2 L283.6 117.6 L287.8 126 L292 137.6 L296.2 152.1 L300.4 169 L304.7 188 L308.9 210.6 L313.1 236.3 L317.3 262" fill="none" stroke="#2C4A40" stroke-width="2.5" stroke-dasharray="7 5"/><path d="M64 228.4 L68.2 226.7 L72.4 225.1 L76.7 223.5 L80.9 221.9 L85.1 220.3 L89.3 218.7 L93.6 217.1 L97.8 215.4 L102 213.7 L106.2 211.9 L110.4 210.1 L114.7 208.2 L118.9 206.2 L123.1 204.2 L127.3 202.2 L131.6 200.1 L135.8 198 L140 195.8 L144.2 193.5 L148.4 191.2 L152.7 188.9 L156.9 186.4 L161.1 183.9 L165.3 181.3 L169.6 178.5 L173.8 175.7 L178 172.7 L182.2 169.7 L186.4 166.6 L190.7 163.4 L194.9 160.2 L199.1 157 L203.3 153.8 L207.6 150.6 L211.8 147.4 L216 144.3 L220.2 141 L224.4 137.2 L228.7 133.3 L232.9 129.2 L237.1 125.1 L241.3 121.1 L245.6 117.4 L249.8 114.1 L254 111.3 L258.2 109.2 L262.4 107.8 L266.7 107.3 L270.9 107.6 L275.1 109 L279.3 112.2 L283.6 117.6 L287.8 126 L292 137.6 L296.2 152.1 L300.4 169 L304.7 188 L308.9 210.6 L313.1 236.3 L317.3 262" fill="none" stroke="transparent" stroke-width="14"/></g><g data-tip="⟦Starting And Permanent Capacitors⟧: المكثفان معاً أثناء البدء: عزم بدء كبير."><path d="M64 114 L67.2 112.7 L70.3 111.5 L73.5 110.3 L76.7 109 L79.8 107.8 L83 106.6 L86.2 105.4 L89.3 104.1 L92.5 102.9 L95.7 101.6 L98.8 100.4 L102 99.1 L105.2 97.8 L108.3 96.5 L111.5 95.2 L114.7 93.8 L117.8 92.4 L121 91 L124.2 89.5 L127.3 87.9 L130.5 86.4 L133.7 84.8 L136.8 83.2 L140 81.6 L143.2 80.1 L146.3 78.5 L149.5 77 L152.7 75.5 L155.8 74.1 L159 72.8 L162.2 71.5 L165.3 70.3 L168.5 69.1 L171.7 67.9 L174.8 66.7 L178 65.6 L181.2 64.5 L184.3 63.5 L187.5 62.6 L190.7 61.8 L193.8 61.1 L197 60.6 L200.2 60.3 L203.3 60.2 L206.5 60.2 L209.7 60.4 L212.8 60.7 L216 61 L219.2 61.5 L222.3 62.1 L225.5 62.8 L228.7 63.5 L231.8 64.3 L235 65 L238.2 65.8 L241.3 66.7 L244.5 67.8 L247.7 69.3 L250.8 71.2 L254 73.6" fill="none" stroke="#E8735A" stroke-width="4.5" stroke-linecap="round"/><path d="M64 114 L67.2 112.7 L70.3 111.5 L73.5 110.3 L76.7 109 L79.8 107.8 L83 106.6 L86.2 105.4 L89.3 104.1 L92.5 102.9 L95.7 101.6 L98.8 100.4 L102 99.1 L105.2 97.8 L108.3 96.5 L111.5 95.2 L114.7 93.8 L117.8 92.4 L121 91 L124.2 89.5 L127.3 87.9 L130.5 86.4 L133.7 84.8 L136.8 83.2 L140 81.6 L143.2 80.1 L146.3 78.5 L149.5 77 L152.7 75.5 L155.8 74.1 L159 72.8 L162.2 71.5 L165.3 70.3 L168.5 69.1 L171.7 67.9 L174.8 66.7 L178 65.6 L181.2 64.5 L184.3 63.5 L187.5 62.6 L190.7 61.8 L193.8 61.1 L197 60.6 L200.2 60.3 L203.3 60.2 L206.5 60.2 L209.7 60.4 L212.8 60.7 L216 61 L219.2 61.5 L222.3 62.1 L225.5 62.8 L228.7 63.5 L231.8 64.3 L235 65 L238.2 65.8 L241.3 66.7 L244.5 67.8 L247.7 69.3 L250.8 71.2 L254 73.6" fill="none" stroke="transparent" stroke-width="16"/></g><path d="M254 73.6V111.3" stroke="#E8735A" stroke-width="4.5"/><path d="M254 111.3 L256.1 110.1 L258.2 109.2 L260.3 108.4 L262.4 107.8 L264.6 107.4 L266.7 107.3 L268.8 107.3 L270.9 107.6 L273 108.2 L275.1 109 L277.2 110.4 L279.3 112.2 L281.4 114.6 L283.6 117.6 L285.7 121.4 L287.8 126 L289.9 131.4 L292 137.6 L294.1 144.5 L296.2 152.1 L298.3 160.2 L300.4 169 L302.6 178.3 L304.7 188 L306.8 198.7 L308.9 210.6 L311 223.2 L313.1 236.3 L315.2 249.3 L317.3 262" fill="none" stroke="#E8735A" stroke-width="4.5" stroke-linecap="round"/></svg></div><figcaption><b>الشكل <span class="ltr">(2-9)</span></b> منحنى خواص المحرك ذو المكثفين (مبسّط، القيم مقروءة من الشكل تقريباً): «Starting And Permanent Capacitors» حتى سرعة الفصل، ثم «Permanent Capacitor» (المتقطع). <span class="ref">ص 85</span></figcaption></figure>`},
     {tip:String.raw`<p>عند البدء يكون \(C_1\) و\(C_2\) على التوازي، والمكثفات على التوازي تُجمع سعاتها: \(C = C_1 + C_2\) (سعة كبيرة لعزم بدء كبير). بعد الفصل يبقى \(C_1\) وحده (سعة أصغر مناسبة للتشغيل الهادئ).</p>`,title:'لماذا على التوازي؟'},
-    {watch:String.raw`<p>في الشكل (2-9) ص 85 كُتب على المحور الرأسي «Toque (pu)» والصحيح «Torque (pu)» (خطأ مطبعي، أبقيناه في الرسم كما طُبع). وعنوان الفقرة «Two-Values Capacitor Motor» والشائع «Two-Value Capacitor Motor».</p>`,fix:true}
+    {watch:String.raw`<p>في الشكل (2-9) ص 85 كُتب على المحور الرأسي «Toque (pu)» والصحيح «Torque (pu)» (خطأ مطبعي، أبقيناه في الرسم كما طُبع). وعنوان الفقرة «Two-Values Capacitor Motor» والشائع «Two-Value Capacitor Motor».</p>`,fix:true},
+    {title:'مختبر مصغّر: من يبقى موصلاً؟',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك السرعة على منحنى الشكل (2-9) (مقروء تقريباً) وراقب حالة المكثفين.',
+ predict:{q:String.raw`بعد أن يفتح مفتاح الطرد المركزي الخاص بـ \(C_2\)، ماذا يبقى موصلاً مع الملف المساعد؟`,opts:[
+  [String.raw`لا شيء: يُفصل الملف المساعد كله`,false,'هذا في المشطور الوجه وذي مكثف البدء. هنا الملف المساعد يبقى عاملاً.'],
+  [String.raw`المكثف الدائم \(C_1\) وحده`,true,String.raw`\(C_1\) «يوصل على التوالي بصفة مستديمة» مع الملفات المساعدة، و\(C_2\) يعمل «أثناء فترة البدء فقط» (ص 85).`],
+  [String.raw`مكثف البدء \(C_2\) وحده`,false,String.raw`\(C_2\) هو الذي يفصله مفتاحه الخاص.`]]},
+ ins:[{k:'n',l:'السرعة (pu)',min:0,max:1,step:0.05,v:0,dp:2}],
+ calc:(s,v,B)=>{const c=CUR.two,on=s.n<c.sw,T=on?c.both(s.n):c.main(s.n);
+  return {facts:[['<bdi class="ltr">C<sub>1</sub></bdi> (ورقي مشبع بالزيت)','موصل دائماً'],['<bdi class="ltr">C<sub>2</sub></bdi> (ذو السائل الكهربي)',on?'موصل':'مفصول',on?'hi':'bad'],['العزم (تقريباً)',DCML.fm(B,T,1)+' pu']],
+   plot:{xr:[0,1],yr:[0,3.5],xt:[0,0.25,0.5,0.75,1],yt:[0,1,2,3],xl:'Speed (pu)',yl:'T (pu)',fx:v=>DCML.fm(B,v,2),
+    curves:[{f:x=>x<=c.sw?c.both(x):NaN,col:'--blue',w:2.8},{f:c.main,col:'--fg',dash:'7 5',w:2}],cur:[s.n,T]},
+   msg:on?'فترة البدء: <bdi class="ltr">C<sub>2</sub></bdi> على التوازي مع <bdi class="ltr">C<sub>1</sub></bdi>، والمكثفان معاً يعطيان عزم بدء كبيراً.':String.raw`بعد سرعة الفصل يكمل المحرك بالمكثف الدائم وحده: تشغيل هادئ. بهذا يجمع «أفضل خواص للمحرك، أثناء فترتي البدء والتشغيل معاً».`}}})}
    ]},
 
   {st:3,short:'مقارنة الأنواع',title:'مقارنة الأنواع الأربعة (ملخص من نص الكتاب)',ref:'ص 80–85',
@@ -1086,7 +1407,13 @@ B.lesson({
      <tr><td>مكثف البدء</td><td>نعم</td><td>للبدء فقط</td><td>كبير</td><td>بالملف الرئيسي فقط</td><td>الضواغط والمضخات والثلاجات والتبريد والتكييف</td></tr>
      <tr><td>المكثف الدائم</td><td>لا</td><td>دائم</td><td>منخفض (من الشكل 2-8)</td><td>هادئ، كفاءة ومعامل قدرة أفضل</td><td>تطبيقات تتطلب هدوء الصوت</td></tr>
      <tr><td>المكثفين</td><td>نعم (لـ C<sub>2</sub>)</td><td>C<sub>1</sub> دائم + C<sub>2</sub> للبدء</td><td>كبير</td><td>هادئ</td><td>تشغيل هادئ مع عزم بدء كبير (الأغلى تكلفة)</td></tr></tbody></table></div>`,title:'الجدول الكامل'},
-    {watch:String.raw`<p>«عزم بدء منخفض» للمكثف الدائم مأخوذ من منحنى الشكل (2-8)، لا من نص الكتاب. والنص يذكر مزاياه في التشغيل فقط.</p>`}
+    {watch:String.raw`<p>«عزم بدء منخفض» للمكثف الدائم مأخوذ من منحنى الشكل (2-8)، لا من نص الكتاب. والنص يذكر مزاياه في التشغيل فقط.</p>`},
+    {title:'مختبر مصغّر: أي نوع هذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر النوع الذي يناسبه.',cats:['المشطور الوجه','مكثف البدء','المكثف الدائم','المكثفان'],items:[
+  ['فرق الزاوية بين التيارين مصنوع بسلك رفيع للمساعد، ومفتاح طرد مركزي',0,'المقاومة وحدها تصنع فرق الزاوية (ص 78–79).'],
+  ['مكثف على التوالي مع المساعد يُفصل بعد البدء، وعزم بدء كبير',1,'ص 82–83.'],
+  ['بلا مفتاح طرد مركزي، وتشغيل هادئ ومعامل قدرة أفضل',2,'ص 84.'],
+  ['مكثف دائم ومكثف بدء على التوازي معه بمفتاح خاص؛ وهو الأغلى ثمناً',3,'«ويعتبر هذا النوع من المحركات أكثر تكلفة من الأنواع السابقة» (ص 85).'],
+  ['يستعمل في المراوح والشفاطات ومضخات الطرد المركزي، وعزم بدئه متوسط',0,'ص 80.']]})}
    ]},
 
   {recap:[
@@ -1190,7 +1517,12 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>في الكتاب صورة لمحرك حقيقي من هذا النوع أيضاً، عليها الأسماء: <span class="ltr">Main winding</span> (الملف الرئيسي)، و<span class="ltr">Iron core</span> (القلب الحديدي)، و<span class="ltr">Squirrel cage rotor</span> (العضو الدوار القفصي)، و<span class="ltr">Shorted coil</span> (الحلقة المقصورة) حول <span class="ltr">Shaded pole</span> (الجزء المظلل من القطب).</p>`,title:'أسماء الصورة'},
-    {watch:String.raw`<p>في جدول المحتويات كُتب «المحرك ذو الوجه <b>المضلل</b>» بالضاد، وفي متن الكتاب «المظلل» بالظاء (من الظل). الصحيح «المظلل».</p>`,fix:true}
+    {watch:String.raw`<p>في جدول المحتويات كُتب «المحرك ذو الوجه <b>المضلل</b>» بالضاد، وفي متن الكتاب «المظلل» بالظاء (من الظل). الصحيح «المظلل».</p>`,fix:true},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن تركيب المحرك ذي الوجه المظلل (ص 87).',items:[
+  ['أقطاب العضو الثابت في هذا المحرك أقطاب بارزة ملفوف عليها ملفات العضو الثابت.',true,'«يتكون العضو الثابت لهذا المحرك من أقطاب بارزة ملفوف عليها ملفات العضو الثابت».'],
+  ['الحلقة النحاسية المقصورة تحيط بالقطب كله.',false,'كل قطب مقسوم إلى جزأين بمجرى صغير، والحلقة تحيط بـ«جزء من كل قطب» فقط.'],
+  ['الحلقة النحاسية المقصورة تسمى الملف المظلِل (Shading Coil).',true,'كما في الشكل (2-10).'],
+  ['هذا المحرك يحتاج مكثفاً ومفتاح طرد مركزي ليبدأ.',false,'لا مكثف ولا مفتاح: الحلقة النحاسية وحدها تصنع المجال الدوار.']]})}
    ]},
 
   {st:2,short:'كيف يدور؟',title:'كيف يتكون المجال الدوار في القطب المظلل؟',ref:'ص 87',
@@ -1231,7 +1563,12 @@ B.lesson({
    ],
    body:[
     {add:String.raw`<p>المكيف الصحراوي المنتشر في المملكة فيه مضخة ماء صغيرة ترفع الماء إلى الفلاتر: كثير منها بمحرك ذي وجه مظلل، لأن الحمل خفيف والمطلوب محرك رخيص يعمل طويلاً بلا صيانة.</p>`,title:'من الواقع'},
-    {tip:String.raw`<p>بساطته من أنه لا يحتاج ملفاً مساعداً ولا مكثفاً ولا مفتاح طرد مركزي: يكفي ملف على كل قطب وحلقة نحاسية.</p>`}
+    {tip:String.raw`<p>بساطته من أنه لا يحتاج ملفاً مساعداً ولا مكثفاً ولا مفتاح طرد مركزي: يكفي ملف على كل قطب وحلقة نحاسية.</p>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن مميزات المحرك ذي الوجه المظلل واستخداماته (ص 88).',items:[
+  ['يتميز برخص الثمن وبساطة التركيب.',true,'هذا نص الكتاب.'],
+  ['عزم الدوران الذي ينتجه كبير.',false,'الكتاب: «ينتج عنه عزم دوران صغير» (ص 87)، ومنحنى الشكل (2-11) منخفض.'],
+  ['يستعمل في مضخات المياه المستخدمة في المكيفات الصحراوية.',true,'ومع المراوح الصغيرة وغسالات الملابس.'],
+  ['يستعمل في الضواغط التي تحتاج عزم بدء كبيراً.',false,'الضواغط ذكرها الكتاب للمحرك ذي مكثف البدء (ص 83).']]})}
    ]},
 
   {recap:[
@@ -1334,7 +1671,12 @@ B.lesson({
      ['لأن العضو الدوار ملفوف ويحتاج تغذية',false,'العضو الدوار قفص سنجابي لا يُغذّى من المصدر.']]}}
    ],
    body:[
-    {tip:String.raw`<p><b>إجابة مقترحة (من نص الوحدة، يعتمدها المدرب):</b> لأن الملف أحادي الوجه يولد مجالاً نابضاً يمكن تحليله إلى مجالين دوارين متساويين (كل منهما \(\tfrac12 B_{1\max}\)) يدوران في اتجاهين متعاكسين بالسرعة التزامنية (المعادلة 2-3). عند سكون الدوار يكون عزم المجال الأمامي مساوياً ومضاداً لعزم المجال الخلفي، فالمحصلة صفر ولا يوجد عزم بدء (ص 77). أما إذا بدأ الدوران بوسيلة مساعدة في اتجاه ما فيستمر فيه.</p><p><b>الرسم:</b> الشكل (2-2) (المتجهان \(B_f\) و\(B_b\) ومحصلتهما الرأسية) والشكل (2-3) (منحنيا العزم الأمامي والخلفي والمحصلة التي تمر بالصفر عند السرعة صفر) — انظر الدرس 2.1.</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة (من نص الوحدة، يعتمدها المدرب):</b> لأن الملف أحادي الوجه يولد مجالاً نابضاً يمكن تحليله إلى مجالين دوارين متساويين (كل منهما \(\tfrac12 B_{1\max}\)) يدوران في اتجاهين متعاكسين بالسرعة التزامنية (المعادلة 2-3). عند سكون الدوار يكون عزم المجال الأمامي مساوياً ومضاداً لعزم المجال الخلفي، فالمحصلة صفر ولا يوجد عزم بدء (ص 77). أما إذا بدأ الدوران بوسيلة مساعدة في اتجاه ما فيستمر فيه.</p><p><b>الرسم:</b> الشكل (2-2) (المتجهان \(B_f\) و\(B_b\) ومحصلتهما الرأسية) والشكل (2-3) (منحنيا العزم الأمامي والخلفي والمحصلة التي تمر بالصفر عند السرعة صفر) — انظر الدرس 2.1.</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'قبل أن تكتب إجابة السؤال 1، احكم على هذه العبارات (من الدرس 2.1).',items:[
+  ['الملف الواحد المغذى بجهد متردد يصنع مجالاً نابضاً لا يدور.',true,'المعادلة (2-2): الموجة تكبر وتصغر وتنعكس في مكانها.'],
+  ['المجال النابض يكافئ مجالين دوارين متساويين يدوران في اتجاهين متعاكسين.',true,'المعادلة (2-3) والشكل (2-2).'],
+  ['إذا كان الحمل خفيفاً يبدأ المحرك أحادي الوجه الدوران وحده.',false,'محصلة العزم عند السكون صفر مهما كان الحمل، لأن العزمين متساويان ومتعاكسان (ص 77).'],
+  ['إذا بدأ المحرك الدوران في اتجاه ما بوسيلة مساعدة استمر في الدوران في الاتجاه نفسه.',true,'منحنى الشكل (2-3): المحصلة تدفع الدوار في الاتجاه الذي بدأ فيه.']]})}
    ]},
 
   {st:2,short:'س2',title:'س2: الطرق المختلفة لبدء حركة المحركات أحادية الوجه',ref:'ص 89',
@@ -1350,7 +1692,13 @@ B.lesson({
      ['الوجه المشطور',false,'هذه أول الطرق الخمس (ص 78–81).']]}}
    ],
    body:[
-    {tip:String.raw`<p><b>إجابة مقترحة:</b> تُسمى المحركات بطريقة بدئها (ص 78): (1) الوجه المشطور: ملف مساعد ذو مقاومة كبيرة يفصله مفتاح طرد مركزي عند 75% من سرعة التزامن. (2) مكثف البدء: مكثف على التوالي مع الملف المساعد للبدء فقط. (3) المكثف الدائم: مكثف وملف مساعد يعملان باستمرار بلا مفتاح. (4) المكثفان: مكثف دائم C<sub>1</sub> ومكثف بدء C<sub>2</sub> بمفتاح طرد مركزي. (5) الوجه المظلل: حلقة نحاسية مقصورة على جزء من كل قطب.</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة:</b> تُسمى المحركات بطريقة بدئها (ص 78): (1) الوجه المشطور: ملف مساعد ذو مقاومة كبيرة يفصله مفتاح طرد مركزي عند 75% من سرعة التزامن. (2) مكثف البدء: مكثف على التوالي مع الملف المساعد للبدء فقط. (3) المكثف الدائم: مكثف وملف مساعد يعملان باستمرار بلا مفتاح. (4) المكثفان: مكثف دائم C<sub>1</sub> ومكثف بدء C<sub>2</sub> بمفتاح طرد مركزي. (5) الوجه المظلل: حلقة نحاسية مقصورة على جزء من كل قطب.</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: طابق الطريقة بفكرتها',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل فكرة بدء اختر المحرك الذي يستعملها.',cats:['المشطور الوجه','مكثف البدء','المكثف الدائم','المكثفان','الوجه المظلل'],items:[
+  ['حلقة نحاسية مقصورة تؤخر فيض جزء من القطب',4,'الملف المظلِل (ص 87).'],
+  ['مكثف يجعل تيار المساعد يتقدم <bdi class="ltr">90°</bdi> عن تيار الرئيسي عند السكون، ثم يُفصل',1,'ص 82.'],
+  ['سلك رفيع للملف المساعد يجعل تياره أقرب إلى الجهد من تيار الرئيسي',0,'ص 78–79.'],
+  ['الملف المساعد ومكثفه يعملان طوال التشغيل، بلا مفتاح طرد مركزي',2,'ص 84.'],
+  ['مكثف ورقي دائم، ومعه مكثف ذو سائل كهربي للبدء فقط',3,'ص 85.']]})}
    ]},
 
   {st:3,short:'س3',title:'س3: مكثف البدء مقارنة بالمشطور الوجه',ref:'ص 89',
@@ -1365,7 +1713,11 @@ B.lesson({
      ['عزم بدء كبير',true,'ص 83: «من أهم خصائصه العزم الكبير المتولد عند بدء الحركة».']]}}
    ],
    body:[
-    {tip:String.raw`<p><b>إجابة مقترحة:</b> عزم بدء كبير (الشكل 2-6: حوالي 3.3 pu) مقارنة بعزم البدء المتوسط للمشطور (الشكل 2-4: حوالي 1.25 pu)، لأن المكثف يجعل تيار المساعد يتقدم عن تيار الرئيسي بزاوية يمكن أن تصل إلى 90° فنحصل على خصائص محرك متزن ذو وجهين عند البدء (ص 82–83). ولأن الملف المساعد والمكثف يعملان تشغيلاً متقطعاً تقل كلفتهما. لذلك يناسب الأحمال التي تتطلب عزم بدء كبيراً كالضواغط والثلاجات والمكيفات.</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة:</b> عزم بدء كبير (الشكل 2-6: حوالي 3.3 pu) مقارنة بعزم البدء المتوسط للمشطور (الشكل 2-4: حوالي 1.25 pu)، لأن المكثف يجعل تيار المساعد يتقدم عن تيار الرئيسي بزاوية يمكن أن تصل إلى 90° فنحصل على خصائص محرك متزن ذو وجهين عند البدء (ص 82–83). ولأن الملف المساعد والمكثف يعملان تشغيلاً متقطعاً تقل كلفتهما. لذلك يناسب الأحمال التي تتطلب عزم بدء كبيراً كالضواغط والثلاجات والمكيفات.</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'مكثف البدء مقارنة بالمشطور الوجه.',items:[
+  ['المحرك ذو مكثف البدء عزم بدئه أكبر من المشطور الوجه.',true,'المكثف يوصل الزاوية بين التيارين إلى <bdi class="ltr">90°</bdi> عند البدء، فيكافئ المحرك «محركاً متزناً ذا وجهين» (ص 82–83).'],
+  ['المحرك ذو مكثف البدء لا يحتاج مفتاح طرد مركزي.',false,'«يتم فصل الملف المساعد بعد بدء الحركة مثل النوع السابق».'],
+  ['لأن الملف المساعد والمكثف يعملان تشغيلاً متقطعاً تقل كلفتهما.',true,'«مما يساعد على تقليل كلفة كل منهما» (ص 82).']]})}
    ]},
 
   {st:4,short:'س4',title:'س4: المكثف الدائم مقارنة بالمشطور الوجه',ref:'ص 89',
@@ -1380,7 +1732,11 @@ B.lesson({
      ['لأن مفتاح الطرد المركزي يصدر صوتاً في المشطور',false,'المفتاح يعمل لحظة واحدة؛ الكتاب يرجع الضجة إلى المجال الخلفي.']]}}
    ],
    body:[
-    {tip:String.raw`<p><b>إجابة مقترحة:</b> الاستغناء عن مفتاح الطرد المركزي فيبسط التركيب، ويصبح المحرك مكافئاً لمحرك مثالي ذو وجهين عند حمل بعينه فيختفي المجال الخلفي: كفاءة أفضل، وتشغيل هادئ الصوت، ومعامل قدرة أفضل أثناء التشغيل (ص 84). (ملاحظة من الشكل 2-8: عزم بدئه منخفض.)</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة:</b> الاستغناء عن مفتاح الطرد المركزي فيبسط التركيب، ويصبح المحرك مكافئاً لمحرك مثالي ذو وجهين عند حمل بعينه فيختفي المجال الخلفي: كفاءة أفضل، وتشغيل هادئ الصوت، ومعامل قدرة أفضل أثناء التشغيل (ص 84). (ملاحظة من الشكل 2-8: عزم بدئه منخفض.)</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'المكثف الدائم مقارنة بالمشطور الوجه.',items:[
+  ['المحرك ذو المكثف الدائم أبسط تركيباً لأنه بلا مفتاح طرد مركزي.',true,'ص 84.'],
+  ['المحرك ذو المكثف الدائم أعلى ضجيجاً أثناء التشغيل.',false,'العكس: تختفي الضجة التي كان يسببها المجال الخلفي، فهو «هادئ الصوت».'],
+  ['كفاءة المحرك ذي المكثف الدائم ومعامل قدرته أفضل أثناء التشغيل.',true,'يختفي المجال الخلفي عند حمل بعينه، ويتحسن معامل القدرة.']]})}
    ]},
 
   {st:5,short:'س5',title:'س5: المكثفين مقارنة بالمكثف الدائم',ref:'ص 89',
@@ -1395,7 +1751,11 @@ B.lesson({
      ['يكسب عزم بدء كبيراً مع بقاء التشغيل هادئاً، ويخسر أنه أغلى',true,'ص 85: أفضل خواص أثناء البدء والتشغيل معاً، و«أكثر تكلفة من الأنواع السابقة».']]}}
    ],
    body:[
-    {tip:String.raw`<p><b>إجابة مقترحة:</b> يعطي أفضل خواص في فترتي البدء والتشغيل معاً: عند البدء يعمل C<sub>2</sub> (ذو السائل الكهربي) مع C<sub>1</sub> على التوازي فيكبر عزم البدء (الشكل 2-9: حوالي 2.2 pu مقابل حوالي 0.7 pu للمكثف الدائم في الشكل 2-8)، ثم يخرج C<sub>2</sub> بمفتاحه ويبقى C<sub>1</sub> (الورقي المشبع بالزيت) للتشغيل الهادئ. عيبه أنه أكثر تكلفة (ص 85).</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة:</b> يعطي أفضل خواص في فترتي البدء والتشغيل معاً: عند البدء يعمل C<sub>2</sub> (ذو السائل الكهربي) مع C<sub>1</sub> على التوازي فيكبر عزم البدء (الشكل 2-9: حوالي 2.2 pu مقابل حوالي 0.7 pu للمكثف الدائم في الشكل 2-8)، ثم يخرج C<sub>2</sub> بمفتاحه ويبقى C<sub>1</sub> (الورقي المشبع بالزيت) للتشغيل الهادئ. عيبه أنه أكثر تكلفة (ص 85).</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'المكثفان مقارنة بالمكثف الدائم.',items:[
+  ['المحرك ذو المكثفين يجمع التشغيل الهادئ مع عزم بدء كبير.',true,'«يستخدم في التطبيقات التي تتطلب تشغيلاً هادئاً مع عزم كبير لبدء الحركة» (ص 85).'],
+  ['المحرك ذو المكثفين أرخص من المحرك ذي المكثف الدائم.',false,'«ويعتبر هذا النوع من المحركات أكثر تكلفة من الأنواع السابقة».'],
+  [String.raw`مكثف البدء \(C_2\) يوصل على التوازي مع المكثف الدائم أثناء البدء.`,true,'ومعه مفتاح طرد مركزي خاص به.']]})}
    ]},
 
   {st:6,short:'س6',title:'س6: التطبيقات وأمثلة لكل نوع',ref:'ص 89',
@@ -1437,7 +1797,16 @@ B.lesson({
      [String.raw`<span class="ltr">950 rpm</span>`,true,String.raw`\(n_s = \dfrac{120\times 50}{6} = 1000\) rpm، ثم \(n = 1000\times(1-0.05) = 950\) rpm.`],
      [String.raw`<span class="ltr">1000 rpm</span>`,false,'هذه سرعة التزامن، والمحرك أبطأ منها بالانزلاق.'],
      [String.raw`<span class="ltr">1425 rpm</span>`,false,'هذه لمحرك أربعة أقطاب على 50 Hz؛ هنا ستة أقطاب.']]}},
-    {tip:String.raw`<p><b>إجابة مقترحة (بخطوات مثال 2-1، بالحساب الصحيح للفرع أ):</b> أ) \(S_b = 2 - 0.05 = 1.95\) — ب) \(n_s = \dfrac{120\times 50}{6} = 1000\) rpm — ج) \(n = 1000\times(1 - 0.05) = 950\) rpm. الجهد 220V لا يدخل في الحل. الحل في تبويب «الأمثلة المحلولة».</p>`,title:'الإجابة'}
+    {tip:String.raw`<p><b>إجابة مقترحة (بخطوات مثال 2-1، بالحساب الصحيح للفرع أ):</b> أ) \(S_b = 2 - 0.05 = 1.95\) — ب) \(n_s = \dfrac{120\times 50}{6} = 1000\) rpm — ج) \(n = 1000\times(1 - 0.05) = 950\) rpm. الجهد 220V لا يدخل في الحل. الحل في تبويب «الأمثلة المحلولة».</p>`,title:'الإجابة'},
+    {title:'مختبر مصغّر: تحقق من إجابتك',widget:(el,B)=>DCML.lab(el,B,{intro:'معطيات التمرين 7 مضبوطة مسبقاً: ستة أقطاب، 50 Hz، انزلاق 5%. توقّع أولاً، ثم غيّر الأرقام إن أردت (أرقام تختارها أنت).',
+ predict:{q:String.raw`كم الانزلاق للمجال الخلفي \(S_b\) في التمرين 7؟`,opts:[
+  ['0.95',false,String.raw`هذا \(1 - S\)، وهو الخطأ نفسه الذي وقع في حل مثال (2-1).`],
+  ['2.05',false,String.raw`المعادلة (2-5): \(2 - S\) وليس \(2 + S\).`],
+  ['1.95',true,String.raw`\(S_b = 2 - 0.05 = 1.95\)، وهو الرقم الذي ذكره الكتاب نفسه في ص 77.`]]},
+ ins:[{k:'S',l:'الانزلاق S',min:0.01,max:0.1,step:0.01,v:0.05,dp:2},{k:'p',l:'عدد الأقطاب p',seg:[[2,'2'],[4,'4'],[6,'6'],[8,'8']],v:6},{k:'f',l:'تردد المصدر <bdi class="ltr">f<sub>s</sub></bdi>',seg:[[50,'50 Hz'],[60,'60 Hz']],v:50}],
+ calc:(s,v,B)=>{const ns=120*s.f/s.p,n=ns*(1-s.S),q7=Math.abs(s.S-0.05)<1e-9&&s.p===6&&s.f===50;
+  return {facts:[['<bdi class="ltr">S<sub>b</sub> = 2 − S</bdi> <bdi class="ltr">(2-5)</bdi>',DCML.fm(B,2-s.S,2),'hi'],['<bdi class="ltr">n<sub>s</sub> = 120 f<sub>s</sub> / p</bdi>',DCML.fm(B,ns,0)+' rpm'],['<bdi class="ltr">n = n<sub>s</sub>(1 − S)</bdi>',DCML.fm(B,n,0)+' rpm']],
+   msg:q7?'هذه معطيات التمرين 7. الجهد 220 V لا يدخل في الحل.':'أرقام من اختيارك: الانزلاق الخلفي يتغير بتغيير S فقط.'}}})}
    ]},
 
   {st:8,short:'س8',title:'س8: مكثف البدء لزاوية 80°',ref:'ص 89',
@@ -1453,7 +1822,16 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p><b>إجابة مقترحة (بخطوات مثال 2-3 وتقريبه):</b> \(\theta_m = \tan^{-1}(3.6/4.2) = 40.60^\circ\)، \(\theta_a = 80 - 40.60 = 39.40^\circ\)، \(\frac{X_c - 3.0}{8.4} = \tan 39.40^\circ = 0.821 \approx 0.82\)، \(X_c = 0.82\times 8.4 + 3.0 = 9.89\ \Omega\)، \(c = \frac{1}{377\times 9.89} = 268\ \mu F\). الحل في «الأمثلة المحلولة».</p>`,title:'الإجابة'},
-    {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لأسئلة ص 89؛ الإجابات المقترحة في هذا الدرس مأخوذة من نص الوحدة ويعتمدها المدرب. والجهد 120v لا يدخل في الحل، مثل مثال (2-3).</p>`}
+    {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لأسئلة ص 89؛ الإجابات المقترحة في هذا الدرس مأخوذة من نص الوحدة ويعتمدها المدرب. والجهد 120v لا يدخل في الحل، مثل مثال (2-3).</p>`},
+    {title:'مختبر مصغّر: غيّر الزاوية المطلوبة',widget:(el,B)=>DCML.lab(el,B,{intro:String.raw`معطيات التمرين 8: \(Z_m = 4.2 + j3.6\) و\(Z_a = 8.4 + j3.0\ \Omega\)، و\(60\ \text{Hz}\). الخطوة الوحيدة التي تتغير عن مثال (2-3): \(\theta_a = \alpha - \theta_m\) حيث \(\alpha\) الزاوية المطلوبة بين التيارين. حرّكها بين <bdi class="ltr">80°</bdi> و90°.`,
+ predict:{q:'مقارنة بزاوية <bdi class="ltr">90°</bdi>، هل تحتاج زاوية <bdi class="ltr">80°</bdi> مكثفاً سعته أكبر أم أصغر؟',opts:[
+  ['أصغر',false,String.raw`الزاوية الأصغر تحتاج \(X_c\) أصغر، و\(c = 1/(\omega X_c)\) فالسعة تكبر.`],
+  [String.raw`أكبر، لأن \(X_c\) المطلوبة أصغر`,true,String.raw`\(c = \dfrac{1}{\omega X_c}\): كلما صغرت \(X_c\) كبرت السعة.`],
+  ['السعة نفسها',false,'الزاوية المطلوبة تدخل في الحساب، فتغيرها يغير السعة.']]},
+ ins:[{k:'a',l:'الزاوية المطلوبة بين التيارين α',min:80,max:90,step:1,v:80,fmt:v=>v+'°'}],
+ calc:(s,v,B)=>{const R=Math.PI/180,tm=Math.atan(3.6/4.2)/R,ta=s.a-tm,Xc=8.4*Math.tan(ta*R)+3.0,c=1e6/(377*Xc);
+  return {facts:[['<bdi class="ltr">θ<sub>m</sub> = tan⁻¹(3.6 / 4.2)</bdi>',DCML.fm(B,tm,2)+'°'],['<bdi class="ltr">θ<sub>a</sub> = α − θ<sub>m</sub></bdi>',DCML.fm(B,ta,2)+'°'],['<bdi class="ltr">X<sub>c</sub> = 8.4 tan θ<sub>a</sub> + 3.0</bdi>',DCML.fm(B,Xc,2)+' Ω'],['<bdi class="ltr">c = 1 / (377 X<sub>c</sub>)</bdi>',DCML.fm(B,c,0)+' µF','hi']],
+   msg:s.a===80?'هذه زاوية التمرين 8. الإجابة المقترحة تقرّب <bdi class="ltr">tan 39.40°</bdi> إلى 0.82 فتعطي 9.89 Ω، والسعة 268 µF.':s.a===90?'عند <bdi class="ltr">90°</bdi> تحتاج ممانعة أكبر وسعة أصغر.':''}}})}
    ]},
 
   {recap:[

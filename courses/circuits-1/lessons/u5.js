@@ -226,7 +226,183 @@ B.lesson({
  title:'مدخل المغناطيسية: المغناطيس والمجال وخطوط القوى',
  summary:'ما المغناطيسية الكهربائية؟ المغناطيس الطبيعي والمغناطيسات الذرية، المغناطيس الكهربائي، المجال المغناطيسي وتمثيله بخطوط القوى، والمجال الدائري حول سلك يحمل تياراً كما تظهره برادة الحديد والبوصلة.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الخامسة: ماذا سنتعلم؟',ref:'ص 124',
    q:'دوائر التيار المتردد التي ستدرسها لاحقاً مليئة بالملفات… فلماذا نبدأ بالمغناطيس قبل التيار المتردد؟',
@@ -241,7 +417,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأهداف التفصيلية:</b></p><ol><li>أن يعرف المتدرب أساسيات المغناطيسية الطبيعية وطريقة تصنيف المواد من وجهة النظر المغناطيسي.</li><li>أن يعرف المتدرب الكميات المغناطيسية ووحداتها.</li><li>أن يعرف المتدرب العلاقة بين الكميات المغناطيسية.</li><li>أن يتمكن المتدرب من حساب شدة المجال المغناطيسي و الفيض المغناطيسي.</li><li>أن يعرف المتدرب القوى الكهرومغناطيسية والآثار المغناطيسية للتيار الكهربائي.</li><li>أن يعرف المتدرب الحثية الذاتية والتبادلية.</li></ol>`,ref:'ص 124'},
-    {tip:String.raw`<p>دروس الوحدة هنا خمسة: (1) هذا المدخل: المغناطيس والمجال، (2) الفيض والنفاذية وشدة المجال، (3) المجال حول سلك والقوى على الموصلات، (4) الحث الذاتي والمتبادل وتوصيل الملفات، (5) قانونا فارادي ولينز وتمارين الوحدة.</p>`,title:'خريطة الوحدة'}
+    {tip:String.raw`<p>دروس الوحدة هنا خمسة: (1) هذا المدخل: المغناطيس والمجال، (2) الفيض والنفاذية وشدة المجال، (3) المجال حول سلك والقوى على الموصلات، (4) الحث الذاتي والمتبادل وتوصيل الملفات، (5) قانونا فارادي ولينز وتمارين الوحدة.</p>`,title:'خريطة الوحدة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن أهداف الوحدة الخامسة:',items:[
+ ['هدف الوحدة معرفة أساسيات الكهرومغناطيسية اللازمة لفهم دوائر وقياسات التيار المتردد.',true,'هذا نص الهدف العام للوحدة.'],
+ ['الوحدة لا تتناول حساب الفيض المغناطيسي، بل الوصف فقط.',false,'من الأهداف: «أن يتمكن المتدرب من حساب شدة المجال المغناطيسي والفيض المغناطيسي».'],
+ ['الحثية الذاتية والتبادلية من موضوعات هذه الوحدة.',true,'آخر الأهداف التفصيلية: «أن يعرف المتدرب الحثية الذاتية والتبادلية».']]})}
    ]},
 
   {st:2,short:'المغناطيسية الكهربائية',title:'المغناطيسية الكهربائية: حقلان لا يفترقان',ref:'ص 125',
@@ -258,7 +438,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>ينشأ الحقل الكهربائي عن الشحنات الكهربائية الساكنة التي تسبب القوى الكهربائية المسؤولة عن الكهرباء الساكنة و المحددة بقانون كولوم. تقود هذه الحقول الكهربائية أيضاً إلى سريان التيار الكهربائي في الموصلات الكهربائية. أما الحقل المغناطيسي فهو ينتج عن المغانط المختلفة إضافة للشحنات الكهربائية المتحركة، فعندما تسير شحنة كهربائية ضمن تيار كهربائي ينشأ عنها حقل مغناطيسي محيط بها. لذلك يصعب فصل هذين الحقلين عن بعضهما البعض في الكثير من الحالات.</p>`,ref:'ص 125'},
     {tip:String.raw`<p>«الحقل» و«المجال» كلمتان لمعنى واحد، والكتاب يستعمل الاثنتين. السلسلة باختصار: شحنة ساكنة ← حقل كهربائي. شحنة متحركة (تيار) ← حقل كهربائي <b>وحقل مغناطيسي</b>. لذلك كل سلك يمر فيه تيار يصنع حوله مجالاً مغناطيسياً، وهذا ما ستراه في المحطة السابعة.</p>`,title:'الفكرة في سطرين'},
-    {add:String.raw`<p>الضوء وموجات الراديو وإشارة الجوال والواي فاي كلها «موجات كهرومغناطيسية»: حقل كهربائي وحقل مغناطيسي يتغيران معاً وينتقلان في الفضاء. هذا مثال على أن الحقلين لا يفترقان.</p>`,title:'من حولك'}
+    {add:String.raw`<p>الضوء وموجات الراديو وإشارة الجوال والواي فاي كلها «موجات كهرومغناطيسية»: حقل كهربائي وحقل مغناطيسي يتغيران معاً وينتقلان في الفضاء. هذا مثال على أن الحقلين لا يفترقان.</p>`,title:'من حولك'},
+    {title:'مختبر مصغّر: ماذا ينشأ عنه؟',widget:(el,B)=>DCML.sort(el,B,{intro:'حسب نص الكتاب: لكل مصدر اختر الحقل الذي ينشأ عنه.',cats:['حقل كهربائي فقط','ينشأ عنه حقل مغناطيسي'],items:[
+ ['شحنات ساكنة على مشط بعد دلكه بالشعر',0,'شحنات ساكنة لا تتحرك: حقل كهربائي فقط (الكهرباء الساكنة).'],
+ ['سلك يمر فيه تيار كهربائي',1,'«عندما تسير شحنة كهربائية ضمن تيار كهربائي ينشأ عنها حقل مغناطيسي محيط بها».'],
+ ['مغناطيس قضيبي',1,'الحقل المغناطيسي «ينتج عن المغانط المختلفة».'],
+ ['كرة معدنية مشحونة معزولة لا يمر فيها تيار',0,'الشحنة ساكنة، فلا ينشأ عنها حقل مغناطيسي.']]})}
    ]},
 
   {st:3,short:'المغناطيس الطبيعي',title:'المغناطيس الطبيعي: مغناطيسات صغيرة داخل المادة',ref:'ص 125–126',
@@ -280,7 +465,12 @@ B.lesson({
     {predict:{q:'مادة دايامغناطيسية وُضعت في مجال مغناطيسي خارجي. اتجاه المجال الذي يتولد فيها يكون:',opts:[
      ['مع اتجاه المجال الخارجي',false,'هذا سلوك المواد البارامغناطيسية (الشكل ٥-٢ب).'],
      ['عمودياً على المجال الخارجي',false,'الكتاب يذكر حالتين فقط: مع الاتجاه أو عكسه.'],
-     ['عكس اتجاه المجال الخارجي',true,'الكتاب: يتولد مجال عكس اتجاه المجال الخارجي كما في حالة المواد الدايامغناطيسية (ص 126).']]}}
+     ['عكس اتجاه المجال الخارجي',true,'الكتاب: يتولد مجال عكس اتجاه المجال الخارجي كما في حالة المواد الدايامغناطيسية (ص 126).']]}},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['لو استمر تكسير المغناطيس لوصلنا في النهاية إلى قطعة لها قطب شمالي فقط.',false,'كل قطعة مهما صغرت لها قطبان، حتى الذرة (الشكل ٥-١).'],
+ ['في المادة العادية بدون مجال خارجي تكون التيارات الذرية عشوائية فتلغي آثارها بعضها بعضاً.',true,'لذلك لا يظهر أي أثر مغناطيسي للمادة (الشكل ٥-٢أ).'],
+ ['المغناطيس الدائم يشذ عن هذه الحالة.',true,'نص الكتاب: «ويشذ عن هذه الحالة المغناطيس الدائم».'],
+ ['المادة البارامغناطيسية يتولد فيها مجال عكس المجال الخارجي.',false,'هذا سلوك الدايامغناطيسية؛ البارامغناطيسية مجالها مع اتجاه المجال الخارجي (الشكل ٥-٢ب).']]})}
    ]},
 
   {st:4,short:'المغناطيس الكهربائي',title:'المغناطيس الكهربائي: مغناطيس له مفتاح',ref:'ص 127',
@@ -296,7 +486,16 @@ B.lesson({
      ['تزيد عدد اللفات وتضع قضيباً حديدياً داخل الملف',true,'الطريقتان مذكورتان في ص 127: لفات كثيرة، ومادة مغناطيسية (قضيب حديدي) داخل الملف.'],
      ['تلف السلك حول قضيب بلاستيكي',false,'البلاستيك ليس مادة مغناطيسية، فلا يقوّي المجال كما يفعل الحديد.']]}},
     {tip:String.raw`<p>الكلمة المهمة هي «<b>مؤقت</b>»: الحديد داخل الملف يصبح مغناطيساً ما دام التيار يمر، ويفقد معظم مغناطيسيته عند فصل التيار. هذا الفرق بينه وبين المغناطيس الدائم (المحطة السابقة).</p>`},
-    {add:String.raw`<p>جرس الباب القديم، والمرحّل (الريليه) في لوحات التحكم، والقفل الكهربائي للأبواب، وصمام الماء في الغسالة… كلها مغناطيسات كهربائية: ملف حول قلب حديدي يجذب قطعة معدنية عندما يمر التيار ويتركها عندما يُفصل.</p>`,title:'أين تجده؟'}
+    {add:String.raw`<p>جرس الباب القديم، والمرحّل (الريليه) في لوحات التحكم، والقفل الكهربائي للأبواب، وصمام الماء في الغسالة… كلها مغناطيسات كهربائية: ملف حول قلب حديدي يجذب قطعة معدنية عندما يمر التيار ويتركها عندما يُفصل.</p>`,title:'أين تجده؟'},
+    {title:'مختبر مصغّر: ابنِ مغناطيساً كهربائياً',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر العوامل الثلاثة التي ذكرها الكتاب وراقب قوة المجال. المقارنة هنا نوعية بلا أرقام.',
+ predict:{q:'ملف عليه قلب حديدي يمر فيه تيار، ثم فصلنا التيار. ماذا يبقى من المغناطيسية؟',opts:[
+  ['يبقى المغناطيس كما هو لأن الحديد ما زال داخل الملف',false,'الحديد هنا «مغناطيس مؤقت» يتمغنط بسبب التيار فقط.'],
+  ['تختفي تقريباً',true,'نص الكتاب: «يتسبب التيار المار خلال الملف في تحول الحديد إلى مغناطيس مؤقت».'],
+  ['تتضاعف',false,'لا مصدر للمجال بعد فصل التيار.']]},
+ ins:[{k:'on',l:'',sw:true,v:1,on:'التيار: موصول',off:'التيار: مفصول'},{k:'fe',l:'',sw:true,v:0,on:'القلب: قضيب حديدي',off:'القلب: هواء (بلا حديد)'},{k:'n',l:'عدد اللفات',seg:[[1,'قليل'],[2,'كبير']],v:1}],
+ calc:(s,v,B)=>{const sc=s.on?s.n*(s.fe?10:1):0,lv=sc===0?'لا يوجد مجال':sc===1?'ضعيف':sc===2?'أقوى':sc===10?'قوي':'قوي جداً';
+  return {bars:[{l:'قوة المجال (مقارنة)',v:sc?Math.log10(sc)+0.4:0,max:1.75,txt:lv,col:sc>=10?'--on':'--live'}],
+   msg:!s.on?'بدون تيار لا يوجد مجال، حتى مع القلب الحديدي.':(s.fe?'القلب الحديدي يزيد المجال كثيراً':'بلا حديد يبقى المجال ضعيفاً نسبياً')+'، وزيادة عدد اللفات تزيده أيضاً.'}}})}
    ]},
 
   {st:5,short:'توليد مجال كهرومغناطيسي',title:'توليد مجال كهرومغناطيسي: رافعة الخردة',ref:'ص 127',
@@ -336,7 +535,11 @@ B.lesson({
      ['نأخذ الاتجاه العمودي على الخط',false,'العمودي على الخط يستعمل لقياس الكثافة (عدد الخطوط لكل وحدة مساحة)، لا لتحديد الاتجاه.'],
      ['المجال يتجه دائماً نحو مركز المغناطيس',false,'خارج المغناطيس يتجه المجال من N إلى S على طول الخط، وليس نحو المركز.']]}},
     {tip:String.raw`<p>الخطوط ترسم شيئين في وقت واحد: <b>الاتجاه</b> (المماس للخط، وتتبعه إبرة البوصلة)، و<b>المقدار</b> (كثافة الخطوط: قرب القطبين تتزاحم الخطوط فيكون المجال أقوى، وبعيداً عنهما تتباعد فيضعف).</p>`,title:'ماذا يخبرنا الرسم؟'},
-    {add:String.raw`<p>إذا نثرت برادة حديد على ورقة فوق مغناطيس وطرقت الورقة برفق، تترتب البرادة على شكل هذه الخطوط تماماً. جرّب ذلك في تبويب المختبر: اختر «برادة حديد» واسحب البوصلة حول المغناطيس.</p>`,title:'تراها بعينك'}
+    {add:String.raw`<p>إذا نثرت برادة حديد على ورقة فوق مغناطيس وطرقت الورقة برفق، تترتب البرادة على شكل هذه الخطوط تماماً. جرّب ذلك في تبويب المختبر: اختر «برادة حديد» واسحب البوصلة حول المغناطيس.</p>`,title:'تراها بعينك'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن خطوط القوى المغناطيسية (ص 128):',items:[
+ ['إبرة البوصلة في المجال توجه نفسها في اتجاه معين في كل جزء من المجال.',true,'والخطوط المرسومة في اتجاه الإبرة تبين شكل المجال.'],
+ ['حيث تتقارب خطوط القوى يكون المجال أضعف.',false,'كثافة الخطوط لكل وحدة مساحة عمودية هي مقدار المجال؛ التقارب يعني مجالاً أقوى.'],
+ ['اتجاه المجال عند نقطة على خط القوى هو اتجاه المماس للخط عندها.',true,'نص الكتاب ص 128.']]})}
    ]},
 
   {st:7,short:'المجال حول سلك',title:'المجال المغناطيسي حول موصل مستقيم يحمل تياراً مستمراً',ref:'ص 128–129',
@@ -355,7 +558,23 @@ B.lesson({
      <p>تتمثل القوة أو شدة المجال المغناطيسي بكثافة الخطوط التي تقطع مساحة متر مربع متعامدة معها. <b>فكلما اقتربنا من السلك ازدادت القوة أو شدة المجال</b> و بذلك ازدادت كثافة الخطوط و أصبحت الدوائر متقاربة. في حين أن المسافة تزداد بين الدوائر و تقل كثافة الخطوط عند الابتعاد عن السلك.</p>`,ref:'ص 129'},
     {watch:String.raw`<p>في الكتاب جاءت العبارة «برادة حديد على ورقة موضوعة على قضيب مغناطيسي الشكل (٥-٥أ)»، لكن الرسم (أ) يبين سلكاً يخترق الورقة وحوله البرادة في دوائر، وليس قضيباً مغناطيسياً. رتبنا العبارة لتطابق الرسم.</p>`,fix:true},
     {tip:String.raw`<p>عنوان هذه الفقرة في الكتاب يذكر «قاعدة اليد اليمنى»، ونص القاعدة يأتي في الدرسين التاليين (ص 135 و138): <b>اقبض على السلك باليد اليمنى بحيث يشير الإبهام إلى اتجاه التيار، فتشير الأصابع الملتفة إلى اتجاه خطوط المجال.</b> جرّبها على الرسم: الإبهام نحوك (التيار خارج ⊙) فتلتف أصابعك عكس عقارب الساعة، كما تبين الأسهم.</p>`,title:'قاعدة اليد اليمنى'},
-    {add:String.raw`<p>لهذا السبب لا يُنصح بوضع البوصلة قرب أسلاك الكهرباء أو بطارية السيارة عند قراءتها: التيار المار يصنع مجالاً يحرف الإبرة عن اتجاه الشمال.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>لهذا السبب لا يُنصح بوضع البوصلة قرب أسلاك الكهرباء أو بطارية السيارة عند قراءتها: التيار المار يصنع مجالاً يحرف الإبرة عن اتجاه الشمال.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: حرّك البوصلة حول السلك',widget:(el,B)=>DCML.lab(el,B,{intro:'منظر من الأعلى لسلك عمودي على الورقة. غيّر اتجاه التيار ومكان البوصلة وبعدها عن السلك.',
+ predict:{q:'التيار خارج من الورقة نحوك (⊙). إذا وضعنا البوصلة يمين السلك، يشير قطبها الشمالي إلى…',opts:[
+  ['أعلى الصفحة',true,'بقاعدة قبضة اليد اليمنى: الإبهام نحوك، والأصابع تلتف عكس عقارب الساعة، فيمين السلك يتجه المجال لأعلى.'],
+  ['أسفل الصفحة',false,'هذا عندما يكون التيار داخلاً في الورقة (⊗).'],
+  ['نحو السلك',false,'الإبرة تكون مماسية للدائرة حول السلك، لا متجهة نحوه.']]},
+ ins:[{k:'d',l:'اتجاه التيار',seg:[[1,'⊙ خارج نحوك'],[-1,'⊗ داخل في الورقة']],v:1},{k:'p',l:'مكان البوصلة',seg:[[0,'يمين'],[90,'أعلى'],[180,'يسار'],[270,'أسفل']],v:0},{k:'r',l:'البعد عن السلك',seg:[[1,'قريب'],[2,'متوسط'],[3,'بعيد']],v:1}],
+ calc:(s,v,B)=>{const cx=150,cy=110,R=[0,42,70,96][s.r],th=s.p*Math.PI/180,x=cx+R*Math.cos(th),y=cy-R*Math.sin(th);
+  const tx=-Math.sin(th)*s.d,ty=-Math.cos(th)*s.d,L=15,f=n=>n.toFixed(1);
+  let g=`<svg viewBox="0 0 300 220" role="img" aria-label="سلك وبوصلة من الأعلى" style="font-family:var(--font)" direction="ltr">`;
+  [42,70,96].forEach(r=>{g+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--line)" stroke-width="1.6"/>`;
+   const X=cx+r,u=s.d>0?1:-1;g+=`<path d="M${X-5} ${cy+5*u}L${X} ${cy-3*u}L${X+5} ${cy+5*u}" fill="none" stroke="var(--muted)" stroke-width="1.8"/>`});
+  g+=`<circle cx="${cx}" cy="${cy}" r="13" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>`+(s.d>0?`<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--fg)"/>`:`<path d="M${cx-7} ${cy-7}L${cx+7} ${cy+7}M${cx+7} ${cy-7}L${cx-7} ${cy+7}" stroke="var(--fg)" stroke-width="2"/>`);
+  g+=`<circle cx="${f(x)}" cy="${f(y)}" r="16" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.8"/><path d="M${f(x)} ${f(y)}L${f(x+tx*L)} ${f(y+ty*L)}" stroke="var(--stop)" stroke-width="4" stroke-linecap="round"/><path d="M${f(x)} ${f(y)}L${f(x-tx*L)} ${f(y-ty*L)}" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/><text x="${f(x+tx*(L+9))}" y="${f(y+ty*(L+9)+4)}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--stop)">N</text>`;
+  g+='</svg>';
+  return {pic:g,bars:[{l:'شدة المجال عند البوصلة (مقارنة)',v:1/s.r,max:1,txt:['','أقوى','أضعف','أضعف كثيراً'][s.r],col:'--live'}],
+   msg:'الخطوط دوائر مركزها السلك، والإبرة مماسية لها دائماً. اتجاه الدوران '+(s.d>0?'عكس':'مع')+' عقارب الساعة، وينعكس بعكس التيار.'}}})}
    ]},
 
   {recap:[
@@ -558,7 +777,17 @@ B.lesson({
      ['نصف القيمة العظمى',false,'النصف يكون عند \\(\\theta=60^\\circ\\) لأن \\(\\cos60^\\circ=0.5\\)، لا عند التوازي.'],
      ['صفراً',true,'الشكل (٥-٧): المجال موازٍ للسطح فلا يقطعه، و\\(\\cos90^\\circ=0\\).']]}},
     {tip:String.raw`<p>العامل \(\cos\theta\) هو «نسبة المواجهة»: \(\cos0^\circ=1\) (السطح يواجه المجال تماماً: أكبر فيض)، \(\cos60^\circ=0.5\) (نصف الفيض)، \(\cos90^\circ=0\) (لا فيض). جرّب ذلك بتدوير السطح في لوحة «الفيض الذي يعبر سطحاً» في تبويب المختبر.</p>`,title:'دور الزاوية'},
-    {watch:String.raw`<p>انتبه لمعنى \(\theta\): هي الزاوية بين المجال و<b>متجه المساحة العمودي على السطح</b>، لا بين المجال والسطح نفسه. السطح الموازي للمجال يعني \(\theta=90^\circ\).</p>`}
+    {watch:String.raw`<p>انتبه لمعنى \(\theta\): هي الزاوية بين المجال و<b>متجه المساحة العمودي على السطح</b>، لا بين المجال والسطح نفسه. السطح الموازي للمجال يعني \(\theta=90^\circ\).</p>`},
+    {title:'مختبر مصغّر: أمِل السطح وراقب الفيض',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (٥-٢): \\(B=10^{-5}\\ \\text{T}\\) و\\(A=0.6\\ \\text{m}^2\\). غيّر الزاوية θ بين المجال \\(B\\) والعمودي على السطح (اتجاه dA).',
+ predict:{q:'عند \\(\\theta=60^\\circ\\)، الفيض يساوي…',opts:[
+  ['نصف الفيض عند \\(\\theta=0\\)',true,'\\(\\cos60^\\circ=0.5\\)، فيصبح \\(\\Phi=0.3\\times10^{-5}\\ \\text{Wb}\\).'],
+  ['ثلثي الفيض عند \\(\\theta=0\\)',false,'الفيض يتبع \\(\\cos\\theta\\) لا \\(\\theta\\) نفسها.'],
+  ['صفراً',false,'الصفر عند \\(\\theta=90^\\circ\\) فقط، حين يوازي المجال السطح (المساحة \\(A_2\\) في المثال).']]},
+ ins:[{k:'t',l:'الزاوية θ',min:0,max:90,step:15,v:0,u:'°'}],
+ calc:(s,v,B)=>{const c=Math.cos(s.t*Math.PI/180),P=0.6*c;
+  return {facts:[['cos θ',DCML.fm(B,Math.abs(c)<1e-9?0:c,3)],['<span class="ltr" dir="ltr" style="white-space:normal">Φ = B A cos θ</span>',(Math.abs(P)<1e-9?'0':DCML.fm(B,P,3)+' × 10⁻⁵')+' Wb','hi']],
+   plot:{xr:[0,90],yr:[0,0.6],xt:[0,30,60,90],xl:'θ (°)',yl:'Φ (×10⁻⁵ Wb)',curves:[{f:x=>0.6*Math.cos(x*Math.PI/180)}],cur:[s.t,P]},
+   msg:s.t===0?'\\(\\theta=0\\): المجال عمودي على السطح، والفيض أكبر ما يمكن (\\(\\Phi_1\\) في المثال).':s.t===90?'\\(\\theta=90^\\circ\\): المجال يوازي السطح فلا تعبره خطوط: \\(\\Phi_2=0\\).':''}}})}
    ]},
 
   {st:2,short:'الملف الحلزوني',title:'المجال المغناطيسي الناتج عن ملف حلزوني يحمل تياراً مستمراً',ref:'ص 131–132',
@@ -576,7 +805,11 @@ B.lesson({
      ['لا قطبية له؛ الأقطاب للمغانط الطبيعية فقط',false,'الملف الحلزوني الذي يمر فيه تيار يسلك سلوك ساق ممغنط له قطبان.']]}},
     {tip:String.raw`<p>طريقة سهلة للحفظ: ارسم حرف <b>S</b> على طرف الملف وضع سهماً على طرفيه: يلتفان مع عقارب الساعة. وارسم حرف <b>N</b> وضع سهماً على طرفيه: يلتفان عكس عقارب الساعة.</p>`,title:'حيلة للحفظ'},
     {watch:String.raw`<p>داخل الملف يكون المجال <b>من S إلى N</b>، عكس ما تعودت عليه خارج المغناطيس (من N إلى S). الخطوط حلقات مغلقة: تخرج من N وتلتف من الخارج إلى S ثم تعود داخل الملف إلى N.</p>`},
-    {add:String.raw`<p>الملف الحلزوني هو قلب المرحّل (الريليه) والكونتاكتور وصمامات الماء الكهربائية (السولينويد): عندما يمر التيار يصبح الملف مغناطيساً يسحب قلباً حديدياً متحركاً داخله.</p>`,title:'أين تجده؟'}
+    {add:String.raw`<p>الملف الحلزوني هو قلب المرحّل (الريليه) والكونتاكتور وصمامات الماء الكهربائية (السولينويد): عندما يمر التيار يصبح الملف مغناطيساً يسحب قلباً حديدياً متحركاً داخله.</p>`,title:'أين تجده؟'},
+    {title:'مختبر مصغّر: أي طرف شمالي؟',widget:(el,B)=>DCML.cases(el,B,{intro:'استعمل قاعدة تحديد قطبي الملف (الشكل ٥-٩ب).',cases:[
+ {q:'نظرت إلى أحد طرفي ملف فرأيت التيار يدور <b>مع</b> عقارب الساعة. هذا الطرف قطب…',opts:[['شمالي',false,'الشمالي هو الطرف الذي يدور فيه التيار عكس عقارب الساعة.'],['جنوبي',true,'نص الكتاب: «طرف الملف الذي يكون فيه اتجاه التيار مع حركة عقارب الساعة يكون قطباً جنوبياً».']]},
+ {q:'داخل الملف، يتجه المجال…',opts:[['من القطب الشمالي إلى الجنوبي',false,'هذا اتجاهه خارج الملف.'],['من القطب الجنوبي إلى الشمالي',true,'«في الداخل من الجنوبي إلى الشمالي وفي الخارج من الشمالي إلى الجنوبي»، فالخطوط مغلقة.']]},
+ {q:'أين يكون المجال منتظماً (خطوط مستقيمة متوازية)؟',opts:[['داخل الملف',true,'الشكل (٥-٩أ): داخل الملف مجال منتظم.'],['خارج الملف',false,'خارج الملف يشبه مجال ساق ممغنط ويكون ضعيفاً جداً.']]}]})}
    ]},
 
   {st:3,short:'الملف الحلقي',title:'المجال المغناطيسي الناتج عن ملف حلقي يحمل تياراً مستمراً',ref:'ص 132–133',
@@ -597,7 +830,16 @@ B.lesson({
      ['تقل قليلاً لأن \\(R\\) في المقام',true,'\\(B=\\mu_0NI/(2\\pi R)\\): كلما زاد \\(R\\) قلت \\(B\\). جرّبها بمنزلق R في تبويب المختبر.']]}},
     {tip:String.raw`<p>الملف الحلقي ملف حلزوني ثُني على شكل دائرة حتى التقى طرفاه، فلا يبقى له طرفان مكشوفان ولا قطبان ظاهران: خطوط المجال تدور داخل الحلقة وتبقى محصورة فيها. والمقدار \(2\pi R\) في المعادلة هو طول المسار الدائري الذي تقع عليه النقطة.</p>`,title:'لماذا 2πR؟'},
     {watch:String.raw`<p>في الكتاب سُمّي الملف في جملة المعادلة (5-2) «ملف لولبي»، والمقصود والمرسوم ملف حلقي كما في العنوان. والكتاب لا يعرّف \(R\) في قائمة الرموز، وهو بعد النقطة عن المركز.</p>`,fix:true},
-    {add:String.raw`<p>المحولات الحلقية (Toroidal) في أجهزة الصوت ومزودات الطاقة تستعمل هذا الشكل: لأن مجالها محصور داخل الحلقة فهي لا تشوّش على الأجهزة المجاورة.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>المحولات الحلقية (Toroidal) في أجهزة الصوت ومزودات الطاقة تستعمل هذا الشكل: لأن مجالها محصور داخل الحلقة فهي لا تشوّش على الأجهزة المجاورة.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: داخل الملف الحلقي',widget:(el,B)=>DCML.lab(el,B,{intro:'المعادلة (5-2) لقلب هوائي. غيّر عدد اللفات والتيار ونصف القطر R (أرقام تختارها أنت).',
+ predict:{q:'لو انتقلنا إلى نقطة بعدها R عن المركز ضعف السابقة (مع بقاء N و I)، فإن B…',opts:[
+  ['تتضاعف',false,'R في المقام، فزيادتها تنقص B.'],
+  ['تقل إلى النصف',true,'\\(B=\\mu_0NI/(2\\pi R)\\): B تتناسب عكسياً مع R.'],
+  ['لا تتغير',false,'B متساوية على الدائرة الواحدة، لكنها تتغير من دائرة إلى أخرى.']]},
+ ins:[{k:'N',l:'N',min:100,max:1000,step:100,v:500,dp:0,u:'لفة'},{k:'I',l:'I',min:0.5,max:5,step:0.5,v:2,dp:1,u:'A'},{k:'R',l:'R',min:5,max:20,step:1,v:10,dp:0,u:'cm'}],
+ calc:(s,v,B)=>{const b=4e-7*Math.PI*s.N*s.I/(2*Math.PI*s.R/100),bm=b*1e3;
+  return {facts:[['N I',s.N*s.I+' AT'],['<span class="ltr" dir="ltr" style="white-space:normal">B = μ<sub>0</sub>NI/(2πR)</span>',DCML.fm(B,bm,3)+' mT','hi']],
+   plot:{xr:[5,20],yr:[0,2e-7*s.N*s.I/0.05*1e3],xl:'R (cm)',yl:'B (mT)',curves:[{f:x=>4e-7*Math.PI*s.N*s.I/(2*Math.PI*x/100)*1e3}],cur:[s.R,bm]}}}})}
    ]},
 
   {st:4,short:'النفاذية',title:'النفاذية: كم تسمح المادة بمرور خطوط القوى؟',ref:'ص 133',
@@ -616,7 +858,16 @@ B.lesson({
      ['\\(4\\pi\\times10^{-7}\\)',false,'هذه \\(\\mu_0\\) نفسها بوحدة H/m، أما \\(\\mu_r\\) فنسبة بلا وحدة.'],
      ['صفر',false,'لو كانت صفراً لما مر أي مجال في الهواء، والمجال يمر فيه بسهولة.'],
      ['واحد تقريباً',true,'نفاذية الهواء قريبة جداً من \\(\\mu_0\\)، فالنسبة \\(\\mu/\\mu_0\\approx1\\).']]}},
-    {tip:String.raw`<p>\(\mu\) لها وحدة (H/m)، أما \(\mu_r\) فرقم بلا وحدة يقول «كم مرة» هذه المادة أفضل من الفراغ في تمرير خطوط القوى. فإذا قيل إن \(\mu_r=1000\) فمعناه \(\mu=1000\times4\pi\times10^{-7}\ \text{H/m}\).</p>`,title:'μ أم μr؟'}
+    {tip:String.raw`<p>\(\mu\) لها وحدة (H/m)، أما \(\mu_r\) فرقم بلا وحدة يقول «كم مرة» هذه المادة أفضل من الفراغ في تمرير خطوط القوى. فإذا قيل إن \(\mu_r=1000\) فمعناه \(\mu=1000\times4\pi\times10^{-7}\ \text{H/m}\).</p>`,title:'μ أم μr؟'},
+    {title:'مختبر مصغّر: غيّر المادة والمصدر ثابت',widget:(el,B)=>DCML.lab(el,B,{intro:'شدة المجال \\(H=20\\ \\text{AT/m}\\) والنفاذيات النسبية من مثال (٥-٣). \\(B=\\mu_r\\mu_0H\\).',
+ predict:{q:'إذا استبدلنا الهواء بالألمنيوم \\((\\mu_r=1.000022)\\)، فإن كثافة الفيض…',opts:[
+  ['تزيد زيادة طفيفة جداً',true,'\\(\\mu_r\\) أكبر من الواحد بقليل جداً، فتزيد B بنسبة 0.0022% فقط.'],
+  ['تتضاعف',false,'التضاعف يحتاج \\(\\mu_r=2\\).'],
+  ['تقل',false,'تقل B مع الدايامغناطيسية \\((\\mu_r<1)\\) لا مع الألمنيوم.']]},
+ ins:[{k:'m',l:'المادة',seg:[[1,'هواء / فراغ'],[1.000022,'ألمنيوم'],[0.99,'دايامغناطيسية'],[5000,'حديد']],v:1}],
+ calc:(s,v,B)=>{const b=s.m*4e-7*Math.PI*20,b0=4e-7*Math.PI*20;
+  return {facts:[['μ<sub>r</sub>',String(s.m)],['<span class="ltr" dir="ltr" style="white-space:normal">μ = μ<sub>r</sub> μ<sub>0</sub></span>',(s.m*4*Math.PI/10).toPrecision(s.m===1.000022?7:4)+' × 10⁻⁶ H/m'],['B',s.m===5000?DCML.fm(B,b,3)+' T':(b*1e5).toPrecision(s.m===1.000022?7:4)+' × 10⁻⁵ T','hi'],['B / B<sub>0</sub>',String(s.m)]],
+   bars:[{l:'B (مقياس لوغاريتمي)',v:Math.log10(b/b0)+1,max:4.8,txt:s.m===5000?'5000 ضعف الهواء':s.m===1?'الهواء (مرجع)':s.m>1?'أكبر من الهواء بقليل جداً':'أقل من الهواء بقليل',col:s.m>=1?'--on':'--stop'}]}}})}
    ]},
 
   {st:5,short:'تصنيف المواد',title:'تصنيف المواد من حيث خواصها المغناطيسية',ref:'ص 133–135',
@@ -641,7 +892,14 @@ B.lesson({
      <tr><td>حديدومغناطيسية</td><td>الحديد، النيكل، الكوبالت</td><td>كبيرة جداً</td><td>\(B\) تزداد كثيراً</td></tr>
      <tr><td>بارامغناطيسية</td><td>الألمنيوم، التيتانيوم، الأوكسجين</td><td>أكبر من 1 بقليل</td><td>\(B\) تزداد زيادة طفيفة</td></tr>
      <tr><td>دايامغناطيسية</td><td>البزموت، النحاس</td><td>أقل من 1</td><td>\(B\) تقل</td></tr></tbody></table></div>`,title:'الأنواع في جدول'},
-    {add:String.raw`<p>لهذا تُصنع قلوب المحولات والمحركات من رقائق الحديد (حديدومغناطيسي)، بينما تُصنع الأسلاك من النحاس: لا نريد أن يحمل السلك فيضاً، بل تياراً.</p>`,title:'من الورشة'}
+    {add:String.raw`<p>لهذا تُصنع قلوب المحولات والمحركات من رقائق الحديد (حديدومغناطيسي)، بينما تُصنع الأسلاك من النحاس: لا نريد أن يحمل السلك فيضاً، بل تياراً.</p>`,title:'من الورشة'},
+    {title:'مختبر مصغّر: صنّف المواد',widget:(el,B)=>DCML.sort(el,B,{intro:'من أمثلة الكتاب (ص 133):',cats:['بارامغناطيسية','حديدومغناطيسية','دايامغناطيسية'],items:[
+ ['الألمنيوم',0,'من أمثلة المواد البارامغناطيسية في الكتاب، مع التيتانيوم والأوكسجين.'],
+ ['النيكل',1,'الحديد والنيكل والكوبالت «بارامغناطيسية قوية جداً» تسمى حديدومغناطيسية.'],
+ ['البزموت',2,'من أمثلة الدايامغناطيسية: تبتعد عن المجال ونفاذيتها أقل من الواحد.'],
+ ['الأوكسجين',0,'بارامغناطيسي: ينجذب نحو المغناطيس انجذاباً ضعيفاً.'],
+ ['النحاس',2,'الكتاب يذكر النحاس مع البزموت مثالاً على الدايامغناطيسية.'],
+ ['الكوبالت',1,'من المواد الحديدومغناطيسية ذات النفاذية الكبيرة.']]})}
    ]},
 
   {st:6,short:'تعيين اتجاه المجال',title:'تعيين اتجاه خطوط المجال حول الموصل',ref:'ص 135',
@@ -662,7 +920,10 @@ B.lesson({
      ['مع حركة عقارب الساعة',true,'البرغي الذي يتقدم بعيداً عنك يدور مع عقارب الساعة (قاعدة البريمة اليمنى).'],
      ['عكس حركة عقارب الساعة',false,'هذا عندما يكون التيار خارجاً من الورقة نحوك (⊙).'],
      ['لا تدور؛ الخطوط مستقيمة نحو السلك',false,'خطوط المجال حول السلك دوائر مركزها السلك، لا خطوط نحو السلك.']]}},
-    {watch:String.raw`<p>استعمل اليد <b>اليمنى</b> هنا. ستتعلم في الدرس التالي قاعدة فليمنج لليد <b>اليسرى</b> وهي لشيء آخر (اتجاه القوة على السلك). الخلط بين اليدين يعطي اتجاهاً معاكساً.</p>`}
+    {watch:String.raw`<p>استعمل اليد <b>اليمنى</b> هنا. ستتعلم في الدرس التالي قاعدة فليمنج لليد <b>اليسرى</b> وهي لشيء آخر (اتجاه القوة على السلك). الخلط بين اليدين يعطي اتجاهاً معاكساً.</p>`},
+    {title:'مختبر مصغّر: طبّق قبضة اليد اليمنى',widget:(el,B)=>DCML.cases(el,B,{cases:[
+ {q:'سلك رأسي يمر فيه تيار لأعلى. ننظر إليه من الأعلى: خطوط المجال تدور…',opts:[['مع عقارب الساعة',false,'الإبهام لأعلى (نحوك)، فتلتف الأصابع عكس عقارب الساعة.'],['عكس عقارب الساعة',true,'الإبهام باتجاه التيار، والأصابع الملتفة تعطي اتجاه الخطوط.']]},
+ {q:'وضعنا بوصلة على اللوح الذي يخترقه الموصل. ما الذي يدل على اتجاه الخطوط؟',opts:[['الاتجاه الذي يشير إليه قطبها الشمالي',true,'نص الكتاب: «الاتجاه الذي يتخذه قطبها الشمالي يدل على اتجاه خطوط الفيض».'],['الاتجاه الذي يشير إليه قطبها الجنوبي',false,'القطب الجنوبي يشير عكس اتجاه الخطوط.'],['اتجاه السلك',false,'الإبرة مماسية للدوائر حول السلك، لا موازية له.']]}]})}
    ]},
 
   {st:7,short:'العوامل',title:'العوامل التي تتوقف عليها شدة المجال المغناطيسي',ref:'ص 135',
@@ -703,7 +964,11 @@ B.lesson({
      ['\\(H\\) تبقى كما هي، و\\(B\\) تزداد كثيراً',true,'\\(H\\) لا تعتمد على نوع المادة بل على المصدر فقط، و\\(B=\\mu H\\) تكبر مع \\(\\mu\\) الحديد.'],
      ['\\(H\\) تزداد و\\(B\\) تبقى كما هي',false,'العكس: المادة لا تغير \\(H\\)، وإنما تغير \\(B\\).'],
      ['الاثنتان تبقيان كما هما',false,'\\(B=\\mu H\\)، ونفاذية الحديد أكبر بكثير من الهواء، فتكبر \\(B\\).']]}},
-    {tip:String.raw`<p>فكّر في \(H\) على أنها «الجهد الذي يبذله المصدر» (اللفات والتيار)، وفي \(B\) على أنها «النتيجة داخل المادة». المصدر نفسه يعطي \(H\) نفسها في أي مادة، لكن الحديد يستجيب له بفيض أكبر بكثير من الهواء. من (5-6): \(B=\mu H\).</p>`,title:'H السبب و B النتيجة'}
+    {tip:String.raw`<p>فكّر في \(H\) على أنها «الجهد الذي يبذله المصدر» (اللفات والتيار)، وفي \(B\) على أنها «النتيجة داخل المادة». المصدر نفسه يعطي \(H\) نفسها في أي مادة، لكن الحديد يستجيب له بفيض أكبر بكثير من الهواء. من (5-6): \(B=\mu H\).</p>`,title:'H السبب و B النتيجة'},
+    {title:'مختبر مصغّر: H أم B؟',widget:(el,B)=>DCML.cases(el,B,{intro:'المصدر نفسه (المغناطيس نفسه)، وغيّرنا المادة حول النقطة من الهواء إلى حديد.',cases:[
+ {q:'ماذا يحدث لشدة المجال H عند النقطة؟',opts:[['تزيد بنسبة \\(\\mu_r\\)',false,'هذا ما يحدث لـ B.'],['لا تتغير',true,'الكتاب: «شدة المجال المغناطيسي لا تعتمد على نوع المادة… وإنما تعتمد على مصدر المجال فقط».']]},
+ {q:'وماذا يحدث لكثافة الفيض B؟',opts:[['تزيد كثيراً',true,'\\(B=\\mu H\\)، والحديد نفاذيته كبيرة.'],['لا تتغير',false,'B تعتمد على المادة؛ H هي التي لا تعتمد عليها.']]},
+ {q:'ما وحدة H؟',opts:[['تسلا T',false,'التسلا وحدة B.'],['أمبير لفة لكل متر AT/m',true,'كما في المعادلة (5-6).'],['هنري لكل متر H/m',false,'هذه وحدة النفاذية \\(\\mu\\).']]}]})}
    ]},
 
   {st:9,short:'الأمثلة',title:'أمثلة محلولة',ref:'ص 135–137',
@@ -730,7 +995,11 @@ B.lesson({
      ['لأن مساحتها أصغر',false,'المساحتان متساويتان \\((0.6\\ \\text{m}^2)\\).']]}},
     {book:String.raw`<p>وكما نرى فإن كثافة الفيض لا تتغير بصورة ملحوظة في مكان ما إلا إذا وضعنا فيه مادة مغناطيسية.</p>`,ref:'ص 137'},
     {watch:String.raw`<p>في مثال (٥-٣): طبع الكتاب ناتج (ج) <span class="ltr">2.48 × 10⁻⁵ T</span> والدقيق <span class="ltr">2.49 × 10⁻⁵ T</span>. وفي (د) كتب \(10^{-5}\) مكان شدة المجال 20 ولم يكمل الحساب؛ الصحيح \(B=5000\times4\pi\times10^{-7}\times20=0.126\ \text{T}\)، أي 5000 ضعف قيمة الهواء. في تبويب الأمثلة مفتاح «كما في الكتاب / المصحح».</p>`,fix:true},
-    {tip:String.raw`<p>قارن نتائج مثال (٥-٣): الهواء والألمنيوم والمادة الدايامغناطيسية أعطت أرقاماً متقاربة جداً حول \(2.5\times10^{-5}\ \text{T}\)، أما الحديد فأعطى \(0.126\ \text{T}\). هذا هو معنى الجملة أعلاه.</p>`}
+    {tip:String.raw`<p>قارن نتائج مثال (٥-٣): الهواء والألمنيوم والمادة الدايامغناطيسية أعطت أرقاماً متقاربة جداً حول \(2.5\times10^{-5}\ \text{T}\)، أما الحديد فأعطى \(0.126\ \text{T}\). هذا هو معنى الجملة أعلاه.</p>`},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن نتائج الأمثلة (٥-١) إلى (٥-٣):',items:[
+ ['في مثال (٥-١): \\(B=\\Phi/A=2\\times10^{-5}/0.5=4\\times10^{-5}\\ \\text{T}\\).',true,'كثافة الفيض = الفيض ÷ المساحة العمودية.'],
+ ['في مثال (٥-٣) أعطى الألمنيوم كثافة فيض أكبر بكثير من الهواء.',false,'الهواء والألمنيوم والدايامغناطيسية متقاربة جداً حول \\(2.5\\times10^{-5}\\ \\text{T}\\).'],
+ ['الحديد في مثال (٥-٣) أعطى كثافة فيض 5000 ضعف الهواء.',true,'\\(B=5000\\times4\\pi\\times10^{-7}\\times20=0.126\\ \\text{T}\\).']]})}
    ]},
 
   {recap:[
@@ -929,7 +1198,17 @@ B.lesson({
      ['لا تتغير',false,'\\(a\\) في مقام المعادلة (5-7)، فتغيّرها يغيّر \\(B\\).'],
      ['تقل إلى النصف',true,'\\(B=\\mu I/(2\\pi a)\\): مضاعفة \\(a\\) تنصّف \\(B\\)، وهذا هو التناسب العكسي \\(B\\propto1/d\\) من الدرس السابق.']]}},
     {tip:String.raw`<p>المقام \(2\pi a\) هو محيط الدائرة التي تقع عليها النقطة؛ التيار «يتوزع» أثره على هذا المحيط، فكلما كبرت الدائرة ضعف المجال. ومن (5-8): \(H=I/(2\pi a)\) أي «أمبير» مقسوماً على «متر»، ومن هنا وحدة AT/m. مثال (٥-٤) من الكتاب: سلك يحمل <span class="ltr">15 A</span> في الفراغ، على بعد <span class="ltr">4 cm</span> منه: \(B=7.5\times10^{-5}\ \text{T}\) و<span class="ltr">H = 59.7 A/m</span>.</p>`,title:'لماذا 2πa؟'},
-    {watch:String.raw`<p>(5-7) فيها \(\mu\) فتتغير \(B\) بتغير الوسط، أما (5-8) فليس فيها \(\mu\): شدة المجال \(H\) واحدة في الهواء أو الحديد. وحوّل \(a\) إلى المتر قبل التعويض (<span class="ltr">4 cm = 4 × 10⁻² m</span>).</p>`}
+    {watch:String.raw`<p>(5-7) فيها \(\mu\) فتتغير \(B\) بتغير الوسط، أما (5-8) فليس فيها \(\mu\): شدة المجال \(H\) واحدة في الهواء أو الحديد. وحوّل \(a\) إلى المتر قبل التعويض (<span class="ltr">4 cm = 4 × 10⁻² m</span>).</p>`},
+    {title:'مختبر مصغّر: ابتعد عن السلك',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (٥-٤): \\(I=15\\ \\text{A}\\) و\\(a=4\\ \\text{cm}\\) في الفراغ. غيّرها (أرقام تختارها أنت) وتابع المعادلتين (5-7) و(5-8).',
+ predict:{q:'لو ضاعفنا البعد a من <span class="ltr">4 cm</span> إلى <span class="ltr">8 cm</span>، فإن B…',opts:[
+  ['تقل إلى الربع',false,'a في المقام من الدرجة الأولى، لا مربعة.'],
+  ['تقل إلى النصف',true,'\\(B=\\mu I/(2\\pi a)\\): تتناسب عكسياً مع a، فتصبح \\(3.75\\times10^{-5}\\ \\text{T}\\).'],
+  ['لا تتغير',false,'المجال يضعف كلما ابتعدنا عن السلك (تتباعد الدوائر).']]},
+ ins:[{k:'I',l:'التيار I',min:1,max:30,step:1,v:15,u:'A'},{k:'a',l:'البعد a',min:1,max:16,step:1,v:4,u:'cm'}],
+ calc:(s,v,B)=>{const b=2e-7*s.I/(s.a/100),h=s.I/(2*Math.PI*s.a/100);
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">B = μ<sub>0</sub>I/(2πa)</span>',DCML.fm(B,b*1e5,3)+' × 10⁻⁵ T','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">H = I/(2πa)</span>',DCML.fm(B,h,1)+' A/m','hi']],
+   plot:{xr:[1,16],yr:[0,2e-7*s.I/0.01*1e5],xl:'a (cm)',yl:'B (×10⁻⁵ T)',curves:[{f:x=>2e-7*s.I/(x/100)*1e5}],cur:[s.a,b*1e5]},
+   msg:(s.I===15&&s.a===4)?'أرقام المثال: \\(B=7.5\\times10^{-5}\\ \\text{T}\\) و\\(H=59.7\\ \\text{A/m}\\).':''}}})}
    ]},
 
   {st:2,short:'القوة على موصل',title:'القوة الميكانيكية المؤثرة على موصل يحمل تياراً مستمراً في مجال مغناطيسي',ref:'ص 139–140',
@@ -953,7 +1232,17 @@ B.lesson({
      ['نصف القيمة العظمى',false,'النصف عند \\(\\theta=30^\\circ\\) لأن \\(\\sin30^\\circ=0.5\\).']]}},
     {tip:String.raw`<p>مجال السلك (دوائر حوله) يُضاف إلى مجال المغناطيس في جهة ويُطرح منه في الجهة الأخرى. في الرسم: فوق السلك يتعاكسان فتقل الخطوط، وتحته يتفقان فتتكاثف الخطوط. الخطوط المتكاثفة «تدفع» السلك نحو الجهة الخفيفة، أي إلى أعلى: الاتجاه نفسه الذي تعطيه قاعدة فليمنج. تراه في لوحة «القوة على موصل بين قطبي مغناطيس» في تبويب المختبر.</p>`,title:'لماذا يُدفع السلك؟'},
     {watch:String.raw`<p>هنا اليد <b>اليسرى</b> (للقوة على سلك في مجال)، أما في المحطة السابقة فاليد <b>اليمنى</b> (لاتجاه المجال حول السلك). واجعل الأصابع الثلاثة متعامدة.</p>`},
-    {add:String.raw`<p>هذه القوة هي التي تدير كل محرك كهربائي: موصلات العضو الدوار يمر فيها تيار وهي داخل مجال مغناطيسي، فتؤثر عليها قوى تصنع عزماً. ومن أمثلتها الصغيرة سماعة الجوال: ملف خفيف داخل مغناطيس يتحرك ذهاباً وإياباً مع التيار.</p>`,title:'من حولك'}
+    {add:String.raw`<p>هذه القوة هي التي تدير كل محرك كهربائي: موصلات العضو الدوار يمر فيها تيار وهي داخل مجال مغناطيسي، فتؤثر عليها قوى تصنع عزماً. ومن أمثلتها الصغيرة سماعة الجوال: ملف خفيف داخل مغناطيس يتحرك ذهاباً وإياباً مع التيار.</p>`,title:'من حولك'},
+    {title:'مختبر مصغّر: أدر السلك داخل المجال',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (٥-٥): \\(\\ell=10\\ \\text{cm}\\) و\\(I=2\\ \\text{A}\\) و\\(B=0.2\\ \\text{T}\\). غيّر الزاوية θ بين التيار وخطوط المجال، وغيّر B (أرقام تختارها أنت).',
+ predict:{q:'عند أي زاوية تنعدم القوة على السلك؟',opts:[
+  ['\\(90^\\circ\\)',false,'عند 90° تكون القوة أكبر ما يمكن \\(B\\ell I\\).'],
+  ['\\(45^\\circ\\)',false,'عند 45° القوة \\(\\sin45^\\circ\\approx0.71\\) من أكبر قيمة.'],
+  ['\\(0^\\circ\\): السلك موازٍ للمجال',true,'\\(\\sin0=0\\)، فلا قوة على سلك موازٍ للمجال.']]},
+ ins:[{k:'t',l:'الزاوية θ',min:0,max:90,step:10,v:90,u:'°'},{k:'b',l:'كثافة الفيض B',seg:[[0.2,'<span class="ltr">0.2 T</span>'],[0.4,'<span class="ltr">0.4 T</span>']],v:0.2}],
+ calc:(s,v,B)=>{const F=s.b*0.1*2*Math.sin(s.t*Math.PI/180);
+  return {facts:[['sin θ',DCML.fm(B,Math.sin(s.t*Math.PI/180),3)],['<span class="ltr" dir="ltr" style="white-space:normal">F = B ℓ I sin θ</span>',DCML.fm(B,Math.abs(F)<1e-12?0:F,4)+' N','hi']],
+   plot:{xr:[0,90],yr:[0,0.08],xt:[0,30,60,90],xl:'θ (°)',yl:'F (N)',curves:[{f:x=>s.b*0.2*Math.sin(x*Math.PI/180)}],cur:[s.t,F]},
+   msg:Math.abs(F-0.04)<1e-9?(s.t===90?'هذه الحالة الأولى في المثال: \\(F=0.04\\ \\text{N}\\) عند 90° تحتاج \\(B=0.2\\ \\text{T}\\).':'القوة نفسها <span class="ltr">0.04 N</span> عند 30° تحتاج \\(B=0.4\\ \\text{T}\\): هذه الحالة الثانية في المثال.'):''}}})}
    ]},
 
   {st:3,short:'القوة بين موصلين',title:'القوة المغناطيسية المتبادلة بين موصلين يمر بهما تيار كهربائي',ref:'ص 140–141',
@@ -981,7 +1270,16 @@ B.lesson({
      ['تبقى كما هي',false,'التياران في بسط المعادلة (5-12)، فزيادتهما تزيد القوة.'],
      ['تصبح أربعة أضعاف',true,'\\(F/\\ell\\propto I_1I_2=2\\times2=4\\). لهذا تكون القوى هائلة عند القصر (مثال ٥-٨).']]}},
     {tip:String.raw`<p>القوة على السلك 1 من المعادلة (5-9) نفسها مع \(\sin90^\circ=1\) (السلك عمودي على دوائر مجال السلك 2): \(F_1=B_2I_1\ell\)، ثم نعوض \(B_2\) من (5-10)، وهي المعادلة (5-7) للسلك المستقيم في الفراغ. لا جديد إلا تركيب معادلتين عرفتهما.</p>`,title:'من أين جاءت (5-11)؟'},
-    {add:String.raw`<p>في لوحات التوزيع الكبيرة تُثبت القضبان النحاسية (Busbars) بعوازل قوية على مسافات محسوبة؛ لأن تيار القصر قد يولد بينها قوى تثنيها أو تقتلعها، كما يبين مثال (٥-٨).</p>`,title:'من الواقع'}
+    {add:String.raw`<p>في لوحات التوزيع الكبيرة تُثبت القضبان النحاسية (Busbars) بعوازل قوية على مسافات محسوبة؛ لأن تيار القصر قد يولد بينها قوى تثنيها أو تقتلعها، كما يبين مثال (٥-٨).</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: سلكان متوازيان',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (٥-٧): تياران 1 A على بعد <span class="ltr">1 m</span>. غيّرها (أرقام تختارها أنت) واقلب اتجاه أحد التيارين.',
+ predict:{q:'لو ضاعفنا التيارين كليهما (من 1 A إلى 2 A)، فإن القوة لكل متر…',opts:[
+  ['تتضاعف',false,'كل تيار يضاعف القوة مرة، فالتضاعف مرتان.'],
+  ['تصبح أربعة أضعاف',true,'\\(F/\\ell=\\mu_0I_1I_2/(2\\pi a)\\): \\(2\\times2=4\\)، أي \\(8\\times10^{-7}\\ \\text{N/m}\\).'],
+  ['تصبح نصف ما كانت',false,'التياران في البسط.']]},
+ ins:[{k:'i1',l:'I<sub>1</sub>',min:1,max:5,step:1,v:1,u:'A'},{k:'i2',l:'I<sub>2</sub>',min:1,max:5,step:1,v:1,u:'A'},{k:'a',l:'البعد a',seg:[[0.5,'<span class="ltr">0.5 m</span>'],[1,'<span class="ltr">1 m</span>'],[2,'<span class="ltr">2 m</span>']],v:1},{k:'d',l:'اتجاه التيارين',seg:[[1,'في اتجاه واحد'],[-1,'متعاكسان']],v:1}],
+ calc:(s,v,B)=>{const f=2e-7*s.i1*s.i2/s.a;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">F/ℓ = μ<sub>0</sub>I<sub>1</sub>I<sub>2</sub>/(2πa)</span>',DCML.fm(B,f*1e7,2)+' × 10⁻⁷ N/m','hi'],['نوع القوة',s.d>0?'تجاذب':'تنافر',s.d>0?'':'bad']],
+   msg:(s.d>0?'التياران في اتجاه واحد: يتجاذب الموصلان.':'التياران متعاكسان: يتنافر الموصلان.')+' والقوة على الموصل الأول تساوي القوة على الثاني وتعاكسها.'}}})}
    ]},
 
   {st:4,short:'الأمثلة',title:'أمثلة محلولة',ref:'ص 139–142',
@@ -1014,7 +1312,17 @@ B.lesson({
      ['تنافر',true,'الكتاب: وهي قوة تنافر بين قضيبي التوزيع، لأن التيارين متضادان.']]}},
     {book:String.raw`<p>يتضح من النتائج أن قصر الدائرة قد يؤدي إلى تحطيم قضبان التوزيع نتيجة للزيادة الهائلة في القوى الكهرومغناطيسية.</p>`,ref:'ص 142'},
     {watch:String.raw`<p>في مثال (٥-٨) طُبع ناتج القوة عند القصر <span class="ltr">2456 N</span>، والصحيح <span class="ltr">3456 N</span>: التيار زاد 120 مرة فتزيد القوة \(120^2=14400\) مرة، و<span class="ltr">0.24 × 14400 = 3456</span>. وفي مثال (٥-٤) يذكر الحل «المعادلتين (5-5) و(5-6)» والمستعمل فعلاً (5-7) و(5-8). في تبويب الأمثلة مفتاح «كما في الكتاب / المصحح» لمثال (٥-٨).</p>`,fix:true},
-    {tip:String.raw`<p>مثال (٥-٧) ليس مسألة عادية: القوة \(2\times10^{-7}\ \text{N}\) لكل متر بين تيارين كل منهما <span class="ltr">1 A</span> على بعد <span class="ltr">1 m</span> هي التي عُرّفت بها وحدة الأمبير زمناً طويلاً.</p>`,title:'لماذا مثال (٥-٧) مهم؟'}
+    {tip:String.raw`<p>مثال (٥-٧) ليس مسألة عادية: القوة \(2\times10^{-7}\ \text{N}\) لكل متر بين تيارين كل منهما <span class="ltr">1 A</span> على بعد <span class="ltr">1 m</span> هي التي عُرّفت بها وحدة الأمبير زمناً طويلاً.</p>`,title:'لماذا مثال (٥-٧) مهم؟'},
+    {title:'مختبر مصغّر: لحظة القصر على قضيبي التوزيع',widget:(el,B)=>DCML.lab(el,B,{intro:'مثال (٥-٨): قضيبان بينهما <span class="ltr">30 cm</span> والتياران متضادان. اختر التيار.',
+ predict:{q:'عند القصر زاد التيار من 600 A إلى 72000 A (120 ضعفاً). القوة لكل متر تزيد…',opts:[
+  ['120 مرة',false,'القوة تتناسب مع حاصل ضرب التيارين، وكلاهما زاد 120 مرة.'],
+  ['14400 مرة',true,'\\(120^2=14400\\)، فتصبح \\(0.24\\times14400=3456\\ \\text{N/m}\\).'],
+  ['240 مرة',false,'الزيادة تضرب ولا تجمع: \\(120\\times120\\).']]},
+ ins:[{k:'I',l:'التيار في كل قضيب',seg:[[600,'600 A (تشغيل عادي)'],[6000,'<span class="ltr">6000 A</span>'],[72000,'72000 A (قصر)']],v:600}],
+ calc:(s,v,B)=>{const f=2e-7*s.I*s.I/0.3;
+  return {facts:[['F/ℓ',DCML.fm(B,f,2)+' N/m','hi'],['مقارنة بالتشغيل العادي',DCML.fm(B,f/0.24,0)+' ×'],['نوع القوة','تنافر']],
+   bars:[{l:'F/ℓ (مقياس لوغاريتمي)',v:Math.log10(f/0.24)+0.3,max:4.5,txt:DCML.fm(B,f,2)+' N/m',col:s.I>6000?'--stop':'--live'}],
+   msg:s.I===72000?'قوة ضخمة لكل متر: لذلك قد يحطم القصر قضبان التوزيع (الكتاب طبع 2456 والصحيح <span class="ltr">3456 N/m</span>).':''}}})}
    ]},
 
   {recap:[
@@ -1205,7 +1513,11 @@ B.lesson({
      ['لا يظهر أبداً في دوائر التيار المستمر',false,'يظهر لحظة الغلق والفتح، أما في التيار المتردد فيظهر باستمرار.']]}}
    ],
    body:[
-    {tip:String.raw`<p>كلمة السر في هذا الدرس هي «<b>التغيّر</b>». التيار الثابت يصنع فيضاً ثابتاً ولا يولّد شيئاً. أما التيار المتغير فيصنع فيضاً متغيراً، وهذا يولّد قوة دافعة كهربائية: في الملف نفسه (حث ذاتي) أو في ملف مجاور (حث متبادل). وفي التيار المتردد يتغير التيار باستمرار، لذلك هذا الدرس أساس لما بعده.</p>`,title:'الفكرة في سطر'}
+    {tip:String.raw`<p>كلمة السر في هذا الدرس هي «<b>التغيّر</b>». التيار الثابت يصنع فيضاً ثابتاً ولا يولّد شيئاً. أما التيار المتغير فيصنع فيضاً متغيراً، وهذا يولّد قوة دافعة كهربائية: في الملف نفسه (حث ذاتي) أو في ملف مجاور (حث متبادل). وفي التيار المتردد يتغير التيار باستمرار، لذلك هذا الدرس أساس لما بعده.</p>`,title:'الفكرة في سطر'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['الحث الذاتي ينشأ في الدائرة نفسها عند غلقها أو فتحها.',true,'نص الكتاب: «الحث الذاتي… ينشأ في الدائرة نفسها… عند غلق أو فتح الدائرة الكهربائية».'],
+ ['الحث الذاتي لا يظهر إلا إذا وُجد ملف ثانٍ قريب.',false,'هذا الحث المتبادل؛ الذاتي ينشأ في الدائرة الواحدة.'],
+ ['يلعب الحث الذاتي دوراً أساسياً في دوائر التيار المتردد لأن التيار فيها يتغير باستمرار.',true,'الحث يظهر عند تغيّر التيار، والتيار المتردد يتغير دائماً.']]})}
    ]},
 
   {st:2,short:'الحث الذاتي',title:'الحث الذاتي: لماذا لا يصل التيار إلى قيمته فوراً؟',ref:'ص 143–144',
@@ -1259,7 +1571,16 @@ B.lesson({
      ['يقل إلى النصف',false,'\\(N\\) في البسط، فزيادتها تزيد الحث.'],
      ['يصبح أربعة أضعاف',true,'\\(L=\\mu_0N^2A/\\ell\\): \\(2^2=4\\). مرة لأن المجال يتضاعف، ومرة لأن كل لفة من اللفات المضاعفة يقطعها هذا المجال.']]}},
     {tip:String.raw`<p>لماذا \(N^2\)؟ من (5-17): لفات أكثر تعطي مجالاً أقوى (مرة أولى \(N\)). ومن (5-14): \(L=N\phi_m/I\)، أي أن الفيض يُحسب مرة لكل لفة (مرة ثانية \(N\)). وإذا وُضع قلب نفاذيته النسبية \(\mu_r\) نضع \(\mu=\mu_0\mu_r\) مكان \(\mu_0\): \(L=\mu_0\mu_rN^2A/\ell\)، وهذا ما يستعمله مثالا (٥-٩) و(٥-١١). جرّب الأبعاد بنفسك في لوحة «الحث الذاتي من أبعاد الملف» في تبويب المختبر.</p>`,title:'من أين جاء المربع؟'},
-    {watch:String.raw`<p>رقّم الكتاب المعادلات هنا (5-17) ثم (5-18) و(5-19)؛ لا توجد معادلة (5-16) في الكتاب. وكُتب طول الملف في النص بالحرف L، واستعملنا \(\ell\) حتى لا يختلط بالحث \(L\).</p>`,fix:true}
+    {watch:String.raw`<p>رقّم الكتاب المعادلات هنا (5-17) ثم (5-18) و(5-19)؛ لا توجد معادلة (5-16) في الكتاب. وكُتب طول الملف في النص بالحرف L، واستعملنا \(\ell\) حتى لا يختلط بالحث \(L\).</p>`,fix:true},
+    {title:'مختبر مصغّر: صمّم ملفاً',widget:(el,B)=>DCML.lab(el,B,{intro:'ابدأ بملف مثال (٥-١١) بلا قلب: \\(N=1000\\) و\\(A=6\\times10^{-4}\\ \\text{m}^2\\) و\\(\\ell=1\\ \\text{m}\\). غيّر الأبعاد (أرقام تختارها أنت) وتابع المعادلة (5-19).',
+ predict:{q:'لو ضاعفنا طول الملف \\(\\ell\\) مع بقاء N و A، فإن L…',opts:[
+  ['تتضاعف',false,'\\(\\ell\\) في المقام: الملف الأطول بنفس اللفات أقل حثاً.'],
+  ['تقل إلى النصف',true,'\\(L=\\mu_0N^2A/\\ell\\): تتناسب عكسياً مع الطول.'],
+  ['تقل إلى الربع',false,'الطول من الدرجة الأولى؛ المربع لعدد اللفات فقط.']]},
+ ins:[{k:'N',l:'عدد اللفات N',min:250,max:2000,step:250,v:1000,dp:0},{k:'A',l:'مساحة المقطع A',seg:[[3,'<span class="ltr">3 × 10⁻⁴ m²</span>'],[6,'<span class="ltr">6 × 10⁻⁴ m²</span>'],[12,'<span class="ltr">12 × 10⁻⁴ m²</span>']],v:6},{k:'l',l:'الطول ℓ',seg:[[0.5,'<span class="ltr">0.5 m</span>'],[1,'<span class="ltr">1 m</span>'],[2,'<span class="ltr">2 m</span>']],v:1}],
+ calc:(s,v,B)=>{const L=4e-7*Math.PI*s.N*s.N*s.A*1e-4/s.l;
+  return {facts:[['N<sup>2</sup>',DCML.fm(B,s.N*s.N,0)],['<span class="ltr" dir="ltr" style="white-space:normal">L = μ<sub>0</sub>N<sup>2</sup>A/ℓ</span>',DCML.fm(B,L*1e4,3)+' × 10⁻⁴ H','hi'],['L بالملي هنري',DCML.fm(B,L*1e3,3)+' mH']],
+   msg:(s.N===1000&&s.A===6&&s.l===1)?'أرقام المثال: \\(L=7.54\\times10^{-4}\\ \\text{H}\\).':''}}})}
    ]},
 
   {st:4,short:'الحث المتبادل',title:'الحث المتبادل Mutual Inductance: ملف يؤثر في جاره',ref:'ص 145–146',
@@ -1292,7 +1613,16 @@ B.lesson({
      <p>وتكون وحدة الحث المتبادل هي الهنري Henry</p>`,ref:'ص 146'},
     {tip:String.raw`<p>قارن (5-21) بـ (5-14): في الحث الذاتي \(L=N\phi/I\) الفيض والتيار في الملف نفسه، وفي الحث المتبادل \(M_{21}=N_2\phi_{21}/I_1\) التيار في الملف الأول والفيض الذي يقطع الملف الثاني. والصيغة نفسها تقريباً لقانون القوة الدافعة: \(E=-L\,dI/dt\) و\(E_2=-M\,dI_1/dt\).</p>`,title:'قارن بالحث الذاتي'},
     {add:String.raw`<p>المحول الكهربائي وشاحن الجوال اللاسلكي يعملان بالحث المتبادل: تيار متردد في ملف يولّد جهداً في ملف آخر قريب منه دون أي توصيل بينهما.</p>`,title:'من حولك'},
-    {watch:String.raw`<p>الترقيم في الكتاب يقفز من (5-19) إلى (5-21)؛ لا توجد معادلة (5-20). أبقينا الأرقام كما طُبعت حتى تطابق الكتاب.</p>`,fix:true}
+    {watch:String.raw`<p>الترقيم في الكتاب يقفز من (5-19) إلى (5-21)؛ لا توجد معادلة (5-20). أبقينا الأرقام كما طُبعت حتى تطابق الكتاب.</p>`,fix:true},
+    {title:'مختبر مصغّر: ملف داخل ملف',widget:(el,B)=>DCML.lab(el,B,{intro:'أرقام مثال (٥-١٢): \\(N_1=1000\\) و\\(\\ell=1\\ \\text{m}\\) و\\(A=6\\times10^{-4}\\ \\text{m}^2\\)، والتيار في الملف (1) يتغير بمعدل <span class="ltr">10 A/s</span>. غيّر لفات الملف (2) والمعدل (أرقام تختارها أنت).',
+ predict:{q:'لو ضاعفنا لفات الملف الثاني \\(N_2\\) من 20 إلى 40، فإن القوة الدافعة المستحثة فيه…',opts:[
+  ['تتضاعف',true,'\\(M=\\mu_0N_1N_2A/\\ell\\) تتضاعف، و\\(E_2=-M\\,dI_1/dt\\) تتضاعف معها.'],
+  ['تصبح أربعة أضعاف',false,'\\(N_2\\) من الدرجة الأولى في M (المربع في الحث الذاتي فقط).'],
+  ['لا تتغير',false,'كل لفة إضافية يقطعها الفيض المتغير نفسه، فتزيد القوة الدافعة.']]},
+ ins:[{k:'n',l:'لفات الملف الثاني N<sub>2</sub>',min:10,max:100,step:10,v:20,dp:0},{k:'r',l:'معدل تغير التيار dI<sub>1</sub>/dt',min:5,max:50,step:5,v:10,u:'A/s'}],
+ calc:(s,v,B)=>{const M=4e-7*Math.PI*1000*s.n*6e-4/1,E=-M*s.r;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">M = μ<sub>0</sub>N<sub>1</sub>N<sub>2</sub>A/ℓ</span>',DCML.fm(B,M*1e5,3)+' × 10⁻⁵ H','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">E<sub>2</sub> = −M dI<sub>1</sub>/dt</span>',DCML.fm(B,E*1e6,0)+' μV','hi']],
+   msg:(s.n===20&&s.r===10)?'أرقام المثال: \\(M=1.508\\times10^{-5}\\ \\text{H}\\) و\\(E_2\\approx-151\\ \\mu\\text{V}\\) (طُبع في الكتاب −251 خطأً).':''}}})}
    ]},
 
   {st:5,short:'التوصيل على التوالي',title:'توصيل الملفات على التوالي: مجالان يتعاونان أو يتعاكسان',ref:'ص 147–149',
@@ -1330,7 +1660,17 @@ B.lesson({
      أي أن الحث المتبادل بين ملفين يساوي الجذر التربيعي لحاصل ضرب حثهما الذاتي و ذلك عند تلاصق الملفين.</li></ol>`,ref:'ص 148–149'},
     {tip:String.raw`<p>لماذا \(2M\)؟ كل ملف يتأثر بالآخر: الملف (1) يأخذ \(M\) من الملف (2) في (5-28)، والملف (2) يأخذ \(M\) من الملف (1) في (5-29)؛ المجموع \(2M\). إذا كان المجالان متعاونين يُضاف، وإذا تعاكسا يُطرح. ومن الطرح نحصل على (5-35): \(L'-L''=4M\).</p>`,title:'من أين جاء 2M؟'},
     {add:String.raw`<p>يستعمل الكتاب الرمز \(K\) في (5-36) دون تعريفه. \(K\) هو <b>معامل الاقتران</b>: نسبة فيض الملف الأول الذي يقطع الملف الثاني إلى كل فيض الملف الأول، وقيمته بين 0 و1. عند \(K=0\) (ملفان متباعدان) يكون \(M=0\) كما في الملحوظة 1، وعند \(K=1\) (اقتران تام، ملفان متلاصقان أو على قلب حديدي مشترك) يكون \(M=\sqrt{L_1L_2}\)، وهي الحالة التي تقصدها جملة الكتاب «عند تلاصق الملفين».</p>`,title:'معامل الاقتران K'},
-    {watch:String.raw`<p>طُبعت المعادلة \(L=L_1+L_2\) في الكتاب برقم «(9-34)» والصحيح (5-34). والانتقال من (5-35) إلى (5-36) في الكتاب بلا اشتقاق، وعبارة «يساوي الجذر التربيعي…» تصح فقط عند \(K=1\).</p>`,fix:true}
+    {watch:String.raw`<p>طُبعت المعادلة \(L=L_1+L_2\) في الكتاب برقم «(9-34)» والصحيح (5-34). والانتقال من (5-35) إلى (5-36) في الكتاب بلا اشتقاق، وعبارة «يساوي الجذر التربيعي…» تصح فقط عند \(K=1\).</p>`,fix:true},
+    {title:'مختبر مصغّر: يتعاونان أم يتعاكسان؟',widget:(el,B)=>DCML.lab(el,B,{intro:'ملفان على التوالي (أرقام تختارها أنت). اقلب طرفي أحدهما وراقب الحث المكافئ، ثم لاحظ كيف تعطي المعادلة (5-35) قيمة M من القياسين.',
+ predict:{q:'قسنا \\(L\'=26\\ \\text{mH}\\) (متعاونان) و\\(L\'\'=14\\ \\text{mH}\\) (متعاكسان). كم M؟',opts:[
+  ['\\(3\\ \\text{mH}\\)',true,'\\(M=\\tfrac14(26-14)=3\\ \\text{mH}\\) بالمعادلة (5-35).'],
+  ['\\(6\\ \\text{mH}\\)',false,'الفرق \\(L\'-L\'\'=4M\\)، فنقسم على 4 لا على 2.'],
+  ['\\(12\\ \\text{mH}\\)',false,'هذا الفرق كله، وهو \\(4M\\).']]},
+ ins:[{k:'a',l:'L<sub>1</sub>',min:2,max:20,step:1,v:8,u:'mH'},{k:'b',l:'L<sub>2</sub>',min:2,max:20,step:1,v:12,u:'mH'},{k:'m',l:'M',min:0,max:12,step:0.5,v:3,dp:1,u:'mH'},{k:'d',l:'اتجاه المجالين',seg:[[1,'متعاونان (الشكل ٥-٢٠أ)'],[-1,'متعاكسان (الشكل ٥-٢٠ب)']],v:1}],
+ calc:(s,v,B)=>{const K=s.m/Math.sqrt(s.a*s.b),L1=s.a+s.b+2*s.m,L2=s.a+s.b-2*s.m,Lc=s.d>0?L1:L2;
+  if(K>1)return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">K = M/√(L<sub>1</sub>L<sub>2</sub>)</span>',DCML.fm(B,K,2),'bad']],msg:'هذه القيمة غير ممكنة: M لا يمكن أن تزيد على \\(\\sqrt{L_1L_2}\\) (أي K أكبر من 1). صغّر M.',cls:'bad'};
+  return {facts:[['L المكافئ الآن',DCML.fm(B,Lc,1)+' mH','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">L\' = L<sub>1</sub>+L<sub>2</sub>+2M (5-32)</span>',DCML.fm(B,L1,1)+' mH'],['<span class="ltr" dir="ltr" style="white-space:normal">L\'\' = L<sub>1</sub>+L<sub>2</sub>−2M (5-33)</span>',DCML.fm(B,L2,1)+' mH'],['<span class="ltr" dir="ltr" style="white-space:normal">M = (L\' − L\'\')/4 (5-35)</span>',DCML.fm(B,(L1-L2)/4,1)+' mH'],['K',DCML.fm(B,K,2)]],
+   bars:[{l:'L المكافئ',v:Lc,max:64,u:'mH',dp:1,col:s.d>0?'--on':'--live'},{l:'L<sub>1</sub> + L<sub>2</sub> (لو M = 0)',v:s.a+s.b,max:64,u:'mH',dp:1,col:'--blue'}]}}})}
    ]},
 
   {st:6,short:'التوصيل على التوازي',title:'توصيل الملفات على التوازي',ref:'ص 149–150',
@@ -1358,7 +1698,16 @@ B.lesson({
      <p>و يتم هذا على شرط أن نقوم باتخاذ احتياطات معينة تمنع تأثير المجالات المغناطيسية لهذه الملفات على بعضها البعض حتى لا يحدث ارتباط مغناطيسي بينهما نتيجة للتأثير المتبادل.</p>`,ref:'ص 149–150'},
     {tip:String.raw`<p>الخطوة التي لم يكتبها الكتاب: الملفات المتوازية متصلة بين النقطتين نفسيهما، فعليها الجهد نفسه: \(E=E_1=E_2\). نعوض (5-39) إلى (5-41) في (5-38) ثم نقسم الطرفين على \(-E\) فنحصل على (5-42). والنتيجة مثل المقاومات تماماً: الحث المكافئ <b>أصغر من أصغر ملف</b>.</p>`,title:'الخطوة الناقصة'},
     {watch:String.raw`<p>(5-42) صحيحة فقط إذا لم يكن بين الملفات حث متبادل (\(M=0\))، ولهذا يشترط الكتاب «احتياطات تمنع تأثير المجالات… على بعضها».</p>`},
-    {watch:String.raw`<p>في الكتاب طُبع «بالتعويض في المعادلة (9-38)» والصحيح (5-38).</p>`,fix:true}
+    {watch:String.raw`<p>في الكتاب طُبع «بالتعويض في المعادلة (9-38)» والصحيح (5-38).</p>`,fix:true},
+    {title:'مختبر مصغّر: ملفات على التوازي',widget:(el,B)=>DCML.lab(el,B,{intro:'ملفات على التوازي بلا حث متبادل بينها (شرط الكتاب). اختر القيم (أرقام تختارها أنت) وتابع المعادلة (5-42).',
+ predict:{q:'أضفنا ملفاً ثالثاً على التوازي. الحث المكافئ…',opts:[
+  ['يزيد',false,'في التوازي تُجمع المقلوبات، فكل ملف إضافي يزيد \\(1/L\\).'],
+  ['يقل، ويبقى أصغر من أصغر ملف',true,'مثل المقاومات على التوازي تماماً.'],
+  ['لا يتغير',false,'يتغير لأن حداً جديداً أضيف إلى مجموع المقلوبات.']]},
+ ins:[{k:'a',l:'L<sub>1</sub>',min:1,max:20,step:1,v:6,u:'mH'},{k:'b',l:'L<sub>2</sub>',min:1,max:20,step:1,v:12,u:'mH'},{k:'c',l:'L<sub>3</sub>',min:1,max:20,step:1,v:4,u:'mH'},{k:'t',l:'',sw:true,v:0,on:'L<sub>3</sub>: موصول',off:'L<sub>3</sub>: غير موصول'}],
+ calc:(s,v,B)=>{const g=1/s.a+1/s.b+(s.t?1/s.c:0),L=1/g;
+  return {facts:[['1/L',DCML.fm(B,g,4)+' 1/mH'],['L المكافئ',DCML.fm(B,L,3)+' mH','hi'],['أصغر ملف موصول',Math.min(s.a,s.b,s.t?s.c:99)+' mH']],
+   msg:'لو كان بين الملفات حث متبادل لما صحت المعادلة (5-42)؛ لذلك يشترط الكتاب منع تأثير المجالات على بعضها.'}}})}
    ]},
 
   {st:7,short:'الأمثلة',title:'أمثلة محلولة',ref:'ص 150–151',
@@ -1382,7 +1731,11 @@ B.lesson({
      ['تزيد 1000 مرة',false,'الحديد هو الذي يزيد الحثية؛ نزعه ينقصها.']]}},
     {book:String.raw`<p>ونلاحظ أن الحثية في الملفات الطويلة تتناسب مع نفاذية ومساحة مقطع القلب ومع مربع عدد اللفات كما تتناسب عكسياً مع طول الملف.</p>`,ref:'ص 150'},
     {watch:String.raw`<p>في مثال (٥-١٠) عُوِّضت المساحة <span class="ltr">1 cm²</span> على أنها <span class="ltr">0.01 m²</span>، والصحيح <span class="ltr">1 × 10⁻⁴ m²</span>، فيكون الحث <span class="ltr">0.32 H</span> لا <span class="ltr">32 H</span> كما طُبع. وناتج \(\mu_r\) المطبوع 63.69 والدقيق 63.66. وفي مثال (٥-٩) يذكر الحل «المعادلة (5-2)» وهي للملف الحلقي، والمستعمل فعلاً \(B=\mu NI/\ell\) المعطاة في نص المثال، ثم \(L=N\Phi/I\) أي (5-14). في تبويب الأمثلة مفتاح «كما في الكتاب / المصحح» لمثال (٥-١٠).</p>`,fix:true},
-    {tip:String.raw`<p>تحويل المساحة: \(1\ \text{m}=100\ \text{cm}\) لذلك \(1\ \text{m}^2=100\times100=10^4\ \text{cm}^2\)، فـ \(1\ \text{cm}^2=10^{-4}\ \text{m}^2\). خطأ شائع أن نقسم على 100 فقط.</p>`,title:'تحويل الوحدات المربعة'}
+    {tip:String.raw`<p>تحويل المساحة: \(1\ \text{m}=100\ \text{cm}\) لذلك \(1\ \text{m}^2=100\times100=10^4\ \text{cm}^2\)، فـ \(1\ \text{cm}^2=10^{-4}\ \text{m}^2\). خطأ شائع أن نقسم على 100 فقط.</p>`,title:'تحويل الوحدات المربعة'},
+    {title:'مختبر مصغّر: حوّل الوحدات قبل التعويض',widget:(el,B)=>DCML.cases(el,B,{intro:'الخطأ الذي وقع في مثال (٥-١٠) سببه تحويل المساحة.',cases:[
+ {q:'\\(1\\ \\text{cm}^2\\) بالمتر المربع تساوي…',opts:[['\\(10^{-2}\\ \\text{m}^2\\)',false,'هذا خطأ الكتاب: قسم على 100 مرة واحدة فقط.'],['\\(10^{-4}\\ \\text{m}^2\\)',true,'\\(1\\ \\text{m}^2=100\\times100\\ \\text{cm}^2=10^4\\ \\text{cm}^2\\).'],['\\(10^{-6}\\ \\text{m}^2\\)',false,'هذا تحويل \\(\\text{mm}^2\\) إلى \\(\\text{m}^2\\).']]},
+ {q:'إذا استعملنا \\(10^{-2}\\) بدل \\(10^{-4}\\)، فإن الحث المحسوب يخرج…',opts:[['100 ضعف القيمة الصحيحة',true,'L تتناسب مع A، فالخطأ ×100: طُبع <span class="ltr">32 H</span> والصحيح <span class="ltr">0.32 H</span>.'],['نصف القيمة الصحيحة',false,'المساحة المستعملة أكبر 100 مرة، فيكبر الناتج 100 مرة.']]},
+ {q:'في مثال (٥-٩) نزعنا القلب \\((\\mu_r=1000)\\): الحث يصبح…',opts:[['\\(2.5\\ \\text{mH}\\)',false,'هذا مع القلب الحديدي.'],['\\(2.5\\ \\mu\\text{H}\\)',true,'ينخفض بنسبة \\(\\mu_r=1000\\).']]}]})}
    ]},
 
   {recap:[
@@ -1573,7 +1926,16 @@ B.lesson({
      ['ينحرف في الاتجاه الآخر',false,'الانحراف في الاتجاه الآخر يحدث عند سحب المغناطيس بعيداً (الشكل ٥-٢١ب).']]}},
     {book:String.raw`<p>في تجربة أخرى مبينة في الشكل(٥-٢٢) نلاحظ عند لحظة إغلاق مفتاح الدائرة الكهربائية ولحظة فتح الدائرة الكهربائية مرور تيار في الدائرة الثانوية، وهذا يعود إلى أنه في حالة فتح الدائرة الكهربائية أو إغلاقها فإن التيار يتغير بين القيمة صفر وأقصى قيمة مما يؤدي إلى تغيير في المجال المغناطيسي المتولد في الملف على الجانب الأيسر للدائرة ، وهذا يؤدي إلى تيار كهربائي يمر في الدائرة الثانوية.</p>`,ref:'ص 152'},
     {tip:String.raw`<p>في التجربتين لا شيء مشترك إلا <b>تغيّر الفيض</b> الذي يمر خلال الدائرة: في الأولى بحركة المغناطيس، وفي الثانية (الشكل ٥-٢٢: ملفان على حلقة حديدية، الأيسر ببطارية ومفتاح والأيمن بجلفانومتر) بتغيّر تيار الملف الأيسر لحظة الغلق والفتح. وبعد الغلق، والتيار ثابت، لا يمر شيء في الدائرة الثانوية. هذه هي فكرة الحث المتبادل من الدرس السابق. جرّب التجربتين في تبويب المختبر.</p>`,title:'ما المشترك بين التجربتين؟'},
-    {add:String.raw`<p>كل محطة توليد كهرباء تطبّق هذه التجربة: مغناطيسات تدور قرب ملفات ضخمة فيتغير الفيض باستمرار ويتولد جهد متردد. والدينامو الصغير في الدراجة يعمل بالفكرة نفسها.</p>`,title:'من حولك'}
+    {add:String.raw`<p>كل محطة توليد كهرباء تطبّق هذه التجربة: مغناطيسات تدور قرب ملفات ضخمة فيتغير الفيض باستمرار ويتولد جهد متردد. والدينامو الصغير في الدراجة يعمل بالفكرة نفسها.</p>`,title:'من حولك'},
+    {title:'مختبر مصغّر: حرّك المغناطيس وراقب الجلفانومتر',widget:(el,B)=>DCML.lab(el,B,{intro:'تجربة الشكل (٥-٢١): اختر حركة المغناطيس بالنسبة للحلقة. (حجم الانحراف هنا للمقارنة فقط.)',
+ predict:{q:'سحبنا المغناطيس بعيداً عن الحلقة. مؤشر الجلفانومتر…',opts:[
+  ['ينحرف في الاتجاه نفسه الذي انحرف فيه عند الاقتراب',false,'عند السحب ينحرف «في الاتجاه الآخر» (الشكل ٥-٢١ب).'],
+  ['ينحرف في الاتجاه الآخر',true,'تغيّر الفيض صار في الاتجاه المعاكس (يقل بدل أن يزيد)، فانعكس التيار الحثي.'],
+  ['يبقى على الصفر',false,'الصفر عند ثبوت المغناطيس فقط؛ السحب حركة تغيّر الفيض.']]},
+ ins:[{k:'m',l:'حركة المغناطيس',seg:[[1,'يقترب'],[0,'ثابت'],[-1,'يبتعد']],v:0},{k:'f',l:'سرعة الحركة',seg:[[1,'بطيئة'],[2,'سريعة']],v:1}],
+ calc:(s,v,B)=>{const g=s.m*s.f*0.45;
+  return {pic:DCML.gauge(B,{v:g,max:1,zero:'c',lab:'G'}),
+   msg:s.m===0?'المغناطيس ثابت: الفيض لا يتغير، فيعود المؤشر إلى الصفر مهما كان المغناطيس قريباً.':(s.m>0?'يقترب: الفيض يزيد، فيمر تيار حثي.':'يبتعد: الفيض يقل، فيمر التيار في الاتجاه الآخر.')+(s.m&&s.f===2?' والحركة الأسرع تعطي انحرافاً أكبر لأن الفيض يتغير أسرع (المحطة التالية).':'')}}})}
    ]},
 
   {st:2,short:'سبب التيار الحثي',title:'ما السبب في التيار الحثي؟',ref:'ص 153',
@@ -1596,7 +1958,16 @@ B.lesson({
      ['تصبح 100 ضعف',true,'المعادلة (5-45): \\(E=-N\\,d\\phi_m/dt\\)، فالقوة الدافعة تتناسب مع عدد اللفات.'],
      ['تقل إلى \\(1/100\\)',false,'\\(N\\) في البسط، فزيادة اللفات تزيد القوة الدافعة.']]}},
     {tip:String.raw`<p>انتبه للفرق: القوة الدافعة لا تتعلق بمقدار الفيض بل بـ<b>سرعة تغيّره</b> \(d\phi_m/dt\). مغناطيس قوي ثابت لا يولّد شيئاً، ومغناطيس ضعيف يتحرك بسرعة يولّد قوة دافعة. حرّك المغناطيس ببطء ثم بسرعة في تبويب المختبر وقارن قراءة الجلفانومتر.</p>`,title:'السرعة هي المهمة'},
-    {watch:String.raw`<p>في جملة الكتاب \((N=1.0\ \text{T})\) الحرف T يعني «لفة» (Turn) وليس وحدة التسلا. ستجد هذا الاستعمال أيضاً في مثال (٥-١٢): <span class="ltr">N₁ = 1000T</span>.</p>`}
+    {watch:String.raw`<p>في جملة الكتاب \((N=1.0\ \text{T})\) الحرف T يعني «لفة» (Turn) وليس وحدة التسلا. ستجد هذا الاستعمال أيضاً في مثال (٥-١٢): <span class="ltr">N₁ = 1000T</span>.</p>`},
+    {title:'مختبر مصغّر: قانون فارادي بالأرقام',widget:(el,B)=>DCML.lab(el,B,{intro:'تغيّر الفيض في ملف بمقدار ΔΦ خلال زمن Δt (أرقام تختارها أنت). \\(E=-N\\,\\Delta\\phi/\\Delta t\\) بمتوسط معدل التغير.',
+ predict:{q:'لو حدث التغير نفسه في الفيض في نصف الزمن، فإن القوة الدافعة…',opts:[
+  ['تتضاعف',true,'معدل التغير \\(\\Delta\\phi/\\Delta t\\) يتضاعف، والقوة الدافعة تتناسب معه.'],
+  ['تقل إلى النصف',false,'Δt في المقام، فتقليله يزيد E.'],
+  ['لا تتغير لأن التغير في الفيض هو نفسه',false,'المهم سرعة التغير، لا مقداره وحده.']]},
+ ins:[{k:'N',l:'عدد اللفات N',min:1,max:500,step:1,v:100,dp:0},{k:'p',l:'التغير في الفيض ΔΦ',min:1,max:10,step:1,v:2,u:'mWb'},{k:'t',l:'الزمن Δt',seg:[[0.05,'<span class="ltr">0.05 s</span>'],[0.1,'<span class="ltr">0.1 s</span>'],[0.2,'<span class="ltr">0.2 s</span>'],[0.5,'<span class="ltr">0.5 s</span>']],v:0.1}],
+ calc:(s,v,B)=>{const r=s.p/1000/s.t,E=-s.N*r;
+  return {facts:[['ΔΦ/Δt',DCML.fm(B,r,3)+' Wb/s'],['<span class="ltr" dir="ltr" style="white-space:normal">E = −N ΔΦ/Δt</span>',DCML.fm(B,E,2)+' V','hi']],
+   bars:[{l:'|E|',v:-E,max:100,u:'V',dp:2,col:'--live'}],msg:'الإشارة السالبة تخص الاتجاه (قانون لينز في المحطة التالية).'}}})}
    ]},
 
   {st:3,short:'الإشارة السالبة',title:'المعنى الفيزيائي للإشارة السالبة: قانون لينز',ref:'ص 153',
@@ -1614,7 +1985,10 @@ B.lesson({
      ['قطباً جنوبياً، فيجذب المغناطيس ويقاوم ابتعاده',true,'الفيض ينقص، فيصنع التيار الحثي فيضاً في اتجاه الفيض الأصلي ليعوّض النقص: الوجه يصبح S فيجذب الشمالي.']]}},
     {tip:String.raw`<p>«يعاكس» في قانون لينز معناها يعاكس <b>التغيّر</b>، لا الفيض نفسه:</p><ul><li>الفيض يزداد (تقريب) ← التيار الحثي يصنع فيضاً معاكساً ← تنافر يقاوم الاقتراب.</li><li>الفيض ينقص (إبعاد) ← التيار الحثي يصنع فيضاً في الاتجاه نفسه ← تجاذب يقاوم الابتعاد.</li></ul><p>في الحالتين تحتاج يدك إلى بذل شغل لتحريك المغناطيس، وهذا الشغل هو مصدر الطاقة الكهربائية في الحلقة. راقب الحرف على وجه الحلقة في تبويب المختبر وأنت تقرّب المغناطيس وتبعده.</p>`,title:'يعاكس التغيّر'},
     {tip:String.raw`<p>الآن تفهم الإشارة السالبة في (5-13) أيضاً: القوة الدافعة الذاتية \(E=-L\,dI/dt\) تعاكس تغيّر التيار في الملف نفسه، وهذا قانون لينز مطبقاً على الملف وحده.</p>`,title:'ربط بالحث الذاتي'},
-    {add:String.raw`<p>المكابح المغناطيسية في بعض القطارات وألعاب الملاهي (السقوط الحر) تعمل بقانون لينز: صفائح معدنية تمر بسرعة بين مغناطيسات فتتولد فيها تيارات حثية تعاكس الحركة وتبطئها دون أي احتكاك.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>المكابح المغناطيسية في بعض القطارات وألعاب الملاهي (السقوط الحر) تعمل بقانون لينز: صفائح معدنية تمر بسرعة بين مغناطيسات فتتولد فيها تيارات حثية تعاكس الحركة وتبطئها دون أي احتكاك.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: طبّق قانون لينز',widget:(el,B)=>DCML.cases(el,B,{intro:'التيار الحثي يصنع فيضاً يعاكس <b>التغير</b> في الفيض الذي أنشأه.',cases:[
+ {q:'نقرّب القطب الشمالي لمغناطيس من وجه ملف. وجه الملف المقابل للمغناطيس يصبح…',opts:[['قطباً شمالياً فيتنافر مع المغناطيس',true,'الفيض يزيد، فيعاكس الملف الزيادة بأن يصنع قطباً شمالياً يدفع المغناطيس.'],['قطباً جنوبياً فيجذب المغناطيس',false,'لو جذبه لزادت السرعة وزاد الفيض أكثر، وهذا يخالف معنى «يعاكس».']]},
+ {q:'نبعد القطب الشمالي نفسه عن الملف. وجه الملف المقابل يصبح…',opts:[['قطباً شمالياً',false,'الفيض الآن يقل، والملف يعاكس النقصان.'],['قطباً جنوبياً فيحاول جذب المغناطيس',true,'يعاكس نقصان الفيض بأن يجذب المغناطيس.']]}]})}
    ]},
 
   {st:4,short:'الأمثلة',title:'أمثلة محلولة',ref:'ص 154–155',
@@ -1643,7 +2017,15 @@ B.lesson({
      <p>و لما كان هذا التدفق يتصل بالملف (2) فإن معامل الحث المتبادل :</p>
      <div class="eq">$$M=\frac{N_2\times\Phi}{I}=\mu_0\,\frac{N_2N_1A}{\ell}$$</div>`,ref:'ص 154–155'},
     {watch:String.raw`<p>في مثال (٥-١٢) أخطاء في الكتاب: (1) يلي معادلة \(M\) سطران مكرران \(L=\dots=0.377\) H منسوخان من المثال السابق ولا علاقة لهما بهذا المثال (لا قلب حديدي هنا). (2) في حساب القوة الدافعة عُوِّض \(M=25.1\times10^{-6}\) H بدل القيمة المحسوبة \(15.07\times10^{-6}\) H، فطُبع \(E_2=-251\ \mu\text{V}\) والصحيح \(-151\ \mu\text{V}\). وفي مثال (٥-١١) أسقط الكتاب الإشارة السالبة في الناتج (طُبع <span class="ltr">5.655 V</span>). في تبويب الأمثلة مفتاح «كما في الكتاب / المصحح» لمثال (٥-١٢).</p>`,fix:true},
-    {tip:String.raw`<p>قارن نتيجتي مثال (٥-١١): القلب الحديدي \((\mu_r=500)\) جعل الحث 500 ضعف: \(7.54\times10^{-4}\times500=0.377\) H. وفي مثال (٥-١٢) استعملنا فكرة (5-21): الفيض الذي يصنعه الملف (1) يقطع كل لفة من لفات الملف (2)، فنضربه في \(N_2\) ونقسم على التيار المسبب.</p>`}
+    {tip:String.raw`<p>قارن نتيجتي مثال (٥-١١): القلب الحديدي \((\mu_r=500)\) جعل الحث 500 ضعف: \(7.54\times10^{-4}\times500=0.377\) H. وفي مثال (٥-١٢) استعملنا فكرة (5-21): الفيض الذي يصنعه الملف (1) يقطع كل لفة من لفات الملف (2)، فنضربه في \(N_2\) ونقسم على التيار المسبب.</p>`},
+    {title:'مختبر مصغّر: أدخل القلب وغيّر سرعة التيار',widget:(el,B)=>DCML.lab(el,B,{intro:'ملف مثال (٥-١١): \\(\\ell=1\\ \\text{m}\\) و\\(A=6\\times10^{-4}\\ \\text{m}^2\\) و\\(N=1000\\). اختر القلب ومعدل تغير التيار (في المثال <span class="ltr">15 A/s</span>؛ غيره أرقام تختارها أنت).',
+ predict:{q:'مع القلب الحديدي \\((\\mu_r=500)\\) ومعدل <span class="ltr">15 A/s</span>، القوة الدافعة الذاتية تكون…',opts:[
+  ['\\(-5.655\\ \\text{V}\\)',true,'\\(E=-L\\,di/dt=-0.377\\times15\\approx-5.655\\ \\text{V}\\).'],
+  ['\\(-0.0113\\ \\text{V}\\)',false,'هذا بلا قلب: \\(7.54\\times10^{-4}\\times15\\).'],
+  ['\\(+5.655\\ \\text{V}\\)',false,'القيمة صحيحة لكن الإشارة سالبة لأنها تعاكس زيادة التيار (أسقطها الكتاب).']]},
+ ins:[{k:'m',l:'القلب',seg:[[1,'بلا قلب (هواء)'],[500,'قضيب حديد <span class="ltr">μ<sub>r</sub> = 500</span>']],v:500},{k:'r',l:'معدل تغير التيار di/dt',min:5,max:30,step:5,v:15,u:'A/s'}],
+ calc:(s,v,B)=>{const L=4e-7*Math.PI*s.m*1e6*6e-4,E=-L*s.r;
+  return {facts:[['<span class="ltr" dir="ltr" style="white-space:normal">L = μ<sub>0</sub>μ<sub>r</sub>N<sup>2</sup>A/ℓ</span>',s.m===1?DCML.fm(B,L*1e4,2)+' × 10⁻⁴ H':DCML.fm(B,L,3)+' H','hi'],['<span class="ltr" dir="ltr" style="white-space:normal">E = −L di/dt</span>',DCML.fm(B,E,s.m===1?4:3)+' V','hi']]}}})}
    ]},
 
   {st:5,short:'تمارين الوحدة',title:'تمارين على الوحدة الخامسة',ref:'ص 156',
@@ -1665,7 +2047,13 @@ B.lesson({
      <li>احسب القوة الدافعة الكهربائية المستحثة في ملف عدد لفاته 100 إذا وضعناه في مجال مغناطيسي يتغير فيضه</li></ol>`,ref:'ص 156'},
     {watch:String.raw`<p>طريقة التمرين 6: \(E=-N\,d\Phi/dt=-100\times(d\Phi/dt)\) بعد أن يحدد المدرب معدل تغير الفيض. والكتاب لا يذكر إجابات التمارين.</p>`},
     {watch:String.raw`<p>نص التمرين 6 في الكتاب مبتور: لا يذكر معدل تغير الفيض، فلا يمكن حسابه رقمياً.</p>`,fix:true},
-    {tip:String.raw`<p>لكل تمرين إجابة مقترحة (ليست من الكتاب) مع حاسبة في تبويب «الأمثلة المحلولة». حاول الحل أولاً، ثم قارن. تذكّر تحويل <span class="ltr">cm</span> و<span class="ltr">mm</span> إلى المتر قبل التعويض.</p>`,title:'قبل أن تبدأ'}
+    {tip:String.raw`<p>لكل تمرين إجابة مقترحة (ليست من الكتاب) مع حاسبة في تبويب «الأمثلة المحلولة». حاول الحل أولاً، ثم قارن. تذكّر تحويل <span class="ltr">cm</span> و<span class="ltr">mm</span> إلى المتر قبل التعويض.</p>`,title:'قبل أن تبدأ'},
+    {title:'مختبر مصغّر: أي قانون لكل تمرين؟',widget:(el,B)=>DCML.sort(el,B,{intro:'قبل الحل: لكل تمرين اختر القانون الذي يبدأ به.',cats:['B = μI/(2πa)','F = BℓI sinθ','F/ℓ = μ₀I₁I₂/(2πa)','L = μN²A/ℓ','E = −N dΦ/dt'].map(x=>'<span class="ltr">'+x+'</span>'),items:[
+ ['التمرين 1: كثافة الفيض عند نقطة تبعد <span class="ltr">8 cm</span> عن سلك.',0,'المعادلة (5-7)، ثم \\(H=B/\\mu_0\\).'],
+ ['التمرين 2: القوة على سلك <span class="ltr">10 cm</span> في مجال <span class="ltr">0.06 T</span>.',1,'المعادلة (5-9) مرة عند 90° ومرة عند 40°.'],
+ ['التمرين 4: القوة بين سلكين متوازيين.',2,'المعادلة (5-12)، والتياران في اتجاه واحد فهي تجاذب.'],
+ ['التمرين 5: الحثية الذاتية لملف بقلب حديدي.',3,'المعادلة (5-19) بعد ضربها في \\(\\mu_r\\)، مع تحويل القطر إلى مساحة.'],
+ ['التمرين 6: القوة الدافعة في ملف فيضه يتغير.',4,'قانون فارادي (5-45).']]})}
    ]},
 
   {recap:[

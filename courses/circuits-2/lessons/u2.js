@@ -233,7 +233,183 @@ B.lesson({
  title:'مدخل إلى النظام ثلاثي الأطوار: التوليد والتمثيل وتتابع الأطوار',
  summary:'ما النظام ثلاثي الأطوار ولماذا يفضَّل، وكيف يولّد المولد ثلاثة جهود متساوية بينها 120°، وكيف نمثلها بموجات وبمطاورات، ومعنى تتابع الأطوار A-B-C وكيف ينعكس بعكس اتجاه الدوران.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الثانية: دوائر التيار المتردد ثلاثية الأطوار',ref:'ص 75–76',
    q:'ماذا سنتعلم في هذه الوحدة؟ أربعة أهداف تبدأ من المولد وتنتهي بجهاز القياس.',
@@ -253,7 +429,11 @@ B.lesson({
      <li>أن يلم المتدرب بكيفية حساب القدرة في الأحمال ثلاثية الأوجه.</li>
      <li>أن يلم المتدرب بكيفية استخدام جهاز واتميتر لقياس القدرة في الأحمال ثلاثية الأوجه.</li></ol>`,ref:'ص 76'},
     {tip:String.raw`<p>الوحدة فصلان: <b>الفصل الأول</b> (ص 77–90) يصف النظام ثلاثي الأطوار ويحلل دوائره، وهو موضوع الدروس 1 و2 و3. و<b>الفصل الثاني</b> (ص 91–94) عن القدرة وقياسها، وهو الدرس 4 مع مسائل الوحدة.</p>`,title:'كيف تُقسم الوحدة؟'},
-    {watch:String.raw`<p>الهدف العام المطبوع للوحدة في ص 76: «معرفة الخطوات المستعملة لتحليل دوائر التيار المتردد البسيطة» لا يطابق موضوع الوحدة (الأنظمة ثلاثية الأطوار)، ويبدو منقولاً من الوحدة الأولى. الأهداف التفصيلية الأربعة هي التي تصف الوحدة.</p>`,fix:true}
+    {watch:String.raw`<p>الهدف العام المطبوع للوحدة في ص 76: «معرفة الخطوات المستعملة لتحليل دوائر التيار المتردد البسيطة» لا يطابق موضوع الوحدة (الأنظمة ثلاثية الأطوار)، ويبدو منقولاً من الوحدة الأولى. الأهداف التفصيلية الأربعة هي التي تصف الوحدة.</p>`,fix:true},
+    {title:'تحقق سريع: أهداف الوحدة الثانية',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['من أهداف الوحدة معرفة العلاقة بين قيم الخط وقيم الوجه في توصيلتي النجمة والدلتا.',true,'هذا الهدف الثاني.'],
+     ['الوحدة تعلّمك تصميم ملفات المولدات ثلاثية الأوجه.',false,'الهدف الأول «كيفية توليد الجهود»، لا تصميم الملفات.'],
+     ['من أهدافها استخدام جهاز الواتميتر لقياس القدرة في الأحمال ثلاثية الأوجه.',true,'هذا الهدف الرابع.']]})}
    ]},
 
   {st:2,short:'وصف النظام',title:'<span class="ltr">2-1</span> وصف للنظام',ref:'ص 77',
@@ -274,7 +454,13 @@ B.lesson({
     {predict:{q:'لماذا يُفضَّل النظام ثلاثي الأطوار في نقل الطاقة؟ (حسب الكتاب)',opts:[
      ['لأن جهده أعلى دائماً من الأحادي',false,'الكتاب لم يذكر هذا سبباً؛ الجهد يُختار حسب الشبكة.'],
      ['لأنه لا يحتاج إلى موصلات',false,'يحتاج إلى ثلاثة موصلات أو أربعة.'],
-     ['لأن مفاقيده النحاسية في خطوط النقل أقل لنفس القدرة المنقولة',true,'نص ص 77: «يسبب مفاقيد نحاسية في خطوط النقل أقل من النظام أحادي الوجه وذلك لنفس القدرة المنقولة».']]}}
+     ['لأن مفاقيده النحاسية في خطوط النقل أقل لنفس القدرة المنقولة',true,'نص ص 77: «يسبب مفاقيد نحاسية في خطوط النقل أقل من النظام أحادي الوجه وذلك لنفس القدرة المنقولة».']]}},
+    {title:'مختبر مصغّر: أي نظام هذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'طبّق تعريفات ص 77 على كل وصف.',cats:['أحادي الطور','ثنائي الطور','ثلاثي متزن','ثلاثي غير متزن'],items:[
+     ['جهدان متساويان بينهما <span class="ltr">90°</span>',1,'«في النظام ذي الطور الثنائي هناك جهدان متساويان يختلفان في الطور بزاوية مقدارها 90 درجة».'],
+     ['ثلاثة جهود متساوية في المقدار، وبين كل جهدين <span class="ltr">120°</span>',2,'تحقق شرطا الاتزان: تساوي القيم الفعالة، و<span class="ltr">120°</span> بين كل طورين.'],
+     ['ثلاثة جهود بينها <span class="ltr">120°</span>، لكن أحدها أصغر من الآخرين',3,'اختل شرط تساوي القيم الفعالة.'],
+     ['جهد واحد مع موصل حيادي، مثل ما يصل إلى منزل صغير',0,'هذا هو التيار أحادي الطور الذي درسته في الوحدة الأولى.'],
+     ['ثلاثة جهود متساوية في المقدار، لكن بين اثنين منها <span class="ltr">100°</span>',3,'اختل شرط الزاوية <span class="ltr">120°</span>.']]})}
    ]},
 
   {st:3,short:'توليد الجهود',title:'<span class="ltr">2-2</span> توليد الجهود ثلاثية الأطوار',ref:'ص 77–78',
@@ -293,7 +479,18 @@ B.lesson({
      <p>حيث A و A' يمثلان طرفي الملف الأول (نفس الشيء بالنسبة لـ B و B' و C و C')، و V هي <b>القيمة الفعالة</b> للجهود والتي تتساوى في الملفات الثلاثة.</p>`,ref:'ص 77–78'},
     {tip:String.raw`<p>الملفات الثلاثة <b>متماثلة</b> (نفس عدد اللفات ونفس السرعة)، لذلك تتساوى جهودها في التردد والقيمة العظمى. لكنها <b>مزاحة في المكان</b> بزاوية 120°، فالقطب الدوار يمر على الملف الأول ثم بعد ثلث دورة على الثاني ثم بعد ثلث آخر على الثالث. هذه الإزاحة في المكان تصير إزاحة في الزمن: 120° بين كل جهدين.</p>`,title:'من أين جاءت الـ 120°؟'},
     {tip:String.raw`<p>في المعادلات (2-1) القيمة العظمى \(V\sqrt2\) لأن \(V\) هي القيمة الفعالة. مثلاً جهد فعال <span class="ltr">220 V</span> قيمته العظمى <span class="ltr">220 × 1.414 = 311 V</span>.</p>`},
-    {watch:String.raw`<p>النص في ص 77 يقول إن الملفات «مثبتة على العضو الدوار» و«تدور في مجال مغناطيسي ثابت»، بينما رسم المولد في الشكل 2-1 يضع الملفات في مجاري <b>العضو الثابت</b> والقطبين N و S على <b>العضو الدوار</b>. الحالتان تعطيان النتيجة نفسها (المهم هو الحركة النسبية بين الملفات والمجال)، والمولدات الكبيرة في الواقع مبنية كما في الشكل، والرسم هنا مثله.</p>`}
+    {watch:String.raw`<p>النص في ص 77 يقول إن الملفات «مثبتة على العضو الدوار» و«تدور في مجال مغناطيسي ثابت»، بينما رسم المولد في الشكل 2-1 يضع الملفات في مجاري <b>العضو الثابت</b> والقطبين N و S على <b>العضو الدوار</b>. الحالتان تعطيان النتيجة نفسها (المهم هو الحركة النسبية بين الملفات والمجال)، والمولدات الكبيرة في الواقع مبنية كما في الشكل، والرسم هنا مثله.</p>`},
+    {title:'مختبر مصغّر: اعكس دوران المولد',widget:(el,B)=>DCML.lab(el,B,{intro:'الأعمدة تبين الجهود اللحظية للملفات الثلاثة من المعادلات <span class="ltr">(2-1)</span> (نسبة من القيمة العظمى). حرّك الزمن وراقب أي ملف يصل إلى قمته بعد A.',
+ predict:{q:'عكسنا اتجاه دوران المولد. أي جهد يصل إلى قمته مباشرة بعد A؟',opts:[
+  ['B كما كان',false,'الترتيب يتبع الملف الذي يقطعه المجال أولاً، فيتغير بعكس الدوران.'],
+  ['C',true,'الكتاب: «عند عكس اتجاه دوران المولد الكهربائي تكون الجهود ذات تتابع A-C-B».'],
+  ['تصل الثلاثة معاً',false,'بين كل ملفين <span class="ltr">120°</span> في المكان، فلا تصل معاً.']]},
+ ins:[{k:'d',l:'اتجاه الدوران',seg:[[1,'الأصلي'],[-1,'معكوس']],v:1},{k:'a',l:'الزمن ωt',min:0,max:360,step:10,v:90,fmt:v=>v+'°'}],
+ calc:(s,P,B)=>{const D=Math.PI/180,g=sh=>Math.sin((s.a-sh)*D),vA=g(0),vB=s.d>0?g(120):g(240),vC=s.d>0?g(240):g(120),z=v=>Math.abs(v)<1e-9?0:v;
+  const bar=(l,v,col)=>({l,v:Math.abs(z(v)),max:1,txt:DCML.fm(B,z(v),2),col});
+  return {bars:[bar('<span class="ltr">v<sub>AA\'</sub></span>',vA,'--blue'),bar('<span class="ltr">v<sub>BB\'</sub></span>',vB,'--live'),bar('<span class="ltr">v<sub>CC\'</sub></span>',vC,'--stop')],
+   plot:{xr:[0,360],yr:[-1.1,1.1],xt:[0,90,180,270,360],yt:[-1,0,1],xl:'ωt (°)',yl:'',curves:[{f:x=>Math.sin(x*D),col:'--blue'},{f:x=>s.d>0?Math.sin((x-120)*D):Math.sin((x-240)*D),col:'--live'},{f:x=>s.d>0?Math.sin((x-240)*D):Math.sin((x-120)*D),col:'--stop'}],cur:[s.a,z(vA)]},
+   msg:(s.d>0?'التتابع <b class="ltr">A-B-C</b>: قمة A عند <span class="ltr">90°</span>، ثم B عند <span class="ltr">210°</span>، ثم C عند <span class="ltr">330°</span>.':'التتابع <b class="ltr">A-C-B</b>: قمة A عند <span class="ltr">90°</span>، ثم C عند <span class="ltr">210°</span>، ثم B عند <span class="ltr">330°</span>.')+' طول العمود مقدار الجهد، والرقم فوقه بإشارته.'}}})}
    ]},
 
   {st:4,short:'التمثيل والتتابع',title:'<span class="ltr">2-3</span> تمثيل الجهود وتتابعها',ref:'ص 78–79',
@@ -559,7 +756,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>هناك طريقتان لتوصيل أطراف ملفات المولدات ببعضها البعض: <b>توصيلة النجمة</b> و<b>توصيلة الدلتا</b>. وكلتا التوصيلتين تستعمل كذلك لربط الأحمال ثلاثية الأطوار. وفيما يلي ندرس تفاصيل التوصيلتين في حالة الاتزان.</p>`,ref:'ص 80'},
     {tip:String.raw`<p>سُميت «نجمة» لأن العناصر الثلاثة تخرج من نقطة واحدة مثل حرف Y، وسُميت «دلتا» لأنها تكوّن مثلثاً مثل الحرف اليوناني Δ. وفي الدرس كله سنقارن بين أمرين في كل توصيلة: <b>الجهد</b> (طور أم خط؟) و<b>التيار</b> (طور أم خط؟).</p>`},
-    {add:String.raw`<p>على لوحة أطراف المحرك ثلاثي الأطوار ستة أطراف، ويُختار التوصيل نجمة أو دلتا بتغيير وضع قطع التوصيل النحاسية بينها حسب جهد الشبكة المكتوب على لوحة بيانات المحرك.</p>`,title:'في الورشة'}
+    {add:String.raw`<p>على لوحة أطراف المحرك ثلاثي الأطوار ستة أطراف، ويُختار التوصيل نجمة أو دلتا بتغيير وضع قطع التوصيل النحاسية بينها حسب جهد الشبكة المكتوب على لوحة بيانات المحرك.</p>`,title:'في الورشة'},
+    {title:'مختبر مصغّر: نجمة أم دلتا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'ستدرس التوصيلتين في المحطتين التاليتين. جرّب الآن، ثم ارجع إلى هنا بعدهما.',cats:['نجمة','دلتا'],items:[
+     ['نربط الأطراف A\' و B\' و C\' معاً في نقطة واحدة',0,'هذه النقطة هي الطرف المحايد N (ص 80).'],
+     ['نربط A مع C\'، و B مع A\'، و C مع B\'',1,'هكذا تتكون الحلقة المغلقة للدلتا (ص 81).'],
+     ['لا يوجد طرف محايد',1,'الكتاب: «لا يوجد طرف محايد» في الدلتا.'],
+     ['تيار الخط يساوي تيار الطور',0,'الخط والملف على التوالي في النجمة.'],
+     ['جهد الخط يساوي جهد الطور',1,'كل ملف موصول بين خطين مباشرة.']]})}
    ]},
 
   {st:2,short:'مولد نجمة',title:'<span class="ltr">2-4-1</span> مولد موصول بتوصيلة النجمة',ref:'ص 80–81',
@@ -634,7 +837,20 @@ B.lesson({
     {tip:String.raw`<div class="tablebox"><table class="tt"><thead><tr><th>التوصيلة</th><th>الجهد</th><th>التيار</th><th>الحيادي</th></tr></thead><tbody>
      <tr><td>نجمة Y</td><td>\(V_L=\sqrt3\,V_{ph}\) (2-4)</td><td>\(I_L=I_{ph}\)</td><td>يوجد N</td></tr>
      <tr><td>دلتا Δ</td><td>\(V_L=V_{ph}\)</td><td>\(I_L=\sqrt3\,I_{ph}\) (2-7)</td><td>لا يوجد</td></tr></tbody></table></div>`,title:'خلاصة التوصيلتين (حالة الاتزان)'},
-    {watch:String.raw`<p>في الدلتا تيار الخط عند الطرف B هو <b>فرق</b> تيارين من تيارات الأطوار \((\bar I_{AB}-\bar I_{BC})\) لا مجموعهما، لأن أحدهما يدخل العقدة B والآخر يخرج منها.</p>`}
+    {watch:String.raw`<p>في الدلتا تيار الخط عند الطرف B هو <b>فرق</b> تيارين من تيارات الأطوار \((\bar I_{AB}-\bar I_{BC})\) لا مجموعهما، لأن أحدهما يدخل العقدة B والآخر يخرج منها.</p>`},
+    {title:'مختبر مصغّر: ابنِ تيار الخط في الدلتا',widget:(el,B)=>DCML.lab(el,B,{intro:'تيار الطور <span class="ltr">38 A</span> من مثال <span class="ltr">2-1-2</span>، والزوايا من المعادلات <span class="ltr">(2-5)</span>. اتبع المعادلة <span class="ltr">(2-6)</span> خطوة خطوة.',
+ predict:{q:'تيار الخط \\(\\bar I_B=\\bar I_{AB}-\\bar I_{BC}\\). كم زاويته؟',opts:[
+  ['<span class="ltr">0°</span> مثل \\(\\bar I_{AB}\\)',false,'طرح متجه بزاوية مختلفة يدير المحصلة.'],
+  ['<span class="ltr">30°</span>',true,'المعادلة <span class="ltr">(2-6)</span>: \\(I\\sqrt3\\angle30^\\circ\\).'],
+  ['<span class="ltr">−120°</span>',false,'هذه زاوية \\(\\bar I_{BC}\\) نفسه.']]},
+ ins:[{k:'k',l:'الخطوة',seg:[[0,'I<sub>AB</sub>'],[1,'<span class="ltr">− I<sub>BC</sub></span>'],[2,'المحصلة I<sub>B</sub>']],v:0}],
+ calc:(s,P,B)=>{const a=pol(38,0),b=pol(-38,-120),r=cadd(a,b),f1=v=>(+v).toFixed(1),sc=2.6,ox=40,oy=130;
+  const X=z=>ox+z.re*sc,Y=z=>oy-z.im*sc,O=C(0,0);
+  const arr=(p,q,col,lab,dx,dy)=>{const x1=X(p),y1=Y(p),x2=X(q),y2=Y(q),an=Math.atan2(y2-y1,x2-x1),h=10;return `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x2)},${f1(y2)} ${f1(x2-h*Math.cos(an-0.4))},${f1(y2-h*Math.sin(an-0.4))} ${f1(x2-h*Math.cos(an+0.4))},${f1(y2-h*Math.sin(an+0.4))}" fill="var(${col})"/><text x="${f1((x1+x2)/2+dx)}" y="${f1((y1+y2)/2+dy)}" font-size="12" font-weight="700" fill="var(${col})" text-anchor="middle">${lab}</text>`};
+  let g=arr(O,a,'--blue','IAB',0,16);if(s.k>=1)g+=arr(a,cadd(a,b),'--live','−IBC',22,8);if(s.k>=2)g+=arr(O,r,'--on','IB',-14,-10);
+  const pic=`<svg viewBox="0 0 250 160" role="img" aria-label="بناء تيار الخط" style="font-family:var(--font);max-width:320px;display:block;margin-inline:auto" direction="ltr"><line x1="${ox}" y1="${oy}" x2="246" y2="${oy}" stroke="var(--muted)" stroke-dasharray="3 4"/>${g}</svg>`;
+  return {pic,facts:[['I<sub>AB</sub> (A)','38∠0°'],['<span class="ltr">− I<sub>BC</sub></span> (A)',s.k>=1?'38∠60°':'؟'],['I<sub>B</sub> (A)',s.k>=2?ps(cabs(r),cang(r),1,0):'؟','hi']],
+   msg:s.k<2?'أكمل الخطوات حتى ترى المحصلة.':'\\(I_L=\\sqrt3\\times38\\approx65.8\\ \\text{A}\\) <span class="ltr">(2-7)</span>، وزاويته تختلف عن زاوية أي تيار طور.'}}})}
    ]},
 
   {st:4,short:'توصيلات الأحمال',title:'<span class="ltr">2-5</span> توصيلات الأحمال',ref:'ص 83',
@@ -689,7 +905,16 @@ B.lesson({
      ['<span class="ltr">7 Ω</span>',false,'جمعت الجزأين بالأرقام؛ الجزءان متعامدان فنستعمل فيثاغورس.'],
      ['<span class="ltr">5 Ω</span>',true,String.raw`\(\sqrt{3^2+4^2}=5\)، وزاويتها \(53.1^\circ\)، كما في الحل.`],
      ['<span class="ltr">12 Ω</span>',false,'هذا حاصل ضرب، وليس طريقة حساب المقدار.']]}},
-    {tip:String.raw`<p>خطة الحل في ثلاث خطوات: (1) \(V_L=\sqrt3\times127=220\) V. (2) كل تيار طور = جهد طوره ÷ \(Z\)، وفي النجمة تيار الخط = تيار الطور. (3) نجمع التيارات الثلاثة بالصيغة الديكارتية فنحصل على صفر — وهذا ما فعلته في تجربة المحطة الرابعة.</p>`}
+    {tip:String.raw`<p>خطة الحل في ثلاث خطوات: (1) \(V_L=\sqrt3\times127=220\) V. (2) كل تيار طور = جهد طوره ÷ \(Z\)، وفي النجمة تيار الخط = تيار الطور. (3) نجمع التيارات الثلاثة بالصيغة الديكارتية فنحصل على صفر — وهذا ما فعلته في تجربة المحطة الرابعة.</p>`},
+    {title:'مختبر مصغّر: تيار كل خط في المثال',widget:(el,B)=>DCML.lab(el,B,{intro:'من المثال: \\(E_{AN}=127\\angle0^\\circ\\ \\text{V}\\) و \\(Z=3+j4=5\\angle53.1^\\circ\\ \\Omega\\) في كل طور. اختر الطور.',
+ predict:{q:'جهد الطور B زاويته <span class="ltr">−120°</span>. كم زاوية تياره \\(\\bar I_{Bb}\\)؟',opts:[
+  ['<span class="ltr">−120°</span>',false,'المعاوقة تؤخر التيار عن جهده بزاويتها.'],
+  ['<span class="ltr">−173.1°</span>',true,'\\(-120^\\circ-53.1^\\circ=-173.1^\\circ\\)، كما في نتائج الكتاب.'],
+  ['<span class="ltr">−66.9°</span>',false,'في القسمة نطرح زاوية المعاوقة، لا نجمعها.']]},
+ ins:[{k:'p',l:'الطور',seg:[[0,'A'],[1,'B'],[2,'C']],v:1}],
+ calc:(s,P,B)=>{const ang=[0,-120,120][s.p],I=cdiv(pol(127,ang),pol(5,53.1));
+  return {facts:[['جهد الطور (V)',ps(127,ang,0,0)],['Z (Ω)','5∠53.1°'],['تيار الخط (A)',ps(cabs(I),cang(I),1,1),'hi'],['<span class="ltr">V<sub>L</sub> = √3 × 127</span>','220 V']],
+   msg:'في النجمة تيار الخط هو تيار الطور نفسه. والتيارات الثلاثة متساوية المقدار وبينها <span class="ltr">120°</span>، فمجموعها صفر: \\(\\bar I_N=0\\).'}}})}
    ]},
 
   {st:6,short:'مثال <span class="ltr">2-1-2</span>',title:'مثال <span class="ltr">2-1-2</span>: مولد نجمة وحمل دلتا',ref:'ص 85–86',
@@ -708,7 +933,16 @@ B.lesson({
      ['<span class="ltr">220 V</span>',false,'هذا جهد طور المولد (بين خط والحيادي)، لكن ضلع الدلتا موصول بين خطين.'],
      ['<span class="ltr">127 V</span>',false,'هذا 220 ÷ √3، ولا علاقة له بهذا المثال.'],
      ['<span class="ltr">380 V</span> (جهد الخط)',true,String.raw`ضلع الدلتا بين خطين، فعليه جهد الخط: \(\bar V_{AB}=220\angle0^\circ-220\angle-120^\circ=380\angle30^\circ\) V.`]]}},
-    {watch:String.raw`<p>الفرق الدقيق \(\sqrt3\times220=381.05\) V، وقرّبه الكتاب إلى <span class="ltr">380 V</span> (القيمة المعتادة لجهد الشبكة). لو استعملنا 381.05 لكان تيار الطور <span class="ltr">38.1 A</span> وتيار الخط <span class="ltr">66.0 A</span>. الفرق صغير ولا يغيّر الطريقة.</p>`}
+    {watch:String.raw`<p>الفرق الدقيق \(\sqrt3\times220=381.05\) V، وقرّبه الكتاب إلى <span class="ltr">380 V</span> (القيمة المعتادة لجهد الشبكة). لو استعملنا 381.05 لكان تيار الطور <span class="ltr">38.1 A</span> وتيار الخط <span class="ltr">66.0 A</span>. الفرق صغير ولا يغيّر الطريقة.</p>`},
+    {title:'مختبر مصغّر: أي جهد على ضلع الدلتا؟',widget:(el,B)=>DCML.lab(el,B,{intro:'من المثال: \\(Z=6+j8=10\\angle53.1^\\circ\\ \\Omega\\) في كل ضلع. اختر الجهد الذي تضعه على الضلع، وقارن بنتائج الكتاب.',
+ predict:{q:'لو وضعت جهد طور المولد <span class="ltr">220 V</span> على ضلع الدلتا (خطأ شائع)، كم يخرج تيار الضلع؟',opts:[
+  ['<span class="ltr">22 A</span>، وهو خطأ',true,'\\(220\\div10=22\\ \\text{A}\\)؛ الصحيح <span class="ltr">38 A</span> لأن الضلع بين خطين عليه <span class="ltr">380 V</span>.'],
+  ['<span class="ltr">38 A</span>',false,'هذا بجهد الخط <span class="ltr">380 V</span>، لا بـ <span class="ltr">220 V</span>.'],
+  ['<span class="ltr">65.8 A</span>',false,'هذا تيار الخط في حل الكتاب.']]},
+ ins:[{k:'v',l:'الجهد على الضلع',seg:[[380,'380 V (جهد الخط)'],[220,'220 V (جهد الطور)']],v:380}],
+ calc:(s,P,B)=>{const Iph=s.v/10,IL=Iph*Math.sqrt(3),ok=s.v===380;
+  return {facts:[['<span class="ltr">I<sub>ph</sub> = V ÷ 10</span>',DCML.fm(B,Iph,1)+' A',ok?'hi':'bad'],['<span class="ltr">I<sub>L</sub> = √3 I<sub>ph</sub></span>',DCML.fm(B,IL,1)+' A',ok?'hi':'bad']],
+   msg:ok?'كما في حل الكتاب: \\(\\bar I_{ab}=38\\angle{-23.1}^\\circ\\ \\text{A}\\) و \\(I_L=65.8\\ \\text{A}\\).':'خطأ: ضلع الدلتا لا يتصل بالحيادي، فلا يقع عليه جهد الطور.',cls:ok?'':'bad'}}})}
    ]},
 
   {st:7,short:'مثال <span class="ltr">2-1-3</span>',title:'مثال <span class="ltr">2-1-3</span>: زوايا مجهولة وتتابع ABC',ref:'ص 86–87',
@@ -728,7 +962,18 @@ B.lesson({
      ['<span class="ltr">+120°</span>',false,'هذه زاوية الطور C في التتابع ABC (أو زاوية B لو كان التتابع ACB).'],
      ['<span class="ltr">−120°</span>',true,'في التتابع ABC يتأخر B عن A بـ 120°، كما في المعادلات (2-2) وحل الكتاب.'],
      ['<span class="ltr">−30°</span>',false,'30° هي الزاوية بين جهد الخط وجهد الطور، لا بين طورين.']]}},
-    {tip:String.raw`<p>المثال نفسه مثل 2-1-1 بأرقام أخرى: جهد الطور 120 بدل 127 فتصغر التيارات بالنسبة نفسها \((24\) بدل \(25.4)\) وتبقى الزوايا كما هي، لأن المعاوقة نفسها \(3+j4=5\angle53.1^\circ\). والتحقق من الحيادي بالأرقام الديكارتية: \(14.4-j19.2-23.8-j2.9+9.4+j22.1=0\).</p>`}
+    {tip:String.raw`<p>المثال نفسه مثل 2-1-1 بأرقام أخرى: جهد الطور 120 بدل 127 فتصغر التيارات بالنسبة نفسها \((24\) بدل \(25.4)\) وتبقى الزوايا كما هي، لأن المعاوقة نفسها \(3+j4=5\angle53.1^\circ\). والتحقق من الحيادي بالأرقام الديكارتية: \(14.4-j19.2-23.8-j2.9+9.4+j22.1=0\).</p>`},
+    {title:'مختبر مصغّر: التتابع يحدد الزوايا',widget:(el,B)=>DCML.lab(el,B,{intro:'زاوية الطور A صفر كما في المثال. اختر التتابع واقرأ \\(\\theta_2\\) (الطور B) و \\(\\theta_3\\) (الطور C).',
+ predict:{q:'لو كان التتابع <span class="ltr">ACB</span>، كم تكون \\(\\theta_2\\)؟',opts:[
+  ['<span class="ltr">−120°</span>',false,'هذا في التتابع ABC (حل الكتاب).'],
+  ['<span class="ltr">+120°</span>',true,'في ACB يأتي C بعد A مباشرة (<span class="ltr">−120°</span>)، فيبقى B عند <span class="ltr">−240° = +120°</span>.'],
+  ['<span class="ltr">0°</span>',false,'لا يتطابق طوران في نظام ثلاثي.']]},
+ ins:[{k:'q',l:'التتابع',seg:[['abc','ABC (الكتاب)'],['acb','ACB']],v:'abc'}],
+ calc:(s,P,B)=>{const t2=s.q==='abc'?-120:120,t3=s.q==='abc'?120:-120,D=Math.PI/180,cx=110,cy=105,f1=v=>(+v).toFixed(1);
+  const arr=(a,col,lab)=>{const x=cx+80*Math.cos(a*D),y=cy-80*Math.sin(a*D),h=10;return `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(${col})" stroke-width="3"/><polygon points="${f1(x)},${f1(y)} ${f1(x-h*Math.cos((a-22)*D))},${f1(y+h*Math.sin((a-22)*D))} ${f1(x-h*Math.cos((a+22)*D))},${f1(y+h*Math.sin((a+22)*D))}" fill="var(${col})"/><text x="${f1(cx+96*Math.cos(a*D))}" y="${f1(cy-96*Math.sin(a*D)+4)}" text-anchor="middle" font-size="13" font-weight="700" fill="var(${col})">${lab}</text>`};
+  const pic=`<svg viewBox="0 0 220 210" role="img" aria-label="مطاورات الجهود" style="font-family:var(--font);max-width:250px;display:block;margin-inline:auto" direction="ltr">${arr(0,'--blue','A')}${arr(t2,'--live','B')}${arr(t3,'--stop','C')}</svg>`;
+  return {pic,facts:[['θ<sub>2</sub> (B)',DCML.fm(B,t2,0)+'°','hi'],['θ<sub>3</sub> (C)',DCML.fm(B,t3,0)+'°','hi'],['<span class="ltr">V<sub>L</sub> = √3 × 120</span>','208 V']],
+   msg:s.q==='abc'?'كما في حل الكتاب: \\(\\theta_2=-120^\\circ\\) و \\(\\theta_3=-240^\\circ=120^\\circ\\).':'تبادل B و C مكانيهما؛ مقدار جهد الخط لا يتغير.'}}})}
    ]},
 
   {recap:[
@@ -976,7 +1221,11 @@ B.lesson({
    body:[
     {book:String.raw`<p>في كثير من الحالات نحتاج إلى تحويل توصيلة النجمة للأحمال إلى توصيلة دلتا مكافئة والعكس وذلك <b>لتسهيل الحسابات</b>، ويوضح الشكل 2-11 كيفية التحويل.</p>`,ref:'ص 87'},
     {tip:String.raw`<p>«مكافئة» تعني: لو قسنا المعاوقة بين أي طرفين (والطرف الثالث مفتوح) لوجدناها متساوية في الدائرتين. عندها لا يميز المصدر الموصول بالأطراف A و B و C بين الدائرتين، فنختار الأسهل في الحساب.</p>`,title:'ما معنى «مكافئة»؟'},
-    {tip:String.raw`<p>انتبه للتسمية: معاوقة الدلتا تُسمى بالطرفين اللذين تصل بينهما (\(Z_{AB}\) بين A و B)، ومعاوقة النجمة تُسمى بطرفها ونقطة النجمة (\(Z_{AN}\) بين A و N).</p>`}
+    {tip:String.raw`<p>انتبه للتسمية: معاوقة الدلتا تُسمى بالطرفين اللذين تصل بينهما (\(Z_{AB}\) بين A و B)، ومعاوقة النجمة تُسمى بطرفها ونقطة النجمة (\(Z_{AN}\) بين A و N).</p>`},
+    {title:'تحقق سريع: معنى «مكافئة»',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['نحوّل النجمة إلى دلتا مكافئة (أو العكس) لتسهيل الحسابات.',true,'نص ص 87.'],
+     ['التحويل يغيّر الأسلاك الحقيقية في الحمل.',false,'التحويل حسابي على الورق فقط؛ الحمل الحقيقي لا يتغير.'],
+     ['الدائرتان متكافئتان إذا أعطى القياس بين أي طرفين منهما المعاوقة نفسها.',true,'لذلك لا يفرق المصدر بينهما (جرّب ذلك في أداة المحطة الرابعة).']]})}
    ]},
 
   {st:2,short:'نجمة ← دلتا',title:'<span class="ltr">2-6-1</span> التحويل من توصيلة نجمة إلى توصيلة دلتا مكافئة',ref:'ص 87–88',
@@ -994,7 +1243,11 @@ B.lesson({
      <div class="eq">$$\begin{aligned}Z_{AB}&=\frac{Z_{AN}Z_{BN}+Z_{BN}Z_{CN}+Z_{CN}Z_{AN}}{Z_{CN}}\\ Z_{BC}&=\frac{Z_{AN}Z_{BN}+Z_{BN}Z_{CN}+Z_{CN}Z_{AN}}{Z_{AN}}\\ Z_{CA}&=\frac{Z_{AN}Z_{BN}+Z_{BN}Z_{CN}+Z_{CN}Z_{AN}}{Z_{BN}}\end{aligned}$$<span class="eqno">(2-9)</span></div>`,ref:'ص 87–88'},
     {tip:String.raw`<ul><li><b>البسط</b> واحد في القوانين الثلاثة: مجموع حواصل ضرب كل معاوقتين من النجمة. احسبه مرة واحدة فقط.</li>
      <li><b>المقام</b> هو ذراع النجمة <b>المقابلة</b> لضلع الدلتا (التي لا تلمس طرفيه): الضلع AB يقابله \(Z_{CN}\)، والضلع BC يقابله \(Z_{AN}\)، والضلع CA يقابله \(Z_{BN}\).</li></ul>`,title:'طريقة الحفظ'},
-    {watch:String.raw`<p>المعاوقات هنا أعداد مركبة: الضرب والقسمة بالأعداد المركبة (الصيغة القطبية أسهل للضرب والقسمة، والديكارتية للجمع). لا تضرب الأجزاء الحقيقية وحدها والتخيلية وحدها.</p>`}
+    {watch:String.raw`<p>المعاوقات هنا أعداد مركبة: الضرب والقسمة بالأعداد المركبة (الصيغة القطبية أسهل للضرب والقسمة، والديكارتية للجمع). لا تضرب الأجزاء الحقيقية وحدها والتخيلية وحدها.</p>`},
+    {title:'مختبر مصغّر: ما مقام كل قانون؟',widget:(el,B)=>DCML.sort(el,B,{intro:'البسط واحد في القوانين الثلاثة <span class="ltr">(2-9)</span>. اختر المقام لكل ضلع: إنه الذراع <b>المقابلة</b> التي لا تلمس طرفي الضلع.',cats:['Z<sub>AN</sub>','Z<sub>BN</sub>','Z<sub>CN</sub>'],items:[
+     ['\\(Z_{AB}\\)',2,'الضلع AB يقابل الذراع \\(Z_{CN}\\).'],
+     ['\\(Z_{BC}\\)',0,'الضلع BC يقابل الذراع \\(Z_{AN}\\).'],
+     ['\\(Z_{CA}\\)',1,'الضلع CA يقابل الذراع \\(Z_{BN}\\).']]})}
    ]},
 
   {st:3,short:'مثال <span class="ltr">2-1-4</span>',title:'مثال <span class="ltr">2-1-4</span>: من نجمة إلى دلتا',ref:'ص 88',
@@ -1014,7 +1267,16 @@ B.lesson({
      [String.raw`\(Z_{BN}=1+j\)`,true,String.raw`الضلع CA يقابله \(Z_{BN}\)، فـ \(Z_{CA}=\frac{-1+j16}{1+j}=7.5+j8.5\ \Omega\).`],
      [String.raw`\(Z_{AN}=3+j2\)`,false,String.raw`هذه مقام \(Z_{BC}\).`],
      [String.raw`\(Z_{CN}=1+j2\)`,false,String.raw`هذه مقام \(Z_{AB}\).`]]}},
-    {tip:String.raw`<p>البسط المشترك (نحسبه مرة واحدة): \((3+j2)(1+j2)+(1+j2)(1+j)+(1+j)(3+j2)=(-1+j8)+(-1+j3)+(1+j5)=-1+j16\). ثم نقسمه ثلاث مرات على المقامات الثلاثة. القسمة الثانية تعطي بالضبط \(2.23+j3.85\) وكتبها الكتاب \(2.2+j3.8\).</p>`,title:'وفّر الوقت'}
+    {tip:String.raw`<p>البسط المشترك (نحسبه مرة واحدة): \((3+j2)(1+j2)+(1+j2)(1+j)+(1+j)(3+j2)=(-1+j8)+(-1+j3)+(1+j5)=-1+j16\). ثم نقسمه ثلاث مرات على المقامات الثلاثة. القسمة الثانية تعطي بالضبط \(2.23+j3.85\) وكتبها الكتاب \(2.2+j3.8\).</p>`,title:'وفّر الوقت'},
+    {title:'مختبر مصغّر: البسط المشترك ثم القسمة',widget:(el,B)=>DCML.lab(el,B,{intro:'معاوقات المثال: \\(Z_{AN}=3+j2\\)، \\(Z_{BN}=1+j\\)، \\(Z_{CN}=1+j2\\ \\Omega\\). البسط المشترك يُحسب مرة واحدة، ثم نقسمه على الذراع المقابلة.',
+ predict:{q:'أي أضلاع الدلتا المكافئة يخرج أصغر؟',opts:[
+  ['\\(Z_{AB}\\)',false,'مقامه \\(Z_{CN}\\) وليس أكبر الأذرع.'],
+  ['\\(Z_{BC}\\)',true,'البسط نفسه للثلاثة، ومقام \\(Z_{BC}\\) هو \\(Z_{AN}\\) أكبر الأذرع، فيخرج الناتج أصغر.'],
+  ['\\(Z_{CA}\\)',false,'مقامه \\(Z_{BN}=1+j\\) أصغر الأذرع، فيخرج الناتج أكبر.']]},
+ ins:[{k:'s',l:'الضلع',seg:[['AB','Z<sub>AB</sub>'],['BC','Z<sub>BC</sub>'],['CA','Z<sub>CA</sub>']],v:'AB'}],
+ calc:(s,P,B)=>{const a=C(3,2),b=C(1,1),c=C(1,2),N=cadd(cadd(cmul(a,b),cmul(b,c)),cmul(c,a)),den={AB:c,BC:a,CA:b}[s.s],dl={AB:'Z<sub>CN</sub>',BC:'Z<sub>AN</sub>',CA:'Z<sub>BN</sub>'}[s.s],R=cdiv(N,den);
+  return {facts:[['البسط المشترك (Ω²)',zs(N,0)],['المقام '+dl+' (Ω)',zs(den,0)],['Z<sub>'+s.s+'</sub> (Ω)',zs(R,2),'hi']],
+   msg:'نتائج الكتاب: \\(Z_{AB}=6.2+j3.6\\)، \\(Z_{BC}=2.2+j3.8\\)، \\(Z_{CA}=7.5+j8.5\\ \\Omega\\).'}}})}
    ]},
 
   {st:4,short:'دلتا ← نجمة',title:'<span class="ltr">2-6-2</span> التحويل من توصيلة دلتا إلى توصيلة نجمة مكافئة',ref:'ص 88–89',
@@ -1070,7 +1332,16 @@ B.lesson({
      [String.raw`\(3+j7\ \Omega\)`,false,String.raw`نسيت \(j4\) أو \(j3\): اجمع الأجزاء التخيلية الثلاثة \(3+4+3=10\).`],
      [String.raw`\(j4\ \Omega\)`,false,String.raw`هذه \(Z_{AB}\) وحدها، والمقام مجموع الثلاث.`]]}},
     {watch:String.raw`<p>في حل الكتاب (ص 90) طُبع \(Z_{AN}=0.04+j1.10\ \Omega\)، والصحيح \(\dfrac{(1+j3)(j4)}{3+j10}=\dfrac{-12+j4}{3+j10}=\dfrac{4+j132}{109}=0.04+j1.21\ \Omega\). قيمتا \(Z_{BN}\) و\(Z_{CN}\) صحيحتان. في تبويب «الأمثلة المحلولة» حلّان: كما في الكتاب، والمصحح.</p>`,fix:true},
-    {tip:String.raw`<p>البسط هو ما يميز كل ذراع: \(Z_{AN}\) بسطها \(Z_{AB}Z_{CA}=(j4)(1+j3)\)، و\(Z_{BN}\) بسطها \((j4)(2+j3)\)، و\(Z_{CN}\) بسطها \((1+j3)(2+j3)\). والمقام \(3+j10\) نفسه للثلاث.</p>`}
+    {tip:String.raw`<p>البسط هو ما يميز كل ذراع: \(Z_{AN}\) بسطها \(Z_{AB}Z_{CA}=(j4)(1+j3)\)، و\(Z_{BN}\) بسطها \((j4)(2+j3)\)، و\(Z_{CN}\) بسطها \((1+j3)(2+j3)\). والمقام \(3+j10\) نفسه للثلاث.</p>`},
+    {title:'مختبر مصغّر: من الدلتا إلى كل ذراع',widget:(el,B)=>DCML.lab(el,B,{intro:'معاوقات المثال: \\(Z_{AB}=j4\\)، \\(Z_{BC}=2+j3\\)، \\(Z_{CA}=1+j3\\ \\Omega\\). في <span class="ltr">(2-10)</span> البسط هو حاصل ضرب الضلعين اللذين يلمسان طرف الذراع.',
+ predict:{q:'ما بسط قانون \\(Z_{AN}\\)؟',opts:[
+  ['\\(Z_{AB}Z_{CA}\\)',true,'الضلعان AB و CA يلمسان الطرف A.'],
+  ['\\(Z_{AB}Z_{BC}\\)',false,'هذا بسط \\(Z_{BN}\\) (الضلعان اللذان يلمسان B).'],
+  ['\\(Z_{BC}Z_{CA}\\)',false,'هذا بسط \\(Z_{CN}\\).']]},
+ ins:[{k:'s',l:'الذراع',seg:[['AN','Z<sub>AN</sub>'],['BN','Z<sub>BN</sub>'],['CN','Z<sub>CN</sub>']],v:'AN'}],
+ calc:(s,P,B)=>{const ab=C(0,4),bc=C(2,3),ca=C(1,3),S=cadd(cadd(ab,bc),ca),N={AN:cmul(ab,ca),BN:cmul(ab,bc),CN:cmul(bc,ca)}[s.s],nl={AN:'Z<sub>AB</sub>Z<sub>CA</sub>',BN:'Z<sub>AB</sub>Z<sub>BC</sub>',CN:'Z<sub>BC</sub>Z<sub>CA</sub>'}[s.s],R=cdiv(N,S);
+  return {facts:[['البسط '+nl,zs(N,0)],['المقام المشترك',zs(S,0)],['Z<sub>'+s.s+'</sub> (Ω)',zs(R,2),'hi']],
+   msg:s.s==='AN'?'الناتج <span class="ltr">0.04 + j1.21 Ω</span>؛ وفي الكتاب طُبع <span class="ltr">0.04 + j1.10</span> (انظر «انتبه»).':'يطابق نتيجة الكتاب بعد التقريب.'}}})}
    ]},
 
   {recap:[
@@ -1318,7 +1589,16 @@ B.lesson({
      <ul><li><b>في النجمة:</b> \(V_{ph}=V_L/\sqrt3\) و\(I_{ph}=I_L\)، إذن \(P_T=3\,\frac{V_L}{\sqrt3}\,I_L\cos\theta=\sqrt3\,V_LI_L\cos\theta\).</li>
      <li><b>في الدلتا:</b> \(V_{ph}=V_L\) و\(I_{ph}=I_L/\sqrt3\)، إذن \(P_T=3\,V_L\frac{I_L}{\sqrt3}\cos\theta=\sqrt3\,V_LI_L\cos\theta\).</li></ul>
      <p>في الحالتين: \(3\div\sqrt3=\sqrt3\). لذلك المعادلة واحدة للتوصيلتين.</p>`,title:'كيف جاء √3؟'},
-    {watch:String.raw`<p>\(\theta\) في المعادلات (2-12) و(2-13) هي <b>زاوية الطور</b> (زاوية معاوقة الحمل)، وليست الزاوية بين جهد الخط وتيار الخط. وإذا كانت المعاوقة سعوية (ممانعة سالبة) تكون \(\theta\) سالبة و\(Q_T\) سالبة.</p>`}
+    {watch:String.raw`<p>\(\theta\) في المعادلات (2-12) و(2-13) هي <b>زاوية الطور</b> (زاوية معاوقة الحمل)، وليست الزاوية بين جهد الخط وتيار الخط. وإذا كانت المعاوقة سعوية (ممانعة سالبة) تكون \(\theta\) سالبة و\(Q_T\) سالبة.</p>`},
+    {title:'مختبر مصغّر: من 3 أطوار إلى √3',widget:(el,B)=>DCML.lab(el,B,{intro:'الأرقام من مثالين في الكتاب: حمل النجمة في مثال <span class="ltr">2-1-1</span> وحمل الدلتا في مثال <span class="ltr">2-2-1</span> (معامل القدرة <span class="ltr">0.6</span> في الاثنين). احسب القدرة بطريقتين.',
+ predict:{q:'عندما نكتب القدرة بكميات <b>الخط</b>، بماذا نضرب \\(V_LI_L\\cos\\theta\\)؟',opts:[
+  ['3',false,'الـ 3 مع كميات الطور: \\(P_T=3V_{ph}I_{ph}\\cos\\theta\\).'],
+  ['\\(\\sqrt3\\)',true,'لأن أحد العاملين (الجهد في النجمة أو التيار في الدلتا) فيه \\(\\sqrt3\\)، و\\(3/\\sqrt3=\\sqrt3\\): المعادلة <span class="ltr">(2-12)</span>.'],
+  ['1',false,'هذا لطور واحد فقط.']]},
+ ins:[{k:'t',l:'الحمل',seg:[['y','نجمة (مثال 2-1-1)'],['d','دلتا (مثال 2-2-1)']],v:'y'}],
+ calc:(s,P,B)=>{const y=s.t==='y',Vp=y?127:380,Ip=y?25.4:38,VL=y?220:380,IL=y?25.4:65.8,P1=3*Vp*Ip*0.6,P2=Math.sqrt(3)*VL*IL*0.6;
+  return {facts:[['V<sub>ph</sub>',Vp+' V'],['I<sub>ph</sub>',Ip+' A'],['V<sub>L</sub>',VL+' V'],['I<sub>L</sub>',IL+' A'],['<span class="ltr">3 V<sub>ph</sub> I<sub>ph</sub> cos θ</span>',DCML.fm(B,P1/1000,2)+' kW','hi'],['<span class="ltr">√3 V<sub>L</sub> I<sub>L</sub> cos θ</span>',DCML.fm(B,P2/1000,2)+' kW','hi']],
+   msg:y?'في النجمة \\(V_L=\\sqrt3V_{ph}\\) و\\(I_L=I_{ph}\\).':'في الدلتا \\(I_L=\\sqrt3I_{ph}\\) و\\(V_L=V_{ph}\\). النتيجة <span class="ltr">26 kW</span> كما في الكتاب.'}}})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">2-2-1</span>',title:'مثال <span class="ltr">2-2-1</span>: قدرات حمل دلتا سعوي',ref:'ص 91–92',
@@ -1337,7 +1617,17 @@ B.lesson({
      ['لأن الحمل موصول دلتا',false,'التوصيلة لا تحدد الإشارة؛ المعادلة (2-13) واحدة للنجمة والدلتا.'],
      [String.raw`لأن الحمل مادي-سعوي فزاويته سالبة \((-53.1^\circ)\)`,true,String.raw`\(Z=6-j8=10\angle-53.1^\circ\)، و\(\sin(-53.1^\circ)\) سالب، والمكثف «يولد» القدرة المفاعلة.`],
      ['لأن الكتاب أخطأ في الإشارة',false,String.raw`الإشارة صحيحة: \(-34.6\) kVAR.`]]}},
-    {tip:String.raw`<p>تحقّق سريع: \(\cos53.1^\circ=0.6\) و\(\sin53.1^\circ=0.8\)، فـ \(P_T=0.6\times43.3=26\) kW و\(|Q_T|=0.8\times43.3=34.6\) kVAR. وأيضاً \(26^2+34.6^2\approx43.3^2\) (مثلث القدرة).</p>`}
+    {tip:String.raw`<p>تحقّق سريع: \(\cos53.1^\circ=0.6\) و\(\sin53.1^\circ=0.8\)، فـ \(P_T=0.6\times43.3=26\) kW و\(|Q_T|=0.8\times43.3=34.6\) kVAR. وأيضاً \(26^2+34.6^2\approx43.3^2\) (مثلث القدرة).</p>`},
+    {title:'مختبر مصغّر: مثلث قدرة المثال',widget:(el,B)=>DCML.lab(el,B,{intro:'نتائج الكتاب: \\(P_T=26\\ \\text{kW}\\) و\\(Q_T=-34.6\\ \\text{kVAR}\\) و\\(S_T=43.3\\ \\text{kVA}\\). بدّل إشارة الجزء التخيلي للمعاوقة (للمقارنة فقط) وراقب Q.',
+ predict:{q:'لو كانت المعاوقة \\(6+j8\\) بدلاً من \\(6-j8\\)، ماذا يتغير؟',opts:[
+  ['تتغير إشارة \\(Q_T\\) فقط',true,'الزاوية تصير \\(+53.1^\\circ\\): \\(\\cos\\) لا يتغير، و\\(\\sin\\) يغير إشارته.'],
+  ['تتغير \\(P_T\\) و\\(S_T\\) أيضاً',false,'المقدار \\(|Z|=10\\) لم يتغير، و\\(\\cos\\theta\\) لم يتغير.'],
+  ['لا يتغير شيء',false,'الحمل صار حثياً، فإشارة Q تنعكس.']]},
+ ins:[{k:'g',l:'المعاوقة',seg:[[-1,'<span class="ltr">6 − j8</span> (الكتاب)'],[1,'<span class="ltr">6 + j8</span> (للمقارنة)']],v:-1}],
+ calc:(s,P,B)=>{const S=Math.sqrt(3)*380*65.8/1000,Pk=S*0.6,Q=s.g*S*0.8;
+  return {facts:[['P<sub>T</sub>',DCML.fm(B,Pk,1)+' kW'],['Q<sub>T</sub>',DCML.fm(B,Q,1)+' kVAR','hi'],['S<sub>T</sub>',DCML.fm(B,S,1)+' kVA'],['<span class="ltr">√(P² + Q²)</span>',DCML.fm(B,Math.hypot(Pk,Q),1)+' kVA']],
+   bars:[{l:'P<sub>T</sub>',v:Pk,max:45,u:'kW',dp:1,col:'--on'},{l:'|Q<sub>T</sub>|',v:Math.abs(Q),max:45,u:'kVAR',dp:1,col:s.g<0?'--blue':'--live'},{l:'S<sub>T</sub>',v:S,max:45,u:'kVA',dp:1,col:'--stop'}],
+   msg:s.g<0?'حمل مادي - سعوي: \\(Q_T\\) سالبة، كما في الكتاب.':'حمل مادي - حثي: \\(Q_T\\) موجبة. (هذه الحالة ليست في الكتاب.)'}}})}
    ]},
 
   {st:3,short:'مثال <span class="ltr">2-2-2</span>',title:'مثال <span class="ltr">2-2-2</span>: مولد نجمة وحمل دلتا',ref:'ص 92–93',
@@ -1357,7 +1647,16 @@ B.lesson({
      ['نقسم 220 على المعاوقة مباشرة',false,'220 V جهد طور المولد، لكن ضلع الدلتا عليه جهد الخط.'],
      ['نحسب جهد الخط: <span class="ltr">√3 × 220 = 380 V</span>',true,'لأن المولد نجمة، وجهد الخط هو الواقع على كل ضلع من الدلتا، وهو أيضاً ما تحتاجه المعادلة (2-12).'],
      ['نحسب تيار الحيادي',false,'لا يوجد حيادي مع حمل الدلتا.']]}},
-    {watch:String.raw`<p>في حل الكتاب (ص 93) طُبع \(P_T=25\) kW، والصحيح: \(S_T=\sqrt3\times380\times131.6=86.6\) kVA، و\(P_T=86.6\times0.6=52\) kW. تحقق آخر: \(3\times76^2\times3\ \Omega=52\) kW. أما \(Q_T=-69\) kVAR فصحيحة. في تبويب «الأمثلة المحلولة» حلّان: كما في الكتاب، والمصحح.</p>`,fix:true}
+    {watch:String.raw`<p>في حل الكتاب (ص 93) طُبع \(P_T=25\) kW، والصحيح: \(S_T=\sqrt3\times380\times131.6=86.6\) kVA، و\(P_T=86.6\times0.6=52\) kW. تحقق آخر: \(3\times76^2\times3\ \Omega=52\) kW. أما \(Q_T=-69\) kVAR فصحيحة. في تبويب «الأمثلة المحلولة» حلّان: كما في الكتاب، والمصحح.</p>`,fix:true},
+    {title:'مختبر مصغّر: طريقتان للقدرة نفسها',widget:(el,B)=>DCML.lab(el,B,{intro:'من المثال: \\(V_L=380\\ \\text{V}\\)، و\\(Z=3-j4=5\\angle{-53.1}^\\circ\\ \\Omega\\)، فتيار الطور \\(I=76\\ \\text{A}\\) وتيار الخط \\(131.6\\ \\text{A}\\). اختر الطريقة.',
+ predict:{q:'هل تعطي الطريقتان \\(\\sqrt3V_LI_L\\cos\\theta\\) و \\(3I^2R\\) النتيجة نفسها؟',opts:[
+  ['نعم، تقريباً <span class="ltr">52 kW</span>',true,'\\(3\\times76^2\\times3=51984\\ \\text{W}\\) و\\(\\sqrt3\\times380\\times131.6\\times0.6\\approx51971\\ \\text{W}\\) (الفرق من التقريب).'],
+  ['لا، الثانية تعطي ثلث الأولى',false,'الـ 3 في الثانية تجمع الأطوار الثلاثة.'],
+  ['نعم، <span class="ltr">25 kW</span>',false,'<span class="ltr">25 kW</span> مطبوعة في الكتاب خطأً (انظر «انتبه»).']]},
+ ins:[{k:'m',l:'الطريقة',seg:[['a','<span class="ltr">√3 V<sub>L</sub> I<sub>L</sub> cos θ</span>'],['b','<span class="ltr">3 I² R</span>']],v:'a'}],
+ calc:(s,P,B)=>{const a=s.m==='a',Pw=a?Math.sqrt(3)*380*131.6*0.6:3*76*76*3,Qv=a?-Math.sqrt(3)*380*131.6*0.8:-3*76*76*4;
+  return {facts:[['P<sub>T</sub>',DCML.fm(B,Pw/1000,1)+' kW','hi'],['Q<sub>T</sub>',DCML.fm(B,Qv/1000,1)+' kVAR','hi']],
+   msg:a?'بكميات الخط <span class="ltr">(2-12)</span> و<span class="ltr">(2-13)</span>.':'بكميات الطور: ثلاثة أطوار، في كل منها \\(I^2R\\) و\\(-I^2X_C\\).'}}})}
    ]},
 
   {st:4,short:'قياس القدرة',title:'<span class="ltr">2-8</span> قياس القدرة في دوائر التيار المتردد ثلاثي الأطوار',ref:'ص 93–94',
@@ -1419,7 +1718,16 @@ B.lesson({
      <div class="eq">$$P=W_1-W_2=6-2=4\ \text{kW}$$</div>`,ref:'ص 94'},
     {add:String.raw`<p>الكتاب يستعمل القراءتين لمعرفة القدرة فقط. وللحمل <b>المتزن</b> يمكن أن نعرف منهما معامل القدرة أيضاً. من \(W_1=V_LI_L\cos(30^\circ+\theta)\) و\(W_2=V_LI_L\cos(30^\circ-\theta)\):</p>
      <div class="eq">$$\tan\theta=\frac{\sqrt3\,(W_2-W_1)}{W_1+W_2}$$</div>
-     <p>والقراءات تؤخذ <b>بإشارتها</b> (التي احتاجت إلى عكس الملف تُكتب سالبة). في هذا المثال: \(6\) و\(-2\) kW، فـ \(|\tan\theta|=\frac{\sqrt3\times8}{4}=3.464\)، و\(\theta=73.9^\circ\)، و\(\cos\theta=0.277\) — أقل من 0.5 كما استنتج الكتاب. الحاسبة في تبويب «الأمثلة المحلولة».</p>`,title:'معامل القدرة من القراءتين'}
+     <p>والقراءات تؤخذ <b>بإشارتها</b> (التي احتاجت إلى عكس الملف تُكتب سالبة). في هذا المثال: \(6\) و\(-2\) kW، فـ \(|\tan\theta|=\frac{\sqrt3\times8}{4}=3.464\)، و\(\theta=73.9^\circ\)، و\(\cos\theta=0.277\) — أقل من 0.5 كما استنتج الكتاب. الحاسبة في تبويب «الأمثلة المحلولة».</p>`,title:'معامل القدرة من القراءتين'},
+    {title:'مختبر مصغّر: ماذا يعني عكس الملف؟',widget:(el,B)=>DCML.cases(el,B,{intro:'من المثال <span class="ltr">2-2-3</span>.',cases:[
+     {q:'أحد الجهازين لم يقرأ حتى عُكس توصيل ملف تياره. ماذا نستنتج عن الحمل؟',opts:[
+      ['معامل قدرته أقل من <span class="ltr">0.5</span>',true,'نص الحل: «معامل قدرة الحمل أقل من 0.5 لأن أحد الواتميترين أعطى قراءة سالبة».'],
+      ['الحمل غير متزن',false,'الكتاب لم يستنتج ذلك؛ القراءة السالبة مرتبطة بمعامل القدرة.'],
+      ['الجهاز معطل',false,'الجهاز سليم؛ عكس الملف جعله يقرأ القيمة السالبة بإشارة موجبة.']]},
+     {q:'بعد العكس قرأ الجهاز <span class="ltr">2 kW</span>. كيف ندخلها في الحساب؟',opts:[
+      ['نجمعها: <span class="ltr">6 + 2 = 8 kW</span>',false,'القراءة الحقيقية سالبة، فلا تُجمع كأنها موجبة.'],
+      ['نطرحها: <span class="ltr">6 − 2 = 4 kW</span>',true,'\\(P=W_1-W_2=4\\ \\text{kW}\\)، كما في حل الكتاب.'],
+      ['نهملها',false,'القراءتان معاً تعطيان القدرة الكلية.']]}]})}
    ]},
 
   {st:6,short:'مسائل الوحدة',title:'مسائل الوحدة الثانية',ref:'ص 95–96',
@@ -1444,7 +1752,12 @@ B.lesson({
      <li><b>المسألة 4:</b> مثل مثال 2-1-2 تماماً لكن \(Z=6+j7\ \Omega\) (شكل 3).</li></ul>
      <p>الإجابات المقترحة في الأسلوب «الرسمي» من هذا التبويب، والحاسبات في «الأمثلة المحلولة».</p>`,title:'من أين تبدأ؟'},
     {watch:String.raw`<p>الكتاب لا يطبع إجابات المسائل.</p>`},
-    {watch:String.raw`<p>المسألتان 2 و3 لا تذكران تتابع الأطوار (افترضنا ABC في الإجابات المقترحة)، والمسألة 3 لا تذكر وحدة الجهد. وفي شكل المسألة 2 طُبع «Vam» على المصدر العلوي والمقصود \(V_{an}\).</p>`,fix:true}
+    {watch:String.raw`<p>المسألتان 2 و3 لا تذكران تتابع الأطوار (افترضنا ABC في الإجابات المقترحة)، والمسألة 3 لا تذكر وحدة الجهد. وفي شكل المسألة 2 طُبع «Vam» على المصدر العلوي والمقصود \(V_{an}\).</p>`,fix:true},
+    {title:'مختبر مصغّر: ما نوع كل مسألة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'حدد توصيلة المصدر والحمل في كل مسألة؛ فهي التي تحدد الخطوة الأولى.',cats:['نجمة - نجمة','نجمة - دلتا','دلتا - دلتا'],items:[
+     ['المسألة 1',0,'«Y − Y»: نعمل على طور واحد (معاوقة الخط + الحمل) بجهد الطور.'],
+     ['المسألة 2',1,'«نجمة – دلتا» ومعطى جهد الخط \\(\\bar V_{AB}\\) مباشرة، فهو جهد ضلع الدلتا.'],
+     ['المسألة 3',2,'مولد دلتا وحمل دلتا: جهد الخط \\(V_{ab}\\) نفسه على كل ضلع من الحمل.'],
+     ['المسألة 4',1,'«حمل… توصيلة دلتا بمولد ذي توصيلة نجمة»: نحسب جهد الخط أولاً بـ \\(\\sqrt3\\).']]})}
    ]},
 
   {recap:[

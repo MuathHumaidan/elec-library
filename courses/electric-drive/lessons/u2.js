@@ -107,7 +107,183 @@ B.lesson({
  title:'أنواع الأحمال ومنحنيات خواصها ونقطة التشغيل',
  summary:'أهداف الوحدة الثانية، والأحمال الميكانيكية الشائعة، ومنحنيات خواص الأحمال A إلى E في الشكل (2-1)، ثم التوازن الديناميكي بين عزم المحرك وعزم الحمل ونقطة التشغيل عند تقاطع المنحنيين في الشكل (2-2)، وماذا يحدث عندما يتغير الحمل.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الثانية: الهدف العام والأهداف التفصيلية',ref:'ص 17–18',
    q:'ما الذي يُنتظر منك أن تتقنه حين تنتهي من الوحدة الثانية؟',
@@ -123,7 +299,11 @@ B.lesson({
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة أنواع وطبيعة الأحمال الميكانيكية المختلفة وكيفية تحديد نقطة التشغيل المستقرة بين المحرك الكهربائي والحمل الميكانيكي.</p>
      <p><b>الأهداف التفصيلية:</b></p>
      <ol type="أ"><li>أن يعرف المتدرب منحنيات الخواص للأحمال الميكانيكية المختلفة.</li><li>أن يحدد المتدرب نقطة التشغيل المستقرة بين المحرك والحمل.</li><li>أن يتمكن المتدرب من حساب قدرة المحرك المطلوبة لتحريك حمل معين.</li></ol>`,ref:'ص 18'},
-    {tip:String.raw`<p>«الحمل الميكانيكي» هو الآلة التي يديرها المحرك: مضخة أو مروحة أو ونش… وهذا الدرس يجيب عن سؤالين: كيف يتصرف عزم الحمل عندما تتغير سرعته؟ وعند أي سرعة يستقر المحرك والحمل معاً؟</p>`}
+    {tip:String.raw`<p>«الحمل الميكانيكي» هو الآلة التي يديرها المحرك: مضخة أو مروحة أو ونش… وهذا الدرس يجيب عن سؤالين: كيف يتصرف عزم الحمل عندما تتغير سرعته؟ وعند أي سرعة يستقر المحرك والحمل معاً؟</p>`},
+    {title:'تحقق سريع: أهداف الوحدة الثانية',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب أهداف الوحدة (ص 18).',items:[
+ ['من أهداف الوحدة أن تعرف منحنيات الخواص للأحمال الميكانيكية المختلفة.',true,'هذا الهدف التفصيلي الأول.'],
+ ['من أهداف الوحدة تصميم ملفات المحرك الكهربائي.',false,'الوحدة عن الأحمال ونقطة التشغيل وقدرة المحرك، لا عن تصميم ملفاته.'],
+ ['من أهداف الوحدة حساب قدرة المحرك المطلوبة لتحريك حمل معين.',true,'هذا الهدف التفصيلي الثالث (الدرسان التاليان).']]})}
    ]},
 
   {st:2,short:'أنواع الأحمال',title:'أنواع الأحمال الميكانيكية وخصائصها',ref:'ص 19',
@@ -141,7 +321,14 @@ B.lesson({
      <ul><li>الروافع والأوناش.</li><li>الطواحين الدوارة.</li><li>الضواغط.</li><li>الشفاطات.</li><li>المضخات.</li><li>آلات القطع.</li><li>نقل الحركة بالسيور.</li><li>آلات التثقيب.</li><li>المصاعد الكهربائية.</li><li>القطارات والمركبات الكهربائية.</li></ul>
      <p>تستخدم في تحريك هذه الأحمال، محركات التيار المستمر أو محركات التيار المتردد الحثية منها والتزامنية، حسب نوع وطبيعة تشغيل الحمل الميكانيكي، بحيث يفي المحرك بمتطلبات بدء الحركة وتنظيم السرعة وأهم ما يجب معرفته من خواص الحمل الميكانيكي <b>العلاقة بين العزم والسرعة</b>، حتى يمكن اختيار نوع المحرك المناسب.</p>`,ref:'ص 19'},
     {tip:String.raw`<p>كل حمل «يطلب» من المحرك عزماً معيناً عند كل سرعة: المروحة مثلاً تكاد لا تحتاج عزماً وهي بطيئة، ويزيد عزمها كثيراً كلما أسرعت؛ أما الونش فيحتاج عزماً كبيراً حتى وهو يبدأ الحركة. لذلك نرسم لكل حمل منحنى «العزم مع السرعة» (المحطة التالية).</p>`},
-    {add:String.raw`<p>«متطلبات بدء الحركة» تعني: هل يستطيع المحرك أن يُقلع بالحمل من السكون؟ و«تنظيم السرعة» تعني: هل نحتاج تغيير سرعة الحمل أثناء العمل؟ ستدرس خواص المحركات من هذه الناحية في الوحدة الثالثة.</p>`}
+    {add:String.raw`<p>«متطلبات بدء الحركة» تعني: هل يستطيع المحرك أن يُقلع بالحمل من السكون؟ و«تنظيم السرعة» تعني: هل نحتاج تغيير سرعة الحمل أثناء العمل؟ ستدرس خواص المحركات من هذه الناحية في الوحدة الثالثة.</p>`},
+    {title:'مختبر مصغّر: صنّف أحمال القائمة',widget:(el,B)=>DCML.sort(el,B,{intro:'تذكّر الوحدة الأولى: لكل حمل من قائمة الكتاب، هل حركته المطلوبة خطية أم دورانية؟',cats:['خطية','دورانية'],items:[
+ ['الروافع والأوناش (الثقل المرفوع)',0,'الثقل يصعد في خط مستقيم، ويحسب الكتاب قوته \\(F=m\\cdot g\\) (المثال 2-2).'],
+ ['الطواحين الدوارة',1,'تدور حول محورها، كما يدل اسمها.'],
+ ['الشفاطات',1,'مروحة تدور؛ الكتاب يضعها مع المراوح في المنحنى D.'],
+ ['المصاعد الكهربائية',0,'الصاعدة تتحرك رأسياً في خط مستقيم (المثال 2-4).'],
+ ['القطارات والمركبات الكهربائية',0,'تتحرك في خط مستقيم على الطريق أو السكة (المثال 2-1).'],
+ ['المضخات',1,'المضخة تدور، وعزمها يزيد مع السرعة (المنحنى C).']]})}
    ]},
 
   {st:3,short:'منحنيات خواص الأحمال',title:'منحنيات خواص الأحمال',ref:'ص 19–20',
@@ -198,7 +385,13 @@ B.lesson({
      <p>ولتحديد نقطة التشغيل، يلزمنا معرفة المنحنى الذي يربط بين عزم الدوران والسرعة لكل من المحرك والحمل الميكانيكي، حيث تتحدد <b>نقطة التشغيل من تقاطع هذين المنحنيين</b>. الشكل (2-2) يبين منحنيات العلاقة بين العزم والسرعة الدورانية لكل من المحرك والحمل الميكانيكي وعليه تظهر نقطة التشغيل وهي نقطة تقاطع المنحنيين. وأيضاً يمكن تحديد نقطة التشغيل حسابياً وذلك بمساواة معادلتي عزم الدوران والسرعة لكل من المحرك والحمل الميكانيكي ثم حلها.</p>`,ref:'ص 20–21'},
     {tip:String.raw`<p>بالرموز: \(T_{motor}=T_{load}+T_{losses}+T_{acc}\). ما دام عزم المحرك أكبر من عزم الحمل والمفاقيد فالفرق \(T_{acc}\) يسرّع الكتل الدوارة (القانون الثاني بصورته الدورانية)؛ وعند نقطة التشغيل يصبح الفرق صفراً فتثبت السرعة.</p>`,title:'ثلاث مركبات في سطر واحد'},
     {tip:String.raw`<p>تتبّع الشكل من اليسار إلى اليمين: عند السرعة صفر منحنى المحرك (الأخضر) فوق منحنى الحمل، فالفرق يسرّع المجموعة. يستمر التسارع ما دام الأخضر فوق البرتقالي، حتى يلتقيا في نقطة التشغيل فتستقر السرعة. لذلك يجب أن يكون عزم بدء المحرك \(T_{stm}\) أكبر من عزم بدء الحمل \(T_{stL}\)، وإلا لما بدأ الدوران أصلاً.</p>`,title:'اقرأ الشكل (2-2)'},
-    {watch:String.raw`<p>في رسم الكتاب كُتب «Charateristics» والصحيح «Characteristics»، وقد صُحح في الرسمة أعلاه.</p>`,fix:true}
+    {watch:String.raw`<p>في رسم الكتاب كُتب «Charateristics» والصحيح «Characteristics»، وقد صُحح في الرسمة أعلاه.</p>`,fix:true},
+    {title:'مختبر مصغّر: فكّك عزم الحمل',widget:(el,B)=>DCML.sort(el,B,{intro:'عزم الحمل محصلة ثلاث مركبات (ص 21). ضع كل وصف تحت مركبته.',cats:['المستفاد منه','المفاقيد الميكانيكية','التسارع أو التباطؤ'],items:[
+ ['العزم الذي يدير المضخة لترفع الماء',0,'هذا العزم الذي «يستفاد به لتدوير الحمل».'],
+ ['التغلب على الاحتكاك في المحاور والكراسي',1,'من عزم المفاقيد الميكانيكية.'],
+ ['التغلب على مقاومة الهواء لحركة الدوران',1,'من عزم المفاقيد الميكانيكية أيضاً.'],
+ ['عزم إضافي يلزم أثناء رفع السرعة عند البدء',2,'ناشئ عن القصور الذاتي للكتل الدوارة عندما تكون السرعة متغيرة.'],
+ ['مركبة تتلاشى عندما يدور المحرك بسرعة ثابتة',2,'نص الكتاب: «وتتلاشى هذه المركبة … عندما يدور المحرك بسرعة ثابتة».']]})}
    ]},
 
   {st:5,short:'عند تغير الحمل',title:'التوازن الديناميكي: ماذا يحدث عند تغير الحمل؟',ref:'ص 22',
@@ -246,7 +439,18 @@ B.lesson({
      <p><b>2-3:</b> ماذا يحدث إذا تغير الحمل على المحرك بالزيادة أو بالنقصان؟</p>`,ref:'ص 30'},
     {tip:String.raw`<p><b>2-1:</b> الأحمال الشائعة: الروافع والأوناش، الطواحين، الضواغط، الشفاطات، المضخات، آلات القطع، السيور، آلات التثقيب، المصاعد، القطارات. وتصنف حسب العلاقة بين العزم والسرعة (الشكل <span class="ltr">2-1</span>): <b>A</b> عزم يتناسب عكسياً مع السرعة (قدرة ثابتة)، <b>B</b> عزم ثابت (الرفع والشد)، <b>C</b> \(T=T_0+K\omega\) (المضخات)، <b>D</b> \(T=K\omega^2\) (المراوح والشفاطات)، <b>E</b> سرعة ثابتة مهما تغير العزم (مولد تزامني على شبكة لانهائية).</p>
      <p><b>2-2:</b> يولد المحرك عزماً عند السرعة التي يفرضها الحمل، ويقابله عزم مضاد من ثلاث مركبات: العزم المستفاد منه، وعزم المفاقيد الميكانيكية، وعزم التسارع أو التباطؤ. عندما يتساوى عزم المحرك مع عزم الحمل والمفاقيد تختفي مركبة التسارع وتثبت السرعة: هذه نقطة التشغيل، وهي تقاطع منحنى المحرك مع منحنى الحمل (الشكل <span class="ltr">2-2</span>).</p>
-     <p><b>2-3:</b> يختل التوازن: إذا <b>زاد</b> الحمل يظهر «عزم تقصير» تنخفض به السرعة، وإذا <b>نقص</b> يظهر عزم تسارع فتزيد السرعة. فإذا كان المحرك يعمل في الجزء المتزن من منحنى خواصه تنتقل نقطة التشغيل إلى موقع جديد يتساوى فيه العزمان من جديد.</p>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <p><b>2-3:</b> يختل التوازن: إذا <b>زاد</b> الحمل يظهر «عزم تقصير» تنخفض به السرعة، وإذا <b>نقص</b> يظهر عزم تسارع فتزيد السرعة. فإذا كان المحرك يعمل في الجزء المتزن من منحنى خواصه تنتقل نقطة التشغيل إلى موقع جديد يتساوى فيه العزمان من جديد.</p>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: اختر الجواب ثم قارنه',widget:(el,B)=>DCML.cases(el,B,{intro:'ثلاثة أسئلة سريعة من الأسئلة (2-1) إلى (2-3).',cases:[
+ {q:'(2-1) حمل يتناسب عزمه عكسياً مع السرعة بحيث يبقى حاصل ضربهما (القدرة) ثابتاً:',opts:[
+  ['المنحنى B',false,'B عزمه ثابت مهما تغيرت السرعة.'],
+  ['المنحنى A',true,String.raw`نص الكتاب ص 19: حاصل الضرب ثابت ويساوي القدرة \(P=T\times\omega\).`],
+  ['المنحنى D',false,String.raw`D عزمه يزيد مع مربع السرعة \(T=K\omega^2\).`]]},
+ {q:'(2-1) المراوح والشفاطات يمثلها المنحنى:',opts:[
+  [String.raw`D: \(T=K\times\omega^2\)`,true,'نص الكتاب ص 20.'],
+  [String.raw`C: \(T=T_0+K\omega\)`,false,'C للمضخات.']]},
+ {q:'(2-3) زاد الحمل على محرك يعمل في الجزء المتزن من منحناه. ماذا يحدث؟',opts:[
+  ['تزيد السرعة لوجود عزم تسارع',false,'هذا عندما يقل الحمل.'],
+  ['تنخفض السرعة لوجود عزم تقصير، حتى يحدث توازن جديد',true,'نص الكتاب ص 22.']]}]})}
    ]},
 
   {recap:[
@@ -455,7 +659,19 @@ B.lesson({
      <div class="eq">$$F=\frac{m\cdot g}{2}$$<span class="eqno">(2-4)</span></div>`,ref:'ص 22'},
     {tip:String.raw`<p>هذه هي معادلات الوحدة الأولى نفسها: <span class="ltr">(2-1)</span> هي <span class="ltr">(1-6)</span>، و<span class="ltr">(2-2)</span> هي <span class="ltr">(1-4)</span>، و<span class="ltr">(2-3)</span> هي <span class="ltr">(1-5)</span>. الجديد هو المصعد <span class="ltr">(2-4)</span>.</p>`,title:'ما الجديد هنا؟'},
     {tip:String.raw`<p>أثقال الموازنة تتدلى في الجهة الأخرى من البكرة، وكتلتها = كتلة الصاعدة + الحبال + نصف الحمولة. فإذا كانت الصاعدة نصف ممتلئة تكون الكفتان متوازنتين تقريباً، ولا يرفع المحرك إلا الفرق، وأقصى فرق هو نصف الحمولة (صاعدة ممتلئة أو فارغة). لذلك يكفي محرك أصغر بكثير.</p>`,title:'لماذا نصف الحمولة في المصعد؟'},
-    {watch:String.raw`<p>المعادلة <span class="ltr">(2-2)</span> هي قوة <b>التسارع</b> فقط، والكتاب يهمل القوة اللازمة للتغلب على مقاومة الحركة. وذكر القطار فيها مثال، والمقصود أي حمل أفقي. مقاومة حركة القطار وأثر الصعود على منحدر تأتي في الوحدة الخامسة.</p>`}
+    {watch:String.raw`<p>المعادلة <span class="ltr">(2-2)</span> هي قوة <b>التسارع</b> فقط، والكتاب يهمل القوة اللازمة للتغلب على مقاومة الحركة. وذكر القطار فيها مثال، والمقصود أي حمل أفقي. مقاومة حركة القطار وأثر الصعود على منحدر تأتي في الوحدة الخامسة.</p>`},
+    {title:'مختبر مصغّر: القوة ثم القدرة',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`اختر نوع الحركة، ثم الكتلة والسرعة (القيم الأولى من المثال (2-4): ${l('5000 kg')} بسرعة ${l('1 m/s')}). القدرة \\(P_L=F\\cdot v\\) (2-1).`,
+ predict:{q:`قطار كتلته ${l('200 ton')} يتسارع ${l('0.5 m/s²')}، وسرعته ${l('10 m/s')}. القدرة اللازمة \\(P_L\\):`,opts:[
+  [l('1 MW'),true,`${l('F = 200000 × 0.5 = 100000 N')}، ثم ${l('P = F·v = 1 MW')} (المثال 2-1).`],
+  [l('100 kN'),false,'هذه القوة F وليست القدرة؛ اضربها في السرعة.'],
+  [l('10 MW'),false,`راجع القوة: ${l('200000 × 0.5 = 100000 N')}.`]]},
+ ins:[{k:'d',l:'نوع الحركة',seg:[['h','أفقية: F = m·a (2-2)'],['v','رأسية: F = m·g (2-3)'],['e','مصعد بأثقال موازنة: F = m·g/2 (2-4)']],v:'e'},
+      {k:'m',l:'الكتلة m',u:'ton',min:0.5,max:200,step:0.5,v:5},
+      {k:'a',l:'التسارع a (للأفقية فقط)',u:'m/s²',min:0.1,max:2,step:0.1,v:0.5,dp:1},
+      {k:'v',l:'السرعة v',u:'m/s',min:0.5,max:20,step:0.5,v:1,dp:1}],
+ calc:(s,P,B)=>{const m=s.m*1000,F=s.d==='h'?m*s.a:s.d==='v'?m*9.81:m*9.81/2,Pl=F*s.v;
+  return {facts:[['F',DCML.fm(B,F,0)+' N'],['P<sub>L</sub> = F · v',DCML.fm(B,Pl,0)+' W','hi'],['بالكيلوواط',DCML.fm(B,Pl/1000,2)+' kW']],
+   msg:s.d==='e'?'في المصعد تحسب القوة على أساس <b>نصف الحمولة فقط</b>، لأن أثقال الموازنة تعادل نصف حمولة التشغيل وكتلة المصعد والحبال.':s.d==='v'?'في الرفع الرأسي نضرب في g = 9.81 لا في التسارع a.':'في الحركة الأفقية أهملنا قوة مقاومة حركة القطار كما في الكتاب.'}}})}}
    ]},
 
   {st:2,short:'الكفاءات وسريان القدرة',title:'كيفية حساب قدرة المحرك المقننة لتحريك حمل معين: الكفاءات وسريان القدرة',ref:'ص 23–24',
@@ -519,7 +735,19 @@ B.lesson({
      <div class="eq">$$I=\frac{P_{in}}{V}\qquad\qquad I_L=\frac{P_{in}}{\sqrt3\,V_L\cos\theta}$$</div>
      <p>\(\cos\theta\) هو <b>معامل القدرة</b> للمحرك، يُعطى في المسألة أحياناً عدداً عشرياً (<span class="ltr">0.82</span>) وأحياناً نسبة مئوية (<span class="ltr">85%</span>، أي <span class="ltr">0.85</span>).</p>`,title:'كيف نحسب التيار؟'},
     {tip:String.raw`<p>المعادلة <span class="ltr">(2-14)</span> تعطي <b>تيار الخط</b> \(I_L\). فإذا كانت ملفات المحرك موصلة <b>دلتا</b> يكون تيار الوجه (التيار في كل ملف) \(I_{ph}=I_L/\sqrt3\)، وإذا كانت <b>نجمة</b> يكون \(I_{ph}=I_L\) (من مقرر الدوائر الكهربائية). يستعمل الكتاب حالة الدلتا في المثال <span class="ltr">(2-2)</span>.</p>`,title:'تيار الخط وتيار الوجه'},
-    {watch:String.raw`<p>عوّض في <span class="ltr">(2-14)</span> بـ <b>جهد الخط</b> \(V_L\) (المكتوب على لوحة المحرك، مثل <span class="ltr">380 V</span>)، لا بجهد الوجه.</p>`}
+    {watch:String.raw`<p>عوّض في <span class="ltr">(2-14)</span> بـ <b>جهد الخط</b> \(V_L\) (المكتوب على لوحة المحرك، مثل <span class="ltr">380 V</span>)، لا بجهد الوجه.</p>`},
+    {title:'مختبر مصغّر: من القدرة إلى التيار',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`القيم الأولى من المثال (2-2): قدرة دخل ${l('110.4 kW')} لمحرك حثي ${l('3000 V')} معامل قدرته ${l('0.82')}. بدّل نوع المحرك وغيّر القيم.`,
+ predict:{q:'لنفس قدرة الدخل ونفس الجهد، انخفض معامل القدرة للمحرك الحثي. تيار الخط:',opts:[
+  ['يقل',false,String.raw`\(\cos\theta\) في المقام: إذا صغر كبر التيار.`],
+  ['يبقى كما هو',false,String.raw`التيار يعتمد على \(\cos\theta\) في المعادلة (2-14).`],
+  ['يزيد',true,String.raw`\(I_L=P_{in}/(\sqrt3\,V_L\cos\theta)\): المقام يصغر فيكبر التيار.`]]},
+ ins:[{k:'t',l:'نوع المحرك',seg:[['dc','تيار مستمر (2-13)'],['ac','حثي ثلاثي الأوجه (2-14)']],v:'ac'},
+      {k:'P',l:'قدرة الدخل P<sub>in</sub>',u:'kW',min:1,max:2000,step:0.1,v:110.4,dp:1},
+      {k:'V',l:'الجهد V',seg:[[220,'220 V'],[380,'380 V'],[3000,'3000 V']],v:3000},
+      {k:'pf',l:'معامل القدرة cos θ (للحثي فقط)',min:0.5,max:1,step:0.01,v:0.82,dp:2}],
+ calc:(s,P,B)=>{const W=s.P*1000,I=s.t==='dc'?W/s.V:W/(Math.sqrt(3)*s.V*s.pf);
+  return {facts:[[s.t==='dc'?'I = P<sub>in</sub> / V':'I<sub>L</sub> = P<sub>in</sub> / (√3·V<sub>L</sub>·cos θ)',DCML.fm(B,I,1)+' A','hi']],
+   msg:s.t==='dc'?'محرك التيار المستمر: لا √3 ولا معامل قدرة. جرّب 1850 kW على 3000 V لتحصل على تيار المثال (2-1) تقريباً.':'جرّب 380 V بدل 3000 V بالقدرة نفسها: الجهد الأقل يحتاج تياراً أكبر.'}}})}}
    ]},
 
   {st:4,short:'مثال (2-1)',title:'مثال <span class="ltr">(2-1)</span>: قطار يتسارع',ref:'ص 25',
@@ -544,7 +772,16 @@ B.lesson({
      <div class="eq">$$P_{in}=\frac{P_m}{\eta_m}=\frac{1.67}{0.9}=1.85\ \text{MW}$$</div>
      <div class="eq">$$I=\frac{P_{in}}{V}=\frac{1850000}{3000}=617\ \text{A}$$</div>`,ref:'ص 25'},
     {tip:String.raw`<ol><li>حوّل السرعة إلى <span class="ltr">m/s</span>.</li><li>أوجد التسارع من <span class="ltr">(1-3)</span>.</li><li>القوة من <span class="ltr">(2-2)</span>، والقدرة من <span class="ltr">(2-1)</span>.</li><li>ارجع إلى المصدر: <span class="ltr">(2-10)</span> ثم <span class="ltr">(2-12)</span>.</li><li>التيار من <span class="ltr">(2-13)</span> لأن المصدر هنا جهد واحد <span class="ltr">3000 V</span> (يعامله الكتاب معاملة التيار المستمر).</li></ol>`,title:'خطوات الحل'},
-    {watch:String.raw`<p>كُتب التسارع في الحل «<span class="ltr">a = 0.5</span>» بلا وحدة، ووحدته <span class="ltr">m/s²</span>. والقدرتان مقربتان إلى منزلتين (<span class="ltr">1.67</span> و<span class="ltr">1.85 MW</span>)؛ بدون تقريب وسيط يكون التيار <span class="ltr">617.3 A</span>. جرّب أرقاماً أخرى في تبويب «الأمثلة المحلولة».</p>`,fix:true}
+    {watch:String.raw`<p>كُتب التسارع في الحل «<span class="ltr">a = 0.5</span>» بلا وحدة، ووحدته <span class="ltr">m/s²</span>. والقدرتان مقربتان إلى منزلتين (<span class="ltr">1.67</span> و<span class="ltr">1.85 MW</span>)؛ بدون تقريب وسيط يكون التيار <span class="ltr">617.3 A</span>. جرّب أرقاماً أخرى في تبويب «الأمثلة المحلولة».</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب خطوات المثال (2-1)',widget:(el,B)=>DCML.order(el,B,{intro:'كل خطوة تحتاج ناتج التي قبلها. اضغطها بالترتيب.',steps:[
+ [String.raw`حوّل السرعة: \(v=36\times\frac{1000}{3600}=10\ \text{m/s}\)`,'السرعة معطاة بالـ km/h؛ حوّلها أولاً.'],
+ [String.raw`التسارع: \(10=0+a\times20\Rightarrow a=0.5\)`,'التسارع يحتاج السرعة بالـ m/s.'],
+ [String.raw`القوة: \(F=m\cdot a=1\times10^5\ \text{N}\)`,'القوة تحتاج التسارع.'],
+ [String.raw`قدرة الحمل: \(P_L=F\cdot v=1\ \text{MW}\)`,'القدرة تحتاج القوة.'],
+ [String.raw`خرج المحرك: \(P_m=P_L/\eta_c=1.67\ \text{MW}\)`,'نمرّ أولاً بصندوق التروس (الأقرب إلى الحمل).'],
+ [String.raw`دخل المحرك: \(P_{in}=P_m/\eta_m=1.85\ \text{MW}\)`,'دخل المحرك يحتاج خرجه أولاً.'],
+ [String.raw`التيار: \(I=P_{in}/V=617\ \text{A}\)`,'التيار آخر خطوة: يحتاج قدرة الدخل.']],
+ done:'لاحظ اتجاه الحساب: من الحمل إلى المصدر، عكس اتجاه سريان القدرة في الشكل (2-3).'})}
    ]},
 
   {st:5,short:'مثال (2-2)',title:'مثال <span class="ltr">(2-2)</span>: رفع ثقل بمحرك حثي موصل دلتا',ref:'ص 25',
@@ -566,7 +803,16 @@ B.lesson({
      <div class="eq">$$I_L=\frac{P_{in}}{\sqrt3\cdot V_L\cdot\cos\theta}=\frac{110362.5}{\sqrt3\times3000\times0.82}=25.9\ \text{A}$$</div>
      <div class="eq">$$I_{Ph}=\frac{I_L}{\sqrt3}=\frac{25.9}{\sqrt3}=15\ \text{A}$$</div>`,ref:'ص 25'},
     {tip:String.raw`<p>القوة من <span class="ltr">(2-3)</span> لأن الحركة رأسية، ثم القدرة <span class="ltr">(2-1)</span>، ثم الدخل بالكفاءة الكلية <span class="ltr">(2-15)</span>، ثم تيار الخط <span class="ltr">(2-14)</span>، وأخيراً تيار الوجه بالقسمة على \(\sqrt3\) لأن الملفات <b>دلتا</b>.</p>`,title:'خطوات الحل'},
-    {tip:String.raw`<p>تيار الوجه بالضبط <span class="ltr">14.95 A</span>، ويكتبه الكتاب مقرباً <span class="ltr">15 A</span>. ولو كانت الملفات موصلة نجمة لكان تيار الوجه مساوياً لتيار الخط <span class="ltr">25.9 A</span>.</p>`}
+    {tip:String.raw`<p>تيار الوجه بالضبط <span class="ltr">14.95 A</span>، ويكتبه الكتاب مقرباً <span class="ltr">15 A</span>. ولو كانت الملفات موصلة نجمة لكان تيار الوجه مساوياً لتيار الخط <span class="ltr">25.9 A</span>.</p>`},
+    {title:'مختبر مصغّر: ونش المثال (2-2)',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`الثقل ${l('6000 kg')} والجهد ${l('3000 V')} ثابتان كما في المثال. غيّر سرعة الرفع والكفاءة الكلية ومعامل القدرة (القيم الأولى من الكتاب).`,
+ predict:{q:'ارتفعت الكفاءة الكلية من 80% إلى 90% وبقي كل شيء آخر كما هو. تيار الخط:',opts:[
+  ['يزيد',false,'الكفاءة في المقام عند حساب قدرة الدخل.'],
+  ['يقل',true,String.raw`\(P_{in}=P_L/\eta_t\) تصغر، فيصغر التيار.`],
+  ['لا يتغير',false,'قدرة الدخل تتغير مع الكفاءة، فيتغير التيار.']]},
+ ins:[{k:'v',l:'سرعة الرفع v',u:'m/s',min:0.5,max:3,step:0.1,v:1.5,dp:1},{k:'e',l:'الكفاءة الكلية η<sub>t</sub>',u:'%',min:50,max:100,step:1,v:80},{k:'pf',l:'معامل القدرة cos θ',min:0.6,max:1,step:0.01,v:0.82,dp:2}],
+ calc:(s,P,B)=>{const F=6000*9.81,Pl=F*s.v,Pin=Pl/(s.e/100),IL=Pin/(Math.sqrt(3)*3000*s.pf);
+  return {facts:[['P<sub>L</sub>',DCML.fm(B,Pl,0)+' W'],['P<sub>in</sub>',DCML.fm(B,Pin,0)+' W'],['I<sub>L</sub>',DCML.fm(B,IL,1)+' A','hi'],['I<sub>Ph</sub> = I<sub>L</sub> / √3 (دلتا)',DCML.fm(B,IL/Math.sqrt(3),1)+' A','hi']],
+   msg:'في توصيل الدلتا تيار الوجه أصغر من تيار الخط بـ √3.'}}})}}
    ]},
 
   {st:6,short:'مثال (2-4)',title:'مثال <span class="ltr">(2-4)</span>: مصعد بأثقال موازنة',ref:'ص 26–27',
@@ -589,7 +835,17 @@ B.lesson({
      <div class="eq">$$P_{in}=\frac{P_m}{\eta_m}=\frac{51094}{0.82}=62309\ \text{W}$$</div>
      <div class="eq">$$I_L=\frac{P_{in}}{\sqrt3\cdot V_L\cdot\cos\theta}=\frac{62309}{\sqrt3\times380\times0.85}=111.4\ \text{A}$$</div>`,ref:'ص 26–27'},
     {tip:String.raw`<ul><li>«نصف دقيقة» = <span class="ltr">30 s</span>، فالسرعة \(v=S/t\) (سرعة ثابتة).</li><li><b>كفاءة المصعد</b> تقوم هنا مقام كفاءة وسيلة نقل الحركة \(\eta_c\) في <span class="ltr">(2-10)</span>.</li><li>«قدرة المحرك» المطلوبة هي قدرة خرجه \(P_m=51094\ \text{W}\) (نحو <span class="ltr">51 kW</span>).</li></ul>`,title:'ثلاث ملاحظات على الحل'},
-    {add:String.raw`<p>لو لم تكن هناك أثقال موازنة لاحتاج المحرك أن يرفع الحمولة كاملة مع وزن الصاعدة والحبال، أي أكثر من ضعف القوة. لهذا لا يخلو مصعد في المباني من أثقال الموازنة.</p>`}
+    {add:String.raw`<p>لو لم تكن هناك أثقال موازنة لاحتاج المحرك أن يرفع الحمولة كاملة مع وزن الصاعدة والحبال، أي أكثر من ضعف القوة. لهذا لا يخلو مصعد في المباني من أثقال الموازنة.</p>`},
+    {title:'مختبر مصغّر: ماذا لو نسيت أثقال الموازنة؟',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'معطيات المثال (2-4) ثابتة. بدّل بين حساب الكتاب بالمعادلة (2-4) والخطأ الشائع: حساب القوة بالمعادلة (2-3) كأن المصعد بلا أثقال موازنة.',
+ predict:{q:'لو حسبنا القوة \\(F=m\\cdot g\\) بدل \\(F=m\\cdot g/2\\)، فإن التيار المحسوب:',opts:[
+  ['يتضاعف',true,'القوة تتضاعف، والقدرة والتيار يتناسبان معها مباشرة.'],
+  ['يبقى كما هو',false,'كل خطوة بعد القوة تتناسب معها.'],
+  ['ينقص إلى النصف',false,'القوة الأكبر تحتاج تياراً أكبر لا أصغر.']]},
+ ins:[{k:'w',l:'',sw:true,v:1,on:'حساب الكتاب: <span class="ltr">F = m·g/2</span> (2-4)',off:'الخطأ الشائع: <span class="ltr">F = m·g</span> (2-3)'}],
+ calc:(s,P,B)=>{const F=s.w?5000*9.81/2:5000*9.81,v=30/30,Pl=F*v,Pm=Pl/0.48,Pin=Pm/0.82,I=Pin/(Math.sqrt(3)*380*0.85);
+  return {facts:[['F',DCML.fm(B,F,0)+' N',s.w?'':'bad'],['P<sub>m</sub>',DCML.fm(B,Pm,0)+' W',s.w?'':'bad'],['I<sub>L</sub>',DCML.fm(B,I,1)+' A',s.w?'hi':'bad']],
+   bars:[{l:'تيار المحرك',v:I,max:240,txt:DCML.fm(B,I,1)+' A',col:s.w?'--blue':'--stop'}],
+   msg:s.w?'هذه أرقام الكتاب (ص 27): أثقال الموازنة تعادل نصف الحمولة وكتلة المصعد والحبال، فيبقى على المحرك نصف الحمولة فقط.':'<b>خطأ:</b> المحرك هنا يُختار بضعف القدرة اللازمة فعلاً. الكتاب ينص على أن القوة تحسب «على أساس نصف الحمولة فقط».',cls:s.w?'':'bad'}}})}}
    ]},
 
   {st:7,short:'تمارين',title:'أسئلة وتمارين: <span class="ltr">(2-4)</span> و<span class="ltr">(2-6)</span> و<span class="ltr">(2-9)</span>',ref:'ص 30–31',
@@ -609,7 +865,18 @@ B.lesson({
     {tip:String.raw`<p><b>2-4:</b> \(v=11.67\ \text{m/s}\)، \(a=0.389\ \text{m/s}^2\)، \(F\approx58333\ \text{N}\)، \(P_L\approx0.681\ \text{MW}\)، \(P_m\approx1.05\ \text{MW}\)، \(P_{in}\approx1.23\ \text{MW}\)، \(I\approx410\ \text{A}\) (بدون تقريب وسيط: <span class="ltr">410.6 A</span>).</p>
      <p><b>2-6:</b> \(F=39240\ \text{N}\)، \(v=1\ \text{m/s}\)، \(P_L=39240\ \text{W}\)، \(P_m\approx71345\ \text{W}\)، \(P_{in}\approx89182\ \text{W}\)، \(I_L\approx165.2\ \text{A}\).</p>
      <p><b>2-9:</b> \(F=78480\ \text{N}\)، \(P_L=156960\ \text{W}\)، \(P_{in}\approx224229\ \text{W}\)، \(I_L\approx53.9\ \text{A}\)، \(I_{ph}\approx31.1\ \text{A}\).</p>
-     <p>الحلول خطوة بخطوة في تبويب «الأمثلة المحلولة».</p>`,title:'حلول مقترحة (ليست من الكتاب)'}
+     <p>الحلول خطوة بخطوة في تبويب «الأمثلة المحلولة».</p>`,title:'حلول مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: الخطوة الأولى في كل تمرين',widget:(el,B)=>{const l=DCML.lt;return DCML.cases(el,B,{intro:'اختر البداية الصحيحة لكل تمرين، ثم أكمل الحل في دفترك.',cases:[
+ {q:`(2-4) سرعة القطار ${l('42 km/h')}. بالمتر في الثانية:`,opts:[
+  [l('151.2 m/s'),false,'هذا ضرب في 3.6؛ التحويل من km/h إلى m/s قسمة على 3.6.'],
+  [l('11.67 m/s'),true,l('42 × 1000 ÷ 3600 ≈ 11.67')+'، كما فعل الكتاب في المثال (2-1).'],
+  [l('42 m/s'),false,'لا بد من التحويل قبل التعويض.']]},
+ {q:'(2-6) المصعد بأثقال موازنة. القوة:',opts:[
+  [String.raw`\(F=m\cdot g\)`,false,'هذه بلا أثقال موازنة.'],
+  [String.raw`\(F=\frac{m}{2}\cdot g\)`,true,'المعادلة (2-4)، كما في المثال (2-4).']]},
+ {q:'(2-9) ملفات المحرك موصلة دلتا. تيار الوجه:',opts:[
+  [String.raw`\(I_{Ph}=I_L/\sqrt3\)`,true,'كما في المثال (2-2).'],
+  [String.raw`\(I_{Ph}=I_L\)`,false,'تيار الوجه يساوي تيار الخط في توصيل النجمة، لا الدلتا.']]}]})}}
    ]},
 
   {recap:[
@@ -820,7 +1087,15 @@ B.lesson({
     {book:String.raw`<p>القدرة اللازمة لتدوير حمل دوراني بسرعة زاوية مقدارها \(\omega_L\) يمكن حسابها كما هو موضح في الوحدة السابقة من العلاقة التالية:</p>
      <div class="eq">$$P_L=T_L\cdot\omega_L$$<span class="eqno">(2-5)</span></div>
      <p>حيث \(T_L\) هو العزم اللازم لتدوير الحمل.</p>`,ref:'ص 22'},
-    {tip:String.raw`<p>هذه هي المعادلة <span class="ltr">(1-11)</span> نفسها \(P=T\cdot\omega\)، والحرف <span class="ltr">L</span> يعني أنها للحمل (<span class="ltr">Load</span>). وغالباً تُعطى سرعة الحمل بالـ <span class="ltr">rpm</span>، فحوّلها أولاً إلى <span class="ltr">rad/s</span> بالمعادلة <span class="ltr">(1-13)</span>: \(\omega_L=2\pi n_L/60\).</p>`}
+    {tip:String.raw`<p>هذه هي المعادلة <span class="ltr">(1-11)</span> نفسها \(P=T\cdot\omega\)، والحرف <span class="ltr">L</span> يعني أنها للحمل (<span class="ltr">Load</span>). وغالباً تُعطى سرعة الحمل بالـ <span class="ltr">rpm</span>، فحوّلها أولاً إلى <span class="ltr">rad/s</span> بالمعادلة <span class="ltr">(1-13)</span>: \(\omega_L=2\pi n_L/60\).</p>`},
+    {title:'مختبر مصغّر: العزم × السرعة الزاوية',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'غيّر عزم الحمل وسرعته الزاوية (أرقام تختارها أنت)، وراقب القدرة \\(P_L=T_L\\cdot\\omega_L\\) (2-5).',
+ predict:{q:'حمل يحتاج قدرة معينة. لو أدرناه بالقدرة نفسها لكن بنصف السرعة الزاوية، فالعزم اللازم:',opts:[
+  ['نصف العزم الأول',false,'لو نقص العزم مع السرعة لنقصت القدرة إلى الربع.'],
+  ['ضعف العزم الأول',true,String.raw`\(P_L=T_L\cdot\omega_L\) ثابتة؛ نصف \(\omega_L\) يحتاج ضعف \(T_L\).`],
+  ['العزم نفسه',false,'بالعزم نفسه ونصف السرعة تنقص القدرة إلى النصف.']]},
+ ins:[{k:'T',l:'عزم الحمل T<sub>L</sub>',u:'Nm',min:10,max:200,step:5,v:100},{k:'w',l:'السرعة الزاوية ω<sub>L</sub>',u:'rad/s',min:10,max:200,step:5,v:100}],
+ calc:(s,P,B)=>{const Pl=s.T*s.w;return {facts:[['P<sub>L</sub> = T<sub>L</sub> · ω<sub>L</sub>',DCML.fm(B,Pl,0)+' W','hi'],['بالكيلوواط',DCML.fm(B,Pl/1000,2)+' kW']],
+  bars:[{l:'القدرة',v:Pl,max:40000,txt:DCML.fm(B,Pl/1000,2)+' kW'}],msg:`جرّب: ${l('200 Nm')} مع ${l('50 rad/s')}، ثم ${l('100 Nm')} مع ${l('100 rad/s')}، ثم ${l('50 Nm')} مع ${l('200 rad/s')}. القدرة نفسها في الثلاث.`}}})}}
    ]},
 
   {st:2,short:'المضخات',title:'القدرة اللازمة لتحريك حمل معين — ج- المضخات',ref:'ص 23',
@@ -842,7 +1117,16 @@ B.lesson({
      <tr><td>كثافة السائل</td><td><span class="ltr">ρ</span></td><td><span class="ltr">(kg/m³)</span></td></tr>
      <tr><td>فرق الارتفاع بين نقطة الامتصاص ونقطة الدفع + مجموع المقاومات</td><td><span class="ltr">h</span></td><td><span class="ltr">m</span></td></tr></tbody></table>`,ref:'ص 23'},
     {tip:String.raw`<p>\(Q\cdot\rho\) هي <b>كتلة</b> السائل المرفوعة كل ثانية، و\(Q\cdot\rho\cdot g\) وزنها. فالمعادلة <span class="ltr">(2-6)</span> تعني: <b>وزن السائل المرفوع في الثانية × الارتفاع</b>، وهي فكرة \(F\cdot v\) نفسها.</p>`,title:'من أين جاءت المعادلة؟'},
-    {add:String.raw`<p>«مجموع المقاومات» يعني احتكاك السائل بجدران الأنابيب والأكواع والصمامات: يُحسب كأنه ارتفاع إضافي يجب أن تتغلب عليه المضخة. لذلك أنبوب طويل ضيق يحتاج مضخة أقوى من أنبوب قصير واسع للارتفاع نفسه.</p>`}
+    {add:String.raw`<p>«مجموع المقاومات» يعني احتكاك السائل بجدران الأنابيب والأكواع والصمامات: يُحسب كأنه ارتفاع إضافي يجب أن تتغلب عليه المضخة. لذلك أنبوب طويل ضيق يحتاج مضخة أقوى من أنبوب قصير واسع للارتفاع نفسه.</p>`},
+    {title:'مختبر مصغّر: قدرة المضخة',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`الماء كثافته ${l('1000 kg/m³')}. القيم الأولى من المثال (2-5): ${l('15 m³/hr')} إلى ارتفاع ${l('18 m')}. غيّر التدفق والارتفاع.`,
+ predict:{q:'ضاعفنا الارتفاع \\(h\\) وبقي التدفق كما هو. القدرة اللازمة للمضخة:',opts:[
+  ['تتضاعف',true,String.raw`\(P_L=Q\cdot\rho\cdot g\cdot h\): القدرة تتناسب مع \(h\) مباشرة.`],
+  ['تبقى كما هي',false,'رفع الماء إلى ارتفاع أكبر يحتاج قدرة أكبر.'],
+  ['تصبح أربعة أمثالها',false,String.raw`\(h\) ليست مربعة في المعادلة (2-6).`]]},
+ ins:[{k:'Q',l:'معدل التدفق Q',u:'m³/hr',min:1,max:60,step:1,v:15},{k:'h',l:'الارتفاع + المقاومات h',u:'m',min:1,max:60,step:1,v:18}],
+ calc:(s,P,B)=>{const Qs=s.Q/3600,Pl=Qs*1000*9.81*s.h;return {facts:[['Q بوحدة m³/s (÷ 3600)',DCML.fm(B,Qs,5)],['P<sub>L</sub> = Q·ρ·g·h',DCML.fm(B,Pl,0)+' W','hi']],
+  bars:[{l:'قدرة المضخة',v:Pl,max:60/3600*1000*9.81*60,txt:DCML.fm(B,Pl,0)+' W'}],
+  msg:s.Q===15&&s.h===18?'هذه قدرة المثال (2-5): حوالي 736 W.':''}}})}}
    ]},
 
   {st:3,short:'أجهزة التهوية',title:'القدرة اللازمة لتحريك حمل معين — د- أجهزة التهوية',ref:'ص 23',
@@ -862,7 +1146,16 @@ B.lesson({
      <tr><td>معدل تدفق الهواء</td><td><span class="ltr">Q</span></td><td><span class="ltr">(m³/s)</span></td></tr>
      <tr><td>ضغط الهواء عند فتحة الخروج</td><td><span class="ltr">p</span></td><td><span class="ltr">(N/m²)</span></td></tr></tbody></table>`,ref:'ص 23'},
     {tip:String.raw`<p>الضغط قوة على مساحة \((\text{N}/\text{m}^2)\)، والتدفق حجم في الثانية \((\text{m}^3/\text{s})\)، وحاصل ضربهما \(\text{N}\cdot\text{m}/\text{s}\) أي <b>واط</b>. فإذا أُعطي التدفق بالدقيقة فاقسم على <span class="ltr">60</span>، وبالساعة فاقسم على <span class="ltr">3600</span>.</p>`},
-    {watch:String.raw`<p>لا تخلط بين \(p\) الصغيرة (الضغط) و\(P\) الكبيرة (القدرة)، ولا بين \(Q\) هنا (تدفق الهواء) و\(Q\) في المضخات (تدفق السائل): الحرف واحد والمعنى متقارب، لكن كل معادلة لنوع من الأحمال.</p>`}
+    {watch:String.raw`<p>لا تخلط بين \(p\) الصغيرة (الضغط) و\(P\) الكبيرة (القدرة)، ولا بين \(Q\) هنا (تدفق الهواء) و\(Q\) في المضخات (تدفق السائل): الحرف واحد والمعنى متقارب، لكن كل معادلة لنوع من الأحمال.</p>`},
+    {title:'مختبر مصغّر: قدرة المروحة',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`القيم الأولى من المثال (2-6): ${l('100 m³/min')} بضغط ${l('25 N/m²')}. حوّل الدقائق إلى ثوانٍ (÷ 60) ثم \\(P_L=Q\\cdot p\\) (2-7).`,
+ predict:{q:'ضاعفنا تدفق الهواء وضاعفنا ضغطه معاً. القدرة:',opts:[
+  ['تتضاعف',false,'كل واحد منهما يضاعفها، فهما معاً أكثر من ذلك.'],
+  ['تصبح أربعة أمثالها',true,String.raw`\(P_L=Q\cdot p\): ضعف × ضعف = أربعة أمثال.`],
+  ['تبقى كما هي',false,'القدرة حاصل ضربهما، فلا تبقى ثابتة.']]},
+ ins:[{k:'Q',l:'تدفق الهواء Q',u:'m³/min',min:10,max:300,step:10,v:100},{k:'p',l:'ضغط الهواء p',u:'N/m²',min:5,max:60,step:1,v:25}],
+ calc:(s,P,B)=>{const Pl=s.Q/60*s.p;return {facts:[['Q بوحدة m³/s (÷ 60)',DCML.fm(B,s.Q/60,2)],['P<sub>L</sub> = Q · p',DCML.fm(B,Pl,2)+' W','hi']],
+  bars:[{l:'قدرة المروحة',v:Pl,max:300/60*60,txt:DCML.fm(B,Pl,1)+' W'}],
+  msg:s.Q===100&&s.p===25?'هذه قدرة المثال (2-6): 41.67 W.':''}}})}}
    ]},
 
   {st:4,short:'عزم المحرك',title:'كيفية حساب قدرة المحرك المقننة: عزم المحرك',ref:'ص 23–24',
@@ -918,7 +1211,17 @@ B.lesson({
      <div class="eq">$$\omega_m=\frac{2\pi n_m}{60}=\frac{2\pi\times1710}{60}=179\ \text{rad/s}$$</div>
      <div class="eq">$$T_m=\frac{P_m}{\omega_m}=\frac{14758}{179}=82.4\ \text{Nm}$$</div>`,ref:'ص 26'},
     {tip:String.raw`<p>لاحظ أن الكتاب يحسب بـ \(\pi=3.14\)، لذلك \(P_L=11511\ \text{W}\) (بالقيمة الدقيقة لـ π نحو <span class="ltr">11517 W</span>، والفرق تقريب لا يؤثر). وعزم المحرك <span class="ltr">82.4 Nm</span> أكبر قليلاً من عزم الحمل <span class="ltr">78 Nm</span> رغم أن المحرك أسرع، لأن كفاءة الصندوق <span class="ltr">78%</span> فقط.</p>`},
-    {watch:String.raw`<p>في الكتاب كُتبت وحدة التيار <b>W</b> سهواً، والصحيح <b>A</b> (أمبير).</p>`,fix:true}
+    {watch:String.raw`<p>في الكتاب كُتبت وحدة التيار <b>W</b> سهواً، والصحيح <b>A</b> (أمبير).</p>`,fix:true},
+    {title:'مختبر مصغّر: لماذا عزم المحرك أكبر من عزم الحمل؟',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`أرقام المثال (2-3): الحمل ${l('78 Nm')} عند ${l('1410 rpm')}، والمحرك ${l('1710 rpm')}. غيّر كفاءة صندوق التروس فقط، وقارن عزم المحرك بعزم الحمل.`,
+ predict:{q:'لو كانت كفاءة صندوق التروس 100% (بلا مفاقيد)، فعزم المحرك يكون:',opts:[
+  [`أكبر من ${l('78 Nm')}`,false,'بلا مفاقيد يكفي المحرك قدرة الحمل نفسها، وهو أسرع من الحمل فيحتاج عزماً أقل.'],
+  [`أقل من ${l('78 Nm')}`,true,String.raw`\(P_m=P_L\)، والمحرك أسرع: `+` ${l('11511 ÷ 179 ≈ 64 Nm')}. مفاقيد التروس هي التي ترفعه إلى ${l('82.4 Nm')}.`],
+  [`يساوي ${l('78 Nm')} تماماً`,false,'العزمان متساويان فقط لو تساوت السرعتان ولم توجد مفاقيد.']]},
+ ins:[{k:'e',l:'كفاءة صندوق التروس η<sub>c</sub>',u:'%',min:50,max:100,step:1,v:78}],
+ calc:(s,P,B)=>{const wL=2*Math.PI*1410/60,wm=2*Math.PI*1710/60,Pl=78*wL,Pm=Pl/(s.e/100),Tm=Pm/wm;
+  return {facts:[['P<sub>L</sub>',DCML.fm(B,Pl,0)+' W'],['P<sub>m</sub> = P<sub>L</sub> / η<sub>c</sub>',DCML.fm(B,Pm,0)+' W'],['T<sub>m</sub> = P<sub>m</sub> / ω<sub>m</sub>',DCML.fm(B,Tm,1)+' Nm',Tm>78?'bad':'hi']],
+   bars:[{l:'عزم الحمل T<sub>L</sub>',v:78,max:130,txt:'78 Nm',col:'--muted'},{l:'عزم المحرك T<sub>m</sub>',v:Tm,max:130,txt:DCML.fm(B,Tm,1)+' Nm',col:Tm>78?'--stop':'--on'}],
+   msg:s.e===78?'هذه قيمة الكتاب: 82.4 Nm (الفرق الصغير من تقريب ω في الكتاب).':Tm>78?'المفاقيد في التروس تجعل المحرك يبذل قدرة أكبر من قدرة الحمل.':'المحرك أسرع من الحمل، فلنفس القدرة تقريباً يحتاج عزماً أقل.'}}})}}
    ]},
 
   {st:6,short:'مثال (2-5)',title:'مثال <span class="ltr">(2-5)</span>: مضخة بمحرك تيار مستمر',ref:'ص 27',
@@ -939,7 +1242,16 @@ B.lesson({
      <div class="eq">$$P_{in}=\frac{P_m}{\eta_m}=\frac{981}{0.88}=1115.0\ \text{W}$$</div>
      <div class="eq">$$I=\frac{P_{in}}{V}=\frac{1115}{220}=5\ \text{A}$$</div>`,ref:'ص 27'},
     {watch:String.raw`<p>نص المثال في الكتاب <b>لا يذكر جهد المحرك</b> (بعد «محرك تيار مستمر،» فاصلة ثانية مكانها فارغ)، بينما يستعمل الحل <span class="ltr">V = 220 V</span>. فاعتبر جهد المحرك <span class="ltr">220 V</span>. كذلك \(1115/220=5.07\) كُتبت مقربة <span class="ltr">5 A</span>.</p>`,fix:true},
-    {tip:String.raw`<p>كفاءة المضخة <span class="ltr">75%</span> تقوم مقام \(\eta_c\) في <span class="ltr">(2-10)</span>: المضخة هي «الوسيلة» التي تحوّل قدرة عمود المحرك إلى قدرة رفع الماء. و\(P_L=735.75\ \text{W}\) بالضبط، كتبها الكتاب <span class="ltr">736 W</span>.</p>`}
+    {tip:String.raw`<p>كفاءة المضخة <span class="ltr">75%</span> تقوم مقام \(\eta_c\) في <span class="ltr">(2-10)</span>: المضخة هي «الوسيلة» التي تحوّل قدرة عمود المحرك إلى قدرة رفع الماء. و\(P_L=735.75\ \text{W}\) بالضبط، كتبها الكتاب <span class="ltr">736 W</span>.</p>`},
+    {title:'مختبر مصغّر: من الماء إلى التيار',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`قدرة الحمل ${l('736 W')} من المثال (2-5)، والجهد ${l('220 V')} كما في حل الكتاب. غيّر الكفاءتين (القيم الأولى من الكتاب).`,
+ predict:{q:'نبدأ من قدرة الحمل. على أي كفاءة نقسم أولاً؟',opts:[
+  ['كفاءة المحرك 88%',false,'كفاءة المحرك تأتي ثانياً: لحساب الدخل من الخرج.'],
+  ['كفاءة المضخة 75%',true,String.raw`المضخة هي «وسيلة النقل» بين المحرك والماء، فتقوم مقام \(\eta_c\): \(P_m=736/0.75=981\) W.`]]},
+ ins:[{k:'c',l:'كفاءة المضخة',u:'%',min:40,max:100,step:1,v:75},{k:'m',l:'كفاءة المحرك',u:'%',min:60,max:100,step:1,v:88}],
+ calc:(s,P,B)=>{const Pl=15/3600*1000*9.81*18,Pm=Pl/(s.c/100),Pin=Pm/(s.m/100),I=Pin/220;
+  return {facts:[['P<sub>m</sub> (خرج المحرك)',DCML.fm(B,Pm,0)+' W'],['P<sub>in</sub> (دخل المحرك)',DCML.fm(B,Pin,0)+' W'],['I = P<sub>in</sub> / V',DCML.fm(B,I,2)+' A','hi']],
+   bars:[{l:'المفقود في المضخة والمحرك',v:Pin-Pl,max:1800,txt:DCML.fm(B,Pin-Pl,0)+' W',col:'--stop'}],
+   msg:'الكتاب يقرّب التيار 5.07 A إلى 5 A.'}}})}}
    ]},
 
   {st:7,short:'مثال (2-6)',title:'مثال <span class="ltr">(2-6)</span>: مروحة تهوية',ref:'ص 28',
@@ -960,7 +1272,16 @@ B.lesson({
      <div class="eq">$$P_{in}=\frac{P_m}{\eta_m}=\frac{64.1}{0.85}=75.4\ \text{W}$$</div>
      <div class="eq">$$I_L=\frac{P_{in}}{\sqrt3\cdot V_L\cdot\cos\theta}=\frac{75.4}{\sqrt3\times380\times0.8}=0.14\ \text{A}$$</div>`,ref:'ص 28'},
     {tip:String.raw`<p>القدرة صغيرة (عشرات الواطات) لأن الضغط <span class="ltr">25 N/m²</span> صغير جداً (الضغط الجوي نحو <span class="ltr">100000 N/m²</span>). مراوح التهوية العادية تحرك هواءً كثيراً بضغط قليل. والتيار بالضبط <span class="ltr">0.143 A</span>.</p>`},
-    {watch:String.raw`<p>معامل القدرة معطى نسبة مئوية «<span class="ltr">80%</span>»، فعوّض به <span class="ltr">0.8</span>. وحوّل التدفق من الدقيقة إلى الثانية بالقسمة على <span class="ltr">60</span>.</p>`}
+    {watch:String.raw`<p>معامل القدرة معطى نسبة مئوية «<span class="ltr">80%</span>»، فعوّض به <span class="ltr">0.8</span>. وحوّل التدفق من الدقيقة إلى الثانية بالقسمة على <span class="ltr">60</span>.</p>`},
+    {title:'مختبر مصغّر: ماذا لو نسيت تحويل الدقائق؟',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'معطيات المثال (2-6) ثابتة. بدّل بين حل الكتاب والخطأ الشائع: التعويض بالتدفق 100 كما هو دون القسمة على 60.',
+ predict:{q:'لو عوّضنا \\(Q=100\\) بدل \\(Q=100/60\\)، فالتيار المحسوب يكون:',opts:[
+  ['أكبر 60 مرة',true,'كل الخطوات تتناسب مع Q، فالخطأ يكبر 60 مرة.'],
+  ['أصغر 60 مرة',false,'العكس: التدفق بالدقيقة رقم أكبر من التدفق بالثانية.'],
+  ['كما هو',false,'كل الخطوات تتناسب مع Q.']]},
+ ins:[{k:'ok',l:'',sw:true,v:1,on:'حل الكتاب: <span class="ltr">Q = 100/60 m³/s</span>',off:'الخطأ الشائع: <span class="ltr">Q = 100</span>'}],
+ calc:(s,P,B)=>{const Q=s.ok?100/60:100,Pl=Q*25,Pm=Pl/0.65,Pin=Pm/0.85,I=Pin/(Math.sqrt(3)*380*0.8);
+  return {facts:[['P<sub>L</sub>',DCML.fm(B,Pl,1)+' W',s.ok?'':'bad'],['P<sub>m</sub> (المستفادة من المحرك)',DCML.fm(B,Pm,1)+' W',s.ok?'':'bad'],['I<sub>L</sub>',DCML.fm(B,I,2)+' A',s.ok?'hi':'bad']],
+   msg:s.ok?'أرقام الكتاب (ص 28): التيار صغير جداً (0.14 A) لأن قدرة الحمل نفسها صغيرة (41.67 W).':'<b>خطأ:</b> وحدة Q في المعادلة (2-7) هي m³/s، فلا بد من القسمة على 60.',cls:s.ok?'':'bad'}}})}}
    ]},
 
   {st:8,short:'مثال (2-7)',title:'مثال <span class="ltr">(2-7)</span>: ونش عبر صندوق تروس',ref:'ص 28–29',
@@ -1021,7 +1342,18 @@ B.lesson({
      <p><b>2-7:</b> \(P_L=1362.5\ \text{W}\)، \(P_m\approx2097\ \text{W}\)، \(P_{in}\approx2467\ \text{W}\)، \(I\approx6.17\ \text{A}\) (كثافة الماء <span class="ltr">1000 kg/m³</span> كما في المثال).</p>
      <p><b>2-8:</b> \(P_L=50\ \text{W}\)، \(P_m=66.7\ \text{W}\)، \(P_{in}=83.4\ \text{W}\)، \(I_L\approx0.149\ \text{A}\).</p>
      <p><b>2-10</b> (بالطريقة المصححة): \(F=49050\ \text{N}\)، \(P_L=73575\ \text{W}\)، \(P_m=81750\ \text{W}\)، \(P_{in}\approx96176\ \text{W}\)، \(I_L\approx182.7\ \text{A}\)، \(n_L\approx28.7\ \text{rpm}\)، \(n_m\approx287\ \text{rpm}\)، \(\omega_m\approx30\ \text{rad/s}\)، \(T_m\approx2725\ \text{Nm}\).</p>
-     <p>الحلول خطوة بخطوة في تبويب «الأمثلة المحلولة».</p>`,title:'حلول مقترحة (ليست من الكتاب)'}
+     <p>الحلول خطوة بخطوة في تبويب «الأمثلة المحلولة».</p>`,title:'حلول مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: الخطوة الأولى في كل تمرين',widget:(el,B)=>{const l=DCML.lt;return DCML.cases(el,B,{intro:'اختر البداية الصحيحة لكل تمرين، ثم أكمل الحل في دفترك.',cases:[
+ {q:`(2-5) بأي سرعة نحسب قدرة الحمل؟ (المحرك ${l('1700 rpm')} والحمل ${l('1500 rpm')})`,opts:[
+  [l('1500 rpm'),true,'قدرة الحمل بسرعة الحمل، كما في المثال (2-3).'],
+  [l('1700 rpm'),false,'سرعة المحرك نستعملها لعزم المحرك لا لقدرة الحمل.']]},
+ {q:`(2-7) التدفق ${l('25 m³/hr')}. نعوّض في (2-6) بـ:`,opts:[
+  [String.raw`\(Q=25/60\)`,false,'الساعة 3600 ثانية لا 60.'],
+  [String.raw`\(Q=25/3600\)`,true,'نحوّل من m³/hr إلى m³/s كما في المثال (2-5).'],
+  [String.raw`\(Q=25\)`,false,'لا بد من التحويل إلى m³/s.']]},
+ {q:`(2-8) التدفق ${l('200 m³/min')}. نعوّض في (2-7) بـ:`,opts:[
+  [String.raw`\(Q=200/60\)`,true,'الدقيقة 60 ثانية، كما في المثال (2-6).'],
+  [String.raw`\(Q=200/3600\)`,false,'هذا لو كان التدفق بالساعة.']]}]})}}
    ]},
 
   {recap:[

@@ -101,7 +101,214 @@ B.lesson({
  title:'عناصر منظومة التحكم في درجة الحرارة، والحلقة المفتوحة والمغلقة',
  summary:'القيمة الفعلية والقيمة المرغوبة وجهد الخطأ، ثم العناصر الستة: النظام والحاكم والحساس وجهد المرجع والمقارن وعنصر التحكم النهائي، وقسما أنظمة التحكم.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,(window.U5STL=window.U5STL||function(el,B,o){
+/* «مختبر مصغّر» للوحدة 5: تنفيذ جزء من برنامج STL (ص 106) سطراً سطراً بمنزلق، مع ACCU1 و ACCU2 و RLO.
+   o={from,to (فهرسان في STL_BOOK), intro, predict, vt, vr, q0, show:[عناوين MD تُعرض]} — يعيد تنفيذ الأسطر من البداية في كل مرة. */
+ const L=STL_BOOK,N=o.to-o.from+1,lt=s=>`<span class="ltr">${s}</span>`,cl=s=>s.replace(/\s+/g,' ').trim();
+ return DCML.lab(el,B,{intro:o.intro,predict:o.predict,
+  ins:[{k:'n',l:'عدد الأسطر المنفّذة من هذا الجزء',min:0,max:N,step:1,v:0,fmt:v=>v+' / '+N},
+   {k:'vt',l:'جهد مدخل الحرارة الفعلية '+lt('PIW 290'),min:0,max:10,step:0.5,v:o.vt,u:'v',dp:1},
+   ...(o.vr!=null?[{k:'vr',l:'جهد مقاومة الحرارة المطلوبة '+lt('PIW 288'),min:0,max:10,step:0.5,v:o.vr,u:'v',dp:1}]:[]),
+   ...(o.q0!=null?[{k:'q0',l:'Q4.0',sw:true,v:o.q0,on:'قبل هذا المسح: السخان يعمل '+lt('Q 4.0 = 1'),off:'قبل هذا المسح: السخان متوقف '+lt('Q 4.0 = 0')}]:[])],
+  calc:s=>{const S={words:{PIW290:Math.round(s.vt/10*27648),PIW288:Math.round((s.vr==null?0:s.vr)/10*27648)},bits:{'Q4.0':s.q0?1:0},a1:undefined,a2:undefined,t1:'',t2:'',fc:true,rlo:false};
+   for(let i=1;i<o.from;i++)stlExec(L[i].l,S);
+   const R=[];for(let i=o.from;i<=o.to;i++){if(i-o.from<s.n){const r=stlExec(L[i].l,S);R.push(r)}else R.push(undefined)}
+   const cur=o.from+s.n-1;
+   const row=(i,r)=>{const ln=cl(L[i].l),done=r!==undefined,now=i===cur;
+    return `<tr style="${now?'background:var(--blue-soft);font-weight:700':''}${!done?';color:var(--muted)':''}"><td>${i}</td><td style="white-space:nowrap">${ln||'<i>(سطر فارغ)</i>'}</td><td>${done&&r?fa(r.a1,r.t1):''}</td><td>${done&&r?fa(r.a2,r.t2):''}</td><td>${done&&r&&r.rlo!=null?r.rlo:''}</td></tr>`};
+   const tbl=`<div style="overflow-x:auto;direction:ltr"><table style="border-collapse:collapse;font-family:var(--mono);font-size:13px;width:100%;min-width:300px;text-align:left" class="ml-stl"><thead><tr style="color:var(--muted)"><th>#</th><th>STL</th><th>ACCU1</th><th>ACCU2</th><th>RLO</th></tr></thead><tbody>${R.map((r,j)=>row(o.from+j,r)).join('')}</tbody></table></div>`;
+   const last=s.n?R[s.n-1]:null,ln=s.n?cl(L[cur].l):'';
+   const facts=[['ACCU1',S.a1===undefined?'—':fa(S.a1,S.t1)],['ACCU2',S.a2===undefined?'—':fa(S.a2,S.t2)]];
+   (o.show||[]).forEach(k=>facts.push([k,S.words[k]===undefined?'—':fa(S.words[k],'REAL'),'hi']));
+   facts.push(['Q 4.0',String(S.bits['Q4.0']?1:0),S.bits['Q4.0']?'hi':'']);
+   const op=ln.split(' ')[0],ar=ln.slice(op.length).replace(/\s+/g,''),A1=S.a1===undefined?'':lt(fa(S.a1,S.t1)),A2=S.a2===undefined?'':lt(fa(S.a2,S.t2));
+   const say=!ln?'سطر فارغ مطبوع هكذا في الكتاب: لا يفعل شيئاً.'
+    :op==='L'?(/^PIW/.test(ar)?`حُمّلت قراءة المدخل ${lt(ar)} في ACCU1 (${A1})، وانتقل ما كان فيه إلى ACCU2.`:/^MD/.test(ar)?`حُمّلت قيمة ${lt(ar)} في ACCU1 (${A1})، وانتقل ما كان فيه إلى ACCU2 (${A2}).`:`حُمّل الثابت ${A1} في ACCU1، وانتقل ما كان فيه إلى ACCU2 (${A2}).`)
+    :op==='ITD'?'تحويل ACCU1 من Integer إلى Double Integer: الرقم نفسه في مكان أكبر.'
+    :op==='DTR'?'تحويل ACCU1 إلى Real: الرقم نفسه، لكنه الآن يقبل الكسور.'
+    :op==='/R'?`ACCU1 = ACCU2 ÷ ACCU1 = ${A1}`:op==='*R'?`ACCU1 = ACCU2 × ACCU1 = ${A1}`
+    :op==='T'?`نُقل ACCU1 (${A1}) إلى العنوان ${lt(ar)}.`
+    :(op==='<=R'||op==='>R')?`المقارنة: هل ACCU2 ${lt(op[0]==='<'?'≤':'>')} ACCU1؟ ${lt(A2.replace(/<[^>]+>/g,'')+' '+(op[0]==='<'?'≤':'>')+' '+A1.replace(/<[^>]+>/g,''))} ← ${lt('RLO = '+(last&&last.rlo))}`
+    :op==='S'?(S.rlo?`${lt('RLO = 1')}، فثُبّت السخان ${lt('Q 4.0 = 1')}.`:`${lt('RLO = 0')}، فلا يفعل الأمر ${lt('S')} شيئاً: ${lt('Q 4.0')} تبقى كما كانت.`)
+    :op==='R'?(S.rlo?`${lt('RLO = 1')}، فأُلغي السخان ${lt('Q 4.0 = 0')}.`:`${lt('RLO = 0')}، فلا يفعل الأمر ${lt('R')} شيئاً: ${lt('Q 4.0')} تبقى كما كانت.`):'';
+   const msg=!s.n?'حرّك المنزلق الأول لتنفيذ أول سطر، وراقب ACCU1 و ACCU2.':`<b>السطر ${lt(ln||'—')}:</b> ${say}`;
+   return {pic:tbl,facts,msg}}})}),{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 97–98',
    q:'في الوحدات السابقة كانت المداخل ضواغط: إما مضغوطة أو لا… فكيف سيعرف الـ PLC أن الغرفة صارت باردة؟',
@@ -126,7 +333,12 @@ B.lesson({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج – حاسب آلي – جهاز عرض (داتا شو) – سبورة – كراسة الطالب – قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 98'},
     {watch:String.raw`<p>صفحة المقدمة مكررة في الكتاب بصيغتين: متطلبات الجدارة في ص 97 «اجتياز ورشة أساسيات الكهرباء، اجتياز الرسم الفني»، وفي ص 98 «اجتياز ورشة التحكم في المحركات الثلاثية الأوجه»، والوسائل في ص 97 بلا «كراسة الطالب».</p>`,fix:true},
-    {tip:String.raw`<p>إلى الآن كانت المداخل «ثنائية»: ضاغط مضغوط <span class="ltr">1</span> أو غير مضغوط <span class="ltr">0</span>. في هذه الوحدة يدخل إلى الـ PLC <b>رقم</b> يتغير باستمرار: درجة الحرارة. سنقرؤه، ونحوّله، ونقارنه بالحرارة المطلوبة، ثم نشغّل السخان أو نوقفه.</p>`,title:'الجديد في هذه الوحدة'}
+    {tip:String.raw`<p>إلى الآن كانت المداخل «ثنائية»: ضاغط مضغوط <span class="ltr">1</span> أو غير مضغوط <span class="ltr">0</span>. في هذه الوحدة يدخل إلى الـ PLC <b>رقم</b> يتغير باستمرار: درجة الحرارة. سنقرؤه، ونحوّله، ونقارنه بالحرارة المطلوبة، ثم نشغّل السخان أو نوقفه.</p>`,title:'الجديد في هذه الوحدة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'اقرأ كل عبارة عن مقدمة الوحدة (ص 97–98) وقرّر: صح أم خطأ؟',items:[
+     [String.raw`في هذه الوحدة كل مداخل الـ <span class="ltr">PLC</span> ضواغط: إما <span class="ltr">0</span> أو <span class="ltr">1</span>.`,false,String.raw`يدخل إلى الـ <span class="ltr">PLC</span> هنا رقم يتغير باستمرار: درجة الحرارة (ومعها قيمة الحرارة المطلوبة).`],
+     [String.raw`محتوى الوحدة: فكرة عمل التحكم في درجات الحرارة، ثم كتابة برنامج للتحكم فيها باللغة <span class="ltr">(LAD)</span>.`,true,String.raw`هذان هما القسمان المذكوران في ص 98.`],
+     [String.raw`من أهداف الوحدة أن يكتب المتدرب برامج للتحكم في درجة الحرارة.`,true,String.raw`الهدف الثاني في ص 97: «أن يكتب المتدرب برامج للتحكم في درجة الحرارة».`],
+     [String.raw`الوقت المتوقع للتدريب على هذه الجدارة يوم كامل.`,false,String.raw`الوقت المتوقع في الكتاب: ساعتان.`]]})}
    ]},
 
   {st:2,short:'فكرة العمل',title:'أولاً: فكرة عمل التحكم في درجات الحرارة',ref:'ص 99',
@@ -142,7 +354,17 @@ B.lesson({
      ['تشغّل السخان حتى تقترب الحرارة الفعلية من المرغوبة',true,'الخطأ يقول إن الغرفة أبرد من المطلوب، فالتصحيح هو التسخين.'],
      ['لا شيء؛ المهم أن السخان موصول',false,'بلا قياس ومقارنة لا يعرف أحد أن الغرفة باردة؛ هذا ما يشرحه الكتاب في ص 99.']]}},
     {tip:String.raw`<p>الفكرة كلها في ثلاث كلمات: <b>نقيس</b> الحرارة الفعلية، <b>نقارن</b>ها بالمرغوبة، <b>نصحّح</b> بحسب الفرق. فإذا كانت الغرفة أبرد من المطلوب يعمل السخان، وإذا صارت أسخن منه يتوقف.</p>`,title:'الفكرة في سطر'},
-    {add:String.raw`<p>المكيّف في البيت يعمل بالفكرة نفسها: تضبط على جهاز التحكم الحرارة التي تريدها (المرغوبة)، وفي داخل المكيف حساس يقيس حرارة الغرفة (الفعلية)، فيشغّل الضاغط أو يوقفه بحسب الفرق بينهما.</p>`,title:'مثال من البيت'}
+    {add:String.raw`<p>المكيّف في البيت يعمل بالفكرة نفسها: تضبط على جهاز التحكم الحرارة التي تريدها (المرغوبة)، وفي داخل المكيف حساس يقيس حرارة الغرفة (الفعلية)، فيشغّل الضاغط أو يوقفه بحسب الفرق بينهما.</p>`,title:'مثال من البيت'},
+    {title:'مختبر مصغّر: القيمة المرغوبة والقيمة الفعلية',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك الحرارتين (أرقام تختارها أنت) وراقب الفرق بينهما وماذا يجب أن يفعل السخان.',
+      predict:{q:String.raw`الحرارة المرغوب بها أقل من الحرارة الفعلية للغرفة. ماذا يجب أن يفعل السخان؟`,opts:[
+       [String.raw`يعمل، لأن هناك فرقاً بين القيمتين`,false,String.raw`وجود فرق وحده لا يكفي؛ المهم اتجاهه. الغرفة هنا أسخن من المطلوب.`],
+       [String.raw`يتوقف، لأن الغرفة أسخن من المطلوب`,true,String.raw`الخطأ بين المرغوبة والفعلية هو الذي يحدد سلوك المنظومة: الغرفة أسخن من المطلوب، فلا داعي للتسخين.`],
+       [String.raw`لا يتأثر؛ السخان يعمل دائماً`,false,String.raw`لو عمل دائماً لما كانت هناك منظومة تحكم؛ الهدف أن تقترب الفعلية من المرغوبة.`]]},
+      ins:[{k:'sv',l:'الحرارة المرغوب بها set value',min:10,max:40,step:1,v:25,u:'°C'},{k:'av',l:'الحرارة الفعلية actual value',min:10,max:40,step:1,v:30,u:'°C'}],
+      calc:s=>{const e=s.sv-s.av,on=e>0;
+       return {bars:[{l:'المرغوبة',v:s.sv,max:40,u:'°C',col:'--blue'},{l:'الفعلية',v:s.av,max:40,u:'°C',col:'--live'}],
+        facts:[['الفرق: المرغوبة − الفعلية',`${DCML.fm(B,e)} °C`,e?'hi':''],['السخان',on?'يعمل':'متوقف',on?'hi':'']],
+        msg:e>0?'الغرفة أبرد من المطلوب: يعمل السخان حتى تقترب الفعلية من المرغوبة.':e<0?'الغرفة أسخن من المطلوب: يتوقف السخان وتبرد الغرفة وحدها.':'لا فرق بين القيمتين: لا شيء يحتاج إلى تصحيح الآن.'}}})}
    ]},
 
   {st:3,short:'النظام والحاكم والحساس',title:'العناصر 1–3: النظام، والحاكم، والحساس',ref:'ص 99',
@@ -162,7 +384,13 @@ B.lesson({
      ['الازدواج الحراري (الثرموكبل)',true,'يحوّل درجة الحرارة إلى جهد كهربائي، كما في البند 3 ص 99.']]}},
     {tip:String.raw`<p>في تطبيقنا: <b>النظام</b> = الغرفة، و<b>دخله</b> = الحرارة التي يعطيها السخان، و<b>خرجه</b> = درجة حرارة الغرفة. و<b>الحساس</b> يقيس هذا الخرج ويحوّله إلى جهد، لأن الحاكم لا يتعامل إلا مع الإشارات الكهربائية.</p>`,title:'العناصر في غرفتنا'},
     {add:String.raw`<p>الازدواج الحراري (الثرموكبل) سلكان من معدنين مختلفين ملحومان من طرف واحد. عندما يسخن طرف اللحام يظهر بين الطرفين الآخرين جهد صغير جداً يزيد كلما زادت الحرارة؛ وبهذا الجهد «يقرأ» الجهاز درجة الحرارة.</p>`,title:'كيف يحوّل الثرموكبل الحرارة إلى جهد؟'},
-    {watch:String.raw`<p>الحاكمات الأربعة في البند 2 (التناسبي والتكاملي…) درستها في مواد أخرى. الحاكم الذي سنبنيه بالـ PLC في هذه الوحدة هو <b>الحاكم ذو الموضعين</b> (تشغيل/إيقاف)، وستراه في آخر محطة من هذا الدرس.</p>`}
+    {watch:String.raw`<p>الحاكمات الأربعة في البند 2 (التناسبي والتكاملي…) درستها في مواد أخرى. الحاكم الذي سنبنيه بالـ PLC في هذه الوحدة هو <b>الحاكم ذو الموضعين</b> (تشغيل/إيقاف)، وستراه في آخر محطة من هذا الدرس.</p>`},
+    {title:'مختبر مصغّر: من يقوم بهذا الدور؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عبارة اضغط العنصر الذي تصفه في تطبيق التحكم في حرارة الغرفة.',cats:['النظام','الحاكم','الحساس'],items:[
+     ['الغرفة التي نريد تثبيت حرارتها',0,'النظام هو «المراد التحكم بخرجه»، وخرج الغرفة هو درجة حرارتها.'],
+     ['يحوّل حرارة الغرفة إلى جهد كهربائي',2,'هذا عمل الحساس (محوّل الإشارة): يحوّل كمية غير كهربائية إلى كمية كهربائية.'],
+     ['يتحكم في دخل الغرفة (تشغيل السخان) ليثبّت حرارتها عند القيمة المطلوبة',1,'الحاكم «يقوم بالتحكم في دخل النظام لتثبيت خرجه عند القيمة المطلوبة».'],
+     ['الازدواج الحراري (الثرموكبل)',2,'مثال الكتاب على الحساس: يحوّل درجة الحرارة إلى جهد كهربائي.'],
+     ['الحاكم التناسبي التكاملي',1,'أحد أنواع الحاكمات التي ذكرها الكتاب.']]})}
    ]},
 
   {st:4,short:'جهد المرجع',title:'العنصر 4: جهد المرجع',ref:'ص 99',
@@ -227,7 +455,12 @@ B.lesson({
      ['حلقة مغلقة، لأن فيه حاكماً (المؤقت)',false,'وجود الحاكم لا يكفي؛ الحلقة المغلقة تحتاج أن يرجع الخرج (الحرارة) إلى الحاكم.'],
      ['حلقة مفتوحة، لأن الحرارة الفعلية لا تُقاس ولا ترجع إلى الحاكم',true,'المؤقت يفصل بعد المدة سواء سخنت الغرفة أم لا.'],
      ['ليس نظام تحكم أصلاً',false,'هو نظام تحكم، لكنه مفتوح: يتحكم في الدخل دون أن يراقب الخرج.']]}},
-    {add:String.raw`<p>الغسالة التي تعمل ببرنامج زمني ثابت مثال على الحلقة المفتوحة: تغسل المدة المبرمجة ولا «ترى» هل نظفت الملابس. أما سخان الماء في البيت فحلقة مغلقة: فيه حساس يفصل السخان عندما يصل الماء إلى الحرارة المضبوطة.</p>`,title:'مثالان من البيت'}
+    {add:String.raw`<p>الغسالة التي تعمل ببرنامج زمني ثابت مثال على الحلقة المفتوحة: تغسل المدة المبرمجة ولا «ترى» هل نظفت الملابس. أما سخان الماء في البيت فحلقة مغلقة: فيه حساس يفصل السخان عندما يصل الماء إلى الحرارة المضبوطة.</p>`,title:'مثالان من البيت'},
+    {title:'مختبر مصغّر: مفتوحة أم مغلقة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'السؤال الفاصل: هل تُقاس النتيجة وترجع إلى الحاكم؟ صنّف كل مثال.',cats:['حلقة مفتوحة','حلقة مغلقة'],items:[
+     ['غسالة تغسل المدة المبرمجة ولا تفحص هل نظفت الملابس',0,'لا شيء يقيس النتيجة ويرجع بها؛ تعمل بالزمن فقط.'],
+     ['سخان ماء فيه حساس يفصله عندما يصل الماء إلى الحرارة المضبوطة',1,'الحساس يرجع بالحرارة الفعلية فيُصحَّح التشغيل.'],
+     ['سخان يعمل بقدر ثابت محسوب مسبقاً، ولا تُقاس حرارة الغرفة',0,'لو تغيّر الجو تغيّرت الحرارة ولا أحد يصحح.'],
+     ['منظومة هذه الوحدة: ثرموكبل يرجع بالحرارة الفعلية إلى الـ <span class="ltr">PLC</span> ليقارنها بالمطلوبة',1,'القيمة الفعلية ترجع وتُقارن بالمرغوبة باستمرار.']]})}
    ]},
 
   {st:7,short:'الحاكم ذو الموضعين',title:'الحاكم ذو الموضعين',ref:'ص 100',
@@ -243,7 +476,11 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>«موضعان» = وضعان فقط: السخان إما <b>يعمل بكامل قدرته</b> أو <b>يتوقف تماماً</b>. ولأن الغرفة تسخن وتبرد ببطء، تبقى الحرارة تتأرجح قليلاً حول المطلوب دون أن يُرهَق المتمم بالتشغيل والإيقاف المتكرر. سنبني هذا الحاكم بالـ PLC في الدرسين 5.3 و 5.4.</p>`,title:'ما معنى «ذو الموضعين»؟'},
-    {add:String.raw`<p>مكواة الملابس مثال يومي: تسمع «طقّة» عندما يفصل منظم الحرارة بداخلها، ثم «طقّة» أخرى بعد قليل عندما يعيد التوصيل. هذا حاكم ذو موضعين: تسخين كامل أو لا تسخين.</p>`,title:'مثال من البيت'}
+    {add:String.raw`<p>مكواة الملابس مثال يومي: تسمع «طقّة» عندما يفصل منظم الحرارة بداخلها، ثم «طقّة» أخرى بعد قليل عندما يعيد التوصيل. هذا حاكم ذو موضعين: تسخين كامل أو لا تسخين.</p>`,title:'مثال من البيت'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{items:[
+     ['الحاكم ذو الموضعين يشغّل السخان بنصف قدرته عندما تقترب الحرارة من المطلوب.',false,'«موضعان» = وضعان فقط: السخان يعمل بكامل قدرته أو يتوقف تماماً.'],
+     ['يُستخدم الحاكم ذو الموضعين بشكل واسع في التحكم في درجة الحرارة لأن أنظمة التسخين بطيئة الاستجابة.',true,'هذا نص الكتاب (ص 100).'],
+     ['مع الحاكم ذي الموضعين تبقى الحرارة تتأرجح قليلاً حول المطلوب بدل أن تثبت عليه تماماً.',true,'السخان يعمل أو يتوقف، والغرفة تسخن وتبرد ببطء، فتتأرجح الحرارة حول المطلوب.']]})}
    ]},
 
   {recap:[
@@ -361,7 +598,14 @@ B.lesson({
     {tip:String.raw`<ul><li><b>مداخل رقمية:</b> <span class="ltr">I0.1</span> ← الضاغط <span class="ltr">S1</span> «Heat enable»، و<span class="ltr">I0.0</span> ← الضاغط <span class="ltr">S0</span> «Stop Heating».</li><li><b>مداخل تناظرية:</b> <span class="ltr">PIW290</span> ← الثرموكبل <span class="ltr">K-Type</span>، و<span class="ltr">PIW288</span> ← منزلق المقاومة المتغيرة <span class="ltr">R</span> بين <span class="ltr">10 VDC</span> و<span class="ltr">0 VDC</span>.</li><li><b>مخارج:</b> <span class="ltr">Q4.0</span> ← متمم السخان <span class="ltr">K1</span>، و<span class="ltr">Q4.1</span> ← المصباح <span class="ltr">H1</span>.</li></ul>`,title:'اقرأ الشكل'},
     {html:String.raw`<figure class="fig"><div class="svgbox" style="max-width:320px;margin-inline:auto"><svg viewBox="0 0 300 260" role="img" aria-label="دائرة القدرة: الخطوط الثلاثة ثم المصهرات ثم نقاط المتمم K1 ثم ثلاث مقاومات تسخين موصولة نجمة" style="font-family:var(--font)"><path d="M40 20 H280 M40 34 H280 M40 48 H280" stroke="#2C4A40" stroke-width="2.5"/><text x="32" y="24" text-anchor="end" font-size="12" fill="#2C4A40" font-weight="700" font-family="var(--mono)">L1</text><text x="32" y="38" text-anchor="end" font-size="12" fill="#2C4A40" font-weight="700" font-family="var(--mono)">L2</text><text x="32" y="52" text-anchor="end" font-size="12" fill="#2C4A40" font-weight="700" font-family="var(--mono)">L3</text><g stroke="#2C4A40" stroke-width="2.5" fill="none"><path d="M120 20 V70 M160 34 V70 M200 48 V70"/><path d="M120 94 V112 M160 94 V112 M200 94 V112"/><path d="M120 112 L108 134 M160 112 L148 134 M200 112 L188 134"/><path d="M120 136 V160 M160 136 V160 M200 136 V160"/><path d="M120 206 V226 M160 206 V226 M200 206 V226 M120 226 H200"/></g><circle cx="120" cy="20" r="3.5" fill="#2C4A40"/><circle cx="160" cy="34" r="3.5" fill="#2C4A40"/><circle cx="200" cy="48" r="3.5" fill="#2C4A40"/><g fill="#FBF6EE" stroke="#2C4A40" stroke-width="2"><rect x="114" y="70" width="12" height="24"/><rect x="154" y="70" width="12" height="24"/><rect x="194" y="70" width="12" height="24"/></g><path d="M100 124 H214" stroke="#2C4A40" stroke-width="1.6" stroke-dasharray="5 4"/><text x="222" y="128" font-size="12" fill="#2C4A40" font-weight="700" font-family="var(--mono)">K1</text><g fill="#F7DCC8" stroke="#E8735A" stroke-width="2.5"><rect x="113" y="160" width="14" height="46"/><rect x="153" y="160" width="14" height="46"/><rect x="193" y="160" width="14" height="46"/></g><circle cx="160" cy="226" r="4" fill="#2C4A40"/><text x="160" y="248" text-anchor="middle" font-size="13" fill="#2C4A40" font-weight="700" font-family="var(--mono)">E</text></svg></div><figcaption>دائرة القدرة في الشكل <span class="ltr">(1-5)</span>: مصهر على كل خط، ثم نقاط <span class="ltr">K1</span> الرئيسة (الخط المتقطع يربطها ميكانيكياً)، ثم ثلاث مقاومات تسخين موصولة نجمة ونقطة النجمة <span class="ltr">E</span>. <span class="ref">ص 100</span></figcaption></figure>`},
     {tip:String.raw`<p>المدخل الرقمي (مثل <span class="ltr">I0.1</span>) يعطي البرنامج <span class="ltr">0</span> أو <span class="ltr">1</span> فقط. أما المدخل التناظري (الذي يبدأ بـ <span class="ltr">PIW</span>) فيعطيه <b>رقماً</b> يتغير بتغيّر الجهد أو الحرارة؛ ولهذا يحتاج الثرموكبل والمقاومة المتغيرة إلى موديول دخل تناظري.</p>`,title:'رقمي أم تناظري؟'},
-    {add:String.raw`<p>الحرف <span class="ltr">P</span> في <span class="ltr">PIW</span> يعني أن القيمة تُقرأ من الموديول مباشرة <span class="ltr">(Peripheral)</span>، و<span class="ltr">IW</span> تعني «كلمة دخل» <span class="ltr">(Input Word)</span>: مكان يتسع لرقم كامل، لا لبت واحد مثل <span class="ltr">I0.1</span>.</p>`,title:'ماذا تعني PIW؟'}
+    {add:String.raw`<p>الحرف <span class="ltr">P</span> في <span class="ltr">PIW</span> يعني أن القيمة تُقرأ من الموديول مباشرة <span class="ltr">(Peripheral)</span>، و<span class="ltr">IW</span> تعني «كلمة دخل» <span class="ltr">(Input Word)</span>: مكان يتسع لرقم كامل، لا لبت واحد مثل <span class="ltr">I0.1</span>.</p>`,title:'ماذا تعني PIW؟'},
+    {title:'مختبر مصغّر: رقمي أم تناظري أم مخرج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'صنّف كل عنصر في الشكل <span class="ltr">(1-5)</span> بحسب ما يدخل إلى الـ <span class="ltr">PLC</span> أو يخرج منه.',cats:['مدخل رقمي','مدخل تناظري','مخرج'],items:[
+     ['الضاغط <span class="ltr">S1</span> «Heat enable»',0,'على <span class="ltr">I0.1</span>: مضغوط <span class="ltr">1</span> أو غير مضغوط <span class="ltr">0</span>.'],
+     ['الثرموكبل <span class="ltr">K-Type</span>',1,'على <span class="ltr">PIW290</span>: يعطي رقماً يتغير مع الحرارة.'],
+     ['منزلق المقاومة المتغيرة <span class="ltr">R</span>',1,'على <span class="ltr">PIW288</span>: جهد بين <span class="ltr">0 VDC</span> و <span class="ltr">10 VDC</span> يُقرأ رقماً.'],
+     ['متمم السخان <span class="ltr">K1</span>',2,'على <span class="ltr">Q4.0</span>: البرنامج يشغّله أو يوقفه.'],
+     ['الضاغط <span class="ltr">S0</span> «Stop Heating»',0,'على <span class="ltr">I0.0</span>.'],
+     ['المصباح <span class="ltr">H1</span>',2,'على <span class="ltr">Q4.1</span>.']]})}
    ]},
 
   {st:2,short:'جدول قائمة التشغيل',title:'جدول قائمة التشغيل',ref:'ص 101',
@@ -377,7 +621,18 @@ B.lesson({
    body:[
     {book:String.raw`<p>والجدول التالي يوضح قائمة التشغيل حسب الشكل <span class="ltr">(1-5)</span> وهي على النحو التالي:</p>`+IO5_BOOK,ref:'ص 101'},
     {watch:ERR_ADDR,fix:true},
-    {tip:String.raw`<p>المدخلان التناظريان لا يعطيان الحرارة بالدرجات مباشرة: المقاومة تعطي رقماً من <span class="ltr">0</span> إلى <span class="ltr">27648</span> (حسب الجهد من <span class="ltr">0</span> إلى <span class="ltr">10</span> فولت)، والثرموكبل يعطي رقماً سنعرف قاعدته في المحطة الرابعة. تحويل هذه الأرقام إلى درجات هو أول ما يفعله البرنامج (الدرس 5.3).</p>`,title:'أرقام لا درجات'}
+    {tip:String.raw`<p>المدخلان التناظريان لا يعطيان الحرارة بالدرجات مباشرة: المقاومة تعطي رقماً من <span class="ltr">0</span> إلى <span class="ltr">27648</span> (حسب الجهد من <span class="ltr">0</span> إلى <span class="ltr">10</span> فولت)، والثرموكبل يعطي رقماً سنعرف قاعدته في المحطة الرابعة. تحويل هذه الأرقام إلى درجات هو أول ما يفعله البرنامج (الدرس 5.3).</p>`,title:'أرقام لا درجات'},
+    {title:'مختبر مصغّر: ماذا لو وصّلت حسب الجدول؟',widget:(el,B)=>DCML.lab(el,B,{intro:'الغرفة باردة (الحرارة الفعلية أقل من 80٪ من المطلوبة). اختر طريقة التوصيل ثم الضاغط، وراقب السخان. البرنامج نفسه في الحالتين: <span class="ltr">Network 6</span> تقرأ التشغيل من <span class="ltr">I0.1</span>، و <span class="ltr">Network 7</span> تقرأ الإيقاف من <span class="ltr">I0.0</span>.',
+      predict:{q:String.raw`وصّلت الضاغطين حسب الجدول (<span class="ltr">S1 ← I0.0</span>) والسخان متوقف، ثم ضغطت <span class="ltr">S1</span>. ماذا يحدث؟`,opts:[
+       [String.raw`يعمل السخان كالعادة`,false,String.raw`البرنامج لا يعرف أسماء الضواغط؛ يعرف العناوين فقط.`],
+       [String.raw`لا يعمل السخان، لأن <span class="ltr">S1</span> صار على مدخل الإيقاف <span class="ltr">I0.0</span>`,true,String.raw`<span class="ltr">I0.0</span> في البرنامج هو «stop». فضغط <span class="ltr">S1</span> يُلغي التسخين بدل أن يبدأه.`],
+       [String.raw`يتوقف الـ <span class="ltr">PLC</span> عن العمل`,false,String.raw`الـ <span class="ltr">PLC</span> يستمر في المسح؛ المشكلة في معنى المدخل لا في الجهاز.`]]},
+      ins:[{k:'w',l:'طريقة التوصيل:',seg:[['fig','حسب الشكل والبرنامج'],['tab','حسب الجدول (ص 101)']],v:'fig'},
+       {k:'h',l:'السخان قبل الضغط:',seg:[[0,'متوقف'],[1,'يعمل']],v:0},
+       {k:'b',l:'الضاغط الذي تضغطه:',seg:[['S1','S1 (تشغيل)'],['S0','S0 (إيقاف)']],v:'S1'}],
+      calc:s=>{const a=s.w==='fig'?(s.b==='S1'?'I0.1':'I0.0'):(s.b==='S1'?'I0.0':'I0.1'),start=a==='I0.1',after=start?1:0,want=s.b==='S1'?1:0,bad=after!==want;
+       return {facts:[['المدخل الذي وصله 1',a],['معناه في البرنامج','<bdi dir="rtl">'+(start?'تشغيل <bdi dir="ltr">(Network 6)</bdi>':'إيقاف <bdi dir="ltr">(Network 7)</bdi>')+'</bdi>',bad?'bad':''],['السخان K1 بعد الضغط',after?'يعمل':'متوقف',after?'hi':'']],
+        msg:(bad?'<b>عكس المطلوب!</b> ':'')+`ضغطت <span class="ltr">${s.b}</span> فوصل <span class="ltr">1</span> إلى <span class="ltr">${a}</span>، وهو في البرنامج مدخل ${start?'التشغيل: والحرارة تحت 80٪ فيُثبَّت السخان':'الإيقاف: فيُلغى السخان'}.`+(s.w==='tab'?' لهذا نتبع في الأسلاك الشكل <span class="ltr">(1-5)</span> والبرنامج.':''),cls:bad?'bad':''}}})}
    ]},
 
   {st:3,short:'تهيئة الموديول',title:'تهيئة وحدة المدخل التناظري: الشكل <span class="ltr">(2-5)</span>',ref:'ص 101–102',
@@ -397,7 +652,19 @@ B.lesson({
      [String.raw`تغيير العنوان إلى <span class="ltr">PIW288</span>`,false,String.raw`العنوان يُضبط في <span class="ltr">Address</span>، و<span class="ltr">PIW288</span> للمقاومة R لا للثرموكبل.`]]}},
     {tip:String.raw`<p>في تبويب <span class="ltr">Address</span> نتأكد أن عنوان قناة الثرموكبل هو <span class="ltr">PIW290</span> كما في الشكل <span class="ltr">(1-5)</span>؛ لأن البرنامج سيقرأ الحرارة من هذا العنوان. وفي تبويب الإدخال نختار نوع القياس <span class="ltr">TC-IL</span> والمدى <span class="ltr">Type K</span>.</p>`,title:'ماذا نضبط فعلاً؟'},
     {add:String.raw`<p>لكل نوع من الثرموكبل (<span class="ltr">K</span>، <span class="ltr">J</span>، <span class="ltr">N</span>…) معدنان مختلفان، فيعطي كل نوع جهداً مختلفاً عند الحرارة نفسها. لو اخترنا نوعاً غير الموصول لحوّل الموديول الجهد إلى حرارة بجدول خاطئ، فتظهر قراءة خاطئة مع أن الأسلاك سليمة.</p>`,title:'لماذا يهم نوع الثرموكبل؟'},
-    {watch:String.raw`<p>النص يقول الموديول «<span class="ltr">AI 8x12 bit</span>» بينما اللقطة في الشكل <span class="ltr">(2-5)</span> تُظهر «<span class="ltr">AI8xTC</span>» (موديول ثرموكبل). والنص يسمي النوافذ <span class="ltr">General</span> و<span class="ltr">Address</span> و<span class="ltr">Inputs</span>، واللقطة فيها <span class="ltr">General</span> و<span class="ltr">Addresses</span> و<span class="ltr">Inputs - Part 1</span> و<span class="ltr">Inputs - Part 2</span>.</p>`,fix:true}
+    {watch:String.raw`<p>النص يقول الموديول «<span class="ltr">AI 8x12 bit</span>» بينما اللقطة في الشكل <span class="ltr">(2-5)</span> تُظهر «<span class="ltr">AI8xTC</span>» (موديول ثرموكبل). والنص يسمي النوافذ <span class="ltr">General</span> و<span class="ltr">Address</span> و<span class="ltr">Inputs</span>، واللقطة فيها <span class="ltr">General</span> و<span class="ltr">Addresses</span> و<span class="ltr">Inputs - Part 1</span> و<span class="ltr">Inputs - Part 2</span>.</p>`,fix:true},
+    {title:'مختبر مصغّر: ماذا لو أخطأت في التهيئة؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+     {q:'اخترت في التهيئة ثرموكبل من النوع <span class="ltr">J</span>، والموصول فعلاً من النوع <span class="ltr">K</span>. الأسلاك سليمة. ماذا تتوقع؟',opts:[
+      ['قراءة صحيحة، لأن الأسلاك سليمة',false,'سلامة الأسلاك لا تكفي؛ الموديول يحوّل الجهد إلى حرارة بحسب النوع المختار.'],
+      ['قراءة حرارة خاطئة مع أن الأسلاك سليمة',true,'لكل نوع جهد مختلف عند الحرارة نفسها، فيحوّل الموديول بجدول نوع غير الموصول.'],
+      ['تتوقف قراءة المقاومة <span class="ltr">R</span> فقط',false,'المقاومة <span class="ltr">R</span> على عنوان آخر <span class="ltr">PIW288</span>، والخطأ هنا في قناة الثرموكبل.']]},
+     {q:'في تبويب <span class="ltr">Addresses</span> غيّرت عنوان قناة الثرموكبل، والبرنامج ما زال يقرأ <span class="ltr">PIW290</span>. ماذا يحدث؟',opts:[
+      ['البرنامج لا يقرأ حرارة الثرموكبل، لأنه يقرأ عنواناً لم يعد للثرموكبل',true,'البرنامج يقرأ من العنوان المكتوب فيه؛ لذلك نتأكد أن عنوان القناة <span class="ltr">PIW290</span> كما في الشكل <span class="ltr">(1-5)</span>.'],
+      ['البرنامج يتبع العنوان الجديد تلقائياً',false,'العنوان مكتوب داخل البرنامج نفسه، ولا يتغير وحده.'],
+      ['لا شيء؛ العنوان لا يهم',false,'العنوان هو «العقد» بين الموديول والبرنامج.']]},
+     {q:'في الشكل <span class="ltr">(2-5)</span> خانات <span class="ltr">Diagnostic Interrupt</span> وما بعدها غير مفعّلة. هل يمنع ذلك قراءة الحرارة؟',opts:[
+      ['نعم، يجب تفعيلها كلها',false,'الكتاب تركها غير مفعّلة في الشكل، والإعداد الذي ينبّه إليه هو نوع الثرموكبل.'],
+      ['لا؛ الإعداد الذي ينبّه إليه الإطار الأحمر هو نوع الثرموكبل <span class="ltr">Type K</span>',true,'نوع القياس والمدى هما ما يحدد كيف يقرأ الموديول الحرارة.']]}]})}
    ]},
 
   {st:4,short:'قراءة الثرموكبل',title:'قراءة الثرموكبل داخل الـ PLC',ref:'ص 102',
@@ -419,7 +686,20 @@ B.lesson({
      [String.raw`الحرارة <span class="ltr">× 10</span> كالعادة`,false,'قاعدة × 10 تتوقف بعد 1622.0؛ فوقها منطقة Overflow.'],
      [String.raw`<span class="ltr">32767</span> دائماً <span class="ltr">(7FFFH)</span>`,true,'هذا سطر Overflow في الجدول: الرقم ثابت مهما ارتفعت الحرارة.'],
      [String.raw`<span class="ltr">0</span>`,false,'الصفر قراءة صحيحة لحرارة 0.0°C، وليس علامة تجاوز.']]}},
-    {watch:String.raw`<p>القراءة <span class="ltr">32767</span> لا تعني أن الحرارة = <span class="ltr">32767 ÷ 10</span>؛ هي «علامة» أن الحرارة تجاوزت المدى (<span class="ltr">Overflow</span>). وكذلك <span class="ltr">8000H</span> في ذيل الجدول علامة خطأ (توصيل معكوس، أو مدخل مفتوح، أو نوع ثرموكبل خاطئ)، وليست حرارة.</p>`}
+    {watch:String.raw`<p>القراءة <span class="ltr">32767</span> لا تعني أن الحرارة = <span class="ltr">32767 ÷ 10</span>؛ هي «علامة» أن الحرارة تجاوزت المدى (<span class="ltr">Overflow</span>). وكذلك <span class="ltr">8000H</span> في ذيل الجدول علامة خطأ (توصيل معكوس، أو مدخل مفتوح، أو نوع ثرموكبل خاطئ)، وليست حرارة.</p>`},
+    {title:'مختبر مصغّر: من الحرارة إلى قراءة الـ PLC',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك حرارة الثرموكبل واقرأ ما يصل إلى الـ <span class="ltr">PLC</span> بحسب الجدول <span class="ltr">Table 4-26</span> (عمود <span class="ltr">Type K in °C</span>).',
+      predict:{q:String.raw`الحرارة <span class="ltr">25.5 °C</span>. ماذا يقرأ الـ <span class="ltr">PLC</span>؟`,opts:[
+       [String.raw`<span class="ltr">25</span>`,false,String.raw`لو قرأ <span class="ltr">25</span> لضاع نصف الدرجة؛ الموديول لا يحذف الكسر بل يضرب في <span class="ltr">10</span>.`],
+       [String.raw`<span class="ltr">2550</span>`,false,String.raw`هذا ضرب في <span class="ltr">100</span>؛ القاعدة في الكتاب ضرب في <span class="ltr">10</span>.`],
+       [String.raw`<span class="ltr">255</span>`,true,String.raw`القراءة داخل الـ <span class="ltr">PLC</span> = الحرارة × <span class="ltr">10</span>، فـ <span class="ltr">25.5</span> تصبح <span class="ltr">255</span>.`]]},
+      ins:[{k:'t',l:'حرارة طرف الثرموكبل',min:-300,max:1700,step:0.5,v:25.5,u:'°C',dp:1}],
+      calc:s=>{const r=tcReading(s.t),bad=r.r!=='Rated range';
+       const ar={'Rated range':'المدى المقنن','Overrange':'فوق المدى المقنن','Overflow':'تجاوز (Overflow)','Underflow':'تحت المدى (Underflow)'}[r.r];
+       return {facts:[['القراءة decimal',String(r.v),bad?'bad':'hi'],['hexa-decimal',hex(r.v)],['Range',r.r,bad?'bad':'']],
+        msg:r.r==='Rated range'?`المدى المقنن (من <span class="ltr">−270.0</span> إلى <span class="ltr">1372.0 °C</span>): القراءة = الحرارة × <span class="ltr">10</span>. وفي البرنامج نقسم على <span class="ltr">10.0</span> فنرجع إلى الدرجات.`
+         :r.r==='Overrange'?`${ar}: القراءة ما زالت الحرارة × <span class="ltr">10</span>، لكنها خارج المدى المقنن للثرموكبل.`
+         :r.r==='Overflow'?`فوق <span class="ltr">1622.0 °C</span> تبقى القراءة <span class="ltr">32767 (7FFFH)</span> مهما ارتفعت الحرارة: هي «علامة» تجاوز وليست حرارة.`
+         :`تحت <span class="ltr">−270.0 °C</span>: علامة خطأ وليست حرارة. ويخرج الموديول <span class="ltr">8000H</span> أيضاً عند التوصيل المعكوس أو المدخل المفتوح أو نوع الثرموكبل الخاطئ.`,cls:bad?'warn':''}}})}
    ]},
 
   {recap:[
@@ -587,7 +867,16 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>قارن المسارين: <b>المقاومة R</b> تعطي نسبة من مدى <span class="ltr">0–27648</span>، فنحتاج قسمة ثم ضرباً لنصل إلى الدرجات. أما <b>الثرموكبل</b> فقراءته أصلاً «درجات × 10»، فتكفي القسمة على <span class="ltr">10.0</span>. وفي الحالتين التحويل إلى <span class="ltr">Real</span> أولاً لكي لا تضيع الكسور.</p>`,title:'مساران مختلفان'},
-    {watch:String.raw`<p>القسمة تكون على <span class="ltr">10.0</span> (عدد حقيقي) لا على <span class="ltr">10</span> (عدد صحيح): الدالة <span class="ltr">DIV_R</span> تعمل على الأعداد الحقيقية، فيبقى الكسر العشري (مثلاً <span class="ltr">0.1</span> درجة).</p>`}
+    {watch:String.raw`<p>القسمة تكون على <span class="ltr">10.0</span> (عدد حقيقي) لا على <span class="ltr">10</span> (عدد صحيح): الدالة <span class="ltr">DIV_R</span> تعمل على الأعداد الحقيقية، فيبقى الكسر العشري (مثلاً <span class="ltr">0.1</span> درجة).</p>`},
+    {title:'مختبر مصغّر: من قراءة الثرموكبل إلى MD200',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك حرارة الثرموكبل (أرقام تختارها أنت) وتابع القيمة في كل مرحلة حتى تصل إلى <span class="ltr">MD200</span>.',
+      predict:{q:String.raw`قراءة الثرموكبل <span class="ltr">PIW290 = 253</span>. ما القيمة التي تُخزَّن في <span class="ltr">MD200</span>؟`,opts:[
+       [String.raw`<span class="ltr">25.3</span>`,true,String.raw`<span class="ltr">253</span> بعد التحويل إلى <span class="ltr">Real</span> تصبح <span class="ltr">253.0</span>، ثم ÷ <span class="ltr">10.0</span> = <span class="ltr">25.3</span> درجة.`],
+       [String.raw`<span class="ltr">253</span>`,false,String.raw`هذه القراءة نفسها (الحرارة × 10) قبل القسمة.`],
+       [String.raw`<span class="ltr">0.009</span>`,false,String.raw`هذا ناتج القسمة على <span class="ltr">27648.0</span>، وهي قسمة المقاومة <span class="ltr">R</span> لا الثرموكبل.`]]},
+      ins:[{k:'t',l:'حرارة الثرموكبل',min:0,max:150,step:0.1,v:25.3,u:'°C',dp:1}],
+      calc:s=>{const piw=Math.round(s.t*10),md=piw/10;
+       return {facts:[['PIW290 (Integer)',String(piw)],['بعد I_DI (Double Integer)',String(piw)],['بعد DI_R (Real)',piw.toFixed(1)],['DIV_R ÷ 10.0 ← MD200',fnum(md,1),'hi']],
+        msg:`الرقم لا يتغير في <span class="ltr">I_DI</span> و <span class="ltr">DI_R</span>؛ يتغير نوعه فقط حتى يقبل الكسور. ولو قسمناه خطأً على <span class="ltr">27648.0</span> لحصلنا على <span class="ltr">${fnum(piw/27648,4)}</span> بدل <span class="ltr">${fnum(md,1)}</span> درجة.`}}})}
    ]},
 
   {st:3,short:'المقارنة: 80٪ و 120٪',title:'خطوات العمل 4 إلى 6: المقارنة، والتشغيل عند 80٪، والإيقاف عند 120٪',ref:'ص 103',
@@ -663,7 +952,26 @@ B.lesson({
      [String.raw`يبقى يعمل، لأن <span class="ltr">(S)</span> ثبّته ولم يأتِ بعد شرط الإلغاء`,true,'المقارن الأول صار 0، لكن الملف المثبّت لا يتأثر بذلك؛ ينتظر Network 7.'],
      [String.raw`يتوقف، لأن شرط <span class="ltr">&lt;=R</span> لم يعد متحققاً`,false,'هذا يحدث مع ملف عادي (=)، لا مع ملف تثبيت (S).'],
      ['يعمل ويتوقف بسرعة متكررة',false,'المسافة بين الحدين والتثبيت هما بالضبط ما يمنع ذلك.']]}},
-    {watch:String.raw`<p><b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في <span class="ltr">Network 6</span> هو <b><span class="ltr">S1</span> مضغوط و</b> الحرارة ≤ <span class="ltr">80%</span>. و<span class="ltr">S1</span> «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز <span class="ltr">120%</span> لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى <span class="ltr">80%</span> إلا إذا ضُغط <span class="ltr">S1</span> مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> في المختبر يضيف علامة <span class="ltr">M0.0</span> يثبتها <span class="ltr">S1</span> ويلغيها <span class="ltr">S0</span>، وتحل محل <span class="ltr">I0.1</span> في <span class="ltr">Network 6</span>. بدّل بين النسختين في المختبر.</p>`,fix:true}
+    {watch:String.raw`<p><b>سلوك يختلف عن خطوات العمل (يغيّر عمل البرنامج):</b> شرط التشغيل في <span class="ltr">Network 6</span> هو <b><span class="ltr">S1</span> مضغوط و</b> الحرارة ≤ <span class="ltr">80%</span>. و<span class="ltr">S1</span> «ضاغط» حسب الجدول. فبعد أن يفصل السخان عند تجاوز <span class="ltr">120%</span> لن يعود للعمل تلقائياً عندما تنخفض الحرارة إلى <span class="ltr">80%</span> إلا إذا ضُغط <span class="ltr">S1</span> مرة أخرى في تلك اللحظة، بينما الخطوتان 5 و 6 تصفان تشغيلاً وإيقافاً تلقائياً (حاكم ذو موضعين). <b>المصحح</b> في المختبر يضيف علامة <span class="ltr">M0.0</span> يثبتها <span class="ltr">S1</span> ويلغيها <span class="ltr">S0</span>، وتحل محل <span class="ltr">I0.1</span> في <span class="ltr">Network 6</span>. بدّل بين النسختين في المختبر.</p>`,fix:true},
+    {title:'مختبر مصغّر: الشبكتان 6 و 7 مع الزمن',widget:(el,B)=>{let q=0;
+      return DCML.lab(el,B,{intro:'السخان هنا يتذكّر حالته بين حركة وأخرى، كما في الـ <span class="ltr">PLC</span>. اضبط الحرارة المطلوبة بالمقاومة <span class="ltr">R</span>، ثم غيّر الحرارة الفعلية واضغط الضاغطين، وتابع ما يحدث للسخان (نسخة الكتاب).',
+      predict:{q:String.raw`فصل السخان لأن الحرارة تجاوزت <span class="ltr">120٪</span>. ثم بردت الغرفة إلى ما تحت <span class="ltr">80٪</span>، و <span class="ltr">S1</span> متروك. هل يعود السخان للعمل وحده؟`,opts:[
+       [String.raw`نعم، لأن المقارن <span class="ltr">&lt;=R</span> صار <span class="ltr">1</span>`,false,String.raw`المقارن وحده لا يكفي في <span class="ltr">Network 6</span>؛ هو على التوالي مع <span class="ltr">S1</span>.`],
+       [String.raw`لا، يبقى متوقفاً حتى يُضغط <span class="ltr">S1</span> والحرارة تحت <span class="ltr">80٪</span>`,true,String.raw`شرط التثبيت في <span class="ltr">Network 6</span> هو <span class="ltr">S1</span> مضغوط <b>و</b> الحرارة ≤ <span class="ltr">80٪</span>. لهذا أضافت النسخة المصححة في المختبر العلامة <span class="ltr">M0.0</span>.`],
+       [String.raw`يعمل ويتوقف بسرعة متكررة`,false,String.raw`بين <span class="ltr">80٪</span> و <span class="ltr">120٪</span> لا يتحقق شرط التثبيت ولا شرط الإلغاء، فلا تتكرر الحركة.`]]},
+      ins:[{k:'vr',l:'جهد المقاومة R ← الحرارة المطلوبة MD100',min:1,max:10,step:0.5,v:5,u:'v',dp:1},
+       {k:'t',l:'الحرارة الفعلية MD200',min:0,max:100,step:1,v:30,u:'°C'},
+       {k:'s1',l:'S1',sw:true,v:0,on:'S1 مضغوط <span class="ltr">(I0.1 = 1)</span>',off:'S1 متروك <span class="ltr">(I0.1 = 0)</span>'},
+       {k:'s0',l:'S0',sw:true,v:0,on:'S0 مضغوط <span class="ltr">(I0.0 = 1)</span>',off:'S0 متروك <span class="ltr">(I0.0 = 0)</span>'}],
+      calc:s=>{const c=chain(s.vr,s.t),lo=s.t<=c.md80,hi=s.t>c.md120,n6=s.s1&&lo,n7=s.s0||hi,was=q;if(n6)q=1;if(n7)q=0;
+       const msg=n6&&n7?'شرط التثبيت وشرط الإلغاء معاً: <span class="ltr">Network 7</span> تأتي بعد <span class="ltr">Network 6</span>، فالكلمة الأخيرة للإلغاء.'
+        :n6?'<span class="ltr">S1</span> مضغوط <b>و</b> الحرارة ≤ <span class="ltr">MD80</span>: ثُبّت السخان والمصباح بالملف <span class="ltr">(S)</span>.'
+        :n7?(s.s0?'<span class="ltr">S0</span> مضغوط: أُلغي السخان والمصباح بالملف <span class="ltr">(R)</span>.':'الحرارة تجاوزت <span class="ltr">MD120</span>: أُلغي السخان والمصباح بالملف <span class="ltr">(R)</span>.')
+        :q?'لا شرط تثبيت ولا شرط إلغاء الآن، فيبقى السخان <b>يعمل</b>: الملف <span class="ltr">(S)</span> حفظ التشغيل. ارفع الحرارة فوق <span class="ltr">MD120</span> لترى الإلغاء.'
+        :lo?'الحرارة تحت <span class="ltr">MD80</span> لكن <span class="ltr">S1</span> متروك: في نسخة الكتاب لا يعود السخان إلا بضغط <span class="ltr">S1</span>.'
+        :'لا شرط تثبيت ولا شرط إلغاء الآن، فيبقى السخان على حاله: <b>متوقف</b>.';
+       return {facts:[['MD100 المطلوبة',fnum(c.md100,1)+' °C'],['<bdi class="ltr">MD80 (80%)</bdi>',fnum(c.md80,1)+' °C'],['<bdi class="ltr">MD120 (120%)</bdi>',fnum(c.md120,1)+' °C'],['MD200 ≤ MD80',lo?'1':'0',lo?'hi':''],['MD200 > MD120',hi?'1':'0',hi?'bad':''],['K1 و H1',q?'يعملان':'متوقفان',q?'hi':'']],
+        bars:[{l:'الحرارة الفعلية MD200',v:s.t,max:100,u:'°C',col:q?'--stop':'--blue'}],msg,cls:n6&&n7?'warn':''}}})}}
    ]},
 
   {st:6,short:'والمطلوب',title:'والمطلوب',ref:'ص 105',
@@ -678,7 +986,17 @@ B.lesson({
      ['اضغط S0 وانظر هل يتوقف السخان',false,'هذا يختبر الإيقاف اليدوي (Network 7، الفرع الأول)، لا حد 120٪.'],
      [String.raw`سخّن حتى تتجاوز الحرارة <span class="ltr">MD120</span> وانظر هل يفصل السخان وحده`,true,'هذا يختبر المقارن CMP >R في Network 7.'],
      ['غيّر المقاومة R إلى الصفر',false,'هذا يجعل الحرارة المطلوبة صفراً؛ لا يختبر حد الإيقاف مباشرة.']]}},
-    {tip:String.raw`<p>جرّب البرنامج في تبويب «المختبر» قبل الجهاز الحقيقي: اضغط <span class="ltr">S1</span> وراقب منحنى الحرارة بين الخطين، ثم بدّل إلى النسخة «المصححة» ولاحظ الفرق. وستجد نسخة الكتاب بلغة <span class="ltr">STL</span> في الدرس التالي.</p>`,title:'قبل الجهاز'}
+    {tip:String.raw`<p>جرّب البرنامج في تبويب «المختبر» قبل الجهاز الحقيقي: اضغط <span class="ltr">S1</span> وراقب منحنى الحرارة بين الخطين، ثم بدّل إلى النسخة «المصححة» ولاحظ الفرق. وستجد نسخة الكتاب بلغة <span class="ltr">STL</span> في الدرس التالي.</p>`,title:'قبل الجهاز'},
+    {title:'مختبر مصغّر: ماذا لو تخطّيت خطوة؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+     {q:'كتبت البرنامج على الحاسب، وتخطّيت نقله إلى وحدة الـ <span class="ltr">PLC</span>. ماذا يحدث عند اختبار الدائرة؟',opts:[
+      ['الوحدة لا تنفّذ برنامجك؛ فهو موجود على الحاسب فقط',true,'الكتاب يطلب التنفيذ على الحاسب <b>ثم</b> النقل إلى وحدة الـ <span class="ltr">PLC</span>.'],
+      ['يعمل البرنامج لأن الحاسب موصول بالوحدة',false,'وجود الكابل لا يكفي؛ يجب نقل البرنامج إلى الوحدة.']]},
+     {q:'اختبرت <span class="ltr">S1</span> و <span class="ltr">S0</span> فقط، ولم تترك الحرارة تتجاوز <span class="ltr">MD120</span>. ماذا فاتك؟',opts:[
+      ['لا شيء؛ اختبار <span class="ltr">S0</span> يكفي للإيقاف',false,'<span class="ltr">S0</span> طريق واحد من طريقي الإلغاء في <span class="ltr">Network 7</span>؛ المقارن <span class="ltr">&gt;R</span> طريق آخر قد يكون فيه خطأ.'],
+      ['لن تعرف هل يفصل السخان وحده عند <span class="ltr">120٪</span>',true,'هذا قلب الحاكم ذي الموضعين، ولا يُختبر إلا بتجاوز الحرارة حد الإيقاف.']]},
+     {q:'نجح اختبار برنامج <span class="ltr">LAD</span>، وتخطّيت إعادة كتابته بلغتي <span class="ltr">FBD</span> و <span class="ltr">STL</span>. هل أكملت المطلوب؟',opts:[
+      ['نعم، لغة واحدة تكفي',false,'المطلوب في الكتاب ينص على إعادة كتابة البرنامج بلغتي <span class="ltr">FBD</span> و <span class="ltr">STL</span>.'],
+      ['لا، بقيت إعادة كتابته بلغتي <span class="ltr">FBD</span> و <span class="ltr">STL</span>',true,'هذا الجزء الأخير من المطلوب.']]}]})}
    ]},
 
   {recap:[
@@ -782,7 +1100,17 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>المقاومة المتغيرة تعطي جهداً من <span class="ltr">0</span> إلى <span class="ltr">10</span> فولت، والمدخل التناظري يقرؤه رقماً من <span class="ltr">0</span> إلى <span class="ltr">27648</span> — تماماً مثل مقاومة الحرارة المطلوبة <span class="ltr">R</span>. لذلك يعاير البرنامج الحرارتين <b>بالطريقة نفسها</b>: قسمة على <span class="ltr">27648.0</span> ثم ضرب في <span class="ltr">100.0</span>.</p>`,title:'لماذا تتغير المعايرة؟'},
-    {add:String.raw`<p>المحاكاة بمقاومة طريقة شائعة في التدريب والصيانة: تختبر البرنامج كله (التحويل، والمقارنة، والتثبيت والإلغاء) دون أن تنتظر الغرفة لتسخن فعلاً؛ تدير المقاومة فتقفز «الحرارة» فوراً إلى القيمة التي تريد.</p>`,title:'فائدة عملية'}
+    {add:String.raw`<p>المحاكاة بمقاومة طريقة شائعة في التدريب والصيانة: تختبر البرنامج كله (التحويل، والمقارنة، والتثبيت والإلغاء) دون أن تنتظر الغرفة لتسخن فعلاً؛ تدير المقاومة فتقفز «الحرارة» فوراً إلى القيمة التي تريد.</p>`,title:'فائدة عملية'},
+    {title:'مختبر مصغّر: المقاومة بدل الثرموكبل',widget:(el,B)=>DCML.lab(el,B,{intro:'أدر المقاومة التي تمثّل الحرارة الفعلية (<span class="ltr">0–10 v</span>)، وتابع القراءة ثم الحرارة في <span class="ltr">MD200</span> كما يحسبها برنامج <span class="ltr">STL</span>.',
+      predict:{q:String.raw`جهد المقاومة <span class="ltr">2.5 v</span>. كم درجة تصبح في <span class="ltr">MD200</span>؟`,opts:[
+       [String.raw`<span class="ltr">2.5</span>`,false,String.raw`الجهد لا يُنقل كما هو؛ يُقرأ رقماً ثم يُعاير إلى <span class="ltr">0–100</span>.`],
+       [String.raw`<span class="ltr">25.0</span>`,true,String.raw`<span class="ltr">2.5 v</span> ربع المدى، فالقراءة <span class="ltr">6912</span>، ثم ÷ <span class="ltr">27648.0</span> × <span class="ltr">100.0</span> = <span class="ltr">25.0</span>.`],
+       [String.raw`<span class="ltr">6912</span>`,false,String.raw`هذه قراءة المدخل قبل المعايرة.`]]},
+      ins:[{k:'v',l:'جهد المقاومة على PIW 290',min:0,max:10,step:0.1,v:2.5,u:'v',dp:1}],
+      calc:s=>{const piw=Math.round(s.v/10*27648),md=piw/27648*100;
+       return {facts:[['PIW 290',String(piw)],['÷ 27648.0',fnum(piw/27648,4)],['× 100.0 ← MD200',fnum(md,2),'hi']],
+        bars:[{l:'«الحرارة» MD200',v:md,max:100,u:'°C',dp:1,col:'--live'}],
+        msg:'تدير المقاومة فتقفز «الحرارة» فوراً إلى القيمة التي تريد، دون أن تنتظر الغرفة لتسخن. وهذا المقياس <span class="ltr">0–10 v ← 0–100</span> هو نفسه مقياس الحرارة المطلوبة.'}}})}
    ]},
 
   {st:2,short:'STL: الحرارة الفعلية',title:'دائرة STL (1): حساب الحرارة الفعلية <span class="ltr">MD200</span>',ref:'ص 106',
@@ -805,7 +1133,12 @@ B.lesson({
      ['ضاعت، لأن التحميل الجديد كتب فوقها',false,'لا تضيع: كل تحميل ينقل القيمة القديمة إلى ACCU2.'],
      [String.raw`في <span class="ltr">ACCU2</span>`,true,'ولذلك يقسم /R بعدها: ACCU2 ÷ ACCU1 = القراءة ÷ 27648.0.']]}},
     {tip:String.raw`<p>الأسطر 2 إلى 9 هي الشبكات 3 و 4 من برنامج LAD مكتوبة بحروف: <span class="ltr">ITD</span> بدل <span class="ltr">I_DI</span>، و<span class="ltr">DTR</span> بدل <span class="ltr">DI_R</span>، و<span class="ltr">/R</span> بدل <span class="ltr">DIV_R</span>، و<span class="ltr">*R</span> بدل <span class="ltr">MUL_R</span>. الفرق الوحيد هو المقياس (المحطة السابقة).</p>`,title:'قارن بـ LAD'},
-    {watch:String.raw`<p><b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على <span class="ltr">10.0</span>، وفي STL تُقسم على <span class="ltr">27648.0</span> وتُضرب في <span class="ltr">100.0</span> (<span class="ltr">0–10 v</span> ← <span class="ltr">0–100°C</span>). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. فلو وصلت ثرموكبلاً حقيقياً مع هذا البرنامج لكانت الحرارة المحسوبة خاطئة.</p>`,fix:true}
+    {watch:String.raw`<p><b>مقياس الحرارة الفعلية مختلف عن LAD:</b> في LAD تُقسم قراءة الثرموكبل على <span class="ltr">10.0</span>، وفي STL تُقسم على <span class="ltr">27648.0</span> وتُضرب في <span class="ltr">100.0</span> (<span class="ltr">0–10 v</span> ← <span class="ltr">0–100°C</span>). هذا مقصود حسب ملاحظة الكتاب (محاكاة الثرموكبل بمقاومة)، لكن البرنامج ما زال يقرأ العنوان <span class="ltr">PIW 290</span>. فلو وصلت ثرموكبلاً حقيقياً مع هذا البرنامج لكانت الحرارة المحسوبة خاطئة.</p>`,fix:true},
+    {title:'مختبر مصغّر: نفّذ الأسطر 1 إلى 8',widget:(el,B)=>U5STL(el,B,{from:1,to:8,vt:5,show:['MD200'],intro:'حرّك المنزلق الأول سطراً سطراً وراقب أين يذهب كل رقم: <span class="ltr">ACCU1</span> أم <span class="ltr">ACCU2</span>. وغيّر الجهد لترى أثره.',
+      predict:{q:String.raw`جهد المدخل <span class="ltr">5 v</span>، فـ <span class="ltr">PIW 290 = 13824</span>. بعد السطر <span class="ltr">/R</span> ماذا يكون في <span class="ltr">ACCU1</span>؟`,opts:[
+       [String.raw`<span class="ltr">50</span>`,false,String.raw`هذه النتيجة بعد السطر التالي <span class="ltr">*R</span> (الضرب في <span class="ltr">100.0</span>).`],
+       [String.raw`<span class="ltr">0.5</span>`,true,String.raw`<span class="ltr">/R</span>: <bdi dir="ltr">ACCU2 ÷ ACCU1 = 13824 ÷ 27648 = 0.5</bdi>.`],
+       [String.raw`<span class="ltr">13824</span>`,false,String.raw`هذه القراءة قبل القسمة؛ كانت في <span class="ltr">ACCU2</span> قبل السطر <span class="ltr">/R</span>.`]]}})}
    ]},
 
   {st:3,short:'STL: التشغيل',title:'دائرة STL (2): الحرارة المطلوبة <span class="ltr">MD100</span> وحد التشغيل <span class="ltr">MD80</span>',ref:'ص 106',
@@ -821,7 +1154,11 @@ B.lesson({
      [String.raw`إذا كانت <span class="ltr">MD200 ≤ MD80</span>`,true,'المقارنة بين ACCU2 (MD200، المحمَّل أولاً) و ACCU1 (MD80).'],
      [String.raw`إذا كانت <span class="ltr">MD80 ≤ MD200</span>`,false,'هذا عكس الترتيب: الأول المحمَّل هو الطرف الأيسر في المقارنة.'],
      ['دائماً، لأن المقارنة لا تحتاج شرطاً',false,'المقارنة نفسها هي الشرط؛ نتيجتها RLO = 0 أو 1.']]}},
-    {watch:String.raw`<p>السطر <span class="ltr">L MD 200</span> مباشرة بعد <span class="ltr">T MD 200</span> ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر (منقول كما في الكتاب). والأسطر الفارغة مطبوعة هكذا في الكتاب ولا تفعل شيئاً.</p>`,fix:true}
+    {watch:String.raw`<p>السطر <span class="ltr">L MD 200</span> مباشرة بعد <span class="ltr">T MD 200</span> ثم <span class="ltr">L PIW 288</span> تحميل زائد بلا أثر (منقول كما في الكتاب). والأسطر الفارغة مطبوعة هكذا في الكتاب ولا تفعل شيئاً.</p>`,fix:true},
+    {title:'مختبر مصغّر: نفّذ أسطر التشغيل',widget:(el,B)=>U5STL(el,B,{from:9,to:26,vt:5,vr:5,show:['MD100','MD80'],intro:'الأسطر 1 إلى 8 نُفّذت قبل هذا الجزء. حرّك المنزلق الأول وتابع الحرارة المطلوبة ثم حد التشغيل ثم المقارنة.',
+      predict:{q:String.raw`الجهدان متساويان (<span class="ltr">5 v</span> و <span class="ltr">5 v</span>)، أي الحرارة الفعلية = المطلوبة. هل يُثبَّت <span class="ltr">Q 4.0</span> في آخر هذا الجزء؟`,opts:[
+       [String.raw`نعم، لأن الحرارتين متساويتان`,false,String.raw`المقارنة ليست مع <span class="ltr">MD100</span> بل مع <span class="ltr">MD80</span>.`],
+       [String.raw`لا، لأن <span class="ltr">MD200 = 50</span> أكبر من <span class="ltr">MD80 = 40</span>`,true,String.raw`<span class="ltr">&lt;=R</span> تسأل: هل <span class="ltr">MD200 ≤ MD80</span>؟ والجواب لا، فـ <span class="ltr">RLO = 0</span> ولا يفعل <span class="ltr">S Q 4.0</span> شيئاً.`]]}})}
    ]},
 
   {st:4,short:'STL: الإيقاف',title:'دائرة STL (3): حد الإيقاف <span class="ltr">MD120</span> والإلغاء',ref:'ص 106',
@@ -837,7 +1174,11 @@ B.lesson({
      [String.raw`بالضغط على <span class="ltr">S0</span>`,false,'البرنامج لا يقرأ I0.0 أصلاً، فلا أثر للضاغط.'],
      ['لا توجد طريقة في البرنامج؛ السخان يتبع المقارنة فقط',true,'هذا ما ينقص STL الكتاب مقارنة بـ LAD (انظر «انتبه»).'],
      [String.raw`بإطفاء المصباح <span class="ltr">H1</span>`,false,'المصباح Q4.1 غير موجود في هذا البرنامج، والمصباح مخرج لا يتحكم في شيء.']]}},
-    {watch:String.raw`<p><b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط <span class="ltr">S1 (I0.1)</span> ولا <span class="ltr">S0 (I0.0)</span> ولا المصباح <span class="ltr">Q4.1</span>؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و<span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف <span class="ltr">S1</span> و<span class="ltr">S0</span> بعلامة <span class="ltr">M0.0</span> والمصباح <span class="ltr">H1</span> (الأسطر المضافة مظللة).</p>`,fix:true}
+    {watch:String.raw`<p><b>STL ناقص مقارنة بـ LAD (يغيّر عمل البرنامج):</b> لا يتضمن الضاغط <span class="ltr">S1 (I0.1)</span> ولا <span class="ltr">S0 (I0.0)</span> ولا المصباح <span class="ltr">Q4.1</span>؛ فقط <span class="ltr">S Q 4.0</span> عند <span class="ltr">&lt;=R</span> و<span class="ltr">R Q 4.0</span> عند <span class="ltr">&gt;R</span>. النتيجة: السخان يعمل تلقائياً بمجرد تشغيل الـ PLC ولا يمكن إيقافه بضاغط. <b>المصحح</b> في المختبر يضيف <span class="ltr">S1</span> و<span class="ltr">S0</span> بعلامة <span class="ltr">M0.0</span> والمصباح <span class="ltr">H1</span> (الأسطر المضافة مظللة).</p>`,fix:true},
+    {title:'مختبر مصغّر: نفّذ أسطر الإيقاف',widget:(el,B)=>U5STL(el,B,{from:27,to:37,vt:5,vr:5,q0:1,show:['MD120'],intro:'الأسطر 1 إلى 26 نُفّذت قبل هذا الجزء. حرّك المنزلق الأول، وجرّب بعدها رفع جهد الحرارة الفعلية.',
+      predict:{q:String.raw`السخان يعمل قبل هذا المسح، والحرارة الفعلية = المطلوبة (بين <span class="ltr">80٪</span> و <span class="ltr">120٪</span>). ماذا تكون <span class="ltr">Q 4.0</span> بعد آخر سطر؟`,opts:[
+       [String.raw`<span class="ltr">1</span>: يبقى يعمل`,true,String.raw`<span class="ltr">&gt;R</span> تعطي <span class="ltr">0</span> لأن <span class="ltr">50</span> ليست أكبر من <span class="ltr">60</span>، فلا ينفّذ <span class="ltr">R Q 4.0</span> شيئاً.`],
+       [String.raw`<span class="ltr">0</span>: يتوقف عند آخر سطر`,false,String.raw`الأمر <span class="ltr">R</span> لا يُلغي إلا إذا كانت <span class="ltr">RLO = 1</span>.`]]}})}
    ]},
 
   {st:5,short:'والمطلوب',title:'والمطلوب: البرنامج بلغتي FBD و STL',ref:'ص 105',
@@ -853,7 +1194,13 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>في <span class="ltr">FBD</span> تبقى الصناديق نفسها كما في LAD (<span class="ltr">I_DI</span>، <span class="ltr">DI_R</span>، <span class="ltr">DIV_R</span>، <span class="ltr">MUL_R</span>، <span class="ltr">CMP &lt;=R</span>، <span class="ltr">CMP &gt;R</span>)، لكن التوالي يصبح بوابة <span class="ltr">AND</span> والتوازي بوابة <span class="ltr">OR</span>، ثم ملفات التثبيت والإلغاء. وفي <span class="ltr">STL</span> أكمل نسخة الكتاب بأسطر <span class="ltr">S1</span> و<span class="ltr">S0</span> و<span class="ltr">Q 4.1</span>، كما في النسخة «المصححة» في المختبر.</p>`,title:'من أين تبدأ؟'},
-    {tip:String.raw`<p>في تبويب «المختبر» نفّذ برنامج الكتاب سطراً سطراً وراقب <span class="ltr">ACCU1</span> و<span class="ltr">ACCU2</span> بعد كل تعليمة، ثم بدّل إلى «المصحح» وقارن.</p>`,title:'جرّبه قبل أن تكتبه'}
+    {tip:String.raw`<p>في تبويب «المختبر» نفّذ برنامج الكتاب سطراً سطراً وراقب <span class="ltr">ACCU1</span> و<span class="ltr">ACCU2</span> بعد كل تعليمة، ثم بدّل إلى «المصحح» وقارن.</p>`,title:'جرّبه قبل أن تكتبه'},
+    {title:'مختبر مصغّر: من LAD إلى FBD',widget:(el,B)=>DCML.sort(el,B,{intro:'عندما تكتب البرنامج بلغة <span class="ltr">FBD</span>، ماذا يصبح كل جزء من <span class="ltr">LAD</span>؟',cats:['بوابة <span class="ltr">&amp;</span> (و)','بوابة <span class="ltr">&gt;=1</span> (أو)','الصندوق نفسه'],items:[
+     ['في <span class="ltr">Network 6</span>: تلامس <span class="ltr">S1</span> على التوالي مع المقارن <span class="ltr">CMP &lt;=R</span>',0,'التوالي = «و»: يُثبَّت السخان إذا تحقق الشرطان معاً.'],
+     ['في <span class="ltr">Network 7</span>: تلامس <span class="ltr">S0</span> على التوازي مع المقارن <span class="ltr">CMP &gt;R</span>',1,'التوازي = «أو»: يكفي أحد الشرطين للإلغاء.'],
+     ['الدالة <span class="ltr">DIV_R</span>',2,'صناديق التحويل والحساب تبقى كما هي في <span class="ltr">FBD</span>.'],
+     ['المقارن <span class="ltr">CMP &gt;R</span>',2,'صندوق المقارنة نفسه؛ يتغير فقط ما يُوصل بخرجه.'],
+     ['الدالة <span class="ltr">I_DI</span>',2,'صندوق التحويل نفسه.']]})}
    ]},
 
   {recap:[

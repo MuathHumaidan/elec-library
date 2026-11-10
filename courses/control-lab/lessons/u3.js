@@ -377,7 +377,183 @@ B.lesson({
  title:'التجربة الأولى: الحاكم التناسبي P- Controller',
  summary:'نغلق الحلقة على لوحة Com3Lab: نوصل نظاماً من الرتبة الأولى بالحاكم التماثلي، ونغيّر K<sub>p</sub> (1 ثم 10 ثم 50) فنقيس الخرج المستقر والخطأ وزمن الاستقرار، ثم نعيد التجربة بـ Simulink، ثم مع النظام الحراري لنرى كيف تقلل الحلقة المغلقة أثر التشويش.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر مختبر التحكم الآلي.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'الدائرة المغلقة',title:'الوحدة الثالثة: ماذا يعني «دائرة مغلقة»؟',ref:'ص 21',
    q:'في الوحدة الثانية أعطينا النظام إشارة خطوة ثم انتظرنا… فمن «يراقب» الخرج ويصحّحه إذا ابتعد عن المطلوب؟',
@@ -393,7 +569,17 @@ B.lesson({
    body:[
     {tip:String.raw`<p>صفحة الوحدة في الكتاب عنوان فقط. في الوحدة الثانية وصلنا إشارة الخطوة إلى النظام مباشرة (دائرة مفتوحة). في هذه الوحدة نضيف <b>حاكماً</b> ونعيد خرج النظام إليه (دائرة مغلقة)، في ست تجارب: الحاكم التناسبي P، والحاكم التكاملي I، والحاكم التناسبي التكاملي PI، والحاكم PID بالمحاكاة، ثم التحكم الرقمي في سرعة محرك وفي الإضاءة.</p>`,title:'ماذا في هذه الوحدة؟'},
     {tip:String.raw`<p>في الدائرة المغلقة نقيس الخرج \(x\) باستمرار ونقارنه بالقيمة المطلوبة \(w\). الفرق هو <b>الخطأ</b>:</p><div class="eq">$$e = w - x$$</div><p>والحاكم يحوّل الخطأ إلى إشارة تحكم \(y\) تدخل النظام. إذا نقص الخرج عن المطلوب كبر الخطأ فزاد الحاكم إشارته، وإذا زاد الخرج صغر الخطأ فخفّض الحاكم إشارته. هذا هو معنى «التغذية الراجعة السالبة»: الإشارة السالبة على دائرة الجمع.</p>`,title:'ما الدائرة المغلقة؟'},
-    {add:String.raw`<p>مكيّف الغرفة مثال يومي: تضبط الترموستات على درجة (القيمة المطلوبة)، ومستشعر في المكيّف يقيس حرارة الغرفة (القيمة الفعلية)، فإذا ارتفعت الحرارة عن المطلوب زاد التبريد، وإذا انخفضت خفّفه. هذه دائرة مغلقة.</p>`,title:'من حولك'}
+    {add:String.raw`<p>مكيّف الغرفة مثال يومي: تضبط الترموستات على درجة (القيمة المطلوبة)، ومستشعر في المكيّف يقيس حرارة الغرفة (القيمة الفعلية)، فإذا ارتفعت الحرارة عن المطلوب زاد التبريد، وإذا انخفضت خفّفه. هذه دائرة مغلقة.</p>`,title:'من حولك'},
+    {title:'مختبر مصغّر: الخطأ يقرر ماذا يفعل الحاكم',widget:(el,B)=>DCML.lab(el,B,{intro:'القيمة المطلوبة \\(w = 5\\ \\text{V}\\) (خطوة الكتاب). حرّك الخرج \\(x\\) (أرقام تختارها أنت) وشاهد الخطأ \\(e = w - x\\) وما يفعله الحاكم.',
+ predict:{q:'الخرج \\(x = 6\\ \\text{V}\\) والمطلوب \\(w = 5\\ \\text{V}\\). ما الخطأ، وماذا يفعل الحاكم؟',opts:[
+  ['\\(e = +1\\ \\text{V}\\)، فيزيد الحاكم إشارته',false,'\\(e = w - x = 5 - 6\\): الخرج أكبر من المطلوب فالخطأ سالب.'],
+  ['\\(e = -1\\ \\text{V}\\)، فيخفض الحاكم إشارته',true,'الخرج زاد عن المطلوب، فالخطأ سالب والحاكم يخفض إشارة التحكم.'],
+  ['\\(e = 0\\)، فلا يتغير شيء',false,'الخطأ صفر فقط عندما \\(x = w\\).']]},
+ ins:[{k:'x',l:'الخرج الفعلي x (أرقام تختارها أنت)',min:0,max:8,step:0.1,v:2,dp:1,u:'V'}],
+ calc:(s,P,B)=>{const e=5-s.x,z=Math.abs(e)<0.05;
+  return {facts:[['المطلوب w','5 V'],['الخرج x',DCML.fm(B,s.x,1)+' V'],['الخطأ e = w − x',DCML.fm(B,e,1)+' V',z?'':e>0?'hi':'bad']],
+   bars:[{l:'الخرج x',v:s.x,max:8,u:'V',dp:1,col:'--blue'},{l:'المطلوب w',v:5,max:8,u:'V',dp:0,col:'--live'}],
+   cls:z?'':e>0?'':'warn',msg:z?'الخطأ صفر تقريباً: الخرج يساوي المطلوب.':e>0?'الخرج أقل من المطلوب: \\(e\\) موجب، فيزيد الحاكم إشارة التحكم ليرفع الخرج.':'الخرج أكبر من المطلوب: \\(e\\) سالب، فيخفض الحاكم إشارة التحكم.'}}})}
    ]},
 
   {st:2,short:'الهدف',title:'الهدف من التجربة: الحاكم التناسبي',ref:'ص 22',
@@ -409,7 +595,18 @@ B.lesson({
      ['تبقى كما هي',false,'\\(y = K_p\\,e\\): أي تغيير في \\(K_p\\) يغيّر \\(y\\) ولو بقي الخطأ نفسه.'],
      ['تتضاعف',true,'\\(y = K_p\\,e\\): الخرج يتناسب مع \\(K_p\\)؛ ضعف \\(K_p\\) يعطي ضعف \\(y\\).'],
      ['تقل إلى النصف',false,'هذا يحدث لو كان \\(K_p\\) في المقام، والحاكم التناسبي يضرب ولا يقسم.']]}},
-    {tip:String.raw`<p>الهدف الثالث يذكر \(t_s\) (زمن الاستقرار) والكتاب لا يعرّفه: هو الزمن من لحظة الخطوة حتى يدخل الخرج شريطاً عرضه <span class="ltr">±2 %</span> حول قيمته النهائية ولا يخرج منه بعد ذلك. (بعض المراجع تستعمل <span class="ltr">±5 %</span>.)</p>`,title:'زمن الاستقرار \\(t_s\\)'}
+    {tip:String.raw`<p>الهدف الثالث يذكر \(t_s\) (زمن الاستقرار) والكتاب لا يعرّفه: هو الزمن من لحظة الخطوة حتى يدخل الخرج شريطاً عرضه <span class="ltr">±2 %</span> حول قيمته النهائية ولا يخرج منه بعد ذلك. (بعض المراجع تستعمل <span class="ltr">±5 %</span>.)</p>`,title:'زمن الاستقرار \\(t_s\\)'},
+    {title:'مختبر مصغّر: \\(y = K_p\\,e\\)',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر \\(K_p\\) من قيم الكتاب (1، 10، 50)، وحرّك الخطأ \\(e\\) (أرقام تختارها أنت)، وشاهد إشارة التحكم \\(y\\) وحدّ الجهاز.',
+ predict:{q:'الخطأ \\(e = 0.2\\ \\text{V}\\) و \\(K_p = 50\\). كم إشارة التحكم \\(y\\)؟',opts:[
+  ['\\(0.2\\ \\text{V}\\)',false,'هذه قيمة الخطأ نفسه؛ الحاكم يضربه في \\(K_p\\).'],
+  ['\\(50\\ \\text{V}\\)',false,'هذا \\(K_p\\) وحده؛ نضربه في الخطأ.'],
+  ['\\(10\\ \\text{V}\\)',true,'\\(y = 50 \\times 0.2 = 10\\ \\text{V}\\): خطأ صغير يعطي إشارة كبيرة.']]},
+ ins:[{k:'Kp',l:'معامل الحاكم K<sub>p</sub> (من جدول الكتاب)',seg:[[1,'1'],[10,'10'],[50,'50']],v:10},{k:'e',l:'الخطأ e (أرقام تختارها أنت)',min:0,max:1,step:0.01,v:0.2,dp:2,u:'V'}],
+ tp:{id:'u3-l1',defs:AN_DEFS()},
+ calc:(s,P,B)=>{const y=s.Kp*s.e,sat=y>P.Um;
+  return {facts:[['y = K<sub>p</sub> · e',DCML.fm(B,y,2)+' V',sat?'bad':'hi'],['حد خرج الحاكم',DCML.fm(B,P.Um,1)+' V']],
+   bars:[{l:'إشارة التحكم المطلوبة',v:y,max:Math.max(P.Um*1.5,1),u:'V',dp:2,col:sat?'--stop':'--blue'},{l:'حد الجهاز',v:P.Um,max:Math.max(P.Um*1.5,1),u:'V',dp:1,col:'--muted'}],
+   cls:sat?'warn':'',msg:sat?'الحاكم «يطلب» أكثر من حدّه، فيبقى خرجه عند الحد (إشباع). هذا ما يحدث على اللوحة مع \\(K_p\\) الكبير لحظة الخطوة.':'إشارة التحكم تتناسب مع الخطأ: ضاعف \\(e\\) أو \\(K_p\\) تتضاعف \\(y\\).'}}})}
    ]},
 
   {st:3,short:'الأجهزة',title:'الأجهزة والمكونات',ref:'ص 22',
@@ -425,7 +622,11 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>في مختبر Com3Lab كل شيء على لوحة إلكترونية واحدة (الكارت)، وعليها «لوحات» صغيرة نوصلها بأسلاك على شاشة الحاسب: لوحة الحاكم، ولوحة النظام (PT1 أو المحرك)، والمولد، وراسم الذبذبات.</p>`,title:'أين الحاكم؟'},
-    {add:String.raw`<p>Com3Lab منتج من شركة Leybold الألمانية لتعليم الإلكترونيات والتحكم: لوحة حقيقية تتصل بالحاسب، وأجهزة القياس (المولد وراسم الذبذبات والمقياس) تظهر على الشاشة.</p>`}
+    {add:String.raw`<p>Com3Lab منتج من شركة Leybold الألمانية لتعليم الإلكترونيات والتحكم: لوحة حقيقية تتصل بالحاسب، وأجهزة القياس (المولد وراسم الذبذبات والمقياس) تظهر على الشاشة.</p>`},
+    {title:'مختبر مصغّر: ما دور كل جهاز؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل جهاز من قائمة الكتاب اختر دوره في حلقة التحكم.',cats:['يعطي القيمة المطلوبة w','النظام المتحكم فيه','يشغّل اللوحات'],items:[
+ ['مولد إشارة Function Generator',0,'مقبس OUT في المولد يوصل بالمقبس \\(w\\) في لوحة الحاكم.'],
+ ['نظام من الرتبة الأولى (محرك تيار مستمر، نظام الإضاءة، لوحة PT1)',1,'هو الذي نتحكم في خرجه \\(x\\).'],
+ ['مصدر التغذية Power Supply',2,'يغذي الكارت ولا يدخل في إشارة التحكم.']]})}
    ]},
 
   {st:4,short:'خطوات التجربة',title:'خطوات إجراء التجربة والتوصيل — الشكل <span class="ltr">(3-1)</span>',ref:'ص 22–23',
@@ -442,7 +643,21 @@ B.lesson({
      ['\\(x\\)',true,'\\(X_6\\) ← \\(x\\): هذا سلك التغذية الراجعة الذي يغلق الحلقة.'],
      ['\\(y\\)',false,'\\(y\\) خرج الحاكم، ويوصل بدخل النظام \\(X_5\\) لا بخرجه.'],
      ['\\(e\\)',false,'\\(e\\) مقبس للقياس فقط: يظهر عليه الخطأ.']]}},
-    {watch:String.raw`<p>إذا نسيت سلك التغذية الراجعة \(X_6\) ← \(x\) يبقى المدخل السالب بلا إشارة، فيصبح الخطأ مساوياً لـ \(w\) دائماً وتعمل اللوحة كأنها <b>دائرة مفتوحة</b>.</p>`}
+    {watch:String.raw`<p>إذا نسيت سلك التغذية الراجعة \(X_6\) ← \(x\) يبقى المدخل السالب بلا إشارة، فيصبح الخطأ مساوياً لـ \(w\) دائماً وتعمل اللوحة كأنها <b>دائرة مفتوحة</b>.</p>`},
+    {title:'مختبر مصغّر: صِل سلك التغذية الراجعة أو انزعه',widget:(el,B)=>DCML.lab(el,B,{intro:'الحاكم التناسبي ولوحة PT1، خطوة <span class="ltr">w<sub>0</sub> = 5 V</span> خلال <span class="ltr">5 s</span> (الكتاب). جرّب السلك \\(X_6 \\to x\\) موصولاً ومنزوعاً.',
+ predict:{q:'نسيت سلك التغذية الراجعة \\(X_6 \\to x\\). ماذا يرى الحاكم خطأً؟',opts:[
+  ['\\(e = w\\) دائماً، فيعمل كأنه دائرة مفتوحة',true,'المدخل السالب بلا إشارة، فالخطأ = \\(w - 0\\) مهما تغير الخرج.'],
+  ['\\(e = 0\\) دائماً',false,'الخطأ صفر يعني أن الحاكم يرى الخرج مساوياً للمطلوب؛ بلا سلك لا يرى الخرج أصلاً.'],
+  ['\\(e = x\\)',false,'\\(x\\) لا يصل إلى الحاكم بلا هذا السلك.']]},
+ ins:[{k:'fb',l:'سلك التغذية الراجعة',sw:true,v:1,on:'السلك X<sub>6</sub> → x موصول',off:'السلك X<sub>6</sub> → x منزوع'},{k:'Kp',l:'K<sub>p</sub> (من جدول الكتاب)',seg:[[1,'1'],[10,'10'],[50,'50']],v:1}],
+ tp:{id:'u3-l1',defs:AN_DEFS()},
+ calc:(s,P,B)=>{const K=P.K1,T=P.T1,N=200;let pts=[],x5,e5;
+  if(s.fb){const r=simLoop({plant:PLANT.pt1(K,T),Tw:5,w0:5,sat:[-P.Um,P.Um],ctrl:{type:'analog',P:true,I:false,Kp:s.Kp,KI:0}});for(let i=0;i<=r.N;i+=r.N/N)pts.push([r.t[i],r.x[i]]);x5=r.x[r.N]}
+  else{const u=Math.min(s.Kp*5,P.Um);for(let i=0;i<=N;i++){const t=5*i/N;pts.push([t,K*u*(1-Math.exp(-t/T))])}x5=pts[N][1]}
+  e5=5-x5;const m=Math.max(6,...pts.map(p=>p[1]))*1.1;
+  return {facts:[['الخطأ الذي يراه الحاكم',s.fb?DCML.fm(B,e5,2)+' V':'5 V (= w)',s.fb?'hi':'bad'],['x عند <span class="ltr">5 s</span>',DCML.fm(B,x5,2)+' V']],
+   plot:{xr:[0,5],yr:[0,m],xl:'t (s)',yl:'V',curves:[{pts:[[0,5],[5,5]],col:'--live',dash:'5 4',w:1.8},{pts,col:s.fb?'--blue':'--stop',w:2.6}]},
+   cls:s.fb?'':'warn',msg:s.fb?'الحلقة مغلقة: الخرج يقترب من 5 V (المتقطع) ويبقى خطأ صغير مع P وحده.':'بلا تغذية راجعة الحاكم لا يرى الخرج: إشارته ثابتة \\(K_p \\times 5\\) (محدودة بحد الجهاز)، فيذهب الخرج حيث يأخذه النظام لا حيث نريد.'}}})}
    ]},
 
   {st:5,short:'تسجيل النتائج',title:'تسجيل النتائج: الخرج والخطأ وزمن الاستقرار',ref:'ص 23',
@@ -458,7 +673,21 @@ B.lesson({
    body:[
     {book:String.raw`<p>سجل نتائج التجربة في الجدول التالي:</p>${ptable(['معامل الحاكم التناسبي K<sub>p</sub>','قيمة الخرج x<sub>0</sub> (v)','زمن الاستقرار t<sub>s</sub> (s)','أحسب الخطأ e = w<sub>0</sub> – x<sub>0</sub> (v)'],['K<sub>p</sub> = 1','K<sub>p</sub> = 10','K<sub>p</sub> = 50'])}<p>ماذا تلاحظ؟ …………</p>`,ref:'ص 23'},
     {tip:String.raw`<p>عند غلق الحلقة على نظام من الرتبة الأولى \(\frac{K}{Ts+1}\) بحاكم تناسبي:</p><div class="eq">$$x_0 = \frac{K K_p}{1+K K_p}\,w_0 \qquad e = w_0-x_0=\frac{w_0}{1+K K_p}$$</div><div class="eq">$$T' = \frac{T}{1+K K_p} \qquad t_s \approx 4\,T' \;\;(\pm 2\%)$$</div><ul><li>كلما زاد \(K_p\) <b>قلّ الخطأ</b>، لكنه <b>لا يصبح صفراً أبداً</b> مع الحاكم التناسبي وحده (يلزمه خطأ ليعمل).</li><li>كلما زاد \(K_p\) <b>قصر زمن الاستقرار</b> لأن الثابت الزمني للحلقة \(T'\) يصغر.</li><li>في الجهاز الحقيقي خرج الحاكم محدود (لا يتجاوز جهد التغذية)، فإذا طلب الحاكم أكثر من ذلك «يتشبع» ولا يسرع النظام أكثر.</li></ul><p class="sub">مثال: \(K=1,\; K_p=10,\; w_0=5\ \text{V} \;\Rightarrow\; e = 5/11 \approx 0.455\ \text{V}\)</p>`,title:'ماذا تتوقع في الجدول؟'},
-    {watch:String.raw`<p>إذا لاحظت على اللوحة أن زمن الاستقرار لم يقصر كثيراً بين \(K_p = 10\) و\(K_p = 50\) فهذا ليس خطأ في القياس: خرج الحاكم وصل إلى حدّه (إشباع).</p>`}
+    {watch:String.raw`<p>إذا لاحظت على اللوحة أن زمن الاستقرار لم يقصر كثيراً بين \(K_p = 10\) و\(K_p = 50\) فهذا ليس خطأ في القياس: خرج الحاكم وصل إلى حدّه (إشباع).</p>`},
+    {title:'مختبر مصغّر: لماذا لا يقصر \\(t_s\\) كثيراً بعد \\(K_p = 10\\)؟',widget:(el,B)=>DCML.lab(el,B,{intro:'لوحة PT1 مع الحاكم التناسبي وخطوة <span class="ltr">5 V</span>. قارن زمن الاستقرار على اللوحة (خرج الحاكم محدود) بزمنه لو لم يكن للحاكم حد.',
+ predict:{q:'بين \\(K_p = 10\\) و \\(K_p = 50\\)، كم يقصر زمن الاستقرار على اللوحة؟',opts:[
+  ['يقصر إلى الخمس تقريباً، مثل زيادة \\(K_p\\)',false,'هذا ما يحدث لو لم يكن لخرج الحاكم حد.'],
+  ['يطول',false,'زيادة \\(K_p\\) لا تبطئ الاستجابة.'],
+  ['يقصر قليلاً فقط، لأن خرج الحاكم يصل إلى حده',true,'لحظة الخطوة يطلب الحاكم \\(K_p \\times 5\\) فولت، أكثر من حد الجهاز، فيبقى عند الحد (إشباع).']]},
+ ins:[{k:'Kp',l:'K<sub>p</sub> (من جدول الكتاب)',seg:[[1,'1'],[10,'10'],[50,'50']],v:1}],
+ tp:{id:'u3-l1',defs:AN_DEFS()},
+ calc:(s,P,B)=>{const o=boardRun({plant:'pt1',P:true,I:false,Kp:s.Kp},P,5,1),m=o.m;
+  const r2=simLoop({plant:PLANT.pt1(P.K1,P.T1),Tw:5,w0:5,sat:[-1e9,1e9],ctrl:{type:'analog',P:true,I:false,Kp:s.Kp,KI:0}}),m2=measure(r2);
+  const pts=a=>{const q=[];for(let i=0;i<=o.r.N;i+=20)q.push([o.r.t[i],a.x[i]]);return q};const sat=s.Kp*5>P.Um;
+  return {facts:[['x<sub>0</sub>',DCML.fm(B,m.x0,3)+' V'],['e = w<sub>0</sub> − x<sub>0</sub>',DCML.fm(B,m.e,3)+' V'],['t<sub>s</sub> على اللوحة',TSV(m)+' s','hi'],['t<sub>s</sub> بلا حد',TSV(m2)+' s']],
+   bars:[{l:'ما يطلبه الحاكم لحظة الخطوة K<sub>p</sub>·w<sub>0</sub>',v:s.Kp*5,max:Math.max(250,P.Um),u:'V',dp:0,col:sat?'--stop':'--blue'},{l:'حد خرج الحاكم',v:P.Um,max:Math.max(250,P.Um),u:'V',dp:1,col:'--muted'}],
+   plot:{xr:[0,5],yr:[0,6],xl:'t (s)',yl:'V',curves:[{pts:[[0,5],[5,5]],col:'--live',dash:'5 4',w:1.6},{pts:pts(r2),col:'--muted',dash:'4 4',w:2},{pts:pts(o.r),col:'--blue',w:2.6}]},
+   cls:sat?'warn':'',msg:(sat?'الحاكم متشبع في البداية، فاللوحة (المتصل) أبطأ من الحالة بلا حد (الرمادي المتقطع).':'لا إشباع هنا، فالمنحنيان متطابقان.')+' الخطأ المستقر لا يصبح صفراً مع P وحده.'}}})}
    ]},
 
   {st:6,short:'Simulink',title:'الجزء الثاني: Simulink — الشكل <span class="ltr">(3-2)</span>',ref:'ص 24',
@@ -507,7 +736,16 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>التوصيل: OUT المولد ← \(w\)؛ \(y\) ← \(y_T\) (دخل السخان)؛ \(x_T\) ← \(x\) (تغذية راجعة) وكذلك ← MULTIMETER V؛ والأرضي. وفي الشكل مربع للتعبئة: \(\vartheta = 60^\circ \Rightarrow w = \dots\ \text{V}\)، أي اكتب الجهد المطلوب الذي يقابل حرارة \(60^\circ\).</p>`,title:'ماذا في الشكل (3-3)؟'},
-    {watch:String.raw`<p>الكتاب لا يحدد \(K_p\) في هذا الجزء، ولا قيمة \(w\) المقابلة لـ \(\vartheta = 60^\circ\). اسأل المدرب عن القيمة المعتمدة في مختبركم.</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب لا يحدد \(K_p\) في هذا الجزء، ولا قيمة \(w\) المقابلة لـ \(\vartheta = 60^\circ\). اسأل المدرب عن القيمة المعتمدة في مختبركم.</p>`,fix:true},
+    {title:'مختبر مصغّر: توصيلات الشكل (3-3)',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'حلقة النظام الحراري تغلق بالطريقة نفسها. اختر طرف كل سلك.',cases:[
+ {q:'دخل السخان '+L('y<sub>T</sub>')+' يأتيه سلك من:',opts:[
+  ['المقبس '+L('w'),false,'w يأتيه المولد (القيمة المطلوبة).'],
+  ['المقبس '+L('y')+' (خرج الحاكم)',true,'الحاكم هو الذي يحدد جهد التسخين.'],
+  ['مقبس OUT في المولد مباشرة',false,'هذا يجعلها دائرة مفتوحة كما في الوحدة الثانية.']]},
+ {q:'خرج الحساس '+L('x<sub>T</sub>')+' يذهب إلى:',opts:[
+  ['المقبس '+L('x')+' في لوحة الحاكم، وإلى MULTIMETER',true,'هذا سلك التغذية الراجعة، والملتيميتر يقرأ الخرج.'],
+  ['المقبس '+L('y'),false,'y خرج الحاكم، لا يوصل بخرج النظام.'],
+  ['المقبس '+L('z'),false,'z مدخل التشويش في لوحة الحاكم.']]}]})}}
    ]},
 
   {st:8,short:'نتائج التشويش',title:'تسجيل النتائج: أثر التشويش في الدائرة المغلقة',ref:'ص 25',
@@ -546,6 +784,11 @@ B.lesson({
      ['إلى خطأ مستقر صفر واستجابة مثالية',false,'الخطأ لا يصبح صفراً مع P وحده، والزيادة المفرطة لها أضرار.'],
      ['إلى استجابة أبطأ',false,'زيادة \\(K_p\\) تسرّع الاستجابة لا تبطئها.'],
      ['إلى إشباع الحاكم، وفي الأنظمة ذات التأخير (كالحراري) إلى تعدٍّ وتذبذب',true,'إشارة التحكم تتجاوز حد الجهاز فيتشبع، ومع التأخير يتجاوز الخرج المطلوب ويتذبذب وقد يفقد استقراره.']]}},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'عبارات تلخّص التجربة. احكم عليها، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['مع الحاكم التناسبي وحده يصبح الخطأ المستقر صفراً إذا كبّرنا \\(K_p\\) بما يكفي.',false,'\\(e = \\frac{w_0}{1+K K_p}\\) يصغر ولا ينعدم.'],
+ ['زيادة \\(K_p\\) تقصّر زمن الاستقرار، حتى يتشبع خرج الحاكم.',true,'الثابت الزمني للحلقة \\(T/(1+K K_p)\\) يصغر، والإشباع يحدّ من ذلك على اللوحة.'],
+ ['أثر المروحة في الدائرة المغلقة أصغر بكثير منه في الدائرة المفتوحة.',true,'الحاكم يعوّض معظم الانخفاض، ويبقى أثر صغير مع P وحده.'],
+ ['الزيادة المفرطة في \\(K_p\\) مفيدة دائماً.',false,'تسبب إشباع الحاكم، ومع الأنظمة ذات التأخير تعدياً وتذبذباً.']]})},
     {tip:String.raw`${Q(1,'ارسم المخطط الصندوقي للتجربة (نكتفي بنظام واحد).','w ← دائرة جمع (− من x) ← e ← الحاكم \\(K_p\\) ← y ← النظام \\(\\frac{K}{Ts+1}\\) (لوحة PT1) ← x، ومن x خط راجع إلى المدخل السالب لدائرة الجمع. انظر الرسمة.')}${Q(2,'كيف يؤثر الحاكم التناسبي على الخطأ؟','يقلل الخطأ المستقر: \\(e = \\frac{w_0}{1+K K_p}\\)؛ كلما زاد \\(K_p\\) صغر الخطأ، لكنه لا يصل إلى الصفر.')}${Q(3,'كيف يؤثر الحاكم التناسبي على زمن الاستقرار؟','زيادة \\(K_p\\) تجعل الاستجابة أسرع فيقصر زمن الاستقرار (الثابت الزمني للحلقة \\(T/(1+K K_p)\\))، حتى يصل خرج الحاكم إلى حدّه (إشباع) فلا يقصر بعد ذلك كثيراً.')}${Q(4,'إلى ماذا تؤدي الزيادة المفرطة في المعامل التناسبي \\(K_p\\)؟','إلى إشارة تحكم كبيرة جداً تتشبع عند حد الجهاز، وفي الأنظمة التي فيها تأخير (مثل النظام الحراري) إلى تعدٍّ وتذبذب قد لا يتوقف، أي يفقد النظام استقراره.')}${Q(5,'ماذا تستخلص من هذه التجربة؟','الحلقة المغلقة مع حاكم تناسبي تجعل الخرج يقترب من القيمة المطلوبة ويسرع الاستجابة ويقلل أثر التشويش، لكن يبقى خطأ مستقر، ولا يجوز رفع \\(K_p\\) بلا حد.')}${Q(6,'ما تأثير التشويش على الدائرة المغلقة؟','أثره أصغر بكثير من الدائرة المفتوحة: الحاكم يعوّض معظمه، فيقسم الانخفاض تقريباً على \\(1+K K_p\\). مع P وحده يبقى أثر صغير.')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 
@@ -675,7 +918,17 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>الحاكم التكاملي «يجمع» الخطأ مع الزمن:</p><div class="eq">$$y = K_I \int e\,dt$$</div><ul><li>ما دام هناك خطأ ولو صغير فإن \(y\) يستمر في التغير، فلا يتوقف إلا عندما يصبح الخطأ <b>صفراً</b>. لذلك <b>يلغي الحاكم التكاملي الخطأ المستقر</b>.</li><li>لكن التكامل يحتاج وقتاً ليكبر، ثم يحتاج وقتاً ليصغر: عندما يصل الخرج إلى المطلوب تكون إشارة التحكم ما زالت كبيرة فيتجاوز الخرج المطلوب (<b>تعدٍّ</b>)، ثم يرجع… فتظهر <b>ذبذبة مخمدة</b>.</li></ul>`,title:'ما الحاكم التكاملي؟'},
-    {add:String.raw`<p>تشبيه: تملأ خزاناً بصنبور. ما دام الماء أقل من العلامة (يوجد خطأ) تفتح الصنبور أكثر فأكثر. عندما يصل الماء إلى العلامة تتوقف عن الفتح، لكن الصنبور يبقى مفتوحاً بالقدر الذي وصلت إليه. وإذا تأخرت في التوقف تجاوز الماء العلامة (تعدٍّ).</p>`,title:'تشبيه'}
+    {add:String.raw`<p>تشبيه: تملأ خزاناً بصنبور. ما دام الماء أقل من العلامة (يوجد خطأ) تفتح الصنبور أكثر فأكثر. عندما يصل الماء إلى العلامة تتوقف عن الفتح، لكن الصنبور يبقى مفتوحاً بالقدر الذي وصلت إليه. وإذا تأخرت في التوقف تجاوز الماء العلامة (تعدٍّ).</p>`,title:'تشبيه'},
+    {title:'مختبر مصغّر: التكامل يجمع ويتذكر',widget:(el,B)=>DCML.lab(el,B,{intro:'نبقي خطأً ثابتاً \\(e\\) (رقم تختاره أنت) مدة ثانية واحدة، ثم يصبح الخطأ صفراً. شاهد إشارة الحاكم التكاملي \\(y = K_I\\int e\\,dt\\).',
+ predict:{q:'ضاعفنا \\(K_I\\) من 1 إلى 10 والخطأ نفسه. ماذا يحدث لصعود \\(y\\) في الثانية الأولى؟',opts:[
+  ['يصبح أسرع بعشر مرات',true,'الميل = \\(K_I \\times e\\)، فعشرة أضعاف \\(K_I\\) تعطي عشرة أضعاف الميل.'],
+  ['لا يتغير، فالخطأ نفسه',false,'التكامل يُضرب في \\(K_I\\)، فيتغير الميل.'],
+  ['يصعد بالسرعة نفسها لكن يبدأ متأخراً',false,'لا تأخير هنا؛ \\(K_I\\) يغيّر سرعة التجميع.']]},
+ ins:[{k:'KI',l:'K<sub>I</sub> (من جدول الكتاب ص 28)',seg:[[1,'1'],[10,'10']],v:1},{k:'e',l:'الخطأ e في الثانية الأولى (أرقام تختارها أنت)',min:0,max:1,step:0.05,v:0.5,dp:2,u:'V'}],
+ calc:(s,P,B)=>{const Y=s.KI*s.e,top=Math.max(1,Y)*1.15;
+  return {facts:[['ميل y في الثانية الأولى',DCML.fm(B,Y,2)+' V/s'],['y بعد أن صار الخطأ صفراً',DCML.fm(B,Y,2)+' V','hi']],
+   plot:{xr:[0,2],yr:[0,top],xl:'t (s)',yl:'V',curves:[{pts:[[0,s.e],[1,s.e],[1,0],[2,0]],col:'--live',dash:'5 4',w:2,lab:'e'},{pts:[[0,0],[1,Y],[2,Y]],col:'--blue',w:2.8,lab:'y'}]},
+   msg:'في الثانية الأولى يصعد \\(y\\) ما دام هناك خطأ. عند \\(t = 1\\ \\text{s}\\) يصبح الخطأ صفراً فيتوقف \\(y\\) عن التغير، لكنه لا يرجع إلى الصفر: يحتفظ بما جمعه.'}}})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة والمكونات',ref:'ص 27',
@@ -690,7 +943,12 @@ B.lesson({
      ['قيمة الخطوة \\(w_0\\)',false,'قيمة الخطوة تُضبط من مولد الإشارة، لا من لوحة المعاملات.'],
      ['نوع النظام المتحكم فيه',false,'النظام لوحة PT1 (أو المحرك)، ونختاره بالتوصيل لا بلوحة المعاملات.'],
      ['مفاتيح P و I و D، ومعامل الحاكم التكاملي \\(K_I\\)',true,'نضع I على ON وحده، ونغيّر \\(K_I\\) (1 ثم 10) كما يطلب جدول ص 28.']]}},
-    {tip:String.raw`<p>الحاسب وبرنامج Com3Lab موجودان في كل تجارب اللوحة: على الشاشة نوصل الأسلاك ونرى المولد وراسم الذبذبات. والجديد هنا أن الكتاب يذكرهما صراحة مع لوحة المعاملات.</p>`}
+    {tip:String.raw`<p>الحاسب وبرنامج Com3Lab موجودان في كل تجارب اللوحة: على الشاشة نوصل الأسلاك ونرى المولد وراسم الذبذبات. والجديد هنا أن الكتاب يذكرهما صراحة مع لوحة المعاملات.</p>`},
+    {title:'مختبر مصغّر: من أين تضبط هذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل ضبط في التجربة اختر الجهاز الذي تضبطه منه.',cats:['مولد الإشارة','لوحة تغيير معاملات الحاكمات','الحاسب وبرنامج Com3Lab'],items:[
+ ['قيمة الخطوة \\(5\\ \\text{v}\\)',0,'الخطوة تأتي من مقبس OUT في المولد.'],
+ ['وضع المفتاح I على ON و P و D على OFF',1,'المفاتيح الثلاثة على لوحة المعاملات.'],
+ ['تغيير \\(K_I\\) من 1 إلى 10',1,'معامل الحاكم يُضبط على لوحة المعاملات.'],
+ ['رؤية إشارتي القناتين \\(Y_1\\) و \\(Y_2\\)',2,'راسم الذبذبات جهاز افتراضي على شاشة الحاسب.']]})}
    ]},
 
   {st:3,short:'خطوات التجربة',title:'خطوات إجراء التجربة والتوصيل — الشكل <span class="ltr">(3-4)</span>',ref:'ص 27–28',
@@ -706,7 +964,19 @@ B.lesson({
      ['P و I على ON، و D على OFF',false,'هذا ضبط التجربة الثالثة (PI).'],
      ['I على ON، و P و D على OFF',true,'نريد الحاكم التكاملي وحده لنرى أثره.']]}},
     {tip:String.raw`<p>«إشارة قفزة» هي إشارة الخطوة نفسها: يقفز الجهد فجأة من 0 إلى \(5\ \text{v}\). و«النقطة Out» هي مقبس الخرج في مولد الإشارة، الموصول بالمقبس \(w\).</p>`,title:'معنى الكلمات'},
-    {watch:String.raw`<p>زمن العرض هنا \(10\ \text{s}\) لا \(5\ \text{s}\): الحاكم التكاملي أبطأ من التناسبي ويتذبذب قبل أن يستقر، فإذا قصّرت الزمن قد لا ترى الاستقرار.</p>`}
+    {watch:String.raw`<p>زمن العرض هنا \(10\ \text{s}\) لا \(5\ \text{s}\): الحاكم التكاملي أبطأ من التناسبي ويتذبذب قبل أن يستقر، فإذا قصّرت الزمن قد لا ترى الاستقرار.</p>`},
+    {title:'مختبر مصغّر: مفاتيح الحاكم',widget:(el,B)=>DCML.lab(el,B,{intro:'شغّل المفاتيح وأطفئها وشاهد الاستجابة. النظام \\(\\frac{1}{s+1}\\) و \\(K_p = 1\\) و \\(K_I = 1\\) وخطوة وحدة (من مخططات Simulink في الكتاب).',
+ predict:{q:'مع المفتاح I وحده على ON، هل يبقى خطأ مستقر؟',opts:[
+  ['نعم، نصف الخطوة',false,'هذا ما يتركه P وحده بـ \\(K_p = 1\\) مع هذا النظام.'],
+  ['لا، يصل الخرج إلى المطلوب بعد ذبذبة مخمدة',true,'التكامل لا يتوقف حتى يصبح الخطأ صفراً، لكنه يتجاوز ثم يرجع.'],
+  ['لا يتحرك الخرج أبداً',false,'التكامل يكبر مع الزمن فيحرّك الخرج.']]},
+ ins:[{k:'P',l:'P',sw:true,v:0,on:'P: ON',off:'P: OFF'},{k:'I',l:'I',sw:true,v:1,on:'I: ON',off:'I: OFF'},{k:'D',l:'D',sw:true,v:0,on:'D: ON',off:'D: OFF'}],
+ calc:(s,P,B)=>{const ex=s.P&&s.I?'هذا ضبط التجربة الثالثة (PI).':s.I?'هذا ضبط هذه التجربة (الحاكم التكاملي).':s.P?'هذا ضبط التجربة الأولى (الحاكم التناسبي).':'';
+  const dn=s.D?' المفتاح D لا تستعمله تجارب اللوحة، والجزء التفاضلي تدرسه بالمحاكاة في التجربة الرابعة، فلم نُدخله هنا.':'';
+  if(!s.P&&!s.I)return {cls:'warn',msg:'لا حاكم يعمل: إشارة التحكم صفر فلا يتحرك الخرج.'+dn,plot:{xr:[0,10],yr:[0,1.4],xl:'t (s)',yl:'x',curves:[{pts:[[0,1],[10,1]],col:'--live',dash:'5 4',w:1.6},{pts:[[0,0],[10,0]],col:'--blue',w:2.6}]}};
+  const q=s.P&&s.I?[[1,1],[1,2,1]]:s.I?[[1],[1,1,1]]:[[1],[1,2]];const r=tfStep(q[0],q[1],1,10),m=measure(r);const pts=[];for(let i=0;i<=r.N;i+=20)pts.push([r.t[i],r.x[i]]);
+  return {facts:[['الخطأ المستقر',Math.abs(1-m.xf)<1e-4?'0':DCML.fm(B,1-m.xf,3)],['التعدي M<sub>p</sub>',m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0']],
+   plot:{xr:[0,10],yr:[0,1.4],xl:'t (s)',yl:'x',curves:[{pts:[[0,1],[10,1]],col:'--live',dash:'5 4',w:1.6},{pts,col:'--blue',w:2.6}]},msg:ex+dn}}})}
    ]},
 
   {st:4,short:'تسجيل النتائج',title:'تسجيل النتائج: زمن التأخير وزمن الصعود والتعدي',ref:'ص 28',
@@ -722,7 +992,19 @@ B.lesson({
    body:[
     {book:String.raw`<p>قم بتغيير معامل الحاكم التكاملي \(K_I\) (1 و 10) وارسم منحنى استجابة النظام ثم أكمل الجدول التالي:</p>${ptable(['الثابت التكاملي K<sub>I</sub>','زمن التأخير t<sub>d</sub> (s)','زمن الصعود t<sub>r</sub> (s)','التعدي M<sub>p</sub> (v)','زمن التعدي t<sub>p</sub> (s)','الخطأ e (v)'],['1','10'])}<p>ما تأثير الثابت التكاملي \(K_I\) على المتغيرات المبينة في الجدول؟ …………</p>`,ref:'ص 28'},
     {tip:String.raw`<p>الجدول يطلب هذه المقادير دون تعريفها في الكتاب. التعريفات المستعملة في المختبر:</p>${DEF_T}`,title:'تعريفات المقادير'},
-    {watch:String.raw`<p>الجدول يطلب \(M_p\) بالفولت: هو ارتفاع القمة <b>فوق القيمة النهائية</b>، لا ارتفاع القمة كله. اكتبه بالفولت، ويمكنك أن تكتب بجانبه النسبة المئوية من القيمة النهائية.</p>`}
+    {watch:String.raw`<p>الجدول يطلب \(M_p\) بالفولت: هو ارتفاع القمة <b>فوق القيمة النهائية</b>، لا ارتفاع القمة كله. اكتبه بالفولت، ويمكنك أن تكتب بجانبه النسبة المئوية من القيمة النهائية.</p>`},
+    {title:'مختبر مصغّر: حرّك المؤشر واقرأ المقادير',widget:(el,B)=>{const r=tfStep([1],[1,1,1],1,10),m=measure(r),N=r.N,X=r.x;
+ const lev=p=>{for(let i=0;i<=N;i++)if(X[i]>=p)return r.t[i];return null},t10=lev(0.1),t90=lev(0.9),pts=[];for(let i=0;i<=N;i+=10)pts.push([r.t[i],X[i]]);
+ DCML.lab(el,B,{intro:'منحنى الحلقة \\(\\frac{1}{s^2+s+1}\\) (الشكل 3-5 عند \\(K_I = 1\\)) لخطوة وحدة. حرّك الزمن واقرأ الخرج، وانظر متى تمر بكل مقدار من الجدول.',
+  predict:{q:'عند زمن التعدي \\(t_p\\) يكون الخرج:',opts:[
+   ['50% من قيمته النهائية',false,'هذا عند زمن التأخير \\(t_d\\).'],
+   ['أعلى من قيمته النهائية بمقدار \\(M_p\\)',true,'\\(t_p\\) زمن أعلى قمة، والقمة تزيد على القيمة النهائية بمقدار التعدي.'],
+   ['مساوياً لقيمته النهائية تماماً',false,'الخرج يمر بالقيمة النهائية قبل القمة، لا عندها.']]},
+  ins:[{k:'t',l:'الزمن t',min:0,max:10,step:0.05,v:0.5,dp:2,u:'s'}],
+  calc:(s,P,B)=>{const i=Math.min(N,Math.round(s.t/10*N)),x=X[i],near=v=>v!=null&&Math.abs(s.t-v)<=0.06;
+   const where=near(m.td)?'أنت عند \\(t_d\\): الخرج 50% من قيمته النهائية.':near(m.tp)?'أنت عند القمة \\(t_p\\): الخرج أعلى من 1 بمقدار \\(M_p\\).':s.t<t10?'قبل 10%: لم يبدأ زمن الصعود بعد.':s.t<=t90?'أنت داخل زمن الصعود (من 10% إلى 90%).':s.t<m.tp?'بعد 90% وقبل القمة.':s.t<=m.ts?'بعد القمة: ذبذبة مخمدة حول 1.':'بعد \\(t_s\\): الخرج داخل ±2% من 1.';
+   return {facts:[['x(t)',DCML.fm(B,x,3),'hi'],['t<sub>d</sub>',tF(m.td)+' s'],['t<sub>r</sub>',tF(m.tr)+' s'],['t<sub>p</sub>',TPV(m)+' s'],['M<sub>p</sub>',DCML.fm(B,m.Mp,3)]],
+    plot:{xr:[0,10],yr:[0,1.3],xl:'t (s)',yl:'x',curves:[{pts:[[0,1],[10,1]],col:'--muted',dash:'4 4',w:1.4},{pts,col:'--blue',w:2.6}],dots:[[m.td,0.5,'--on'],[m.tp,1+m.Mp,'--stop']],cur:[s.t,x]},msg:where}}})}}
    ]},
 
   {st:5,short:'Simulink',title:'الجزء الثاني: Simulink — الشكل <span class="ltr">(3-5)</span>',ref:'ص 29',
@@ -768,6 +1050,11 @@ B.lesson({
      ['تقليل التعدي',false,'الحاكم التكاملي يزيد التعدي لا يقلله.'],
      ['إلغاء الخطأ المستقر',true,'يستمر في تغيير إشارة التحكم ما دام هناك أي خطأ، فلا يستقر النظام إلا والخرج مساوٍ للمطلوب.'],
      ['جعل الاستجابة الأولى أسرع من الحاكم التناسبي',false,'التكامل يحتاج وقتاً ليكبر، فبدايته أبطأ.']]}},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'عبارات تلخّص التجربة. احكم عليها، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['الهدف من الحاكم التكاملي إلغاء الخطأ المستقر.',true,'يستمر في تغيير إشارته ما دام هناك أي خطأ.'],
+ ['زيادة \\(K_I\\) تقلل التعدي.',false,'العكس: معامل الإخماد \\(\\zeta = 1/(2\\sqrt{K_I})\\) يصغر فيزيد التعدي والذبذبة.'],
+ ['سبب الذبذبة أن التكامل «يتذكر» الخطأ الماضي فيتجاوز الخرج المطلوب.',true,'عندما يصل الخرج إلى المطلوب تكون إشارة التحكم ما زالت كبيرة.'],
+ ['الحاكم التكاملي يبدأ أسرع من التناسبي.',false,'التكامل يحتاج وقتاً ليكبر، فبدايته أبطأ.']]})},
     {tip:String.raw`${Q(1,'ارسم المخطط الصندوقي للتجربة.','w ← دائرة جمع (− من x) ← e ← الحاكم التكاملي \\(K_I/s\\) ← y ← النظام \\(PT_1\\) ← x، مع خط تغذية راجعة من x إلى المدخل السالب. انظر الرسمة.')}${Q(2,'ما الهدف من وضع الحاكم التكاملي في نظام التحكم؟','إلغاء الخطأ المستقر: التكامل يستمر في تغيير إشارة التحكم ما دام هناك أي خطأ، فلا يستقر النظام إلا والخرج مساوٍ للقيمة المطلوبة. وكذلك يلغي أثر التشويش الثابت.')}${Q(3,'عند زيادة قيمة معامل الحاكم التكاملي تظهر ذبذبة مخمدة وتزداد نسبة التعدي. ما سبب ذلك؟','التكامل «يتذكر» الخطأ الماضي: عندما يصل الخرج إلى المطلوب تكون إشارة التحكم ما زالت كبيرة فيتجاوز الخرج، ثم يتجمع خطأ معاكس ليرجعه. كلما زاد \\(K_I\\) صار هذا أعنف (معامل الإخماد \\(\\zeta = 1/(2\\sqrt{K_I})\\) يصغر).')}${Q(4,'ماذا تستخلص من هذه التجربة؟','الحاكم التكاملي يعطي خطأ مستقراً صفراً، لكنه يجعل الاستجابة تتذبذب وتتعدى، وزيادة \\(K_I\\) تسرّع الصعود وتزيد التعدي. لذلك يُجمع عادة مع التناسبي (PI).')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 
@@ -860,7 +1147,18 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>الحاكم PI مجموع الحاكمين على التوازي (كما في الشكل 3-7):</p><div class="eq">$$y = K_p\,e + K_I\int e\,dt$$</div><ul><li>الجزء <b>التناسبي</b> يرد فوراً على الخطأ فيسرّع البداية.</li><li>الجزء <b>التكاملي</b> يستمر حتى يصبح الخطأ صفراً، فالخطأ المستقر = 0 لكل القيم.</li></ul>`,title:'ما الحاكم PI؟'},
-    {add:String.raw`<p>أغلب الحاكمات في المصانع (لدرجة الحرارة والضغط والتدفق ومستوى السائل) تعمل بأسلوب PI: سرعة معقولة مع وصول دقيق إلى القيمة المطلوبة.</p>`,title:'في الصناعة'}
+    {add:String.raw`<p>أغلب الحاكمات في المصانع (لدرجة الحرارة والضغط والتدفق ومستوى السائل) تعمل بأسلوب PI: سرعة معقولة مع وصول دقيق إلى القيمة المطلوبة.</p>`,title:'في الصناعة'},
+    {title:'مختبر مصغّر: P أم I أم PI؟',widget:(el,B)=>DCML.lab(el,B,{intro:'النظام \\(\\frac{1}{s+1}\\) و \\(K_p = 1\\) و \\(K_I = 1\\) (قيم الشكل 3-7 وجدوليه)، وخطوة وحدة. اختر الحاكم وقارن، والمتقطع = الحاكمان الآخران.',
+ predict:{q:'أي الثلاثة يصل إلى القيمة المطلوبة تماماً ودون تعدٍّ هنا؟',opts:[
+  ['P وحده',false,'يترك خطأ: الخرج يستقر عند النصف مع \\(K_p = 1\\).'],
+  ['PI',true,'الجزء I يزيل الخطأ، والجزء P يسرّع البداية ويزيد الإخماد.'],
+  ['I وحده',false,'يصل إلى المطلوب، لكن بعد تعدٍّ وذبذبة مخمدة.']]},
+ ins:[{k:'c',l:'الحاكم',seg:[['P','P وحده'],['I','I وحده'],['PI','PI']],v:'P'}],
+ calc:(s,P,B)=>{const Q={P:[[1],[1,2]],I:[[1],[1,1,1]],PI:[[1,1],[1,2,1]]},run=k=>tfStep(Q[k][0],Q[k][1],1,10),pp=r=>{const a=[];for(let i=0;i<=r.N;i+=20)a.push([r.t[i],r.x[i]]);return a};
+  const r=run(s.c),m=measure(r);const gh=Object.keys(Q).filter(k=>k!==s.c).map(k=>({pts:pp(run(k)),col:'--muted',dash:'4 4',w:1.8,lab:k}));
+  return {facts:[['الخطأ المستقر',Math.abs(1-m.xf)<1e-4?'0':DCML.fm(B,1-m.xf,3),Math.abs(1-m.xf)<1e-4?'hi':'bad'],['التعدي',m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0'],['t<sub>s</sub>',TSV(m)+' s']],
+   plot:{xr:[0,10],yr:[0,1.3],xl:'t (s)',yl:'x',curves:[{pts:[[0,1],[10,1]],col:'--live',dash:'5 4',w:1.6}].concat(gh,[{pts:pp(r),col:'--blue',w:2.8}])},
+   msg:s.c==='P'?'سريع، لكنه يستقر عند نصف المطلوب: يبقى خطأ.':s.c==='I'?'لا خطأ في النهاية، لكن البداية أبطأ ويتعدى ثم يتذبذب.':'لا خطأ ولا تعدٍّ: جمع السرعة وإلغاء الخطأ. (بهذه القيم بالذات تصبح الحلقة \\(\\frac{1}{s+1}\\).)'}}})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة والمكونات',ref:'ص 31',
@@ -874,7 +1172,11 @@ B.lesson({
     {predict:{q:'على راسم الذبذبات نعرض قناتين. ما هما؟',opts:[
      ['\\(Y_1\\) = الخطأ و\\(Y_2\\) = خرج الحاكم',false,'التوصيل في الشكل (3-6) يوصل \\(Y_1\\) بالدخل و\\(Y_2\\) بالخرج.'],
      ['\\(Y_1\\) = الدخل \\(w\\) و\\(Y_2\\) = الخرج \\(x\\)',true,'كما في التجربتين السابقتين: نقارن الخرج بالدخل على الشاشة نفسها.'],
-     ['القناتان تعرضان الخرج نفسه',false,'نحتاج الدخل لنقيس الخطأ \\(e = W_0 - X_0\\).']]}}
+     ['القناتان تعرضان الخرج نفسه',false,'نحتاج الدخل لنقيس الخطأ \\(e = W_0 - X_0\\).']]}},
+    {title:'تحقق سريع: أجهزة التجربة',widget:(el,B)=>DCML.tf(el,B,{intro:'قائمة أجهزة للحفظ: احكم على كل عبارة بحسب نص الكتاب (ص 31).',items:[
+ ['جهاز القياس في هذه التجربة راسم ذبذبات (Oscilloscope).',true,'مذكور صراحة في القائمة.'],
+ ['يمكن أن يكون النظام المتحكم فيه لوحة PT1 أو محرك التيار المستمر.',true,'«نظام من الرتبة الأولى PT1 أو محرك التيار المستمر».'],
+ ['القائمة لا تذكر لوحة تغيير معاملات الحاكمات.',false,'آخر عنصر في القائمة: «ولوحة تغيير معاملات الحاكمات».']]})}
    ]},
 
   {st:3,short:'خطوات التجربة',title:'خطوات إجراء التجربة والتوصيل — الشكل <span class="ltr">(3-6)</span>',ref:'ص 31–32',
@@ -889,7 +1191,14 @@ B.lesson({
     {predict:{q:'كيف تضع مفاتيح الحاكم في هذه التجربة؟',opts:[
      ['P و I على ON، و D على OFF',true,'الحاكم التناسبي التكاملي = الجزء P مع الجزء I.'],
      ['I وحده على ON',false,'هذا ضبط التجربة الثانية.'],
-     ['الثلاثة على ON',false,'D يضيف الجزء التفاضلي، وتجارب اللوحة لا تستعمله؛ ندرسه بالمحاكاة في التجربة الرابعة.']]}}
+     ['الثلاثة على ON',false,'D يضيف الجزء التفاضلي، وتجارب اللوحة لا تستعمله؛ ندرسه بالمحاكاة في التجربة الرابعة.']]}},
+    {title:'مختبر مصغّر: رتّب خطوات التجربة',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي يذكره الكتاب (ص 31–32).',steps:[
+ ['شغّل لوحة العمليات وأجب عن الأسئلة','البداية بتشغيل اللوحة.'],
+ ['اضبط دخل الوحدة من مولد الإشارة (إشارة قفزة)','نضبط المولد قبل التوصيل كما في ترتيب الكتاب.'],
+ ['وصّل الأجهزة كما في الشكل (3-6)','المراجعة تأتي بعد التوصيل.'],
+ ['اطلب من المدرب مراجعة التوصيل ومعايرة الأجهزة','المراجعة قبل التشغيل.'],
+ ['ثبّت <span class="ltr">w<sub>0</sub> = 5 v</span> خلال <span class="ltr">10 s</span> وشغّل وسجّل القناتين','التشغيل بعد المراجعة.'],
+ ['سجّل ملحوظاتك','آخر خطوة بعد رؤية المنحنيين.']]})}
    ]},
 
   {st:4,short:'تسجيل النتائج',title:'تسجيل النتائج: هل يبقى خطأ؟',ref:'ص 32',
@@ -905,7 +1214,18 @@ B.lesson({
    body:[
     {book:String.raw`<ul><li>أعد رسم منحنيي الدخل والخرج مع تغيير الثابت \(K_p\) (1، 10، 50).</li><li>لكل قيمة لـ \(K_p\) أكمل الجدول.</li></ul>${ptable(['الثابت K<sub>p</sub>','قيمة الخرج X<sub>0</sub>','قيمة الدخل W<sub>0</sub>','الخطأ e = W<sub>0</sub> – X<sub>0</sub>','زمن الاستقرار t<sub>s</sub>'],['1','10','50'])}<p>ماذا تلاحظ؟ ………… ماذا تستنتج؟ …………</p>`,ref:'ص 32'},
     {tip:String.raw`<p>زيادة \(K_p\) تزيد الإخماد (تعدٍّ أقل) وتسرّع البداية، وزيادة \(K_I\) تقرّب الخرج من المطلوب أسرع لكنها تزيد التعدي. وإذا كان \(K_I\) صغيراً جداً مقارنة بـ \(K_p\) يقترب الخرج بسرعة من جزء كبير من القيمة ثم يكمل الباقي ببطء («ذيل» بطيء).</p>`,title:'ماذا يفعل كل معامل؟'},
-    {watch:String.raw`<p>الكتاب لا يذكر قيمة \(K_I\) على اللوحة في هذا الجزء. في المختبر نبدأ بـ \(K_I = 1\) (أول قيمة في التجربة السابقة)، ويستطيع المدرب تغييرها؛ اسأله عن القيمة المعتمدة.</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب لا يذكر قيمة \(K_I\) على اللوحة في هذا الجزء. في المختبر نبدأ بـ \(K_I = 1\) (أول قيمة في التجربة السابقة)، ويستطيع المدرب تغييرها؛ اسأله عن القيمة المعتمدة.</p>`,fix:true},
+    {title:'مختبر مصغّر: املأ الجدول على اللوحة',widget:(el,B)=>DCML.lab(el,B,{intro:'لوحة PT1 مع الحاكم PI، خطوة <span class="ltr">5 V</span> خلال <span class="ltr">10 s</span>، و \\(K_I\\) على اللوحة من «قيم المدرب» (الكتاب لا يحدده). اختر \\(K_p\\) واقرأ أعمدة الجدول.',
+ predict:{q:'ماذا تتوقع أن تكتب في عمود «قيمة الدخل \\(W_0\\)» للصفوف الثلاثة؟',opts:[
+  ['<span class="ltr">5 v</span> في الصفوف الثلاثة',true,'\\(W_0\\) قيمة الخطوة التي ثبّتناها، ولا تتغير مع \\(K_p\\).'],
+  ['تكبر مع \\(K_p\\)',false,'\\(K_p\\) يغيّر إشارة التحكم والخرج، لا الخطوة.'],
+  ['تساوي \\(X_0\\) في كل صف',false,'\\(X_0\\) هو الخرج؛ يقترب من \\(W_0\\) لكنه عمود آخر.']]},
+ ins:[{k:'Kp',l:'K<sub>p</sub> (من جدول الكتاب)',seg:[[1,'1'],[10,'10'],[50,'50']],v:1}],
+ tp:{id:'u3-l3',defs:AN_DEFS().concat([{k:'KIb',label:'K<sub>I</sub> على اللوحة في الجزء الأول (الكتاب لا يحدده)',unit:'1/s',value:1,min:0.05,max:50,step:0.05}])},
+ calc:(s,P,B)=>{const o=boardRun({plant:'pt1',P:true,I:true,Kp:s.Kp},P,10,P.KIb),m=o.m,pts=[];for(let i=0;i<=o.r.N;i+=20)pts.push([o.r.t[i],o.r.x[i]]);
+  return {facts:[['X<sub>0</sub> عند <span class="ltr">10 s</span>',DCML.fm(B,m.x0,3)+' V'],['W<sub>0</sub>','5 V'],['e = W<sub>0</sub> − X<sub>0</sub>',DCML.fm(B,m.e,3)+' V','hi'],['t<sub>s</sub>',TSV(m)+' s'],['K<sub>I</sub> المستعمل',DCML.fm(B,P.KIb,2)]],
+   plot:{xr:[0,10],yr:[0,6],xl:'t (s)',yl:'V',curves:[{pts:[[0,5],[10,5]],col:'--live',dash:'5 4',w:1.6},{pts,col:'--blue',w:2.6}]},
+   msg:Math.abs(m.e)<0.02?'الخطأ صفر تقريباً: الجزء التكاملي أزاله.':'ما زال هناك خطأ عند نهاية العرض: الجزء التكاملي يكمل إزالته ببطء («ذيل»)؛ لو انتظرت أطول لصار صفراً.'}}})}
    ]},
 
   {st:5,short:'Simulink',title:'الجزء الثاني: Simulink — الشكل <span class="ltr">(3-7)</span>',ref:'ص 33',
@@ -920,7 +1240,14 @@ B.lesson({
      ['النظام المتحكم فيه',false,'النظام هو كتلة Transfer Fcn \\(\\frac{1}{s+1}\\) بعد Add1.']]}}
    ],
    body:[
-    {tip:String.raw`<p>مع \(\frac{1}{s+1}\) تصبح الحلقة:</p><div class="eq">$$\frac{X(s)}{W(s)}=\frac{K_p s + K_I}{s^2+(1+K_p)s+K_I}$$</div><p>عند \(s = 0\) (الحالة المستقرة) يصبح الكسر \(\frac{K_I}{K_I} = 1\): الخرج = الدخل، أي الخطأ المستقر صفر لكل القيم.</p>`,title:'الحلقة كاملة'}
+    {tip:String.raw`<p>مع \(\frac{1}{s+1}\) تصبح الحلقة:</p><div class="eq">$$\frac{X(s)}{W(s)}=\frac{K_p s + K_I}{s^2+(1+K_p)s+K_I}$$</div><p>عند \(s = 0\) (الحالة المستقرة) يصبح الكسر \(\frac{K_I}{K_I} = 1\): الخرج = الدخل، أي الخطأ المستقر صفر لكل القيم.</p>`,title:'الحلقة كاملة'},
+    {title:'مختبر مصغّر: صنّف كتل الشكل (3-7)',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل كتلة من مخطط الشكل (3-7) اختر الجزء الذي تنتمي إليه.',cats:['الجزء التناسبي','الجزء التكاملي','النظام','الخطأ والعرض'],items:[
+ ['Gain1 (فيها \\(K_p\\))',0,'الفرع العلوي وحده بلا تكامل: \\(K_p\\,e\\).'],
+ ['Gain (فيها \\(K_i\\))',1,'معامل الجزء التكاملي، يليها Integrator.'],
+ ['Integrator \\(\\frac{1}{s}\\)',1,'تكامل الخطأ.'],
+ ['Transfer Fcn \\(\\frac{1}{s+1}\\)',2,'النظام من الرتبة الأولى بعد Add1.'],
+ ['Add (\\(+\\) من Step و \\(-\\) من الخرج)',3,'ناتجها الخطأ \\(e\\).'],
+ ['Mux و Scope',3,'تجمعان الدخل والخرج وتعرضانهما.']]})}
    ]},
 
   {st:6,short:'نتائج Simulink',title:'تسجيل النتائج: نثبّت معاملاً ونغيّر الآخر',ref:'ص 33',
@@ -980,6 +1307,10 @@ B.lesson({
      ['يلغي الخطأ المستقر أيضاً، باستجابة أسرع وتعدٍّ أقل',true,'التكاملي يلغي الخطأ، والتناسبي يسرّع البداية ويزيد الإخماد.'],
      ['يترك خطأ مستقراً',false,'وجود الجزء التكاملي يمنع ذلك.'],
      ['يتعدى أكثر دائماً',false,'الجزء التناسبي يزيد الإخماد، فالتعدي عادة أقل.']]}},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['في المخطط الصندوقي للحاكم PI يتفرع الخطأ إلى فرعين: \\(K_p\\) و \\(K_I/s\\).',true,'ثم يجتمعان قبل النظام.'],
+ ['الحاكم PI يترك خطأ مستقراً صغيراً.',false,'الجزء التكاملي يجعله صفراً.'],
+ ['زيادة \\(K_I\\) تسرّع الوصول وتزيد التعدي.',true,'كما رأيت في الجدول الأول من ص 33.']]})},
     {tip:String.raw`${Q(1,'ارسم المخطط الصندوقي للتجربة (لنظام واحد فقط).','w ← دائرة جمع (− من x) ← e ← فرعان: \\(K_p\\) و\\(K_I/s\\) يجتمعان ← y ← النظام \\(PT_1\\) ← x، مع تغذية راجعة سالبة من x. انظر الرسمة.')}${Q(2,'ما تأثير الحاكم التناسبي التكاملي على استجابة النظام؟','يجعل الخطأ المستقر صفراً (بفضل الجزء التكاملي) مع استجابة أسرع وتعدٍّ أقل من الحاكم التكاملي وحده (بفضل الجزء التناسبي). زيادة \\(K_I\\) تسرّع الوصول وتزيد التعدي، وزيادة \\(K_p\\) تزيد الإخماد.')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 
@@ -1083,7 +1414,17 @@ B.lesson({
     {predict:{q:'نعطي المحرك وحده (بلا حاكم) جهداً ثابتاً \\(1\\ \\text{V}\\). إلى أي قيمة يصل الخرج في النهاية؟',opts:[
      ['1',false,'هذا لو كان الكسب 1؛ كسب هذا المحرك 21.81.'],
      ['0.379',false,'0.379 معامل \\(s\\) في المقام، يؤثر على السرعة لا على القيمة النهائية.'],
-     ['21.81',true,'عند الاستقرار \\(s = 0\\) فيبقى \\(G(0) = 21.81/1 = 21.81\\).']]}}
+     ['21.81',true,'عند الاستقرار \\(s = 0\\) فيبقى \\(G(0) = 21.81/1 = 21.81\\).']]}},
+    {title:'مختبر مصغّر: المحرك وحده بلا حاكم',widget:(el,B)=>DCML.lab(el,B,{intro:'نموذج المحرك من الكتاب \\(G(s)=\\frac{21.81}{0.0063\\,s^2+0.379\\,s+1}\\). اختر جهداً ثابتاً (رقم تختاره أنت) وشاهد الخرج.',
+ predict:{q:'ضاعفنا الجهد الثابت. ماذا يحدث للقيمة النهائية للخرج؟',opts:[
+  ['تبقى 21.81',false,'21.81 هي القيمة النهائية لجهد 1 V فقط.'],
+  ['تتضاعف',true,'القيمة النهائية = \\(21.81 \\times\\) الجهد، فهي تتناسب معه.'],
+  ['تقل',false,'الكسب موجب، فجهد أكبر يعطي خرجاً أكبر.']]},
+ ins:[{k:'u',l:'الجهد الثابت (أرقام تختارها أنت)',min:0.5,max:2,step:0.1,v:1,dp:1,u:'V'}],
+ calc:(s,P,B)=>{const r=tfStep([21.81],[0.0063,0.379,1],s.u,3),m=measure(r),pts=[];for(let i=0;i<=r.N;i+=20)pts.push([r.t[i],r.x[i]]);
+  return {facts:[['القيمة النهائية',DCML.fm(B,21.81*s.u,2),'hi'],['التعدي',m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0'],['t<sub>s</sub>',TSV(m)+' s']],
+   plot:{xr:[0,3],yr:[0,46],xl:'t (s)',yl:'x',curves:[{pts,col:'--blue',w:2.6}]},
+   msg:'لا تعدٍّ ولا تأرجح: المحرك وحده «مخمد زائد». لكنه بطيء (أكثر من ثانية ليستقر)، وخرجه 21.81 ضعف الدخل؛ لذلك نضع حاكماً وحلقة مغلقة.'}}})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة ومكونات التجربة',ref:'ص 35',
@@ -1098,7 +1439,11 @@ B.lesson({
     {predict:{q:'لماذا نكتفي هنا بالمحاكاة بدل لوحة Com3Lab؟',opts:[
      ['لأن لوحة Com3Lab لا يوجد فيها مفتاح D',false,'المفتاح D موجود على اللوحة؛ السبب هو نموذج المحرك المعطى.'],
      ['لأن الكتاب يعطي نموذج المحرك \\(G(s)\\) جاهزاً، فنحاكيه ونغيّر المعاملات بحرية',true,'مع النموذج نرى أثر كل جزء من PID على حدة بسرعة ودون خطر على المحرك.'],
-     ['لأن المحاكاة أدق دائماً من الجهاز الحقيقي',false,'المحاكاة دقيقة بقدر دقة النموذج؛ الجهاز الحقيقي فيه أشياء لا يمثلها النموذج.']]}}
+     ['لأن المحاكاة أدق دائماً من الجهاز الحقيقي',false,'المحاكاة دقيقة بقدر دقة النموذج؛ الجهاز الحقيقي فيه أشياء لا يمثلها النموذج.']]}},
+    {title:'تحقق سريع: أدوات التجربة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 35).',items:[
+ ['تحتاج هذه التجربة لوحة Com3Lab.',false,'الأجهزة: جهاز حاسب وبرنامج MATLAB فيه Simulink و Control Tool Box فقط.'],
+ ['نموذج المحرك \\(G(s)\\) معطى في الكتاب جاهزاً.',true,'\\(G(s)=\\frac{21.81}{0.0063s^2+0.379s+1}\\) في الهدف من التجربة.'],
+ ['التجربة كلها تجري في Simulink.',true,'نرسم مخطط الشكل (3-8) ونغيّر المعاملات فيه.']]})}
    ]},
 
   {st:3,short:'خطوات التجربة',title:'خطوات إجراء التجربة: ثلاثة أجزاء في حاكم واحد',ref:'ص 35',
@@ -1113,7 +1458,14 @@ B.lesson({
     {predict:{q:'أي جزء من PID يرد على «سرعة تغيّر» الخطأ لا على قيمته؟',opts:[
      ['التناسبي P',false,'P يرد على قيمة الخطأ الآن.'],
      ['التكاملي I',false,'I يرد على مجموع الخطأ الماضي.'],
-     ['التفاضلي D',true,'\\(K_d\\,\\frac{de}{dt}\\): المشتقة = سرعة التغير.']]}}
+     ['التفاضلي D',true,'\\(K_d\\,\\frac{de}{dt}\\): المشتقة = سرعة التغير.']]}},
+    {title:'مختبر مصغّر: أي جزء يفعل هذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر جزء الحاكم PID الذي يطابقه.',cats:['P','I','D'],items:[
+ ['يرد على قيمة الخطأ الآن.',0,'\\(K_p\\,e\\).'],
+ ['يجمع الخطأ الماضي كله.',1,'\\(K_i\\int e\\,dt\\).'],
+ ['يرد على سرعة تغيّر الخطأ.',2,'\\(K_d\\,\\frac{de}{dt}\\).'],
+ ['يجعل الخطأ المستقر صفراً.',1,'لا يتوقف عن التغير ما دام هناك خطأ.'],
+ ['لا يغيّر الخرج المستقر.',2,'عند الاستقرار لا يتغير الخطأ فمشتقته صفر.'],
+ ['يعطي «نبضة» كبيرة لحظة الخطوة.',2,'الخطأ يقفز فجأة، فمشتقته كبيرة جداً لحظتها.']]})}
    ]},
 
   {st:4,short:'مخطط التجربة',title:'مخطط التجربة — الشكل <span class="ltr">(3-8)</span>',ref:'ص 36',
@@ -1130,7 +1482,19 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>مع الحلقة المغلقة:</p><div class="cl-tbl">$$\frac{X(s)}{W(s)} = \frac{21.81\,(K_d s^2+K_p s+K_i)}{0.0063 s^3+(0.379+21.81K_d)s^2+(1+21.81K_p)s+21.81K_i}$$</div><p>وعند \(K_i=0\): الخرج المستقر \(X_0=\dfrac{21.81K_p}{1+21.81K_p}\) لخطوة وحدة.</p>`,title:'الحلقة كاملة'},
-    {watch:String.raw`<p>رقم الشكل (3-8) مستعمل في الكتاب لشكلين: هذا المخطط (ص 36) وتوصيل التحكم الرقمي في السرعة (ص 41). انتبه أيهما المقصود.</p>`,fix:true}
+    {watch:String.raw`<p>رقم الشكل (3-8) مستعمل في الكتاب لشكلين: هذا المخطط (ص 36) وتوصيل التحكم الرقمي في السرعة (ص 41). انتبه أيهما المقصود.</p>`,fix:true},
+    {title:'مختبر مصغّر: شغّل فروع الشكل (3-8) وأطفئها',widget:(el,B)=>DCML.lab(el,B,{intro:'القيم المرسومة في الشكل: \\(K_p = 1\\) و \\(K_i = 0.1\\) و \\(K_d = 0.1\\)، ونموذج المحرك من الكتاب، وخطوة وحدة. أطفئ فرعاً (قيمته صفر) وشاهد الأثر.',
+ predict:{q:'أطفأنا فرع التكامل (\\(K_i = 0\\)) وتركنا الفرعين الآخرين. ماذا يحدث للخطأ المستقر؟',opts:[
+  ['يبقى صفراً',false,'الذي يزيل الخطأ هو الجزء التكاملي، وقد أطفأناه.'],
+  ['يبقى خطأ صغير',true,'\\(X_0 = \\frac{21.81}{1+21.81} \\approx 0.956\\)، فالخطأ نحو 0.044.'],
+  ['يكبر حتى يساوي الخطوة',false,'الجزء التناسبي ما زال يعمل ويقرّب الخرج من 1.']]},
+ ins:[{k:'P',l:'P',sw:true,v:1,on:'Gain (K<sub>p</sub> = 1): يعمل',off:'Gain (K<sub>p</sub>): صفر'},{k:'I',l:'I',sw:true,v:1,on:'Gain1 (K<sub>i</sub> = 0.1): يعمل',off:'Gain1 (K<sub>i</sub>): صفر'},{k:'D',l:'D',sw:true,v:1,on:'Gain2 (K<sub>d</sub> = 0.1): يعمل',off:'Gain2 (K<sub>d</sub>): صفر'}],
+ calc:(s,P,B)=>{const step=[{pts:[[0,1],[10,1]],col:'--live',dash:'5 4',w:1.6}];
+  if(!s.P&&!s.I)return {cls:'warn',plot:{xr:[0,10],yr:[0,1.4],xl:'t (s)',yl:'x',curves:step},msg:s.D?'الفرع التفاضلي وحده لا يكفي: لا يرى إلا تغيّر الخطأ، فإذا ثبت الخطأ لم يعطِ شيئاً، ولا يحمل الخرج عند قيمة.':'كل الفروع صفر: لا حاكم، فلا يتحرك المحرك.'};
+  const q=pidTF(s.P?1:0,s.I?0.1:0,s.D?0.1:0),r=tfStep(q.num,q.den,1,10),m=measure(r),pts=[];for(let i=0;i<=r.N;i+=20)pts.push([r.t[i],r.x[i]]);
+  return {facts:[['X<sub>0</sub> عند <span class="ltr">10 s</span>',DCML.fm(B,m.x0,3)],['الخطأ المستقر',s.I?'0':DCML.fm(B,1-m.xf,3),s.I?'hi':'bad'],['التعدي',m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0']],
+   plot:{xr:[0,10],yr:[0,1.4],xl:'t (s)',yl:'x',curves:step.concat([{pts,col:'--blue',w:2.6}])},
+   msg:(s.I?'الجزء التكاملي يعمل: الخطأ المستقر صفر'+(m.x0<0.995?'، لكن \\(K_i = 0.1\\) صغير فالاقتراب الأخير بطيء («ذيل»).':'.'):'بلا جزء تكاملي يبقى خطأ مستقر.')+(s.D&&s.P?' الجزء التفاضلي يخمد التعدي.':'')}}})}
    ]},
 
   {st:5,short:'تأثير Kp',title:'الجزء الأول: تأثير <span class="ltr">K<sub>p</sub></span>',ref:'ص 36',
@@ -1238,6 +1602,10 @@ B.lesson({
      ['التكاملي',true,'كما رأيت في الجزء الثاني: الخطأ صفر لكل قيم \\(K_i\\).'],
      ['التناسبي',false,'في الجزء الأول بقي خطأ مع كل قيم \\(K_p\\).'],
      ['التفاضلي',false,'في الجزء الثالث لم يتغير الخطأ المستقر مع \\(K_d\\).']]}},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'من الأجزاء الثلاثة التي جرّبتها: احكم على كل عبارة.',items:[
+ ['زيادة \\(K_p\\) وحدها تزيل الخطأ المستقر.',false,'تقلله ولا تزيله؛ بقي خطأ مع كل قيم \\(K_p\\) في الجزء الأول.'],
+ ['إضافة \\(K_i\\) تجعل الخطأ المستقر صفراً، و \\(K_i\\) الأكبر يصل أسرع بتعدٍّ.',true,'كما في الجزء الثاني.'],
+ ['زيادة \\(K_d\\) تغيّر الخرج المستقر.',false,'الخرج المستقر بقي نفسه لكل قيم \\(K_d\\) في الجزء الثالث.']]})},
     {tip:String.raw`${Q(1,'ما تأثير الجزء التناسبي من الحاكم PID على الاستجابة؟','زيادة \\(K_p\\) تسرّع الصعود (من 0.23 s إلى 0.017 s تقريباً) وتقلل الخطأ المستقر (0.314 ← 0.022) لكنه لا يزول، وتزيد التعدي (من صفر إلى نحو 30 %).')}${Q(2,'ما تأثير الجزء التناسبي التكاملي من الحاكم PID على الاستجابة؟','إضافة \\(K_i\\) تجعل الخطأ المستقر صفراً لكل القيم. \\(K_i\\) الصغير (0.05) يصل ببطء شديد، و\\(K_i\\) الكبير (0.5، 1) يصل أسرع لكن بتعدٍّ (نحو 8 % ثم 23 %).')}${Q(3,'ما تأثير الجزء التكاملي التفاضلي من الحاكم PID على الاستجابة؟','الجزء التفاضلي يرد على سرعة تغير الخطأ: يعطي دفعة قوية لحظة الخطوة فيقصر الصعود جداً، ولا يغير الخرج المستقر (يبقى 0.916 مع \\(K_p=0.5\\)). ومع الجزء التكاملي يحسّن الإخماد. لكن \\(K_d\\) الكبير يجعل إشارة التحكم نبضات كبيرة ويُبطئ الاقتراب الأخير («ذيل»).')}${Q(4,'ما تأثير الحاكم التناسبي التكاملي التفاضلي على إشارة الخطأ؟','يجعلها تصغر بسرعة (P و D) ثم تصل إلى الصفر في الحالة المستقرة (I)، مع تعدٍّ محدود إذا اختيرت المعاملات بتوازن.')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 
@@ -1355,7 +1723,14 @@ B.lesson({
      ['يقل إلى النصف',false,'الجهد يتناسب طردياً مع السرعة لا عكسياً.'],
      ['يتضاعف تقريباً',true,'«جهد مستمر متناسب مع السرعة»: ضعف السرعة = ضعف عدد النبضات = ضعف الجهد.'],
      ['لا يتغير',false,'لو لم يتغير لما استطاع الحاكم أن يعرف السرعة.']]}},
-    {tip:String.raw`<p>الهدفان الأخيران يذكران \(K_s\) و\(T_u\) و\(T_g\) وطريقة «شين وهرونس وريسويك» (Chien, Hrones, Reswick) دون شرح؛ شرحناها في المحطة الرابعة.</p>`}
+    {tip:String.raw`<p>الهدفان الأخيران يذكران \(K_s\) و\(T_u\) و\(T_g\) وطريقة «شين وهرونس وريسويك» (Chien, Hrones, Reswick) دون شرح؛ شرحناها في المحطة الرابعة.</p>`},
+    {title:'مختبر مصغّر: من الدوران إلى الجهد',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط حلقات السلسلة بترتيب حدوثها في لوحة Speed Control.',steps:[
+ ['المحرك يدور','كل شيء يبدأ من الدوران.'],
+ ['العدّاد RPM/TTL يعطي نبضات يزيد عددها مع السرعة','العدّاد يقرأ الدوران مباشرة، قبل أي تحويل.'],
+ ['المحوّل f/u يحوّل تردد النبضات إلى جهد','يحتاج النبضات أولاً ليحوّلها.'],
+ ['يظهر جهد مستمر \\(x_S\\) يتناسب مع السرعة','هذا الجهد ناتج التحويل.'],
+ ['الحاكم يقارن \\(x_S\\) بالقيمة المطلوبة \\(w\\)','الحاكم يحتاج الجهد جاهزاً ليقارنه.']],
+ done:'الجهد \\(x_S\\) «صورة» للسرعة يفهمها الحاكم: ضعف السرعة = ضعف الجهد.'})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة والمكونات',ref:'ص 40',
@@ -1370,7 +1745,11 @@ B.lesson({
      ['لأنه أقرب إلى المحركات الحقيقية في المصانع التي تدير حملاً',true,'المحرك المحمّل أثقل وأبطأ، فتظهر في استجابته المقادير \\(T_u\\) و\\(T_g\\) بوضوح.'],
      ['لأن محرك المروحة لا يدور',false,'محرك المروحة يدور، والكتاب يسمح باستعماله إذا لم يوجد غيره.'],
      ['لأن المولد يعطي إشارة الخطوة',false,'إشارة الخطوة من مولد الإشارات Function Generator؛ المولد هنا حمل على المحرك.']]}},
-    {add:String.raw`<p>التحكم الرقمي في السرعة موجود في كل مكان: مثبّت السرعة في السيارة، وسير المصانع، والمصاعد، والغسالات الحديثة؛ كلها تقيس السرعة وتصححها ببرنامج.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>التحكم الرقمي في السرعة موجود في كل مكان: مثبّت السرعة في السيارة، وسير المصانع، والمصاعد، والغسالات الحديثة؛ كلها تقيس السرعة وتصححها ببرنامج.</p>`,title:'من الواقع'},
+    {title:'تحقق سريع: أجهزة التجربة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 40).',items:[
+ ['يفضّل الكتاب محرك تيار مستمر محمّلاً ميكانيكياً مع مولد.',true,'«النظام الميكانيكي (محرك تيار مستمر محمل ميكانيكياً مع مولد)».'],
+ ['إذا لم يوجد المحرك المحمّل لا يمكن إجراء التجربة.',false,'«وإذا لم يكن موجوداً نكتفي بمحرك المروحة في اللوحة COM3LAB».'],
+ ['إشارة الخطوة تأتي من مولد الإشارات Function Generator.',true,'مولد الإشارات في القائمة؛ «المولد» المحمّل على المحرك حمل لا مصدر إشارة.']]})}
    ]},
 
   {st:3,short:'خطوات التجربة',title:'خطوات إجراء التجربة والتوصيل — الشكل <span class="ltr">(3-8)</span>',ref:'ص 40–41',
@@ -1411,7 +1790,18 @@ B.lesson({
      ['من لحظة الخطوة حتى يقطع المماس مستوى الخرج الابتدائي',true,'هذا تعريف \\(T_u\\) بطريقة المماس.'],
      ['بين قطع المماس للمستويين الابتدائي والنهائي',false,'هذا زمن التعويض \\(T_g\\).']]}},
     {tip:String.raw`<p>الكتاب يذكر الطريقة بالاسم فقط. هذه قيمها المعروفة في المراجع، للحاكم بالصيغة \(y = K_p\left[e + \frac{1}{T_i}\int e\,dt + T_d\frac{de}{dt}\right]\):</p>${CHR_TABLE}`,title:'قواعد شين وهرونس وريسويك (Chien, Hrones, Reswick)'},
-    {watch:String.raw`<p>الكتاب لا يذكر قيمة الخطوة ولا منحنى نموذجياً ولا معادلات حساب \(K_p\) و\(T_i\) و\(T_d\). القيم في الجدول أعلاه من المراجع، فاسأل المدرب أي صف يعتمده (بلا تعدٍّ أو بتعدٍّ 20 %).</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب لا يذكر قيمة الخطوة ولا منحنى نموذجياً ولا معادلات حساب \(K_p\) و\(T_i\) و\(T_d\). القيم في الجدول أعلاه من المراجع، فاسأل المدرب أي صف يعتمده (بلا تعدٍّ أو بتعدٍّ 20 %).</p>`,fix:true},
+    {title:'مختبر مصغّر: المماس، ثم معاملات الحاكم',widget:(el,B)=>DCML.lab(el,B,{intro:'استجابة وحدة السرعة لخطوة <span class="ltr">5 V</span> في الحلقة المفتوحة، والمماس عند نقطة الانعطاف. ثم اختر نوع الحاكم وصفّ الجدول لتحسب معاملاته من \\(K_s\\) و \\(T_u\\) و \\(T_g\\).',
+ predict:{q:'على منحنى المحرك، أيهما أطول: \\(T_u\\) أم \\(T_g\\)؟',opts:[
+  ['\\(T_u\\) أطول',false,'\\(T_u\\) الجزء البطيء في البداية فقط، وهو قصير.'],
+  ['\\(T_g\\) أطول بكثير',true,'\\(T_g\\) هو زمن الصعود الرئيس بميل المماس؛ والنسبة \\(T_u/T_g\\) الصغيرة تعني نظاماً سهل التحكم.'],
+  ['متساويان دائماً',false,'لا علاقة تجعلهما متساويين.']]},
+ ins:[{k:'ty',l:'نوع الحاكم',seg:[['P','P'],['PI','PI'],['PID','PID']],v:'PI'},{k:'os',l:'صف الجدول',seg:[[0,'بلا تعدٍّ (<span class="ltr">0 %</span>)'],[20,'تعدٍّ <span class="ltr">20 %</span>']],v:0}],
+ tp:{id:'u3-l5',defs:SP_DEFS()},
+ calc:(s,P,B)=>{const r=simLoop({plant:spPlant(P),Tw:spTw(P),w0:5,sat:[0,P.Um],ctrl:{type:'open'}}),id=identify(r),c=chrSet(id,s.ty,s.os);
+  return {pic:box(scopeSVG({r,ch:[{arr:r.w,col:'--live'},{arr:r.x,col:'--blue'}],tan:id.g}),560),
+   facts:[['K<sub>s</sub>',DCML.fm(B,id.Ks,3)],['T<sub>u</sub>',tF(id.Tu)+' s'],['T<sub>g</sub>',tF(id.Tg)+' s'],['T<sub>u</sub>/T<sub>g</sub>',DCML.fm(B,id.Tu/id.Tg,3)],['K<sub>p</sub>',DCML.fm(B,c.Kp,3),'hi'],['T<sub>i</sub>',c.Ti==null?'—':tF(c.Ti)+' s','hi'],['T<sub>d</sub>',c.Td==null?'—':tF(c.Td)+' s','hi']],
+   msg:'\\(K_p = c\\,\\frac{T_g}{K_s\\,T_u}\\) حيث \\(c\\) رقم صف الجدول، و \\(T_i\\) و \\(T_d\\) مضاعفات لـ \\(T_g\\) و \\(T_u\\) على الترتيب (جدول شين وهرونس وريسويك أعلاه، من المراجع لا من الكتاب).'}}})}
    ]},
 
   {st:5,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 41',
@@ -1426,6 +1816,18 @@ B.lesson({
      ['يصل إلى قيمة الدخل',false,'وحده لا يصلها إلا إذا كان \\(K_s = 1\\)؛ الوصول يحتاج حلقة مغلقة فيها جزء تكاملي.'],
      ['يصعد كلما زاد الزمن حتى يستقر',true,'منحنى حرف S يصعد مع الزمن ثم يستقر.'],
      ['يستجيب بسرعة لتغير الدخل',false,'يوجد تأخير \\(T_u\\)، فلا يستجيب فوراً.']]}},
+    {title:'مختبر مصغّر: ارفع \\(K_p\\) إلى قيمة عالية',widget:(el,B)=>DCML.lab(el,B,{intro:'الحاكم الرقمي بالجزء التناسبي وحده على وحدة السرعة، وخطوة <span class="ltr">5 V</span>. اختر \\(K_p\\) مضاعفاً لقيمة الجدول (P بلا تعدٍّ) وشاهد.',
+ predict:{q:'نرفع \\(K_p\\) إلى قيمة عالية جداً. ماذا تتوقع؟',opts:[
+  ['خرج أسرع بلا تعدٍّ',false,'السرعة تزيد في البداية، لكن التأخير يجعل الخرج يتجاوز.'],
+  ['تعدٍّ ثم تذبذب لا يتوقف',true,'مع التأخير \\(T_u\\) وزمن العيّنة يرد الحاكم متأخراً، فيكبر التجاوز حتى يصبح تذبذباً مستمراً.'],
+  ['يقل الخرج',false,'\\(K_p\\) الأكبر يرفع الخرج نحو المطلوب.']]},
+ ins:[{k:'k',l:'K<sub>p</sub> = قيمة الجدول × (أرقام تختارها أنت)',seg:[[1,'× 1'],[3,'× 3'],[6,'× 6'],[8,'× 8']],v:1}],
+ tp:{id:'u3-l5',defs:SP_DEFS()},
+ calc:(s,P,B)=>{const ro=simLoop({plant:spPlant(P),Tw:spTw(P),w0:5,sat:[0,P.Um],ctrl:{type:'open'}}),Kp=chrSet(identify(ro),'P',0).Kp*s.k;
+  const r=simLoop({plant:spPlant(P),Tw:spTw(P)*2,w0:5,sat:[0,P.Um],ctrl:{type:'digital',T0:P.T0,P:true,I:false,D:false,Kp}}),m=measure(r);
+  return {pic:box(scopeSVG({r,ch:[{arr:r.w,col:'--live'},{arr:r.x,col:'--blue'}]}),560),
+   facts:[['K<sub>p</sub>',DCML.fm(B,Kp,2),'hi'],['التعدي',m.osc?'تذبذب':m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0',m.osc?'bad':''],['t<sub>s</sub>',TSV(m)+(m.osc?'':' s')]],
+   cls:m.osc?'bad':'',msg:m.osc?'التذبذب لا يتوقف: النظام فقد استقراره، وإشارة التحكم تضرب حدّيها.':s.k>1?'الخرج أقرب إلى 5 V، لكن التعدي ظاهر.':'قيمة الجدول: خطأ مستقر واضح (P وحده) وتعدٍّ صغير.'}}})},
     {tip:String.raw`${Q(1,'اختر العبارة الصحيحة التي تنطبق على منحنى خواص النظام.','في الحلقة المفتوحة (استجابة المحرك وحده) العبارة الأنسب (ب): الخرج يصعد مع الزمن حتى يستقر، ولا يصل إلى قيمة الدخل لأن \\(K_s \\ne 1\\)، ولا يستجيب فوراً (يوجد تأخير \\(T_u\\)). أما في الحلقة المغلقة مع حاكم فيه جزء تكاملي فيصل الخرج إلى قيمة الدخل، أي (أ).')}${Q(2,'ماذا يحدث للنظام في حالة زيادة المعامل \\(K_p\\) إلى قيمة عالية؟','تكبر إشارة التحكم فيسرع الصعود في البداية، لكن يزيد التعدي، ومع التأخير \\(T_u\\) وزمن العيّنة \\(T_0\\) يبدأ الخرج يتذبذب حول القيمة المطلوبة، وعند قيمة عالية جداً يصبح التذبذب مستمراً (النظام غير مستقر)، وتصل إشارة التحكم إلى حدّيها.')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 
@@ -1530,7 +1932,16 @@ B.lesson({
     {predict:{q:'مقارنة بالمحرك في التجربة السابقة، كيف تتوقع استجابة وحدة الإضاءة؟',opts:[
      ['أبطأ بكثير',false,'الضوء لا قصور ذاتي له مثل العضو الدوار.'],
      ['أسرع بكثير، بلا تأخير يُذكر',true,'ثابتها الزمني أجزاء من الثانية، و\\(T_u\\) قريب من الصفر.'],
-     ['مثلها تماماً',false,'المحرك فيه كتلة تدور فيحتاج وقتاً؛ الضوء يتغير فوراً تقريباً.']]}}
+     ['مثلها تماماً',false,'المحرك فيه كتلة تدور فيحتاج وقتاً؛ الضوء يتغير فوراً تقريباً.']]}},
+    {title:'مختبر مصغّر: ماذا تعني أرقام وحدة الإضاءة؟',widget:(el,B)=>DCML.cases(el,B,{intro:'وحدة الإضاءة تقريباً من الرتبة الأولى بلا تأخير يُذكر: \\(T_u\\) قريب من الصفر و \\(T_g \\approx T\\).',cases:[
+ {q:'كيف تكون النسبة \\(T_u/T_g\\) لوحدة الإضاءة؟',opts:[
+  ['كبيرة، فالتحكم صعب',false,'\\(T_u\\) قريب من الصفر، فالنسبة صغيرة لا كبيرة.'],
+  ['صغيرة جداً، فالنظام سهل التحكم',true,'كلما صغرت \\(T_u/T_g\\) كان النظام أسهل (المحطة الرابعة في التجربة الخامسة).'],
+  ['تساوي 1',false,'لا: \\(T_u\\) أصغر بكثير من \\(T_g\\).']]},
+ {q:'زاد الضوء الساقط على الترانزستور الضوئي. ماذا يحدث للجهد \\(x_L\\)؟',opts:[
+  ['يزيد',true,'جهد مستمر متناسب مع الإضاءة: ضوء أكثر = جهد أكبر.'],
+  ['ينقص',false,'التناسب طردي في نص الكتاب.'],
+  ['لا يتغير',false,'لو لم يتغير لما عرف الحاكم شدة الإضاءة.']]}]})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة والمكونات',ref:'ص 42',
@@ -1545,7 +1956,13 @@ B.lesson({
      ['مولد الإشارات',false,'مولد الإشارات موجود في التجربتين ويعطي إشارة الخطوة.'],
      ['وحدة الإضاءة Light Control Unit',true,'النظام المتحكم فيه هنا الإضاءة بدل السرعة.'],
      ['راسم الذبذبات',false,'راسم الذبذبات للقياس في التجربتين.']]}},
-    {add:String.raw`<p>التحكم في الإضاءة تراه في شاشات الجوال التي تغيّر سطوعها تلقائياً، وفي إنارة المكاتب الذكية التي تخفّض المصابيح عندما يدخل ضوء الشمس: حساس ضوئي يقيس، وحاكم يصحح.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>التحكم في الإضاءة تراه في شاشات الجوال التي تغيّر سطوعها تلقائياً، وفي إنارة المكاتب الذكية التي تخفّض المصابيح عندما يدخل ضوء الشمس: حساس ضوئي يقيس، وحاكم يصحح.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: الخامسة أم السادسة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'قارن قائمتي الأجهزة (ص 40 وص 42): لكل جهاز اختر في أي تجربة يُستعمل.',cats:['الخامسة فقط','السادسة فقط','الاثنتان'],items:[
+ ['وحدة السرعة Speed Control Unit',0,'التجربة الخامسة تتحكم في السرعة.'],
+ ['وحدة الإضاءة Light Control Unit',1,'هذه التجربة تتحكم في الإضاءة.'],
+ ['جهاز راسم ذبذبات Oscilloscope',2,'في القائمتين.'],
+ ['مولد إشارات Function Generator',2,'في القائمتين، ويعطي إشارة الخطوة.'],
+ ['محرك محمّل ميكانيكياً مع مولد',0,'النظام الميكانيكي في التجربة الخامسة فقط.']]})}
    ]},
 
   {st:3,short:'خطوات التجربة',title:'خطوات إجراء التجربة والتوصيل — الشكل <span class="ltr">(3-9)</span>',ref:'ص 42–43',
@@ -1561,7 +1978,18 @@ B.lesson({
      ['\\(y_L\\)',false,'\\(y_L\\) دخل الثنائي، ويأتيه خرج الحاكم \\(y\\).'],
      ['\\(x\\) في الحاكم الرقمي (وكذلك \\(Y_2\\))',true,'هذه التغذية الراجعة التي تغلق الحلقة.'],
      ['\\(w\\)',false,'\\(w\\) القيمة المطلوبة.']]}},
-    {watch:String.raw`<p>كما في التجربة الخامسة: النص يقول «الخرج على القناة \(Y_1\)»، والشكل يوصل \(Y_1\) بخرج الحاكم و\(Y_2\) بـ \(x_L\). تأكد من التوصيل عند المدرب.</p>`,fix:true}
+    {watch:String.raw`<p>كما في التجربة الخامسة: النص يقول «الخرج على القناة \(Y_1\)»، والشكل يوصل \(Y_1\) بخرج الحاكم و\(Y_2\) بـ \(x_L\). تأكد من التوصيل عند المدرب.</p>`,fix:true},
+    {title:'مختبر مصغّر: كبّر زمن العيّنة \\(T_0\\)',widget:(el,B)=>DCML.lab(el,B,{intro:'الحاكم الرقمي PI على وحدة الإضاءة بقيم المختبر، وخطوة <span class="ltr">5 V</span>. كبّر زمن العيّنة (أرقام تختارها أنت) حتى يقترب من الثابت الزمني للإضاءة.',
+ predict:{q:'كبّرنا \\(T_0\\) حتى صار قريباً من الثابت الزمني للإضاءة أو أكبر. ماذا يحدث؟',opts:[
+  ['تصبح الاستجابة أسرع',false,'الحاكم يقرأ ويصحح أقل مرات، فلا يسرع.'],
+  ['لا يتغير شيء',false,'التأخير الذي يضيفه الحاكم يصبح مهماً عندما يقترب من زمن النظام.'],
+  ['يظهر تعدٍّ، ثم تذبذب إذا كبر أكثر',true,'الحاكم يتأخر زمن عيّنة كاملاً قبل أن يرى التغير، فيصحح متأخراً ويتجاوز.']]},
+ ins:[{k:'f',l:'زمن العيّنة T<sub>0</sub>',seg:[[1,'قيمة المختبر'],[20,'× 20'],[30,'× 30']],v:1}],
+ tp:{id:'u3-l6',defs:LT_DEFS()},
+ calc:(s,P,B)=>{const T0=P.T0*s.f,r=simLoop({plant:ltPlant(P),Tw:ltBase(P)*4,w0:5,sat:[0,P.Um],ctrl:{type:'digital',T0,P:true,I:true,D:false,Kp:P.Kp0,Ti:P.Ti0}}),m=measure(r);
+  return {pic:box(scopeSVG({r,ch:[{arr:r.w,col:'--live'},{arr:r.x,col:'--blue'},{arr:r.u,col:'--stop'}]}),560),
+   facts:[['T<sub>0</sub>',tF(T0)+' s','hi'],['T للإضاءة',tF(P.T)+' s'],['التعدي',m.osc?'تذبذب':m.Mp>0?DCML.fm(B,m.MpP,1)+' %':'0',m.osc||m.Mp>0?'bad':'']],
+   cls:m.osc?'bad':'',msg:'الأحمر = إشارة التحكم \\(y\\): درجات سلّم عرض كل درجة \\(T_0\\). '+(m.osc?'الدرجات صارت أعرض من زمن النظام نفسه، فالحلقة تتذبذب.':m.Mp>0?'الحاكم يصحح متأخراً فيتجاوز الخرج.':'\\(T_0\\) صغير مقارنة بزمن الإضاءة، فيتصرف الحاكم تقريباً مثل التماثلي.')}}})}
    ]},
 
   {st:4,short:'تسجيل النتائج',title:'تسجيل النتائج: P ثم I ثم PI',ref:'ص 43',
@@ -1577,7 +2005,18 @@ B.lesson({
      ['P فقط',false,'سريع، لكن يبقى خطأ مستقر.'],
      ['I فقط',false,'يصل إلى المطلوب، لكنه أبطأ.'],
      ['PI',true,'الجزء P يعطي السرعة، والجزء I يزيل الخطأ.']]}},
-    {watch:String.raw`<p>الكتاب لا يذكر قيمة الخطوة ولا قيم \(K_p\) و\(T_i\) لهذه الرسمات. اسأل المدرب عن القيم المعتمدة، واكتبها بجانب كل منحنى ترسمه.</p>`,fix:true}
+    {watch:String.raw`<p>الكتاب لا يذكر قيمة الخطوة ولا قيم \(K_p\) و\(T_i\) لهذه الرسمات. اسأل المدرب عن القيم المعتمدة، واكتبها بجانب كل منحنى ترسمه.</p>`,fix:true},
+    {title:'مختبر مصغّر: الحاكم P وحده — خطأ ثم تذبذب',widget:(el,B)=>DCML.lab(el,B,{intro:'الحاكم الرقمي بالجزء التناسبي وحده على وحدة الإضاءة، وخطوة <span class="ltr">5 V</span>. اختر \\(K_p\\) (أرقام تختارها أنت) وقارن الخطأ المقاس بالقانون \\(e = \\frac{w}{1+K_s K_p}\\).',
+ predict:{q:'نكبّر \\(K_p\\) مع الحاكم P وحده. ماذا يحدث للخطأ المستقر؟',opts:[
+  ['يصبح صفراً',false,'P وحده يترك خطأ دائماً؛ إزالته عمل الجزء التكاملي.'],
+  ['يصغر، لكن \\(K_p\\) الكبير جداً يسبب تذبذباً',true,'\\(1+K_sK_p\\) يكبر فيصغر الخطأ، وتأخر الحاكم الرقمي يجعل الكبير جداً يتذبذب.'],
+  ['يكبر',false,'\\(K_p\\) في المقام، فزيادته تصغّر الخطأ.']]},
+ ins:[{k:'Kp',l:'K<sub>p</sub> (أرقام تختارها أنت)',seg:[[1,'1'],[3,'3'],[10,'10'],[30,'30']],v:1}],
+ tp:{id:'u3-l6',defs:LT_DEFS()},
+ calc:(s,P,B)=>{const r=simLoop({plant:ltPlant(P),Tw:ltBase(P)*2,w0:5,sat:[0,P.Um],ctrl:{type:'digital',T0:P.T0,P:true,I:false,D:false,Kp:s.Kp}}),m=measure(r);
+  return {pic:box(scopeSVG({r,ch:[{arr:r.w,col:'--live'},{arr:r.x,col:'--blue'}]}),560),
+   facts:[['الخرج المستقر',m.osc?'يتذبذب':DCML.fm(B,m.xf,3)+' V'],['الخطأ المقاس',m.osc?'—':DCML.fm(B,5-m.xf,3)+' V'],['w/(1+K<sub>s</sub>K<sub>p</sub>)',DCML.fm(B,5/(1+P.Ks*s.Kp),3)+' V','hi']],
+   cls:m.osc?'bad':'',msg:m.osc?'التذبذب لا يتوقف: الإضاءة «تومض» بين حدّي إشارة التحكم.':'الخطأ المقاس يطابق القانون: يصغر مع \\(K_p\\) ولا ينعدم.'}}})}
    ]},
 
   {st:5,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 43',
@@ -1592,6 +2031,10 @@ B.lesson({
      ['يصل إلى قيمة الدخل',false,'هذا يتوقف على الحاكم: مع P وحده لا يصلها.'],
      ['يصعد كلما زاد الزمن',false,'يصعد ثم يستقر بسرعة كبيرة؛ هذه العبارة تناسب النظام البطيء (المحرك).'],
      ['يستجيب بسرعة لتغير إشارة الدخل',true,'ثابته الزمني صغير جداً، فيتبع الدخل فوراً تقريباً.']]}},
+    {title:'تحقق سريع: قبل أن تفتح الإجابات',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة عن نظام الإضاءة، ثم قارن بالإجابات المقترحة تحت.',items:[
+ ['نظام الإضاءة يستجيب بسرعة كبيرة لتغير إشارة الدخل.',true,'ثابته الزمني صغير جداً.'],
+ ['مع الحاكم P وحده يصل الخرج إلى قيمة الدخل تماماً.',false,'يبقى خطأ \\(e = \\frac{w}{1+K_sK_p}\\)؛ الوصول التام يحتاج جزءاً تكاملياً.'],
+ ['\\(K_p\\) العالي جداً قد يجعل الإضاءة تتذبذب.',true,'بسبب تأخر الحاكم الرقمي زمن عيّنة واحداً.']]})},
     {tip:String.raw`${Q(1,'اختر العبارة الصحيحة التي تنطبق على منحنى خواص النظام.','لنظام الإضاءة (ج): يستجيب بسرعة كبيرة لأن ثابته الزمني صغير جداً. ومع حاكم فيه جزء تكاملي (I أو PI) يصل أيضاً إلى قيمة الدخل (أ)، أما مع P وحده فلا يصلها.')}${Q(2,'ماذا يحدث للنظام في حالة زيادة المعامل \\(K_p\\) إلى قيمة عالية؟','يقل الخطأ المستقر مع P، لكن بسبب تأخر الحاكم الرقمي زمن عيّنة واحداً يبدأ الخرج يتذبذب، وعند قيمة عالية جداً يصبح التذبذب مستمراً بين حدي إشارة التحكم (الإضاءة تومض).')}`,title:'إجابات مقترحة (افتح كل سؤال)'}
    ]},
 

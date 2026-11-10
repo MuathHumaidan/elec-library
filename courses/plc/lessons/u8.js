@@ -237,7 +237,228 @@ B.lesson({
  title:'فكرة عمل الغسالة الكهربائية وجدول المداخل والمخارج',
  summary:'كيف تعمل الغسالة: تعبئة بالمضخة Y1 حتى LS1، ثم دوران المحرك يميناً ويساراً بعدد دورات يحدده العداد، ثم التفريغ بالمضخة Y2 حتى LS2؛ وجدول توزيع المداخل والمخارج على الـ PLC.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,
+  /*PLCML-BEGIN*/(window.PLCML=window.PLCML||(function(){
+/* «مختبر مصغّر» لشبكة PLC — يكمّل DCML (يستعمل أنماطه نفسها): تبدّل المداخل وتشاهد الشبكة والمخارج.
+   o={intro, prog:[شبكات STL]|()=>[…], run:[أرقام الشبكات التي تُنفَّذ], show:[أرقام الشبكات المرسومة], view:'lad'|'fbd'|'stl', names:{عنوان:رمز},
+      ins:[{a:'I0.1', l:'نص', push:true, en:(P)=>متاح؟} | {a, on:'نص عند 1', off:'نص عند 0', v:0|1}],  (عنوان T يُضبط خرجه مباشرة)
+      words:[{k:'MW20', l, min, max, step, v}], time:[[ثوانٍ, 'نص الزر']], outs:[[عنوان, 'اسم', (P)=>نص اختياري]],
+      predict:{q, opts:[[نص, صحيح؟, السبب]]}, pic:(P,s)=>svg بدل رسم الشبكات, msg:(P,s,t)=>html, note:'html'} */
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const ensure=B=>{if(!document.getElementById('dcml-css'))try{DCML.tf(document.createElement('div'),B,{items:[]})}catch(e){}};
+const bd=x=>String(x).replace(/<span class="ltr">(.*?)<\/span>/g,'<bdi dir="ltr">$1</bdi>');
+const mmss=x=>{x=Math.max(0,Math.round(x));const m=Math.floor(x/60),s=x%60;return m+':'+String(s).padStart(2,'0')};
+function net(el,B,o){ensure(B);el.classList.add('ml');
+ const prog=typeof o.prog==='function'?o.prog():o.prog;const run=o.run||prog.map((_,i)=>i),show=o.show||run,view=o.view||'lad',names=o.names||{};
+ let P,t=0;const s={};
+ const put=(a,v)=>{if(a[0]==='T'){const m=P.timer(a);m.q=v?1:0;m.run=0}else P.set(a,v)};
+ const apply=()=>{o.ins.forEach(i=>{if(!i.push)put(i.a,s[i.a])});(o.words||[]).forEach(w=>{P.words[w.k]=s['w:'+w.k]})};
+ const scan=dt=>{apply();P.dt=dt;run.forEach(i=>P.runNet(i));t+=dt};
+ const reset=()=>{P=B.createPLC(prog);t=0;o.ins.forEach(i=>{s[i.a]=i.push?0:(i.v?1:0)});(o.words||[]).forEach(w=>{s['w:'+w.k]=w.v});if(o.init)o.init(P);scan(0.05);scan(0.05);t=0};
+ let h=o.intro?`<p class="ml-in">${o.intro}</p>`:'';
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}"><div class="ml-lbl">${o.inl||'اضغط لتغيير المداخل:'}</div><div class="ml-row" data-ins>${o.ins.map((i,k)=>`<button type="button" class="ml-b" data-k="${k}"></button>`).join('')}</div>`;
+ h+=(o.words||[]).map(w=>`<label class="ml-sl"><span class="ml-h"><span>${w.l}</span><b data-wv="${w.k}"></b></span><input type="range" data-w="${w.k}" min="${w.min}" max="${w.max}" step="${w.step||1}" value="${w.v}" aria-label="${String(w.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=o.time?`<div class="ml-row">${o.time.map(([d,l],k)=>`<button type="button" class="ml-b" data-t="${k}">${l}</button>`).join('')}</div>`:'';
+ h+=`<div class="ml-facts" data-outs></div><div data-net></div><div class="ml-fb" data-msg></div>${o.note?`<p class="ml-ill">${o.note}</p>`:''}<div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div></div>`;
+ el.innerHTML=h;try{B.math(el)}catch(e){}
+ const draw=()=>{
+  qa(el,'[data-ins] [data-k]').forEach(b=>{const i=o.ins[+b.dataset.k];if(i.push){b.innerHTML=i.l;b.disabled=!!(i.en&&!i.en(P));return}const v=s[i.a];b.setAttribute('aria-pressed',String(!!v));b.innerHTML=(v?i.on:i.off)||`${i.l} = <span class="ltr">${v}</span>`});
+  (o.words||[]).forEach(w=>{q(el,`[data-wv="${w.k}"]`).textContent=s['w:'+w.k]});
+  q(el,'[data-outs]').innerHTML=o.outs.map(([a,l,f])=>{const v=P.get(a),tm=a[0]==='T'&&P.tim[a];const rem=tm&&tm.run?` <small>(باقٍ <span class="ltr">${mmss(tm.tv-tm.el)}</span>)</small>`:'';
+   return `<div class="${!f&&v?'hi':''}"><span>${bd(l+rem)}</span><b>${f?f(P):v}</b></div>`}).join('')+(o.time?`<div><span>الزمن منذ البداية</span><b>${mmss(t)}</b></div>`:'');
+  q(el,'[data-net]').innerHTML=(o.pic?`<div class="svgbox" style="margin-top:10px">${o.pic(P,s)}</div>`:'')+show.map(i=>{const n=P.nets[i];const body=view==='stl'?`<div class="tablebox">${B.stlTable(n,P)}</div>`:`<div class="svgbox fixed">${view==='fbd'?B.fbdNetwork(n,P,names):B.ladNetwork(n,P,names)}</div>`;
+   return `<div class="net" style="margin-top:10px"><header><h3>${n.title}</h3></header>${body}</div>`}).join('');
+  const m=q(el,'[data-msg]');m.innerHTML=o.msg?o.msg(P,s,t)||'':'';try{if(m.innerHTML)B.math(m)}catch(e){}};
+ qa(el,'[data-ins] [data-k]').forEach(b=>b.onclick=()=>{const i=o.ins[+b.dataset.k];
+  if(i.push){put(i.a,1);scan(0.1);scan(0.1);put(i.a,0);scan(0.1);scan(0.1)}else{s[i.a]=s[i.a]?0:1;scan(0.1);scan(0.1)}draw()});
+ qa(el,'input[data-w]').forEach(inp=>inp.oninput=()=>{s['w:'+inp.dataset.w]=+inp.value;scan(0.1);draw()});
+ qa(el,'[data-t]').forEach(b=>b.onclick=()=>{const d=o.time[+b.dataset.t][0];for(let n=Math.round(d/0.1);n>0;n--)scan(0.1);draw()});
+ q(el,'[data-rs]').onclick=()=>{reset();qa(el,'input[data-w]').forEach(inp=>inp.value=s['w:'+inp.dataset.w]);draw()};
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]'),body=q(el,'.ml-body');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;try{B.math(fb)}catch(e){}
+   body.classList.remove('ml-lock');q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ reset();draw();return {P:()=>P,draw}}
+return {net,mmss};
+})())/*PLCML-END*/,{intro:true}),
 
   {st:1,short:'الجدارة والأهداف',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 131',
    q:'غسالة الملابس في بيتك تملأ الحوض وتغسل وتفرّغ وحدها… هل يمكن أن تكتب أنت البرنامج الذي يديرها؟',
@@ -257,7 +478,11 @@ B.lesson({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج. / حاسب آلي. / جهاز عرض (داتا شو). / سبورة / كراسة الطالب. / قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 131'},
     {tip:String.raw`<p>هذه الوحدة <b>تطبيق</b>: لن تتعلم أوامر جديدة كثيرة، بل تجمع ما تعرفه (التلامسات، التعويض الذاتي، المزمنات، العداد، المقارنة) في برنامج واحد لآلة حقيقية. أولاً تفهم كيف تعمل الغسالة، ثم تقرأ برنامجها شبكة شبكة.</p>`,title:'الوحدة في سطرين'},
-    {watch:String.raw`<p>رأس هذه الصفحة في الكتاب مطبوع عليه «الوحدة التاسعة — التطبيق على المصعد الكهربائي باستخدام مفاتيح نهاية المشوار»، وهو منسوخ من الوحدة التالية. الصفحة تخص وحدة الغسالة.</p>`,fix:true}
+    {watch:String.raw`<p>رأس هذه الصفحة في الكتاب مطبوع عليه «الوحدة التاسعة — التطبيق على المصعد الكهربائي باستخدام مفاتيح نهاية المشوار»، وهو منسوخ من الوحدة التالية. الصفحة تخص وحدة الغسالة.</p>`,fix:true},
+    {title:'تحقق سريع: جدارة الوحدة وأهدافها',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب صفحة الجدارة والأهداف (ص 131).',items:[
+ ['للوحدة هدفان: أن تعرف طريقة عمل الغسالة، وأن تكتب برنامج تشغيلها.',true,'هذان هما الهدفان المذكوران في الكتاب، بالترتيب: الفكرة أولاً ثم البرنامج.'],
+ ['مستوى الأداء المطلوب في هذه الجدارة 50٪.',false,'الكتاب يطلب إتقان الجدارة بنسبة 100٪.'],
+ ['الوقت المتوقع للتدريب على الوحدة ساعتان.',true,'هكذا جاء في «الوقت المتوقع للتدريب».']]})}
    ]},
 
   {st:2,short:'محتويات الوحدة',title:'محتويات الوحدة: الفكرة ثم البرنامج',ref:'ص 132',
@@ -273,7 +498,11 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>ستقرأ البرنامج نفسه ثلاث مرات: بالمخطط السلمي <span class="ltr">LAD</span> أولاً (الدرسان الثاني والثالث)، ثم بالبوابات <span class="ltr">FBD</span> وبقائمة الإجراءات <span class="ltr">STL</span> (الدرس الرابع). المنطق واحد في اللغات الثلاث؛ الذي يتغير طريقة الكتابة فقط.</p>`,title:'خريطة الدروس'},
-    {watch:String.raw`<p>عنوان الوحدة على الغلاف «التطبيق على الغسالة الكهربائية»، وفي الصفحة الداخلية (ص 132) «تطبيق على الغسالة الكهربائية باستخدام مفاتيح تحديد المستوى». العنوانان لموضوع واحد.</p>`,fix:true}
+    {watch:String.raw`<p>عنوان الوحدة على الغلاف «التطبيق على الغسالة الكهربائية»، وفي الصفحة الداخلية (ص 132) «تطبيق على الغسالة الكهربائية باستخدام مفاتيح تحديد المستوى». العنوانان لموضوع واحد.</p>`,fix:true},
+    {title:'تحقق سريع: محتويات الوحدة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب محتويات الوحدة (ص 132).',items:[
+ [String.raw`برنامج الغسالة مكتوب في الوحدة بثلاث لغات: <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span>.`,true,'«ثانيا: كتابة برنامج عمل الغسالة … باللغات الثلاثة».'],
+ ['كل لغة في الوحدة تعطي برنامجاً بمنطق مختلف عن الأخرى.',false,'البرنامج واحد؛ الذي يتغير طريقة الكتابة فقط، كما ستقارن في الدرس الرابع.'],
+ ['تبدأ الوحدة بفكرة عمل الغسالة قبل كتابة البرنامج.',true,'«أولا: فكرة عمل الغسالة الكهربائية» ثم «ثانيا: كتابة البرنامج».']]})}
    ]},
 
   {st:3,short:'فكرة العمل',title:'أولاً: فكرة عمل الغسالة الكهربائية',ref:'ص 133',
@@ -409,7 +638,11 @@ B.lesson({
    ],
    body:[
     {tip:String.raw`<p>البرنامج مقسّم إلى شبكات <span class="ltr">(Network)</span>، كل شبكة تقرّر شيئاً واحداً: مخرجاً أو مزمناً أو عداداً. الـ PLC يقرأ الشبكات بالترتيب من 1 إلى 11 ثم يعيد. في هذا الدرس الشبكات 1–7: التعبئة، ثم الدوران يميناً ويساراً بالمزمنات. والشبكات 8–11 (العداد والتفريغ) في الدرس التالي.</p>`,title:'كيف تقرأ البرنامج؟'},
-    {tip:String.raw`<p>في عنوان القسم: «دالة التخزين مع دالة الإلغاء والإبقاء» يعني التعويض الذاتي (الإبقاء) وتلامسات الفصل (الإلغاء) التي تعرفها من دوائر التحكم، ثم أُضيفت إليها المزمنات والعداد.</p>`,title:'ماذا يعني العنوان؟'}
+    {tip:String.raw`<p>في عنوان القسم: «دالة التخزين مع دالة الإلغاء والإبقاء» يعني التعويض الذاتي (الإبقاء) وتلامسات الفصل (الإلغاء) التي تعرفها من دوائر التحكم، ثم أُضيفت إليها المزمنات والعداد.</p>`,title:'ماذا يعني العنوان؟'},
+    {title:'مختبر مصغّر: في أي شبكة تبحث؟',widget:(el,B)=>DCML.cases(el,B,{intro:'كل شبكة تقرّر شيئاً واحداً. اختر الشبكة التي تجيب عن كل سؤال.',cases:[
+ {q:String.raw`متى تقف مضخة الدخول <span class="ltr">Y1</span>؟`,opts:[[String.raw`<span class="ltr">Network 1</span>`,true,String.raw`<span class="ltr">Network 1 : Inlet Pump</span> هي الشبكة التي ملفها <span class="ltr">Q5.1</span>، وفيها التلامس المغلق <span class="ltr">LS1</span> الذي يقطعها.`],[String.raw`<span class="ltr">Network 2</span>`,false,String.raw`<span class="ltr">Network 2</span> ملفها <span class="ltr">K1</span> (المحرك يميناً).`],[String.raw`<span class="ltr">Network 10</span>`,false,String.raw`<span class="ltr">Network 10</span> لمضخة السحب <span class="ltr">Y2</span>.`]]},
+ {q:String.raw`كم دقيقة يدور المحرك يساراً؟`,opts:[[String.raw`<span class="ltr">Network 4</span>`,false,String.raw`<span class="ltr">Network 4</span> تقرّر متى يعمل <span class="ltr">K2</span>، لكن الزمن مكتوب في المزمن.`],[String.raw`<span class="ltr">Network 5</span>`,true,String.raw`المزمن <span class="ltr">T2</span> في <span class="ltr">Network 5</span> زمنه <span class="ltr mono">S5T#1M</span>، وانتهاؤه يفصل <span class="ltr">K2</span>.`],[String.raw`<span class="ltr">Network 7</span>`,false,String.raw`<span class="ltr">Network 7</span> نبضة <span class="ltr">T4</span> مدتها ثانية، تلغي <span class="ltr">T2</span>.`]]},
+ {q:'كم مرة يتكرر الدوران قبل التفريغ؟',opts:[[String.raw`<span class="ltr">Network 3</span>`,false,String.raw`<span class="ltr">Network 3</span> مزمن زمن اليمين <span class="ltr">T1</span>.`],[String.raw`<span class="ltr">Network 9</span>`,false,String.raw`<span class="ltr">Network 9</span> تثبّت علَم التفريغ <span class="ltr">M0.2</span>.`],[String.raw`<span class="ltr">Network 8</span>`,true,String.raw`العداد التنازلي <span class="ltr">C1</span> في <span class="ltr">Network 8</span> يُضبط على <span class="ltr mono">C#5</span> وينقص مع كل بداية يمين.`]]}]})}
    ]},
 
   {st:2,short:'Network 1',title:'<span class="ltr">Network 1 : Inlet Pump</span> — مضخة الدخول',ref:'ص 135',
@@ -425,7 +658,18 @@ B.lesson({
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 1 : Inlet Pump'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[0],P,nm)+'</div></div>'})(),ref:'ص 135'},
     {tip:String.raw`<p>اقرأ السطر من اليسار: <span class="ltr">Y1</span> تعمل إذا كان <span class="ltr">S0</span> <b>غير</b> مضغوط، <b>و</b> (<span class="ltr">S1</span> مضغوط <b>أو</b> <span class="ltr">Y1</span> تعمل أصلاً)، <b>و</b> الماء <b>لم</b> يصل إلى <span class="ltr">LS1</span>.</p>`,title:'اقرأ الشبكة جملةً'},
-    {watch:String.raw`<p>الضغط على <span class="ltr">S1</span> والحوض ممتلئ لا يشغّل <span class="ltr">Y1</span>، لأن <span class="ltr">LS1</span> يبقى <span class="ltr">1</span> ما دام الماء عند المستوى الأعلى.</p>`}
+    {watch:String.raw`<p>الضغط على <span class="ltr">S1</span> والحوض ممتلئ لا يشغّل <span class="ltr">Y1</span>، لأن <span class="ltr">LS1</span> يبقى <span class="ltr">1</span> ما دام الماء عند المستوى الأعلى.</p>`},
+    {title:'مختبر مصغّر: شغّل Network 1',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`الشبكة وحدها. اضغط <span class="ltr">S1</span>، ثم غيّر حالة <span class="ltr">LS1</span> كأن الماء وصل، وراقب <span class="ltr">Y1</span>.`,
+ predict:{q:String.raw`ضغطت <span class="ltr">S1</span> ثم رفعت إصبعك، والماء لم يصل بعد. ماذا تفعل <span class="ltr">Y1</span>؟`,opts:[
+  [String.raw`تقف فوراً لأن <span class="ltr">S1</span> عاد إلى <span class="ltr">0</span>`,false,'هذا يحدث لو لم يكن في الشبكة تعويض ذاتي.'],
+  [String.raw`تستمر، لأن تلامس <span class="ltr">Q5.1</span> بالتوازي مع <span class="ltr">S1</span> يمسكها`,true,String.raw`الفرع <span class="ltr mono">O Q 5.1</span> يمرّر ما دامت <span class="ltr">Y1</span> تعمل، حتى يصل الماء إلى <span class="ltr">LS1</span> أو يُضغط <span class="ltr">S0</span>.`],
+  ['تعمل وتقف بالتناوب',false,'لا يوجد في الشبكة مزمن؛ الحالة ثابتة ما لم يتغير مدخل.']]},
+ prog:()=>washProgram().slice(0,1),names:{'I0.0':'S0','I0.1':'S1','I1.1':'LS1','Q5.1':'Y1'},
+ ins:[{a:'I0.1',l:String.raw`اضغط <span class="ltr">S1</span> واتركه`,push:true},{a:'I0.0',l:String.raw`اضغط <span class="ltr">S0</span> واتركه`,push:true},
+  {a:'I1.1',on:String.raw`الماء عند <span class="ltr">LS1</span> (<span class="ltr">I1.1 = 1</span>)`,off:String.raw`الماء تحت <span class="ltr">LS1</span> (<span class="ltr">I1.1 = 0</span>)`}],
+ outs:[['Q5.1',String.raw`مضخة الدخول <span class="ltr">Y1</span>`]],
+ msg:(P,s)=>P.get('Q5.1')?String.raw`<span class="ltr">Y1</span> تعمل وتمسك نفسها. غيّر <span class="ltr">LS1</span> لتراها تقف.`:s['I1.1']?String.raw`الحوض ممتلئ: التلامس المغلق <span class="ltr">LS1</span> مفتوح، فلا تعمل <span class="ltr">Y1</span> حتى لو ضغطت <span class="ltr">S1</span>.`:String.raw`<span class="ltr">Y1</span> متوقفة. اضغط <span class="ltr">S1</span>.`})}
    ]},
 
   {st:3,short:'Network 2',title:'<span class="ltr">Network 2 : 1st Direction</span> — المحرك يميناً',ref:'ص 135',
@@ -442,7 +686,21 @@ B.lesson({
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 2 :1st Direction'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[1],P,nm)+'</div></div>'})(),ref:'ص 135'},
     {tip:String.raw`<ul><li><b><span class="ltr">I1.1</span> (<span class="ltr">LS1</span>):</b> وصول الماء يبدأ الدوران يميناً أول مرة.</li><li><b><span class="ltr">T2</span>:</b> انتهاء زمن اليسار يعيد المحرك يميناً.</li><li><b><span class="ltr">Q4.1</span>:</b> تعويض ذاتي.</li><li><b><span class="ltr">M0.1</span>:</b> خرج العداد؛ يمنع الدوران بعد انتهاء العد.</li><li><b><span class="ltr">Q4.2</span> مغلق:</b> تعشيق — لا يعمل الاتجاهان معاً.</li><li><b><span class="ltr">T1</span> مغلق:</b> يفصل <span class="ltr">K1</span> عند انتهاء زمن اليمين.</li></ul>`,title:'دور كل تلامس'},
     {add:String.raw`<p>تشغيل المحرك في الاتجاهين معاً يعني توصيل متممي الأمام والخلف في وقت واحد، وهذا قصر بين الأوجه في دائرة القدرة. لذلك يضع المبرمجون التعشيق في البرنامج، ويضعه الفنيون أيضاً بتلامسات مساعدة في الدائرة الكهربائية نفسها.</p>`,title:'لماذا التعشيق مهم؟'},
-    {watch:String.raw`<p><span class="ltr">I1.1</span> هنا تلامس <b>مفتوح</b>، وفي Network 1 تلامس <b>مغلق</b>. العنوان نفسه يُستخدم بالشكلين في شبكتين: وصول الماء يقطع <span class="ltr">Y1</span> ويبدأ <span class="ltr">K1</span> في اللحظة نفسها.</p>`}
+    {watch:String.raw`<p><span class="ltr">I1.1</span> هنا تلامس <b>مفتوح</b>، وفي Network 1 تلامس <b>مغلق</b>. العنوان نفسه يُستخدم بالشكلين في شبكتين: وصول الماء يقطع <span class="ltr">Y1</span> ويبدأ <span class="ltr">K1</span> في اللحظة نفسها.</p>`},
+    {title:'مختبر مصغّر: متى يعمل K1؟',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`نشغّل <span class="ltr">Network 2</span> وحدها، وأنت تضبط حالة كل عنصر يظهر فيها (في البرنامج الكامل تأتي هذه الحالات من الشبكات الأخرى).`,
+ predict:{q:String.raw`الماء عند <span class="ltr">LS1</span> و<span class="ltr">M0.1 = 1</span>، لكن <span class="ltr">K2</span> يعمل. هل يعمل <span class="ltr">K1</span>؟`,opts:[
+  [String.raw`نعم، لأن <span class="ltr">LS1</span> يمرّر`,false,String.raw`<span class="ltr">LS1</span> يمرّر الفرع الأول فقط، والشروط بعده على التوالي.`],
+  [String.raw`لا، التلامس المغلق <span class="ltr">Q4.2</span> يمنعه`,true,String.raw`هذا هو التعشيق: <span class="ltr mono">AN Q 4.2</span> يمنع عمل الاتجاهين معاً.`]]},
+ prog:()=>washProgram().slice(1,2),names:{'I0.0':'S0','I1.1':'LS1','Q4.1':'K1','Q4.2':'K2'},
+ ins:[{a:'I1.1',v:1,on:String.raw`<span class="ltr">LS1 = 1</span>`,off:String.raw`<span class="ltr">LS1 = 0</span>`},
+  {a:'M0.1',v:1,on:String.raw`العداد لم ينتهِ <span class="ltr">M0.1 = 1</span>`,off:String.raw`انتهى العد <span class="ltr">M0.1 = 0</span>`},
+  {a:'Q4.2',v:1,on:String.raw`<span class="ltr">K2</span> يعمل`,off:String.raw`<span class="ltr">K2</span> مفصول`},
+  {a:'T1',on:String.raw`<span class="ltr">T1</span> انتهى (<span class="ltr">1</span>)`,off:String.raw`<span class="ltr">T1</span> لم ينتهِ (<span class="ltr">0</span>)`},
+  {a:'T2',on:String.raw`<span class="ltr">T2</span> انتهى (<span class="ltr">1</span>)`,off:String.raw`<span class="ltr">T2</span> لم ينتهِ (<span class="ltr">0</span>)`},
+  {a:'I0.0',on:String.raw`<span class="ltr">S0</span> مضغوط`,off:String.raw`<span class="ltr">S0</span> غير مضغوط`}],
+ outs:[['Q4.1',String.raw`المحرك يميناً <span class="ltr">K1</span>`]],
+ msg:(P,s)=>P.get('Q4.1')?String.raw`<span class="ltr">K1</span> يعمل. جرّب أن تجعل <span class="ltr">LS1 = 0</span>: يبقى ممسوكاً بتلامسه <span class="ltr">Q4.1</span>.`:s['Q4.2']?String.raw`<span class="ltr">K2</span> يعمل فلا يعمل <span class="ltr">K1</span> (تعشيق).`:s['T1']?String.raw`<span class="ltr">T1</span> انتهى: تلامسه المغلق يفصل <span class="ltr">K1</span>.`:!s['M0.1']?String.raw`<span class="ltr">M0.1 = 0</span>: انتهى العد فلا دوران.`:''})}
    ]},
 
   {st:4,short:'Network 3',title:'<span class="ltr">Network 3</span> — المزمن <span class="ltr">T1</span>',ref:'ص 135',
@@ -458,7 +716,18 @@ B.lesson({
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 3 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[2],P,nm)+'</div></div>'})(),ref:'ص 135'},
     {tip:String.raw`<p><span class="ltr">S_ODTS</span> مزمن «تأخير تشغيل محتفظ»: يكفي أن يبدأ المدخل <span class="ltr">S</span> مرة واحدة فيعدّ الزمن <span class="ltr mono">S5T#1M</span> (دقيقة واحدة)، ثم يصبح خرجه <span class="ltr">1</span> <b>ويبقى <span class="ltr">1</span></b> حتى لو انقطع <span class="ltr">S</span>، ولا يعود إلى <span class="ltr">0</span> إلا بمدخل الإلغاء <span class="ltr">R</span>.</p>`,title:'ما معنى S_ODTS؟'},
-    {tip:String.raw`<p>خرج المزمن لا يُوصل بملف في هذه الشبكة (<span class="ltr">Q</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> فارغة). بدلاً من ذلك يُستخدم <span class="ltr">T1</span> تلامساً في شبكات أخرى: مغلقاً في Network 2 (يفصل <span class="ltr">K1</span>)، ومفتوحاً في Network 4 (يبدأ <span class="ltr">K2</span>).</p>`,title:'أين يُستخدم خرج T1؟'}
+    {tip:String.raw`<p>خرج المزمن لا يُوصل بملف في هذه الشبكة (<span class="ltr">Q</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> فارغة). بدلاً من ذلك يُستخدم <span class="ltr">T1</span> تلامساً في شبكات أخرى: مغلقاً في Network 2 (يفصل <span class="ltr">K1</span>)، ومفتوحاً في Network 4 (يبدأ <span class="ltr">K2</span>).</p>`,title:'أين يُستخدم خرج T1؟'},
+    {title:'مختبر مصغّر: مزمن يحتفظ بالزمن',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 3</span> وحدها بزمن الكتاب (<span class="ltr mono">S5T#1M</span>). شغّل <span class="ltr">K1</span>، ثم مرّر الزمن، وجرّب أن تفصل <span class="ltr">K1</span> في منتصف الدقيقة.`,
+ predict:{q:String.raw`بدأ <span class="ltr">K1</span> فبدأ <span class="ltr">T1</span> يعدّ، ثم فُصل <span class="ltr">K1</span> بعد <span class="ltr">20</span> ثانية. ماذا يفعل <span class="ltr">T1</span>؟`,opts:[
+  ['يتوقف ويعود إلى الصفر',false,String.raw`هذا سلوك مزمن تأخير التشغيل العادي <span class="ltr">S_ODT</span>، لا المحتفظ.`],
+  [String.raw`يكمل الدقيقة ثم يصبح <span class="ltr">1</span>`,true,String.raw`<span class="ltr">S_ODTS</span> «محتفظ»: يكفي أن يبدأ مرة واحدة، فيكمل الزمن ولو انقطع المدخل <span class="ltr">S</span>، ولا يعود إلى <span class="ltr">0</span> إلا بالمدخل <span class="ltr">R</span>.`],
+  ['يتوقف ويحتفظ بالـ 20 ثانية حتى يعود K1',false,'المزمن لا يتوقف مؤقتاً؛ يكمل العد وحده.']]},
+ prog:()=>washProgram().slice(2,3),names:{'I0.0':'S0','Q4.1':'K1'},
+ ins:[{a:'Q4.1',on:String.raw`<span class="ltr">K1</span> يعمل`,off:String.raw`<span class="ltr">K1</span> مفصول`},{a:'T3',l:String.raw`نبضة <span class="ltr">T3</span> (إلغاء)`,push:true},{a:'I0.0',l:String.raw`اضغط <span class="ltr">S0</span>`,push:true}],
+ time:[[10,'مرّت 10 ثوانٍ'],[30,'مرّت 30 ثانية']],
+ outs:[['T1',String.raw`خرج <span class="ltr">T1</span>`]],
+ msg:P=>{const m=P.tim.T1;return m&&m.q?String.raw`<span class="ltr">T1 = 1</span> ويبقى كذلك حتى لو فصلت <span class="ltr">K1</span>. فقط <span class="ltr">S0</span> أو نبضة <span class="ltr">T3</span> تعيده إلى <span class="ltr">0</span>.`:m&&m.run?'المزمن يعدّ. جرّب أن تفصل K1 ثم مرّر الزمن.':''}})}
    ]},
 
   {st:5,short:'Network 4',title:'<span class="ltr">Network 4 : 2nd Direction</span> — المحرك يساراً',ref:'ص 135',
@@ -473,7 +742,19 @@ B.lesson({
    ],
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 4 : 2nd Direction'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[3],P,nm)+'</div></div>'})(),ref:'ص 135'},
-    {tip:String.raw`<p><span class="ltr">K2</span> يعمل إذا: <span class="ltr">S0</span> غير مضغوط <b>و</b> (انتهى <span class="ltr">T1</span> <b>أو</b> <span class="ltr">K2</span> يعمل أصلاً) <b>و</b> <span class="ltr">M0.1</span> = <span class="ltr">1</span> <b>و</b> <span class="ltr">K1</span> مفصول <b>و</b> <span class="ltr">T2</span> لم ينتهِ. قارن كل تلامس بمقابله في Network 2: <span class="ltr">T1</span> ↔ <span class="ltr">T2</span>، <span class="ltr">Q4.1</span> ↔ <span class="ltr">Q4.2</span>.</p>`,title:'اقرأ الشبكة جملةً'}
+    {tip:String.raw`<p><span class="ltr">K2</span> يعمل إذا: <span class="ltr">S0</span> غير مضغوط <b>و</b> (انتهى <span class="ltr">T1</span> <b>أو</b> <span class="ltr">K2</span> يعمل أصلاً) <b>و</b> <span class="ltr">M0.1</span> = <span class="ltr">1</span> <b>و</b> <span class="ltr">K1</span> مفصول <b>و</b> <span class="ltr">T2</span> لم ينتهِ. قارن كل تلامس بمقابله في Network 2: <span class="ltr">T1</span> ↔ <span class="ltr">T2</span>، <span class="ltr">Q4.1</span> ↔ <span class="ltr">Q4.2</span>.</p>`,title:'اقرأ الشبكة جملةً'},
+    {title:'مختبر مصغّر: التسليم من K1 إلى K2',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 4</span> وحدها. ابدأ والمحرك يميناً، ثم غيّر الحالات كما تتغير لحظة انتهاء زمن اليمين.`,
+ predict:{q:String.raw`انتهى <span class="ltr">T1</span> (صار <span class="ltr">1</span>) لكن <span class="ltr">K1</span> ما زال يعمل في هذه اللحظة. هل يبدأ <span class="ltr">K2</span>؟`,opts:[
+  [String.raw`لا، حتى يفصل <span class="ltr">K1</span>`,true,String.raw`التلامس المغلق <span class="ltr mono">AN Q 4.1</span> في <span class="ltr">Network 4</span> يمنع <span class="ltr">K2</span> ما دام <span class="ltr">K1</span> يعمل. لذلك يفصل <span class="ltr">K1</span> أولاً ثم يبدأ <span class="ltr">K2</span>.`],
+  [String.raw`نعم، فيعمل الاتجاهان لحظة قصيرة`,false,'هذا هو القصر الذي يمنعه التعشيق.']]},
+ prog:()=>washProgram().slice(3,4),names:{'I0.0':'S0','Q4.1':'K1','Q4.2':'K2'},
+ ins:[{a:'T1',v:1,on:String.raw`<span class="ltr">T1</span> انتهى (<span class="ltr">1</span>)`,off:String.raw`<span class="ltr">T1</span> لم ينتهِ (<span class="ltr">0</span>)`},
+  {a:'Q4.1',v:1,on:String.raw`<span class="ltr">K1</span> يعمل`,off:String.raw`<span class="ltr">K1</span> مفصول`},
+  {a:'M0.1',v:1,on:String.raw`<span class="ltr">M0.1 = 1</span>`,off:String.raw`<span class="ltr">M0.1 = 0</span>`},
+  {a:'T2',on:String.raw`<span class="ltr">T2</span> انتهى (<span class="ltr">1</span>)`,off:String.raw`<span class="ltr">T2</span> لم ينتهِ (<span class="ltr">0</span>)`}],
+ outs:[['Q4.2',String.raw`المحرك يساراً <span class="ltr">K2</span>`]],
+ msg:(P,s)=>P.get('Q4.2')?String.raw`<span class="ltr">K2</span> يعمل. اجعل <span class="ltr">T1 = 0</span> (كما تفعل نبضة <span class="ltr">T3</span>): يبقى ممسوكاً بتلامسه <span class="ltr">Q4.2</span>.`:s['Q4.1']?String.raw`<span class="ltr">K1</span> يعمل، فالتعشيق يمنع <span class="ltr">K2</span>. افصل <span class="ltr">K1</span>.`:''})}
    ]},
 
   {st:6,short:'Network 5',title:'<span class="ltr">Network 5</span> — المزمن <span class="ltr">T2</span>',ref:'ص 136',
@@ -488,7 +769,13 @@ B.lesson({
    ],
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 5 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[4],P,nm)+'</div></div>'})(),ref:'ص 136'},
-    {tip:String.raw`<p>بدء <span class="ltr">K2</span> يبدأ <span class="ltr">T2</span> فيعدّ <span class="ltr mono">S5T#1M</span>. عند انتهائه يصبح <span class="ltr">T2</span> = <span class="ltr">1</span>: يفصل <span class="ltr">K2</span> (التلامس المغلق <span class="ltr">T2</span> في Network 4) ويعيد <span class="ltr">K1</span> (التلامس المفتوح <span class="ltr">T2</span> في Network 2).</p>`,title:'ماذا يفعل T2؟'}
+    {tip:String.raw`<p>بدء <span class="ltr">K2</span> يبدأ <span class="ltr">T2</span> فيعدّ <span class="ltr mono">S5T#1M</span>. عند انتهائه يصبح <span class="ltr">T2</span> = <span class="ltr">1</span>: يفصل <span class="ltr">K2</span> (التلامس المغلق <span class="ltr">T2</span> في Network 4) ويعيد <span class="ltr">K1</span> (التلامس المفتوح <span class="ltr">T2</span> في Network 2).</p>`,title:'ماذا يفعل T2؟'},
+    {title:'مختبر مصغّر: رتّب ما يحدث في نصف الدورة الأيسر',widget:(el,B)=>DCML.order(el,B,{intro:String.raw`المحرك يدور يميناً وانتهى للتو زمن <span class="ltr">T1</span> فبدأ <span class="ltr">K2</span>. اضغط الأحداث بالترتيب.`,steps:[
+ [String.raw`يبدأ <span class="ltr">K2</span> فيبدأ <span class="ltr">T2</span> العدّ، وتخرج نبضة <span class="ltr">T3</span> تلغي <span class="ltr">T1</span>`,'كل شيء يبدأ من لحظة بدء K2.'],
+ [String.raw`تمرّ دقيقة (<span class="ltr mono">S5T#1M</span>) فيصبح <span class="ltr">T2 = 1</span>`,'لا يتغير شيء قبل انتهاء زمن T2.'],
+ [String.raw`يفصل <span class="ltr">K2</span> بالتلامس المغلق <span class="ltr">T2</span> في <span class="ltr">Network 4</span>`,'K1 لا يبدأ قبل أن يفصل K2 بسبب التعشيق.'],
+ [String.raw`يبدأ <span class="ltr">K1</span> بالتلامس المفتوح <span class="ltr">T2</span> في <span class="ltr">Network 2</span>`,'نبضة T4 تخرج مع بدء K1، فلا تسبقه.'],
+ [String.raw`تخرج نبضة <span class="ltr">T4</span> فتلغي <span class="ltr">T2</span> استعداداً للدورة التالية`,'']],done:String.raw`هذه الحلقة نفسها تتكرر في كل دورة، مثل النصف الأيمن مع <span class="ltr">T1</span> و<span class="ltr">T3</span>.`})}
    ]},
 
   {st:7,short:'Network 6',title:'<span class="ltr">Network 6</span> — نبضة <span class="ltr">T3</span>',ref:'ص 136',
@@ -503,7 +790,18 @@ B.lesson({
    ],
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 6 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[5],P,nm)+'</div></div>'})(),ref:'ص 136'},
-    {tip:String.raw`<p><span class="ltr">S_PULSE</span> مزمن نبضة: خرجه <span class="ltr">1</span> لمدة الزمن <span class="ltr mono">S5T#1S</span> (ثانية واحدة) من لحظة البدء، ثم <span class="ltr">0</span>. هذه النبضة القصيرة موصولة بمدخل الإلغاء <span class="ltr">R</span> للمزمن <span class="ltr">T1</span> في Network 3، فتلغيه بعد أن أدّى عمله، فيكون جاهزاً للدورة التالية.</p>`,title:'نبضة قصيرة للإلغاء'}
+    {tip:String.raw`<p><span class="ltr">S_PULSE</span> مزمن نبضة: خرجه <span class="ltr">1</span> لمدة الزمن <span class="ltr mono">S5T#1S</span> (ثانية واحدة) من لحظة البدء، ثم <span class="ltr">0</span>. هذه النبضة القصيرة موصولة بمدخل الإلغاء <span class="ltr">R</span> للمزمن <span class="ltr">T1</span> في Network 3، فتلغيه بعد أن أدّى عمله، فيكون جاهزاً للدورة التالية.</p>`,title:'نبضة قصيرة للإلغاء'},
+    {title:'مختبر مصغّر: نبضة ثانية واحدة',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 6</span> وحدها: المزمن <span class="ltr">T3</span> من نوع <span class="ltr">S_PULSE</span> بزمن <span class="ltr mono">S5T#1S</span>. شغّل <span class="ltr">K2</span> ومرّر الزمن.`,
+ predict:{q:String.raw`<span class="ltr">K2</span> يعمل دقيقة كاملة. كم يبقى خرج <span class="ltr">T3</span> مساوياً <span class="ltr">1</span>؟`,opts:[
+  ['دقيقة كاملة، ما دام K2 يعمل',false,String.raw`مزمن النبضة لا يبقى <span class="ltr">1</span> أطول من زمنه، حتى لو بقي مدخله <span class="ltr">1</span>.`],
+  ['ثانية واحدة من لحظة بدء K2',true,String.raw`<span class="ltr">S_PULSE</span> خرجه <span class="ltr">1</span> مدة الزمن المضبوط فقط، ثم <span class="ltr">0</span>؛ نبضة قصيرة تلغي <span class="ltr">T1</span>.`],
+  ['لا يصبح 1 إلا بعد أن يفصل K2',false,'النبضة تخرج مع بداية المدخل، لا مع نهايته.']]},
+ prog:()=>washProgram().slice(5,6),names:{'Q4.2':'K2'},
+ ins:[{a:'Q4.2',on:String.raw`<span class="ltr">K2</span> يعمل`,off:String.raw`<span class="ltr">K2</span> مفصول`}],
+ time:[[0.5,'مرّت نصف ثانية'],[5,'مرّت 5 ثوانٍ']],
+ outs:[['T3',String.raw`خرج <span class="ltr">T3</span>`]],
+ msg:(P,s)=>P.get('T3')?String.raw`النبضة الآن <span class="ltr">1</span>: في البرنامج الكامل تلغي <span class="ltr">T1</span> في <span class="ltr">Network 3</span>.`:s['Q4.2']?String.raw`<span class="ltr">K2</span> ما زال يعمل، لكن النبضة انتهت. افصل <span class="ltr">K2</span> ثم شغّله لتخرج نبضة جديدة.`:''})}
    ]},
 
   {st:8,short:'Network 7',title:'<span class="ltr">Network 7</span> — نبضة <span class="ltr">T4</span>',ref:'ص 136',
@@ -647,7 +945,17 @@ B.lesson({
    ],
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 9 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[8],P,nm)+'</div></div>'})(),ref:'ص 137'},
-    {tip:String.raw`<p><span class="ltr">M0.2</span> مثل ملاحظة يكتبها البرنامج لنفسه: «الغسيل بدأ». تُكتب ما دام <span class="ltr">M0.1</span> = <span class="ltr">1</span>، وتبقى بعد انتهاء العد، فيعرف البرنامج في Network 10 أن الصفر في العداد معناه «انتهى الغسيل» لا «لم يبدأ بعد».</p>`,title:'لماذا نحتاج M0.2؟'}
+    {tip:String.raw`<p><span class="ltr">M0.2</span> مثل ملاحظة يكتبها البرنامج لنفسه: «الغسيل بدأ». تُكتب ما دام <span class="ltr">M0.1</span> = <span class="ltr">1</span>، وتبقى بعد انتهاء العد، فيعرف البرنامج في Network 10 أن الصفر في العداد معناه «انتهى الغسيل» لا «لم يبدأ بعد».</p>`,title:'لماذا نحتاج M0.2؟'},
+    {title:'مختبر مصغّر: من يكتب العلم M0.2 ومن يمسحه؟',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 9</span> و<span class="ltr">Network 11</span> معاً، وأنت تضبط <span class="ltr">M0.1</span> (خرج العداد).`,
+ predict:{q:String.raw`انتهى الغسيل فصار <span class="ltr">M0.1 = 0</span> و<span class="ltr">M0.2 = 1</span>. ضغطت <span class="ltr">S0</span> ثم تركته. ماذا يصبح <span class="ltr">M0.2</span>؟`,opts:[
+  [String.raw`<span class="ltr">0</span> ويبقى <span class="ltr">0</span>`,true,String.raw`<span class="ltr">S0</span> يلغي العلم في <span class="ltr">Network 11</span>، ولا يعود إلا إذا صار <span class="ltr">M0.1 = 1</span> من جديد.`],
+  [String.raw`يعود <span class="ltr">1</span> بمجرد ترك <span class="ltr">S0</span>`,false,String.raw`الإلغاء <span class="ltr mono">R</span> يبقى أثره؛ والتثبيت يحتاج <span class="ltr">M0.1 = 1</span>، وهو الآن <span class="ltr">0</span>.`],
+  [String.raw`لا يتغير، لأن <span class="ltr">S0</span> لا علاقة له بـ <span class="ltr">M0.2</span>`,false,String.raw`<span class="ltr">Network 11</span> كلها: <span class="ltr mono">A I 0.0</span> ثم <span class="ltr mono">R M 0.2</span>.`]]},
+ prog:()=>{const p=washProgram();return [p[8],p[10]]},names:{'I0.0':'S0'},
+ ins:[{a:'M0.1',on:String.raw`العداد يعدّ <span class="ltr">M0.1 = 1</span>`,off:String.raw`انتهى العد <span class="ltr">M0.1 = 0</span>`},{a:'I0.0',l:String.raw`اضغط <span class="ltr">S0</span> واتركه`,push:true}],
+ outs:[['M0.2',String.raw`علَم التفريغ <span class="ltr">M0.2</span>`]],
+ msg:(P,s)=>P.get('M0.2')&&!s['M0.1']?String.raw`<span class="ltr">M0.1 = 0</span> لكن <span class="ltr">M0.2</span> ما زال <span class="ltr">1</span>: هذا هو «التذكّر» الذي يحتاجه <span class="ltr">Network 10</span> ليعرف أن الصفر في العداد معناه انتهاء الغسيل.`:''})}
    ]},
 
   {st:3,short:'Network 10',title:'<span class="ltr">Network 10</span> — مضخة السحب <span class="ltr">Y2</span>',ref:'ص 137',
@@ -663,7 +971,18 @@ B.lesson({
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 10 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[9],P,nm)+'</div></div>'})(),ref:'ص 137'},
     {tip:String.raw`<p><span class="ltr">Y2</span> تعمل عندما: الماء فوق المستوى الأدنى (<span class="ltr">LS2</span> = <span class="ltr">1</span>) <b>و</b> الغسيل قد بدأ (<span class="ltr">M0.2</span> = <span class="ltr">1</span>) <b>و</b> قيمة العداد <span class="ltr">MW1</span> تساوي <span class="ltr">0</span>. صندوق <span class="ltr mono">CMP ==I</span> يقارن عددين صحيحين <span class="ltr">IN1</span> و<span class="ltr">IN2</span>، ويوصّل إذا كانا متساويين.</p>`,title:'اقرأ الشبكة جملةً'},
-    {watch:String.raw`<p>عنوان هذه الشبكة «Outlet Pump» يظهر في نسخة <span class="ltr">FBD</span> فقط (ص 139)؛ في <span class="ltr">LAD</span> مطبوع «Network 10 :» بلا عنوان.</p>`,fix:true}
+    {watch:String.raw`<p>عنوان هذه الشبكة «Outlet Pump» يظهر في نسخة <span class="ltr">FBD</span> فقط (ص 139)؛ في <span class="ltr">LAD</span> مطبوع «Network 10 :» بلا عنوان.</p>`,fix:true},
+    {title:'مختبر مصغّر: متى تعمل Y2؟',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`<span class="ltr">Network 10</span> وحدها. غيّر قيمة العداد في <span class="ltr">MW1</span> والمدخلين، وراقب المقارنة <span class="ltr">==I</span>.`,
+ predict:{q:String.raw`الماء فوق <span class="ltr">LS2</span>، و<span class="ltr">M0.2 = 1</span>، وفي العداد <span class="ltr">MW1 = 2</span>. هل تعمل <span class="ltr">Y2</span>؟`,opts:[
+  [String.raw`نعم، لأن الماء موجود والعلم <span class="ltr">1</span>`,false,'الشرط الثالث على التوالي لم يتحقق.'],
+  [String.raw`لا، المقارنة تحتاج <span class="ltr">MW1 = 0</span>`,true,String.raw`صندوق <span class="ltr">CMP ==I</span> يعطي <span class="ltr">1</span> فقط عندما تتساوى <span class="ltr">MW1</span> مع <span class="ltr">0</span>، أي بعد انتهاء العد.`]]},
+ prog:()=>washProgram().slice(9,10),names:{'I1.2':'LS2','Q5.2':'Y2'},
+ ins:[{a:'I1.2',v:1,on:String.raw`الماء فوق <span class="ltr">LS2</span> (<span class="ltr">I1.2 = 1</span>)`,off:String.raw`الحوض فارغ (<span class="ltr">I1.2 = 0</span>)`},{a:'M0.2',v:1,on:String.raw`<span class="ltr">M0.2 = 1</span>`,off:String.raw`<span class="ltr">M0.2 = 0</span>`}],
+ words:[{k:'MW1',l:String.raw`قيمة العداد في <span class="ltr">MW1</span>`,min:0,max:5,v:2}],
+ outs:[['Q5.2',String.raw`مضخة السحب <span class="ltr">Y2</span>`]],
+ msg:(P,s)=>P.get('Q5.2')?String.raw`<span class="ltr">Y2</span> تسحب الماء حتى ينزل تحت <span class="ltr">LS2</span>. جرّب «الحوض فارغ».`:'',
+ note:String.raw`المنزلق من <span class="ltr">0</span> إلى <span class="ltr">5</span> لأن العداد في الكتاب مضبوط على <span class="ltr mono">C#5</span>.`})}
    ]},
 
   {st:4,short:'Network 11',title:'<span class="ltr">Network 11</span> — إلغاء علَم التفريغ',ref:'ص 137',
@@ -679,7 +998,11 @@ B.lesson({
    body:[
     {book:(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);return '<div class="net static"><header><h3><span class="ltr">'+'Network 11 :'+'</span></h3></header><div class="svgbox fixed">'+B.ladNetwork(P.nets[10],P,nm)+'</div></div>'})(),ref:'ص 137'},
     {tip:String.raw`<p><span class="ltr">S0</span> يظهر في البرنامج بشكلين: تلامساً <b>مغلقاً</b> في شبكات الخرج (يوقف <span class="ltr">Y1</span> و<span class="ltr">K1</span> و<span class="ltr">K2</span>)، وتلامساً <b>مفتوحاً</b> في مداخل الإلغاء (يصفّر <span class="ltr">T1</span> و<span class="ltr">T2</span> والعداد) وهنا يلغي <span class="ltr">M0.2</span>. ضغطة واحدة على <span class="ltr">S0</span> تعيد البرنامج كله إلى البداية.</p>`,title:'S0 يعيد كل شيء'},
-    {watch:String.raw`<p>بما أن <span class="ltr">M0.2</span> لا يُلغى إلا بـ <span class="ltr">S0</span>: إذا انتهت الغسلة وضغطت <span class="ltr">S1</span> مباشرة دون <span class="ltr">S0</span>، تعمل <span class="ltr">Y2</span> مع <span class="ltr">Y1</span> أثناء التعبئة (لأن العداد يُصفَّر بعمل <span class="ltr">Y1</span> فتصبح <span class="ltr">MW1</span> = <span class="ltr">0</span>) ويُهدر الماء حتى يصل إلى <span class="ltr">LS1</span>. وأيضاً ومضة اليمين الأخيرة تشغّل المزمن المحتفظ <span class="ltr">T1</span>، فإذا انتهى زمنه قبل الغسلة التالية تبدأ الغسلة يساراً. لذلك اضغط <span class="ltr">S0</span> قبل كل غسلة، أو عدّل Network 11 كما في النسخة «المصححة» في المختبر: <span class="ltr mono">O I 0.0 / O Q 5.1 / R M 0.2</span>.</p>`,fix:true}
+    {watch:String.raw`<p>بما أن <span class="ltr">M0.2</span> لا يُلغى إلا بـ <span class="ltr">S0</span>: إذا انتهت الغسلة وضغطت <span class="ltr">S1</span> مباشرة دون <span class="ltr">S0</span>، تعمل <span class="ltr">Y2</span> مع <span class="ltr">Y1</span> أثناء التعبئة (لأن العداد يُصفَّر بعمل <span class="ltr">Y1</span> فتصبح <span class="ltr">MW1</span> = <span class="ltr">0</span>) ويُهدر الماء حتى يصل إلى <span class="ltr">LS1</span>. وأيضاً ومضة اليمين الأخيرة تشغّل المزمن المحتفظ <span class="ltr">T1</span>، فإذا انتهى زمنه قبل الغسلة التالية تبدأ الغسلة يساراً. لذلك اضغط <span class="ltr">S0</span> قبل كل غسلة، أو عدّل Network 11 كما في النسخة «المصححة» في المختبر: <span class="ltr mono">O I 0.0 / O Q 5.1 / R M 0.2</span>.</p>`,fix:true},
+    {title:'تحقق سريع: إلغاء العلم M0.2',widget:(el,B)=>DCML.tf(el,B,{intro:String.raw`احكم على كل عبارة بحسب برنامج الكتاب (<span class="ltr">Network 11</span>، ص 137).`,items:[
+ [String.raw`في برنامج الكتاب لا يلغي <span class="ltr">M0.2</span> إلا الضغط على <span class="ltr">S0</span>.`,true,String.raw`<span class="ltr">Network 11</span> سطران فقط: <span class="ltr mono">A I 0.0</span> و<span class="ltr mono">R M 0.2</span>.`],
+ [String.raw`انتهاء التفريغ (نزول الماء تحت <span class="ltr">LS2</span>) يلغي <span class="ltr">M0.2</span>.`,false,String.raw`نزول الماء يوقف <span class="ltr">Y2</span> فقط (<span class="ltr">Network 10</span>)، والعلم يبقى <span class="ltr">1</span>.`],
+ [String.raw`إذا ضغطت <span class="ltr">S1</span> لغسلة جديدة دون <span class="ltr">S0</span> قد تعمل <span class="ltr">Y2</span> مع <span class="ltr">Y1</span> أثناء التعبئة.`,true,String.raw`عمل <span class="ltr">Y1</span> يصفّر العداد فتصبح <span class="ltr">MW1 = 0</span>، والعلم ما زال <span class="ltr">1</span>، فتتحقق شروط <span class="ltr">Y2</span> (انظر «انتبه» أعلاه).`]]})}
    ]},
 
   {recap:[
@@ -765,7 +1088,17 @@ B.lesson({
    body:[
     {book:'<p>الشبكات من 1 إلى 4 (ص 138)، ومن 5 إلى 10 (ص 139)، والشبكة 11 (ص 140):</p>'+(function(){const P=B.createPLC(washProgram()),nm={};IO8.forEach(r=>nm[r.addr]=r.sym);const T=['Network 1 : Inlet Pump', 'Network 2 :1st Direction', 'Network 3 :', 'Network 4 : 2nd Direction', 'Network 5 :', 'Network 6 :', 'Network 7 :', 'Network 8 :', 'Network 9 :', 'Network 10 : Outlet Pump', 'Network 11 : Title:'],R=['ص 138', 'ص 138', 'ص 138', 'ص 138', 'ص 139', 'ص 139', 'ص 139', 'ص 139', 'ص 139', 'ص 139', 'ص 140'];return P.nets.map((n,i)=>'<div class="net static"><header><h3><span class="ltr">'+T[i]+'</span></h3><span class="ref">'+R[i]+'</span></header>'+'<div class="svgbox fixed">'+B.fbdNetwork(n,P,nm)+'</div>'+'</div>').join('')})(),ref:'ص 138–140'},
     {tip:String.raw`<ul><li>صندوق <span class="ltr mono">&gt;=1</span> = «أو» (توازٍ في <span class="ltr">LAD</span>): خرجه <span class="ltr">1</span> إذا كان أي مدخل <span class="ltr">1</span>.</li><li>صندوق <span class="ltr mono">&amp;</span> = «و» (توالٍ في <span class="ltr">LAD</span>): خرجه <span class="ltr">1</span> إذا كانت كل مداخله <span class="ltr">1</span>.</li><li>الدائرة الصغيرة على المدخل = تلامس مغلق.</li><li>صناديق المزمنات والعداد والمقارنة تبقى كما هي، بالأطراف نفسها <span class="ltr">S</span> و<span class="ltr">TV</span> و<span class="ltr">R</span> و<span class="ltr">Q</span>…</li></ul>`,title:'ثلاثة رموز تكفي'},
-    {watch:String.raw`<p>في <span class="ltr">FBD</span> يظهر عنوان Network 10 «Outlet Pump» (ص 139)، وعنوان Network 11 «Title:» فقط (ص 140).</p>`}
+    {watch:String.raw`<p>في <span class="ltr">FBD</span> يظهر عنوان Network 10 «Outlet Pump» (ص 139)، وعنوان Network 11 «Title:» فقط (ص 140).</p>`},
+    {title:'مختبر مصغّر: Network 1 بالبوابات',widget:(el,B)=>PLCML.net(el,B,{view:'fbd',
+ intro:String.raw`مضخة الدخول <span class="ltr">Y1</span> نفسها بلغة <span class="ltr">FBD</span>. غيّر المداخل وراقب خرج كل بوابة.`,
+ predict:{q:String.raw`في الرسم دائرة نفي صغيرة على مدخل <span class="ltr">S0</span> في بوابة <span class="ltr">&amp;</span>. ماذا يحدث لـ <span class="ltr">Y1</span> عندما تضغط <span class="ltr">S0</span>؟`,opts:[
+  [String.raw`تقف: الضغط يجعل المدخل <span class="ltr">1</span>، والنفي يحوّله <span class="ltr">0</span> فيصبح خرج <span class="ltr">&amp;</span> صفراً`,true,String.raw`دائرة النفي في <span class="ltr">FBD</span> تقابل التلامس المغلق في <span class="ltr">LAD</span>.`],
+  [String.raw`تعمل، لأن مدخلاً من مداخل <span class="ltr">&amp;</span> صار <span class="ltr">1</span>`,false,String.raw`بوابة <span class="ltr">&amp;</span> تحتاج كل مداخلها <span class="ltr">1</span>، ومدخل <span class="ltr">S0</span> بعد النفي صار <span class="ltr">0</span>.`]]},
+ prog:()=>washProgram().slice(0,1),names:{'I0.0':'S0','I0.1':'S1','I1.1':'LS1','Q5.1':'Y1'},
+ ins:[{a:'I0.1',l:String.raw`اضغط <span class="ltr">S1</span> واتركه`,push:true},{a:'I0.0',on:String.raw`<span class="ltr">S0</span> مضغوط`,off:String.raw`<span class="ltr">S0</span> غير مضغوط`},
+  {a:'I1.1',on:String.raw`الماء عند <span class="ltr">LS1</span>`,off:String.raw`الماء تحت <span class="ltr">LS1</span>`}],
+ outs:[['Q5.1',String.raw`مضخة الدخول <span class="ltr">Y1</span>`]],
+ msg:P=>P.get('Q5.1')?String.raw`بوابة <span class="ltr">&gt;=1</span> (أو) تمرّر من <span class="ltr">S1</span> أو من <span class="ltr">Y1</span> نفسها، فتبقى <span class="ltr">Y1</span> تعمل بعد ترك <span class="ltr">S1</span>.`:''})}
    ]},
 
   {st:2,short:'دائرة STL',title:'٣- دائرة <span class="ltr">(STL)</span>: البرنامج نفسه بأسطر مكتوبة',ref:'ص 141–143',

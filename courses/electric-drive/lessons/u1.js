@@ -110,7 +110,183 @@ B.lesson({
  title:'الحركة الخطية: السرعة والتسارع والقوة والقدرة',
  summary:'مقدمة الحقيبة وتمهيدها وأهداف الوحدة الأولى، ثم أساسيات الحركة الخطية: القانون الأول للحركة، السرعة الخطية والتسارع، علاقات الحركة بتسارع منتظم، القانون الثاني F = m·a، القوة في الحركة الرأسية F = m·g، والقدرة اللازمة للتحريك P = F·v.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'مقدمة الحقيبة',title:'مقدمة الحقيبة: لمن كُتبت هذه الحقيبة؟',ref:'ص 2',
    q:'قبل أن تبدأ: ما اسم هذه الحقيبة، ولأي تخصص كُتبت؟',
@@ -126,7 +302,11 @@ B.lesson({
     {book:String.raw`<p>تسعى المؤسسة العامة للتدريب التقني والمهني لتأهيل الكوادر الوطنية المدربة القادرة على شغل الوظائف التقنية والفنية والمهنية المتوفرة في سوق العمل، ويأتي هذا الاهتمام نتيجة للتوجهات السديدة من لدن قادة هذا الوطن التي تصب في مجملها نحو إيجاد وطن متكامل يعتمد ذاتياً على الله ثم على موارده وعلى قوة شبابه المسلح بالعلم والإيمان من أجل الاستمرار قدماً في دفع عجلة التقدم التنموي: لتصل بعون الله تعالى لمصاف الدول المتقدمة صناعياً.</p>
      <p>وتتناول هذه الحقيبة التدريبية "<b>التحريك الكهربائي</b>" لمتدربي تخصص "<b>آلات ومعدات كهربائية</b>" للكليات التقنية موضوعات حيوية تتناول كيفية اكتساب المهارات اللازمة لهذا التخصص.</p>
      <p>والإدارة العامة لتصميم وتطوير المناهج وهي تضع بين يديك هذه الحقيبة التدريبية تأمل من الله عز وجلّ أن تسهم بشكل مباشر في تأصيل المهارات الضرورية اللازمة، بأسلوب مبسط يخلو من التعقيد، مدعم بالتطبيقات والأشكال التي تدعم عملية اكتساب هذه المهارات.</p>`,ref:'ص 2'},
-    {tip:String.raw`<p>«التحريك الكهربائي» يعني: كيف نستعمل المحرك الكهربائي لتحريك آلة (مضخة، مروحة، ونش، قطار…)، وكيف نحسب القدرة التي يحتاجها المحرك لذلك. لهذا تبدأ الحقيبة بقوانين الحركة نفسها قبل الحديث عن المحركات.</p>`}
+    {tip:String.raw`<p>«التحريك الكهربائي» يعني: كيف نستعمل المحرك الكهربائي لتحريك آلة (مضخة، مروحة، ونش، قطار…)، وكيف نحسب القدرة التي يحتاجها المحرك لذلك. لهذا تبدأ الحقيبة بقوانين الحركة نفسها قبل الحديث عن المحركات.</p>`},
+    {title:'تحقق سريع: ماذا تقول المقدمة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'هذه المحطة تعريف بالحقيبة، فيكفيها تحقق سريع. احكم على كل عبارة بحسب نص المقدمة (ص 2).',items:[
+ ['كُتبت الحقيبة لمتدربي تخصص «آلات ومعدات كهربائية» في الكليات التقنية.',true,'نص المقدمة: «لمتدربي تخصص "آلات ومعدات كهربائية" للكليات التقنية».'],
+ ['تقول المقدمة إن الحقيبة مكتوبة بأسلوب متخصص صعب لا يناسب المبتدئين.',false,'المقدمة تقول العكس: «بأسلوب مبسط يخلو من التعقيد».'],
+ ['الحقيبة مدعمة بالتطبيقات والأشكال لتساعدك على اكتساب المهارات.',true,'نص المقدمة: «مدعم بالتطبيقات والأشكال التي تدعم عملية اكتساب هذه المهارات».']]})}
    ]},
 
   {st:2,short:'تمهيد',title:'تمهيد: ما القيادة الكهربائية؟',ref:'ص 7–8',
@@ -153,7 +333,13 @@ B.lesson({
      <tr><td>الرابعة</td><td>الخواص العامة للمحركات ووقايتها وتبريدها</td></tr>
      <tr><td>الخامسة</td><td>ميزات التحريك الكهربائي وعيوبه ونظم تغذيته</td></tr>
      <tr><td>السادسة</td><td>الفرامل الكهربائية</td></tr>
-     <tr><td>السابعة</td><td>اختيار المحرك المناسب لحمل معين</td></tr></tbody></table>`,title:'الوحدات السبع في جدول'}
+     <tr><td>السابعة</td><td>اختيار المحرك المناسب لحمل معين</td></tr></tbody></table>`,title:'الوحدات السبع في جدول'},
+    {title:'مختبر مصغّر: فكّك القيادة الكهربائية',widget:(el,B)=>DCML.sort(el,B,{intro:'القيادة الكهربائية حلقات متصلة. لكل عنصر اضغط الحلقة التي ينتمي إليها بحسب التمهيد (ص 7).',cats:['المحرك','وسيلة نقل الحركة','الآلة المُدارة'],items:[
+ ['يحوّل الطاقة الكهربائية إلى طاقة ميكانيكية',0,'التمهيد: «المحرك الكهربائي كأداة لتحويل الطاقة الكهربائية إلى طاقة ميكانيكية».'],
+ ['السيور',1,'التمهيد يذكر السيور من «أجهزة لنقل الحركة».'],
+ ['صندوق التروس',1,'صناديق التروس من «أجهزة نقل الحركة» بين المحرك والآلة.'],
+ ['مروحة أو مضخة',2,'مثالان للآلة «البسيطة» التي يديرها المحرك.'],
+ ['ونش كهربائي أو خط إنتاج آلي',2,'مثالان للآلة «الكثيرة التعقيد» التي يديرها المحرك.']]})}
    ]},
 
   {st:3,short:'أهداف الوحدة',title:'الوحدة الأولى: الهدف العام والأهداف التفصيلية',ref:'ص 9–10',
@@ -170,7 +356,13 @@ B.lesson({
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة العلاقات الأساسية لديناميكا الحركة سواء أكانت الحركة خطية أم دورانية.</p>
      <p><b>الأهداف التفصيلية:</b></p>
      <ol><li>أن يعرف المتدرب العلاقات الأساسية لديناميكا الحركة الخطية.</li><li>أن يعرف المتدرب العلاقات الأساسية لديناميكا الحركة الدورانية.</li><li>أن يعرف المتدرب العلاقة بين الحركة الخطية والحركة الدورانية.</li></ol>`,ref:'ص 10'},
-    {tip:String.raw`<p>«ديناميكا الحركة» تعني: القوانين التي تربط الحركة (السرعة والتسارع) بالقوة التي تسببها. هذا الدرس يغطي الهدف الأول، والدرس التالي يغطي الهدفين الثاني والثالث.</p>`}
+    {tip:String.raw`<p>«ديناميكا الحركة» تعني: القوانين التي تربط الحركة (السرعة والتسارع) بالقوة التي تسببها. هذا الدرس يغطي الهدف الأول، والدرس التالي يغطي الهدفين الثاني والثالث.</p>`},
+    {title:'مختبر مصغّر: أي هدف يخدم هذا الموضوع؟',widget:(el,B)=>DCML.sort(el,B,{intro:'ضع كل موضوع تحت هدفه من أهداف الوحدة الثلاثة.',cats:['الهدف 1: الحركة الخطية','الهدف 2: الحركة الدورانية','الهدف 3: العلاقة بينهما'],items:[
+ ['القانون الأول للحركة (نيوتن)',0,'من علاقات الحركة الخطية (هذا الدرس، ص 11).'],
+ [String.raw`التسارع \(a=dv/dt\)`,0,'تسارع جسم يتحرك في خط مستقيم: الحركة الخطية.'],
+ [String.raw`السرعة الزاوية \(\omega=d\theta/dt\)`,1,'من علاقات الحركة الدورانية (الدرس التالي، ص 13).'],
+ [String.raw`العزم \(T=F\cdot r\)`,1,'العزم من علاقات التحريك الدوراني (الدرس التالي، ص 13).'],
+ [String.raw`السرعة الخطية لنقطة على محيط دائرة \(v=\omega\cdot r\)`,2,'تربط سرعة خطية بسرعة زاوية، فهي العلاقة بين الحركتين (ص 14).']]})}
    ]},
 
   {st:4,short:'العلاقات الأساسية',title:'العلاقات الأساسية في التحريك الكهربائي',ref:'ص 11',
@@ -185,7 +377,13 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>يبذل المحرك الكهربائي الطاقة اللازمة لتأدية التحريك الكهربائي المطلوب سواء أكانت الحركة المطلوبة للحمل <b>خطية</b> أو <b>دورانية</b>، لذا يتعين أن نحدد القواعد الأساسية بديناميكا الحركة لكل من نوعي الحركة.</p>`,ref:'ص 11'},
-    {tip:String.raw`<p>المحرك يدور دائماً، لكن ما يهمنا هو <b>حركة الحمل</b>: القطار والمصعد والسير الناقل حركتها خطية، والمروحة والمضخة حركتها دورانية. لذلك يبدأ الكتاب بالحركة الخطية (هذا الدرس)، ثم الدورانية والعلاقة بينهما (الدرس التالي).</p>`}
+    {tip:String.raw`<p>المحرك يدور دائماً، لكن ما يهمنا هو <b>حركة الحمل</b>: القطار والمصعد والسير الناقل حركتها خطية، والمروحة والمضخة حركتها دورانية. لذلك يبدأ الكتاب بالحركة الخطية (هذا الدرس)، ثم الدورانية والعلاقة بينهما (الدرس التالي).</p>`},
+    {title:'مختبر مصغّر: خطية أم دورانية؟',widget:(el,B)=>DCML.sort(el,B,{intro:'المحرك يدور دائماً، لكن السؤال عن <b>حركة الحمل</b>. صنّف كل حمل.',cats:['حركة الحمل خطية','حركة الحمل دورانية'],items:[
+ ['قطار يسير على السكة',0,'القطار يتحرك في خط مستقيم (المثال (2-1) يحسبه بقوانين الحركة الخطية).'],
+ ['صاعدة مصعد',0,'الصاعدة تتحرك رأسياً في خط مستقيم.'],
+ ['مروحة تهوية',1,'المروحة تدور حول محورها.'],
+ ['ثقل يرفعه حبل ونش',0,'الحداثة تدور، لكن الثقل نفسه يصعد في خط مستقيم؛ لذلك يحسب الكتاب قوته \\(F=m\\cdot g\\).'],
+ ['مضخة',1,'المضخة تدور حول محورها.']]})}
    ]},
 
   {st:5,short:'القانون الأول',title:'الحركة الخطية — أ- القانون الأول للحركة',ref:'ص 11',
@@ -202,7 +400,17 @@ B.lesson({
     {book:String.raw`<p>يبقى الجسم محافظاً على حالته من سكون أو حركة بسرعة ثابتة وعلى خط مستقيم ما لم تؤثر عليه قوة خارجية، وتنسب صياغة هذا القانون بهذا الشكل إلى نيوتن.</p>`,ref:'ص 11'},
     {tip:String.raw`<p>القانون يصف حالتين: <b>جسم ساكن يبقى ساكناً</b>، و<b>جسم متحرك يبقى بالسرعة نفسها وفي الاتجاه نفسه</b>. ولا يتغير شيء من ذلك إلا بقوة خارجية. هذه الخاصية تسمى <b>القصور الذاتي</b>: الجسم «يقاوم» تغيير حالته.</p>`},
     {add:String.raw`<p>عندما يفرمل سائق الحافلة فجأة يندفع الركاب إلى الأمام: أجسامهم «تريد» أن تبقى بسرعتها الأولى. وحزام الأمان هو القوة الخارجية التي توقفهم.</p>`,title:'مثال من الواقع'},
-    {watch:String.raw`<p>في الواقع لا تبقى العربة تتحرك إلى الأبد لأن هناك قوى خارجية دائماً: الاحتكاك ومقاومة الهواء. هذه القوى هي التي توقفها، لا «تعب» الحركة. (ستعود لهذه الفكرة في التمرين <span class="ltr">(1-2)</span>: لماذا تقل سرعة المحرك بعد فصله؟)</p>`}
+    {watch:String.raw`<p>في الواقع لا تبقى العربة تتحرك إلى الأبد لأن هناك قوى خارجية دائماً: الاحتكاك ومقاومة الهواء. هذه القوى هي التي توقفها، لا «تعب» الحركة. (ستعود لهذه الفكرة في التمرين <span class="ltr">(1-2)</span>: لماذا تقل سرعة المحرك بعد فصله؟)</p>`},
+    {title:'مختبر مصغّر: ماذا تفعل القوة المحصلة بالسرعة؟',widget:(el,B)=>DCML.lab(el,B,{intro:'عربة تتحرك. اختر القوة الخارجية المحصلة عليها وشاهد شكل السرعة مع الزمن (رسم نوعي بلا أرقام).',
+ predict:{q:'عربة تتحرك، ثم أصبحت القوة الخارجية المحصلة عليها صفراً تماماً. ماذا يحدث لسرعتها؟',opts:[
+  ['تقل تدريجياً حتى تتوقف',false,'هذا ما نراه عادة لأن الاحتكاك ومقاومة الهواء قوى خارجية. لكن إذا كانت المحصلة صفراً فعلاً فلا شيء يغيّر السرعة.'],
+  ['تبقى ثابتة كما هي',true,'القانون الأول: يبقى الجسم محافظاً على حالته من حركة بسرعة ثابتة «ما لم تؤثر عليه قوة خارجية» (ص 11).'],
+  ['تزداد',false,'زيادة السرعة تحتاج قوة محصلة في اتجاه الحركة.']]},
+ ins:[{k:'f',l:'القوة الخارجية المحصلة على العربة',seg:[['z','صفر'],['p','في اتجاه الحركة'],['m','عكس الحركة (احتكاك)']],v:'z'}],
+ calc:(s,P,B)=>{const f={z:t=>5,p:t=>5+0.45*t,m:t=>Math.max(0,5-0.6*t)}[s.f];
+  return {plot:{xr:[0,10],yr:[0,10],noXt:1,noYt:1,xl:'الزمن t',yl:'السرعة v',aria:'السرعة مع الزمن',curves:[{f,col:s.f==='z'?'--on':s.f==='p'?'--blue':'--stop'}]},
+   msg:s.f==='z'?'<b>السرعة ثابتة:</b> لا قوة محصلة فلا تتغير حالة الحركة. هذا هو القانون الأول، وهو حال القمر الصناعي في السؤال (1-1).':s.f==='p'?'<b>السرعة تزداد:</b> القوة في اتجاه الحركة تكسب العربة تسارعاً موجباً (القانون الثاني، المحطة 9).':'<b>السرعة تقل حتى تتوقف:</b> القوة المعاكسة (احتكاك، هواء) هي التي توقف العربة، لا «تعب» الحركة. وهذا جواب السؤال (1-2) عن المحرك المفصول.',
+   cls:s.f==='m'?'warn':''}}})}
    ]},
 
   {st:6,short:'السرعة الخطية',title:'الحركة الخطية — ب- السرعة الخطية',ref:'ص 11',
@@ -221,7 +429,16 @@ B.lesson({
      <div class="eq">$$v=\frac{dS}{dt}$$<span class="eqno">(1-1)</span></div>`,ref:'ص 11'},
     {tip:String.raw`<p>الرمز \(dS/dt\) يعني: «التغير الصغير في المسافة ÷ الزمن الصغير الذي حدث فيه». وإذا كانت السرعة ثابتة فهي ببساطة <b>المسافة الكلية ÷ الزمن الكلي</b>.</p>`},
     {tip:String.raw`<p>كثيراً ما تُعطى السرعة بالكيلومتر في الساعة، فنحوّلها إلى المتر في الثانية بالضرب في \(\frac{1000}{3600}\) (أي القسمة على <span class="ltr">3.6</span>). مثال من الكتاب (المثال <span class="ltr">(2-1)</span> ص 25):</p>
-     <div class="eq">$$v=36\times\frac{1000}{3600}=10\ \text{m/s}$$</div>`,title:'تحويل km/h إلى m/s'}
+     <div class="eq">$$v=36\times\frac{1000}{3600}=10\ \text{m/s}$$</div>`,title:'تحويل km/h إلى m/s'},
+    {title:'مختبر مصغّر: المسافة ÷ الزمن',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'اختر مسافة وزمناً (أرقام تختارها أنت) لعربة تسير بسرعة ثابتة، فتصبح السرعة \\(v=S/t\\). ثم انظر إليها بالـ km/h أيضاً.',
+ predict:{q:`قطعت عربة ${l('100 m')} خلال ${l('10 s')} بسرعة ثابتة. سرعتها:`,opts:[
+  [l('1000 m/s'),false,'هذا حاصل الضرب؛ السرعة مسافة <b>مقسومة</b> على زمن.'],
+  [l('0.1 m/s'),false,'هذا الزمن مقسوماً على المسافة؛ المقلوب هو الصحيح.'],
+  [l('10 m/s'),true,`${l('100 ÷ 10 = 10 m/s')}، أي ${l('36 km/h')}: سرعة قطار المثال (2-1) نفسها.`]]},
+ ins:[{k:'S',l:'المسافة S',u:'m',min:10,max:1000,step:10,v:100},{k:'t',l:'الزمن t',u:'s',min:1,max:100,step:1,v:10}],
+ calc:(s,P,B)=>{const v=s.S/s.t;return {facts:[['السرعة v = S / t',DCML.fm(B,v,2)+' m/s','hi'],['بالكيلومتر في الساعة (× 3.6)',DCML.fm(B,v*3.6,1)+' km/h']],
+  bars:[{l:'السرعة',v:v,max:100,txt:DCML.fm(B,v,2)+' m/s'}],
+  msg:Math.abs(v-10)<1e-9?`${l('10 m/s = 36 km/h')}: هذا تحويل المثال (2-1) في الكتاب.`:'ضاعف الزمن والمسافة كما هي: ماذا يحدث للسرعة؟'}}})}}
    ]},
 
   {st:7,short:'التسارع',title:'الحركة الخطية — ج- التسارع',ref:'ص 11',
@@ -241,7 +458,17 @@ B.lesson({
      <li>التسارع يكون سالباً عندما تكون سرعة الجسم في تناقص، أي أن السرعة النهائية أصغر من السرعة الابتدائية.</li></ol>`,ref:'ص 11'},
     {tip:String.raw`<p>وحدة التسارع <span class="ltr">m/s²</span> تعني: «كم <span class="ltr">m/s</span> تزيد السرعة كل ثانية». فتسارع <span class="ltr">0.5 m/s²</span> (المثال <span class="ltr">(2-1)</span> ص 25) معناه أن سرعة القطار تزيد نصف متر في الثانية كل ثانية.</p>
      <p>وهناك حالة ثالثة: إذا <b>لم تتغير السرعة</b> فالتسارع <b>صفر</b>، وهي الحالة التي يصفها القانون الأول (المحطة الخامسة).</p>`},
-    {watch:String.raw`<p>لا تخلط بين <b>السرعة</b> و<b>التسارع</b>: قطار يسير بسرعة كبيرة ثابتة تسارعه صفر، وقطار يبدأ من السكون سرعته صفر في اللحظة الأولى لكن تسارعه موجب.</p>`}
+    {watch:String.raw`<p>لا تخلط بين <b>السرعة</b> و<b>التسارع</b>: قطار يسير بسرعة كبيرة ثابتة تسارعه صفر، وقطار يبدأ من السكون سرعته صفر في اللحظة الأولى لكن تسارعه موجب.</p>`},
+    {title:'مختبر مصغّر: إشارة التسارع',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`القيم الأولى من المثال (2-1) ص 25 (من السكون إلى ${l('10 m/s')} خلال ${l('20 s')}). غيّر السرعتين والزمن (أرقام تختارها أنت) وراقب التسارع \\(a=(v-v_0)/t\\) وإشارته.`,
+ predict:{q:`سيارة تسير بسرعة ثابتة ${l('25 m/s')} طوال ${l('10 s')}. تسارعها:`,opts:[
+  ['موجب لأنها تتحرك إلى الأمام',false,'التسارع لا يتبع الحركة نفسها بل <b>تغير</b> السرعة.'],
+  ['صفر',true,`السرعة لم تتغير: ${l('a = (25 − 25) ÷ 10 = 0')}. اجعل السرعتين متساويتين في الأسفل وتأكد.`],
+  ['سالب',false,'السالب يعني أن السرعة تتناقص، وهي هنا ثابتة.']]},
+ ins:[{k:'v0',l:'السرعة الابتدائية v<sub>0</sub>',u:'m/s',min:0,max:30,step:1,v:0},{k:'v',l:'السرعة النهائية v',u:'m/s',min:0,max:30,step:1,v:10},{k:'t',l:'الزمن t',u:'s',min:1,max:30,step:1,v:20}],
+ calc:(s,P,B)=>{const a=(s.v-s.v0)/s.t;const sg=Math.abs(a)<1e-9?0:Math.sign(a);
+  return {facts:[['التسارع a',DCML.fm(B,a,2)+' m/s²',sg>0?'hi':sg<0?'bad':''],['الإشارة',sg>0?'+':sg<0?'−':'0',sg>0?'hi':sg<0?'bad':'']],
+   plot:{xr:[0,s.t],yr:[0,30],xl:'t (s)',yl:'v (m/s)',aria:'السرعة مع الزمن',curves:[{pts:[[0,s.v0],[s.t,s.v]],col:sg>0?'--blue':sg<0?'--stop':'--on'}],dots:[[0,s.v0],[s.t,s.v]]},
+   msg:sg>0?'<b>موجب:</b> السرعة النهائية أكبر من الابتدائية (ص 11).':sg<0?'<b>سالب:</b> السرعة النهائية أصغر من الابتدائية، كما يحدث عند الفرملة (ص 11).':'<b>صفر:</b> السرعة لم تتغير، وهذه حالة القانون الأول.',cls:sg<0?'warn':''}}})}}
    ]},
 
   {st:8,short:'التسارع المنتظم',title:'الحركة الخطية — د- علاقات التحريك الخطي لجسم يتحرك بتسارع منتظم',ref:'ص 11–12',
@@ -292,7 +519,18 @@ B.lesson({
      <p>وفي المثال <span class="ltr">(2-2)</span> ص 25: رفع ثقل <span class="ltr">6000 kg</span> رأسياً:</p>
      <div class="eq">$$F_g=m\cdot g=6000\times9.81=58860\ \text{N}$$</div>`,title:'بأرقام من أمثلة الكتاب'},
     {tip:String.raw`<p>في الرفع الرأسي بسرعة ثابتة يشد الحبل الثقل إلى أعلى بقوة تساوي <b>وزنه</b> \(m\cdot g\): القوتان متساويتان فلا تسارع (هذا هو القانون الأول). لذلك القوة اللازمة للرفع لا تعتمد على سرعة الرفع، أما <b>القدرة</b> فتعتمد عليها (المحطة التالية).</p>`,title:'لماذا F = m·g في الرفع؟'},
-    {watch:String.raw`<p>الكتلة في القانون بالكيلوجرام <span class="ltr">kg</span>: إذا أُعطيت بالطن فاضرب في <span class="ltr">1000</span> كما فعل الكتاب في المثال <span class="ltr">(2-1)</span> (\(200\times10^3\)).</p>`}
+    {watch:String.raw`<p>الكتلة في القانون بالكيلوجرام <span class="ltr">kg</span>: إذا أُعطيت بالطن فاضرب في <span class="ltr">1000</span> كما فعل الكتاب في المثال <span class="ltr">(2-1)</span> (\(200\times10^3\)).</p>`},
+    {title:'مختبر مصغّر: القوة اللازمة للتحريك',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`القيم الأولى من أمثلة الكتاب: قطار ${l('200 ton')} بتسارع ${l('0.5 m/s²')} (المثال 2-1)، وثقل ${l('6 ton')} يُرفع رأسياً (المثال 2-2). اختر نوع الحركة وغيّر الأرقام.`,
+ predict:{q:`نرفع ثقلاً كتلته ${l('6000 kg')} رأسياً. القوة اللازمة بالمعادلة (1-5):`,opts:[
+  [l('6000 N'),false,'هذه الكتلة نفسها؛ نسيت الضرب في تسارع الجاذبية g.'],
+  [l('58860 N'),true,`${l('F = m·g')}، أي ${l('6000 × 9.81 = 58860 N')}، كما في المثال (2-2) ص 25.`],
+  [l('611.6 N'),false,'هذا ناتج القسمة على g؛ القانون ضرب لا قسمة.']]},
+ ins:[{k:'d',l:'نوع الحركة',seg:[['h','أفقية: F = m·a'],['v','رأسية: F = m·g']],v:'h'},
+      {k:'m',l:'الكتلة m',u:'ton',min:0.5,max:300,step:0.5,v:200},
+      {k:'a',l:'التسارع a (للحركة الأفقية فقط)',u:'m/s²',min:0.1,max:2,step:0.1,v:0.5,dp:1}],
+ calc:(s,P,B)=>{const m=s.m*1000,F=s.d==='h'?m*s.a:m*9.81;
+  return {facts:[['الكتلة بالكيلوجرام',DCML.fm(B,m,0)+' kg'],[s.d==='h'?'F = m·a':'F = m·g',DCML.fm(B,F,0)+' N','hi']],
+   msg:s.d==='v'?`في الرفع الرأسي لا نستعمل التسارع a بل ${l('g = 9.81 m/s²')}؛ جرّب ${l('6 ton')} لتحصل على قوة المثال (2-2).`:`حوّل الطن إلى كيلوجرام أولاً (× 1000). جرّب ضعف الكتلة بالتسارع نفسه: ضعف القوة.`}}})}}
    ]},
 
   {st:10,short:'القدرة اللازمة',title:'الحركة الخطية — ح- القدرة اللازمة للتحريك',ref:'ص 12',
@@ -351,7 +589,18 @@ B.lesson({
      <p><b>1-3:</b> ما المقصود بالتسارع لجسم ما؟ وما هي وحدته؟ ومتى يكون التسارع موجباً؟ ومتى يكون سالباً؟ ومتى يكون صفراً؟</p>`,ref:'ص 16'},
     {tip:String.raw`<p><b>1-1:</b> لأنه لا توجد في الفضاء تقريباً قوة تعيق حركتها (لا هواء ولا احتكاك)، فحسب <b>القانون الأول للحركة</b> يبقى الجسم محافظاً على سرعته ما لم تؤثر عليه قوة خارجية تغيرها. (جذب الأرض يغيّر اتجاه حركة القمر فقط ليبقيه على مداره ولا يغير مقدار سرعته.)</p>
      <p><b>1-2:</b> بعد الفصل لا يبذل المحرك عزماً، لكن الأجزاء الدوارة تستمر في الحركة بسبب القصور الذاتي (القانون الأول). وتؤثر عليها قوى معيقة: الاحتكاك في المحامل ومقاومة الهواء وعزم الحمل نفسه؛ هذه القوى تكسبها <b>تسارعاً سالباً</b> فتقل السرعة تدريجياً حتى تتوقف.</p>
-     <p><b>1-3:</b> التسارع هو معدل التغير في السرعة خلال وحدة الزمن \(a=dv/dt\)، ووحدته <span class="ltr">m/s²</span>. يكون <b>موجباً</b> عندما تتزايد السرعة، و<b>سالباً</b> عندما تتناقص، و<b>صفراً</b> عندما تبقى السرعة ثابتة (أو الجسم ساكن).</p>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <p><b>1-3:</b> التسارع هو معدل التغير في السرعة خلال وحدة الزمن \(a=dv/dt\)، ووحدته <span class="ltr">m/s²</span>. يكون <b>موجباً</b> عندما تتزايد السرعة، و<b>سالباً</b> عندما تتناقص، و<b>صفراً</b> عندما تبقى السرعة ثابتة (أو الجسم ساكن).</p>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: اختر الجواب ثم قارنه',widget:(el,B)=>DCML.cases(el,B,{intro:'اختر لكل سؤال الفكرة التي يُبنى عليها جوابه، ثم قارن بالإجابة المقترحة أعلاه.',cases:[
+ {q:'(1-1) لماذا تدور الأقمار الصناعية بسرعة ثابتة في مداراتها؟',opts:[
+  ['لأنه لا توجد في الفضاء تقريباً قوة تعيق حركتها، فتبقى سرعتها كما هي',true,'القانون الأول: الجسم يحافظ على حالته ما لم تؤثر عليه قوة خارجية تغيرها.'],
+  ['لأن محركاتها تعمل باستمرار وتدفعها',false,'لو دفعتها قوة محصلة في اتجاه الحركة لزادت سرعتها، لا ثبتت.']]},
+ {q:'(1-2) لماذا تقل سرعة المحرك تدريجياً بعد فصله من المصدر؟',opts:[
+  ['لأن الحركة تضعف وحدها مع الزمن',false,'لا شيء «يُضعف» الحركة وحده؛ القانون الأول يقول إن تغيّر الحالة يحتاج قوة خارجية.'],
+  ['لأن الاحتكاك ومقاومة الهواء وعزم الحمل تعاكس الدوران فتكسبه تسارعاً سالباً',true,'الأجزاء الدوارة تستمر بالقصور الذاتي، وهذه القوى المعيقة هي التي تبطئها حتى تتوقف.']]},
+ {q:'(1-3) جسم سرعته في تناقص. تسارعه:',opts:[
+  ['صفر',false,'الصفر عندما لا تتغير السرعة.'],
+  ['موجب',false,'الموجب عندما تكون السرعة في تزايد.'],
+  ['سالب',true,'نص الكتاب ص 11: «التسارع يكون سالباً عندما تكون سرعة الجسم في تناقص».']]}]})}
    ]},
 
   {recap:[
@@ -582,7 +831,22 @@ B.lesson({
    body:[
     {book:String.raw`<p>عندما تدور أسطوانة قطرها <span class="ltr">(D)</span> حول محورها دورةً كاملةً، بسرعة زاوية <span class="ltr">(ω)</span>، فإنها ستقطع زاوية \((\theta=2\pi)\) راديان <span class="ltr">(rad)</span>. ويعرف <b>الراديان</b> بأنه الزاوية المركزية التي تقابل قوساً طوله يساوي نصف قطر دائرته.</p>`,ref:'ص 13'},
     {tip:String.raw`<p>محيط الدائرة \(2\pi r\)، أي أنه يتسع لـ \(2\pi\approx6.28\) قوساً طول كل منها \(r\). لذلك الدورة الكاملة = \(2\pi\) راديان = <span class="ltr">360°</span>، والراديان الواحد ≈ <span class="ltr">57.3°</span>.</p>`,title:'لماذا 2π؟'},
-    {watch:String.raw`<p>في الحركة الدورانية نستعمل الراديان لا الدرجة، لأن كل معادلات الدوران في الكتاب (مثل \(v=\omega\cdot r\)) لا تصح إلا بالراديان.</p>`}
+    {watch:String.raw`<p>في الحركة الدورانية نستعمل الراديان لا الدرجة، لأن كل معادلات الدوران في الكتاب (مثل \(v=\omega\cdot r\)) لا تصح إلا بالراديان.</p>`},
+    {title:'مختبر مصغّر: لفّ الأسطوانة واقرأ الزاوية',widget:(el,B)=>{const l=DCML.lt;
+ const pic=N=>{const cx=110,cy=82,r=58,fr=N-Math.floor(N),full=Math.floor(N),a=fr*2*Math.PI;
+  let s=`<svg viewBox="0 0 220 170" role="img" aria-label="الزاوية المقطوعة على محيط الأسطوانة" direction="ltr" style="font-family:var(--font)"><circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/>`;
+  if(full>0)s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--blue)" stroke-width="7" opacity=".45"/>`;
+  if(fr>1e-6){const ex=cx+r*Math.cos(-a),ey=cy+r*Math.sin(-a);s+=`<path d="M${cx+r} ${cy}A${r} ${r} 0 ${a>Math.PI?1:0} 0 ${ex.toFixed(1)} ${ey.toFixed(1)}" fill="none" stroke="var(--live)" stroke-width="7" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="var(--live)" stroke-width="2.5"/>`}
+  s+=`<line x1="${cx}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="var(--fg)" stroke-width="2.5"/><circle cx="${cx}" cy="${cy}" r="4" fill="var(--fg)"/>`;
+  s+=`<text x="${cx}" y="${cy+r+22}" text-anchor="middle" font-size="13" fill="var(--fg)" font-family="var(--mono)">${full} + ${fr.toFixed(2)} rev</text></svg>`;return s};
+ return DCML.lab(el,B,{intro:'حرّك عدد الدورات (أرقام تختارها أنت). الدورة الكاملة تقطع \\(\\theta=2\\pi\\) راديان (ص 13)؛ الحلقة الزرقاء تعني دورات كاملة، والقوس البرتقالي ما زاد عليها.',
+ predict:{q:'دارت الأسطوانة <b>نصف</b> دورة فقط. الزاوية المقطوعة بالراديان:',opts:[
+  [String.raw`\(2\pi\)`,false,'هذه دورة كاملة.'],
+  ['180',false,'180 هي الزاوية بالدرجات؛ بالراديان نكتبها بدلالة π.'],
+  [String.raw`\(\pi\) (حوالي 3.14)`,true,String.raw`نصف \(2\pi\) هو \(\pi\) راديان.`]]},
+ ins:[{k:'N',l:'عدد الدورات',min:0,max:3,step:0.25,v:1,dp:2}],
+ calc:(s,P,B)=>{const th=2*Math.PI*s.N;return {pic:pic(s.N),facts:[['الزاوية θ = 2π × الدورات',DCML.fm(B,th,2)+' rad','hi'],['بالدرجات (للمقارنة)',DCML.fm(B,360*s.N,0)+'°']],
+  msg:s.N===1?`دورة كاملة = ${l('2π ≈ 6.28 rad')} = ${l('360°')}.`:''}}})}}
    ]},
 
   {st:2,short:'السرعة الزاوية',title:'الحركة الزاوية — ب- السرعة الزاوية',ref:'ص 13',
@@ -599,7 +863,15 @@ B.lesson({
     {book:String.raw`<p>هي الإزاحة الزاوية المقطوعة خلال وحدة الزمن.</p>
      <div class="eq">$$\omega=\frac{d\theta}{dt}$$<span class="eqno">(1-7)</span></div>`,ref:'ص 13'},
     {tip:String.raw`<p>قارنها بالسرعة الخطية \(v=dS/dt\) (المعادلة <span class="ltr">(1-1)</span>): هناك مسافة بالمتر، وهنا <b>زاوية بالراديان</b>. لذلك وحدة السرعة الزاوية <span class="ltr">rad/s</span>.</p>`},
-    {add:String.raw`<p>على لوحة بيانات المحرك تُكتب السرعة عادةً بالدورة في الدقيقة <span class="ltr">rpm</span> لا بالـ <span class="ltr">rad/s</span>. وسترى في المحطة السادسة كيف نحوّل بينهما.</p>`}
+    {add:String.raw`<p>على لوحة بيانات المحرك تُكتب السرعة عادةً بالدورة في الدقيقة <span class="ltr">rpm</span> لا بالـ <span class="ltr">rad/s</span>. وسترى في المحطة السادسة كيف نحوّل بينهما.</p>`},
+    {title:'مختبر مصغّر: الزاوية ÷ الزمن',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'اختر عدد دورات وزمناً (أرقام تختارها أنت)؛ الزاوية \\(\\theta=2\\pi\\times\\) الدورات، والسرعة الزاوية \\(\\omega=\\theta/t\\).',
+ predict:{q:`عجلة تدور ${l('10')} دورات خلال ${l('5 s')} بانتظام. سرعتها الزاوية:`,opts:[
+  [l('2 rad/s'),false,'هذا عدد الدورات في الثانية؛ لم تضرب في 2π لتحويل الدورات إلى راديان.'],
+  [l('50 rad/s'),false,'هذا حاصل الضرب؛ السرعة زاوية <b>مقسومة</b> على زمن.'],
+  [String.raw`\(4\pi\approx12.57\) rad/s`,true,String.raw`\(\theta=10\times2\pi=20\pi\) rad، و\(\omega=20\pi/5=4\pi\) rad/s.`]]},
+ ins:[{k:'N',l:'عدد الدورات',min:1,max:20,step:1,v:10},{k:'t',l:'الزمن t',u:'s',min:1,max:10,step:1,v:5}],
+ calc:(s,P,B)=>{const th=2*Math.PI*s.N,w=th/s.t;return {facts:[['الزاوية θ',DCML.fm(B,th,2)+' rad'],['ω = θ / t',DCML.fm(B,w,2)+' rad/s','hi']],
+  bars:[{l:'السرعة الزاوية',v:w,max:2*Math.PI*20,txt:DCML.fm(B,w,2)+' rad/s'}]}}})}}
    ]},
 
   {st:3,short:'التسارع الزاوي',title:'الحركة الزاوية — ج- التسارع الزاوي',ref:'ص 13',
@@ -616,7 +888,17 @@ B.lesson({
     {book:String.raw`<p>هو معدل التغير في السرعة الزاوية خلال وحدة الزمن.</p>
      <div class="eq">$$\alpha=\frac{d\omega}{dt}$$<span class="eqno">(1-8)</span></div>`,ref:'ص 13'},
     {tip:String.raw`<p>هذا نظير التسارع الخطي \(a=dv/dt\) (المعادلة <span class="ltr">(1-2)</span>): موجب إذا كانت سرعة الدوران تتزايد (بدء تشغيل المحرك)، وسالب إذا كانت تتناقص (فرملة أو فصل)، وصفر إذا كان المحرك يدور بسرعة ثابتة.</p>`},
-    {watch:String.raw`<p>جدول الرموز في الكتاب (ص 14) لا يذكر وحدة التسارع الزاوي؛ وحدته <span class="ltr">rad/s²</span> (راديان في الثانية لكل ثانية)، كما أن وحدة التسارع الخطي <span class="ltr">m/s²</span>.</p>`}
+    {watch:String.raw`<p>جدول الرموز في الكتاب (ص 14) لا يذكر وحدة التسارع الزاوي؛ وحدته <span class="ltr">rad/s²</span> (راديان في الثانية لكل ثانية)، كما أن وحدة التسارع الخطي <span class="ltr">m/s²</span>.</p>`},
+    {title:'مختبر مصغّر: تسارع زاوي موجب أم سالب؟',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'غيّر السرعة الزاوية الابتدائية والنهائية والزمن (أرقام تختارها أنت)، وراقب \\(\\alpha=(\\omega-\\omega_0)/t\\).',
+ predict:{q:`محرك يبدأ من السكون ويصل إلى ${l('150 rad/s')} خلال ${l('5 s')} بانتظام. تسارعه الزاوي:`,opts:[
+  [l('750 rad/s²'),false,'هذا حاصل الضرب؛ التسارع تغير السرعة <b>مقسوماً</b> على الزمن.'],
+  [l('30 rad/s²'),true,l('(150 − 0) ÷ 5 = 30')+'، وهو موجب لأن السرعة تزايدت.'],
+  [l('−30 rad/s²'),false,'السالب عند تناقص السرعة، وهنا السرعة تزايدت.']]},
+ ins:[{k:'w0',l:'السرعة الابتدائية ω<sub>0</sub>',u:'rad/s',min:0,max:200,step:10,v:0},{k:'w',l:'السرعة النهائية ω',u:'rad/s',min:0,max:200,step:10,v:150},{k:'t',l:'الزمن t',u:'s',min:1,max:20,step:1,v:5}],
+ calc:(s,P,B)=>{const a=(s.w-s.w0)/s.t,sg=Math.abs(a)<1e-9?0:Math.sign(a);
+  return {facts:[['α',DCML.fm(B,a,2)+' rad/s²',sg>0?'hi':sg<0?'bad':'']],
+   plot:{xr:[0,s.t],yr:[0,200],xl:'t (s)',yl:'ω (rad/s)',aria:'السرعة الزاوية مع الزمن',curves:[{pts:[[0,s.w0],[s.t,s.w]],col:sg>0?'--blue':sg<0?'--stop':'--on'}],dots:[[0,s.w0],[s.t,s.w]]},
+   msg:sg>0?'السرعة الزاوية تتزايد: تسارع موجب (مثل بدء دوران المحرك).':sg<0?'السرعة الزاوية تتناقص: تسارع سالب (مثل محرك فُصل عن المصدر).':'السرعة ثابتة: لا تسارع زاوي.',cls:sg<0?'warn':''}}})}}
    ]},
 
   {st:4,short:'التسارع المنتظم والعزم',title:'الحركة الزاوية — د- علاقات التحريك الزاوي لجسم يدور بتسارع زاوي منتظم',ref:'ص 13',
@@ -640,7 +922,17 @@ B.lesson({
      <tr><td>التسارع <span class="ltr">a (m/s²)</span></td><td>التسارع الزاوي <span class="ltr">α (rad/s²)</span></td></tr>
      <tr><td>القوة <span class="ltr">F (N)</span></td><td>العزم <span class="ltr">T (Nm)</span></td></tr></tbody></table>`,title:'كل كمية خطية لها نظير دوراني'},
     {tip:String.raw`<p>في المعادلة <span class="ltr">(1-10)</span> \(r\) هو <b>نصف القطر</b> (ذراع القوة): المسافة من محور الدوران إلى نقطة تأثير القوة. القوة نفسها على ذراع أطول تعطي عزماً أكبر، لهذا يسهل فتح الباب من طرفه البعيد عن المفصلات.</p>`,title:'ما r في معادلة العزم؟'},
-    {watch:String.raw`<p>الكتاب لا يعرّف \(r\) في المعادلة <span class="ltr">(1-10)</span> ولا يذكره في جدول الرموز (ص 14)؛ المقصود نصف القطر بالمتر. وانتبه: الجدول يعطي <b>القطر</b> \(D\)، و\(r=D/2\).</p>`}
+    {watch:String.raw`<p>الكتاب لا يعرّف \(r\) في المعادلة <span class="ltr">(1-10)</span> ولا يذكره في جدول الرموز (ص 14)؛ المقصود نصف القطر بالمتر. وانتبه: الجدول يعطي <b>القطر</b> \(D\)، و\(r=D/2\).</p>`},
+    {title:'مختبر مصغّر: القوة × ذراعها',widget:(el,B)=>{const l=DCML.lt;
+ const pic=(F,r)=>{const cx=125,cy=110,R=20+r*80,fl=14+F/1000*50;return `<svg viewBox="0 0 260 220" role="img" aria-label="قوة مماسية على طرف ذراع" direction="ltr" style="font-family:var(--font)"><circle cx="${cx}" cy="${cy}" r="${R.toFixed(1)}" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/><line x1="${cx}" y1="${cy}" x2="${(cx+R).toFixed(1)}" y2="${cy}" stroke="var(--fg)" stroke-width="3"/><circle cx="${cx}" cy="${cy}" r="5" fill="var(--fg)"/><text x="${(cx+R/2).toFixed(1)}" y="${cy+18}" text-anchor="middle" font-size="13" font-family="var(--mono)" fill="var(--fg)">r</text><line x1="${(cx+R).toFixed(1)}" y1="${cy}" x2="${(cx+R).toFixed(1)}" y2="${(cy-fl).toFixed(1)}" stroke="var(--live)" stroke-width="4"/><path d="M${(cx+R-7).toFixed(1)} ${(cy-fl+9).toFixed(1)}L${(cx+R).toFixed(1)} ${(cy-fl-2).toFixed(1)}L${(cx+R+7).toFixed(1)} ${(cy-fl+9).toFixed(1)}" fill="var(--live)"/><text x="${(cx+R+12).toFixed(1)}" y="${(cy-fl/2).toFixed(1)}" font-size="13" font-family="var(--mono)" fill="var(--live)" font-weight="700">F</text></svg>`};
+ return DCML.lab(el,B,{intro:'قوة \\(F\\) تؤثر عند طرف ذراع طوله \\(r\\) (أرقام تختارها أنت). العزم \\(T=F\\cdot r\\) (1-10).',
+ predict:{q:'نريد العزم نفسه، لكن بذراع طوله <b>نصف</b> الذراع الأول. القوة اللازمة:',opts:[
+  ['نصف القوة الأولى',false,'الذراع الأقصر يحتاج قوة أكبر لا أصغر.'],
+  ['ضعف القوة الأولى',true,String.raw`\(T=F\cdot r\) ثابت؛ إذا نقص \(r\) إلى النصف وجب أن تتضاعف \(F\).`],
+  ['القوة نفسها',false,'العزم يعتمد على الذراع أيضاً، فتغيّره يغيّر العزم.']]},
+ ins:[{k:'F',l:'القوة F',u:'N',min:100,max:1000,step:50,v:400},{k:'r',l:'نصف القطر (الذراع) r',u:'m',min:0.1,max:1,step:0.05,v:0.5,dp:2}],
+ calc:(s,P,B)=>({pic:pic(s.F,s.r),facts:[['F',DCML.fm(B,s.F,0)+' N'],['r',DCML.fm(B,s.r,2)+' m'],['T = F · r',DCML.fm(B,s.F*s.r,1)+' Nm','hi']],
+  msg:'ضاعف الذراع بالقوة نفسها: يتضاعف العزم. لذلك يسهل فك الصامولة بمفتاح طويل.'})})}}
    ]},
 
   {st:5,short:'قدرة التدوير',title:'الحركة الزاوية — هـ- القدرة اللازمة للتدوير',ref:'ص 13–14',
@@ -666,7 +958,16 @@ B.lesson({
      <tr><td>القدرة</td><td><span class="ltr">P</span></td><td><span class="ltr">W</span></td></tr>
      <tr><td>قطر الأسطوانة</td><td><span class="ltr">D</span></td><td><span class="ltr">m</span></td></tr></tbody></table>`,ref:'ص 13–14'},
     {tip:String.raw`<p>قارن بالحركة الخطية: \(P_L=F\cdot v\) <span class="ltr">(1-6)</span> وهنا \(P=T\cdot\omega\) <span class="ltr">(1-11)</span>: القوة صارت عزماً، والسرعة صارت سرعة زاوية. والناتج بالواط في الحالتين بشرط أن تكون \(\omega\) بالـ <span class="ltr">rad/s</span> (لا بالـ <span class="ltr">rpm</span>).</p>`},
-    {add:String.raw`<p>لهذا لا يكفي أن تعرف قدرة المحرك وحدها: محركان بالقدرة نفسها، البطيء منهما يعطي عزماً أكبر من السريع. وستستعمل هذه الفكرة في الوحدة الثانية لحساب عزم المحرك من قدرته وسرعته.</p>`}
+    {add:String.raw`<p>لهذا لا يكفي أن تعرف قدرة المحرك وحدها: محركان بالقدرة نفسها، البطيء منهما يعطي عزماً أكبر من السريع. وستستعمل هذه الفكرة في الوحدة الثانية لحساب عزم المحرك من قدرته وسرعته.</p>`},
+    {title:'مختبر مصغّر: القدرة = العزم × السرعة الزاوية',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:`القيم الأولى من حمل المثال (2-3) ص 26: عزم ${l('78 Nm')} عند ${l('1410 rpm')}. السرعة تُعطى عادة بالـ rpm، فنحوّلها أولاً: \\(\\omega=2\\pi n/60\\).`,
+ predict:{q:`حمل عزمه ${l('78 Nm')} يدور ${l('1410 rpm')}. القدرة اللازمة تقريباً:`,opts:[
+  [l('110 kW'),false,'هذا ضرب العزم في rpm مباشرة؛ يجب تحويل السرعة إلى rad/s أولاً.'],
+  [l('11.5 kW'),true,`${l('ω = 2π × 1410 ÷ 60 ≈ 147.6')}، و${l('78 × 147.6 ≈ 11511 W')}.`],
+  [l('1.8 W'),false,'هذا ناتج القسمة؛ القانون (1-11) ضرب.']]},
+ ins:[{k:'T',l:'العزم T',u:'Nm',min:10,max:200,step:1,v:78},{k:'n',l:'السرعة الدورانية n',u:'rpm',min:100,max:3000,step:10,v:1410}],
+ calc:(s,P,B)=>{const w=2*Math.PI*s.n/60,Pw=s.T*w;return {facts:[['ω = 2πn / 60',DCML.fm(B,w,1)+' rad/s'],['P = T · ω',DCML.fm(B,Pw,0)+' W','hi'],['بالكيلوواط',DCML.fm(B,Pw/1000,2)+' kW']],
+  bars:[{l:'القدرة',v:Pw,max:200*2*Math.PI*3000/60,txt:DCML.fm(B,Pw/1000,2)+' kW'}],
+  msg:s.T===78&&s.n===1410?'الكتاب يقرّب ω إلى 147.6 فيكتب 11511 W؛ الفرق الصغير هنا من التقريب فقط.':''}}})}}
    ]},
 
   {st:6,short:'العلاقة بين الحركتين',title:'العلاقة بين الحركة الخطية والحركة الدورانية',ref:'ص 14',
@@ -727,7 +1028,13 @@ B.lesson({
      <div class="eq">$$\text{iii)}\ \ \theta=\omega\cdot t=25.12\times5=125.6\ \text{rad}$$</div>
      <div class="eq">$$\text{iv)}\ \ s=v\cdot t=12.56\times5=62.8\ \text{m}$$</div>`,ref:'ص 15'},
     {tip:String.raw`<p>الكتاب يستعمل في الحل \(\pi=3.14\)، لذلك خرجت \(\omega=25.12\). بالقيمة الدقيقة لـ π تكون \(\omega=25.13\ \text{rad/s}\) و \(v=12.57\ \text{m/s}\) و \(\theta=125.66\ \text{rad}\) و \(s=62.83\ \text{m}\). الفرق صغير جداً ولا يُعد خطأ.</p>`,title:'لماذا 25.12 وليس 25.13؟'},
-    {tip:String.raw`<p>لاحظ أن الخطوتين (iii) و(iv) هما نظيرا \(S=v\cdot t\) للسرعة الثابتة: الزاوية = السرعة الزاوية × الزمن، والقوس = السرعة الخطية × الزمن. وتحقق: \(s=\theta\cdot r=125.6\times0.5=62.8\ \text{m}\). الحل خطوة بخطوة بأرقامك في تبويب «الأمثلة المحلولة».</p>`}
+    {tip:String.raw`<p>لاحظ أن الخطوتين (iii) و(iv) هما نظيرا \(S=v\cdot t\) للسرعة الثابتة: الزاوية = السرعة الزاوية × الزمن، والقوس = السرعة الخطية × الزمن. وتحقق: \(s=\theta\cdot r=125.6\times0.5=62.8\ \text{m}\). الحل خطوة بخطوة بأرقامك في تبويب «الأمثلة المحلولة».</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات الحل',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط أجزاء الحل بالترتيب الذي يحتاجه كل جزء (كما في الكتاب ص 15).',steps:[
+ [String.raw`أولاً (i): \(\omega=2\pi n/60=25.12\ \text{rad/s}\)`,'كل ما بعدها يحتاج ω؛ ابدأ بتحويل الـ rpm.'],
+ [String.raw`ثانياً (ii): \(v=\omega\cdot r=25.12\times0.5\)`,`السرعة الخطية تحتاج ω أولاً، ونصف القطر بالمتر (${DCML.lt('0.5 m')}).`],
+ [String.raw`ثالثاً (iii): \(\theta=\omega\cdot t=25.12\times5\)`,'الزاوية تحتاج ω.'],
+ [String.raw`رابعاً (iv): \(s=v\cdot t=12.56\times5\)`,'القوس يحتاج السرعة الخطية v من الجزء (ii).']],
+ done:String.raw`لاحظ أن \(s=\theta\cdot r=125.6\times0.5=62.8\ \text{m}\) أيضاً: طريقتان تعطيان الجواب نفسه.`})}
    ]},
 
   {st:8,short:'أسئلة وتمارين',title:'أسئلة وتمارين متنوعة <span class="ltr">(1-4)</span> إلى <span class="ltr">(1-9)</span>',ref:'ص 16',
@@ -750,7 +1057,17 @@ B.lesson({
     {tip:String.raw`<p><b>1-4:</b> <b>الراديان:</b> الزاوية المركزية التي تقابل قوساً طوله يساوي نصف قطر دائرته. <b>السرعة الزاوية:</b> الإزاحة الزاوية المقطوعة خلال وحدة الزمن \(\omega=d\theta/dt\) بوحدة <span class="ltr">rad/s</span>. <b>التسارع الزاوي:</b> معدل التغير في السرعة الزاوية خلال وحدة الزمن \(\alpha=d\omega/dt\).</p>
      <p><b>1-5:</b> <b>السرعة الخطية:</b> معدل التغير في المسافة خلال وحدة الزمن \(v=dS/dt\) بوحدة <span class="ltr">m/s</span>. <b>السرعة الدورانية:</b> عدد الدورات في وحدة الزمن، وتقاس عادةً بالدورة في الدقيقة <span class="ltr">(rpm)</span>.</p>
      <p><b>1-6:</b> \(\omega=\dfrac{2\pi n}{60}\) <span class="ltr">(1-13)</span>. &nbsp; <b>1-7:</b> \(v=\dfrac{\pi D n}{60}\) <span class="ltr">(1-14)</span>. &nbsp; <b>1-8:</b> \(v=\omega\cdot r\) <span class="ltr">(1-12)</span>.</p>
-     <p><b>1-9:</b> بطريقة المثال <span class="ltr">(1-1)</span> و \(\pi=3.14\): \(\omega=18.84\ \text{rad/s}\)، \(v=18.84\times0.6=11.30\ \text{m/s}\)، \(\theta=18.84\times4=75.36\ \text{rad}\)، \(s=11.30\times4=45.2\ \text{m}\).</p>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <p><b>1-9:</b> بطريقة المثال <span class="ltr">(1-1)</span> و \(\pi=3.14\): \(\omega=18.84\ \text{rad/s}\)، \(v=18.84\times0.6=11.30\ \text{m/s}\)، \(\theta=18.84\times4=75.36\ \text{rad}\)، \(s=11.30\times4=45.2\ \text{m}\).</p>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: أي علاقة يطلبها السؤال؟',widget:(el,B)=>DCML.cases(el,B,{intro:'الأسئلة 1-6 إلى 1-8 تطلب علاقات. اختر العلاقة الصحيحة لكل سؤال.',cases:[
+ {q:'(1-6) العلاقة بين السرعة الدورانية n والسرعة الزاوية ω:',opts:[
+  [String.raw`\(v=\omega\cdot r\)`,false,'هذه بين السرعة الخطية والزاوية (سؤال 1-8).'],
+  [String.raw`\(n=\dfrac{60\,\omega}{2\pi}\) rpm`,true,'من ص 14: عدد الدورات في الدقيقة.']]},
+ {q:'(1-7) العلاقة بين السرعة الخطية v والسرعة الدورانية n:',opts:[
+  [String.raw`\(v=\dfrac{\pi D\,n}{60}\)`,true,String.raw`المعادلة (1-14): نعوض \(\omega=2\pi n/60\) في \(v=\omega\cdot r\) مع \(D=2r\).`],
+  [String.raw`\(\omega=\dfrac{d\theta}{dt}\)`,false,'هذا تعريف السرعة الزاوية (1-7).']]},
+ {q:'(1-8) العلاقة بين السرعة الخطية v والسرعة الزاوية ω:',opts:[
+  [String.raw`\(\alpha=\dfrac{d\omega}{dt}\)`,false,'هذا تعريف التسارع الزاوي (1-8).'],
+  [String.raw`\(v=\omega\cdot r\)`,true,'المعادلة (1-12) ص 14.']]}]})}
    ]},
 
   {recap:[

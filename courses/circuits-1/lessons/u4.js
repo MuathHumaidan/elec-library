@@ -519,7 +519,183 @@ B.lesson({
  title:'تحليل الدوائر: طريقة تيار المسار المغلق (التحليل الحلقي)',
  summary:'مقدمة الوحدة الرابعة وأهدافها، ثم طريقة التيار الحلقي: نفترض تياراً في كل مسار مغلق ونطبق قانون كيرشوف للجهد على كل مسار، فنحصل على معادلات بعدد المسارات نحلها. مع المثالين (4-1) و(4-2) ومختبر تكتب فيه معادلات الحلقات بنفسك.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الرابعة: تحليل الدوائر الكهربائية',ref:'ص 105–106',
    q:'دائرة فيها أكثر من بطارية وأكثر من فرع… كيف نعرف التيار في كل فرع والجهد على كل عنصر؟',
@@ -534,7 +710,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأهداف التفصيلية:</b></p><ol><li>أن يتمكن المتدرب من تحديد تيارات الفروع التي تتكون منها الدائرة.</li><li>أن يتمكن المتدرب من حساب الجهود عبر عناصر كل فرع.</li><li>أن يتمكن المتدرب من استخدام قانوني كيرشوف عند كل عقدة من عقد الدائرة ولكل حلقة من الحلقات التي تتكون منها الدائرة.</li><li>أن يتمكن المتدرب من تحليل الدوائر الكهربائية ومسارات التيار داخلها.</li><li>أن يعرف المتدرب بعض الطرق المبسطة لتحليل دوائر التيار المستمر.</li></ol>`,ref:'ص 106'},
-    {tip:String.raw`<p>الوحدة فيها ثلاث طرق، ولكل طريقة درس: <b>التحليل الحلقي</b> (هذا الدرس)، ثم <b>التحليل العقدي</b>، ثم <b>نظرية التركيب</b>، وبعدها تمارين الوحدة. الطرق الثلاث تصل إلى النتيجة نفسها؛ الفرق في عدد المعادلات وسهولة كتابتها.</p>`,title:'خريطة الوحدة'}
+    {tip:String.raw`<p>الوحدة فيها ثلاث طرق، ولكل طريقة درس: <b>التحليل الحلقي</b> (هذا الدرس)، ثم <b>التحليل العقدي</b>، ثم <b>نظرية التركيب</b>، وبعدها تمارين الوحدة. الطرق الثلاث تصل إلى النتيجة نفسها؛ الفرق في عدد المعادلات وسهولة كتابتها.</p>`,title:'خريطة الوحدة'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'عن أهداف الوحدة (ص 112):',items:[
+ ['تطلب الوحدة استخدام قانوني كيرشوف عند كل عقدة ولكل حلقة في الدائرة.',true,'من الأهداف التفصيلية: «استخدام قانوني كيرشوف عند كل عقدة من عقد الدائرة ولكل حلقة».'],
+ ['الطرق المبسطة في هذه الوحدة تغني عن قانون أوم وقانوني كيرشوف.',false,'الطرق مستمدة من هذه القوانين نفسها؛ هي تختصر الحل ولا تلغي القوانين.'],
+ ['تحليل الدائرة يعني تحديد تيارات فروعها وحساب الجهود عبر عناصرها.',true,'هذان أول هدفين تفصيليين في الوحدة.']]})}
    ]},
 
   {st:2,short:'تحليل الدوائر',title:'تحليل الدوائر الكهربائية',ref:'ص 107',
@@ -550,7 +730,11 @@ B.lesson({
     {predict:{q:'في الرسمة: كم عقدة يلتقي فيها أكثر من فرعين؟',opts:[
      ['عقدة واحدة: الملونة في الأعلى',false,'هناك عقدة ثانية في الأسفل تحتها مباشرة: تلتقي فيها الفروع الثلاثة نفسها.'],
      ['أربع عقد: كل زاوية في الدائرة',false,'الزاوية يلتقي فيها سلكان فقط من الفرع نفسه، فليست عقدة بهذا التعريف.'],
-     ['عقدتان: الملونة في الأعلى، والنقطة التي تحتها على الخط السفلي',true,'في كل منهما تلتقي ثلاثة فروع: الأيسر والأوسط والأيمن.']]}}
+     ['عقدتان: الملونة في الأعلى، والنقطة التي تحتها على الخط السفلي',true,'في كل منهما تلتقي ثلاثة فروع: الأيسر والأوسط والأيمن.']]}},
+    {title:'مختبر مصغّر: ما المجهول في كل طريقة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'ستدرس في هذه الوحدة ثلاث طرق. لكل وصف اختر الطريقة التي يناسبها.',cats:['التحليل الحلقي','التحليل العقدي','نظرية التركيب'],items:[
+ ['نفترض تياراً في كل مسار مغلق، ونكتب قانون كيرشوف للجهد لكل مسار.',0,'هذه طريقة تيار المسار المغلق (الدرس الأول).'],
+ ['المجاهيل جهود العقد بالنسبة لعقدة إسناد، ونكتب قانون كيرشوف للتيار عند كل عقدة.',1,'التحليل العقدي (الدرس الثاني).'],
+ ['نحسب أثر كل مصدر وحده ونخرج المصادر الأخرى من الخدمة، ثم نجمع.',2,'نظرية التركيب (الدرس الثالث).']]})}
    ]},
 
   {st:3,short:'الطريقة الحلقية',title:'طريقة تيار المسار المغلق (التحليل الحلقي) <span class="ltr">Mesh Current Method (Loop Method)</span>',ref:'ص 107',
@@ -566,7 +750,13 @@ B.lesson({
      ['ثلاث معادلات',true,'الكتاب: عدد المعادلات يساوي عدد المسارات، ويساوي عدد التيارات المفترضة.'],
      ['ست معادلات',false,'لا نكتب معادلة لكل عنصر؛ معادلة واحدة لكل حلقة تكفي.']]}},
     {tip:String.raw`<ol><li>ارسم تياراً حلقياً في كل «نافذة» من الدائرة، وكلها <b>مع عقارب الساعة</b> (كما في أمثلة الكتاب).</li><li>سِر في كل حلقة مع تيارها واكتب جهد كل عنصر: المقاومة غير المشتركة \(R\,I_1\)، والمشتركة بين حلقتين \(R\,(I_1-I_2)\) لأن التيارين فيها متعاكسان.</li><li>البطارية: إذا عبرتها من السالب إلى الموجب فهي ارتفاع في الجهد، وإذا عبرتها من الموجب إلى السالب فهي هبوط. الارتفاع والهبوط يأخذان إشارتين متعاكستين.</li><li>تحصل على معادلات بعدد الحلقات؛ حلها بالحذف أو التعويض.</li><li>تيار الفرع غير المشترك = تيار حلقته، وتيار الفرع المشترك = الفرق بين التيارين.</li></ol>`,title:'الخطوات باختصار'},
-    {watch:String.raw`<p>التيار الحلقي «مفترض»: إذا خرجت قيمته سالبة فليس الحل خطأً، بل التيار الحقيقي عكس الاتجاه الذي افترضته.</p>`}
+    {watch:String.raw`<p>التيار الحلقي «مفترض»: إذا خرجت قيمته سالبة فليس الحل خطأً، بل التيار الحقيقي عكس الاتجاه الذي افترضته.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات التحليل الحلقي',widget:(el,B)=>DCML.order(el,B,{intro:'كما يصفها الكتاب (ص 113):',steps:[
+ ['حدّد عدد المسارات المغلقة في الدائرة','نبدأ بمعرفة كم مساراً مغلقاً لدينا.'],
+ ['افترض تياراً حلقياً في كل مسار مغلق','لا نفترض التيارات قبل أن نعرف المسارات.'],
+ ['طبّق قانون كيرشوف للجهد على كل مسار، فتحصل على معادلات بعدد المسارات','نحتاج التيارات المفترضة لنكتب الجهود في المعادلات.'],
+ ['حل المعادلات لتحصل على التيارات الحلقية، ومنها تيارات الأفرع','الحل يأتي بعد كتابة كل المعادلات.']],
+ done:'عدد المعادلات = عدد المسارات = عدد التيارات المفترضة.'})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(4-1)</span>',title:'مثال <span class="ltr">(4-1)</span>',ref:'ص 108–109',
@@ -658,7 +848,16 @@ B.lesson({
     {tip:String.raw`<p>كل معادلة في الكتاب مرتبة بالشكل نفسه: <b>معامل تيار الحلقة</b> = مجموع مقاومات الحلقة (\(5+6+3+1=15\)، و \(3+3+4+2=12\))، و<b>معامل التيار الآخر</b> = سالب المقاومة المشتركة (\(-3\))، و<b>الطرف الآخر</b> = مجموع البطاريات بإشاراتها (\(60-40=20\)، و \(40-10=30\)). بهذه القاعدة تكتب المعادلة مباشرة وتراجع بها حلك.</p>`,title:'اختصار تتحقق به'},
     {watch:String.raw`<ul><li>بعد «وبالتعويض عن قيمة التيار \(I_2\)…» طُبع في الكتاب سطران منقولان من المثال <span class="ltr">(4-1)</span>: «\(I_1=5A\) , \(I_2=1A\) — الشكل <span class="ltr">(4-3)</span> يوضح اتجاه التيارات…» ولا علاقة لهما بهذا المثال، فحُذفا.</li><li>بدون تقريب \(I_2\) إلى <span class="ltr">2.98</span> قبل التعويض يكون \(I_1=1.930\) A.</li></ul>`,fix:true},
     {add:String.raw`<p>التمرين 1 من تمارين الوحدة (ص 122) هو نفس دائرة الشكل <span class="ltr">(4-4)</span>، وتجده في درس «تمارين الوحدة الرابعة».</p>`},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلات الحلقات بنفسك</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلات الحلقات بنفسك</button></div>`},
+    {title:'مختبر مصغّر: غيّر البطاريتين الطرفيتين',widget:(el,B)=>DCML.lab(el,B,{intro:'دائرة الشكل <span class="ltr">(4-4)</span> والبطارية الوسطى <span class="ltr">40 V</span> ثابتة. في الكتاب البطارية اليسرى <span class="ltr">60 V</span> واليمنى <span class="ltr">10 V</span>؛ غيرها أرقام تختارها أنت. المعادلتان (a) و(b) بالقاعدة نفسها.',
+ predict:{q:'لو رفعنا البطارية اليسرى من 60 V إلى 100 V، فإن تيار الفرع الأوسط \\(I_2-I_1\\)…',opts:[
+  ['يكبر ويبقى لأعلى',false,'زيادة البطارية اليسرى تزيد \\(I_1\\) أكثر من \\(I_2\\)، فيصغر الفرق ثم ينعكس.'],
+  ['ينعكس ويصبح لأسفل',true,'\\(I_1\\approx4.74\\) و\\(I_2\\approx3.68\\ \\text{A}\\)، فـ \\(I_2-I_1\\approx-1.05\\ \\text{A}\\): الاتجاه الحقيقي لأسفل.'],
+  ['لا يتغير لأن البطارية الوسطى لم تتغير',false,'الفرع الأوسط مشترك بين الحلقتين، فيتأثر بكل البطاريات.']]},
+ ins:[{k:'a',l:'البطارية اليسرى',min:0,max:120,step:10,v:60,u:'V'},{k:'c',l:'البطارية اليمنى',min:0,max:60,step:5,v:10,u:'V'}],
+ calc:(s,v,B)=>{const A=s.a-40,Bv=40-s.c,I1=(12*A+3*Bv)/171,I2=(3*A+15*Bv)/171,m=I2-I1;
+  return {facts:[['I<sub>1</sub>',DCML.fm(B,I1,3)+' A','hi'],['I<sub>2</sub>',DCML.fm(B,I2,3)+' A','hi'],['الفرع الأوسط I<sub>2</sub> − I<sub>1</sub>',DCML.fm(B,Math.abs(m),3)+' A '+(Math.abs(m)<1e-9?'':m>0?'↑':'↓'),m<0?'bad':'']],
+   msg:'(a) \\('+A+'=15I_1-3I_2\\)<br>(b) \\('+Bv+'=-3I_1+12I_2\\)<br>'+((s.a===60&&s.c===10)?'أرقام الكتاب: \\(I_1=1.930\\) و\\(I_2=2.982\\ \\text{A}\\) (الكتاب قرّب إلى 1.929 و 2.98).':'إذا صار \\(I_2-I_1\\) سالباً فاتجاهه الحقيقي لأسفل، عكس اتجاهه بأرقام الكتاب.')}}})}
    ]},
 
   {recap:[
@@ -761,7 +960,13 @@ B.lesson({
      ['لأنها قاعدة اتجاه ثابتة: كل التيارات تُكتب خارجة منها بالشكل (جهدها − جهد الأخرى)/R، فلا نحتار في الإشارات',true,'إذا خرج تيار ما سالباً في الحل فمعناه أنه في الحقيقة داخل إليها.'],
      ['لأن عقدة الإسناد جهدها سالب',false,'عقدة الإسناد جهدها صفر كما يقول الكتاب.']]}},
     {tip:String.raw`<p>في التحليل العقدي المجاهيل <b>جهود</b> لا تيارات: نكتب معادلة واحدة لكل عقدة ما عدا عقدة الإسناد. فدائرة فيها ثلاث عقد (منها الإسناد) تحتاج معادلتين فقط، مهما كثرت فروعها.</p>`,title:'كم معادلة؟'},
-    {add:String.raw`<p>كلمة «الأرضي» في لوحات التوزيع وأجهزة القياس تعني الشيء نفسه تقريباً: نقطة مرجعية نقيس منها كل الجهود. عندما تضع الطرف الأسود للفولتميتر على هيكل الجهاز وتقيس بالطرف الأحمر نقاطاً مختلفة، فأنت تقيس «جهود العقد» بالنسبة لعقدة الإسناد.</p>`,title:'الإسناد في الورشة'}
+    {add:String.raw`<p>كلمة «الأرضي» في لوحات التوزيع وأجهزة القياس تعني الشيء نفسه تقريباً: نقطة مرجعية نقيس منها كل الجهود. عندما تضع الطرف الأسود للفولتميتر على هيكل الجهاز وتقيس بالطرف الأحمر نقاطاً مختلفة، فأنت تقيس «جهود العقد» بالنسبة لعقدة الإسناد.</p>`,title:'الإسناد في الورشة'},
+    {title:'مختبر مصغّر: رتّب خطوات التحليل العقدي',widget:(el,B)=>DCML.order(el,B,{intro:'كما يصفها الكتاب (ص 116):',steps:[
+ ['حدّد العقد وضع عليها علامات، ورقّمها \\(N_1, N_2, \\ldots\\)','لا يمكن اختيار عقدة إسناد قبل معرفة العقد.'],
+ ['اختر عقدة إسناد جهدها صفر (ويفضل التي يلتقي فيها أكبر عدد من الأفرع)','الإسناد يُختار من العقد بعد تحديدها.'],
+ ['طبّق قانون كيرشوف للتيار عند كل عقدة ما عدا عقدة الإسناد','نكتب المعادلات بعد أن نعرف أي عقدة جهدها صفر.'],
+ ['حل المعادلات لتحصل على جهود العقد، ثم احسب تيار كل فرع بقانون أوم','الحل بعد كتابة كل المعادلات.']],
+ done:'عدد المعادلات = عدد العقد ناقص واحد (عقدة الإسناد).'})}
    ]},
 
   {st:2,short:'تيار الفرع',title:'تيار الفرع بدلالة جهود العقد: الشكل <span class="ltr">(4-6)</span>',ref:'ص 112',
@@ -812,7 +1017,16 @@ B.lesson({
     {tip:String.raw`<p>الكتاب يتوقف هنا. لإكمال الحل: بضرب (a) في 30: \(18V_1-3V_2=120\)، وبضرب (b) في 60: \(-6V_1+11V_2=120\). وبالحل: \(V_1=9.333\ \text{V}\) و \(V_2=16\ \text{V}\)، ومنه \(I_2=9.333/6=1.556\ \text{A}\) من العقدة 1 نحو الإسناد (لأسفل).</p>`,title:'إكمال الحل (ليس من الكتاب)'},
     {watch:String.raw`<p>في الشكل <span class="ltr">(4-7)</span> رُسم سهم \(I_2\) على المقاومة <span class="ltr">6 Ω</span> <b>لأعلى</b> (وتركناه كما هو)، بينما الصيغة \((V_1-0)/6\) تعطي التيار من العقدة 1 نحو الإسناد، أي لأسفل. التيار الحقيقي (<span class="ltr">1.556 A</span>) لأسفل.</p>`},
     {book:String.raw`<p>لقد حاولنا من خلال حل أمثلة بسيطة توضيح أسلوب التحليل الحلقي والتحليل العقدي، إلا أن المزايا الفعلية للطريقتين لا تظهر إلا عند التعامل مع دوائر معقدة بعض الشيء.</p>`,ref:'ص 113'},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلتي العقدتين بنفسك</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلتي العقدتين بنفسك</button></div>`},
+    {title:'مختبر مصغّر: ابحث عن جهدي العقدتين',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك \\(V_1\\) و\\(V_2\\) وراقب مجموع التيارات الخارجة من كل عقدة في المعادلتين (a) و(b). الحل الصحيح هو الذي يجعل المجموعين صفراً معاً.',
+ predict:{q:'إذا كان مجموع التيارات الخارجة من العقدة 1 موجباً، فماذا نفعل بـ \\(V_1\\)؟',opts:[
+  ['نخفضه',true,'كل حدود المعادلة (a) تكبر مع \\(V_1\\)؛ المجموع الموجب يعني أن \\(V_1\\) أعلى من اللازم.'],
+  ['نرفعه',false,'رفع \\(V_1\\) يزيد التيارات الخارجة أكثر فيبتعد المجموع عن الصفر.'],
+  ['نغيّر \\(V_2\\) فقط',false,'\\(V_2\\) يؤثر في الحد الثالث فقط، والمعادلة (a) تعتمد أساساً على \\(V_1\\).']]},
+ ins:[{k:'a',l:'V<sub>1</sub>',min:0,max:20,step:1/3,v:12,fmt:x=>(+x).toFixed(2),u:'V'},{k:'b',l:'V<sub>2</sub>',min:0,max:30,step:1,v:10,u:'V'}],
+ calc:(s,v,B)=>{const r1=(s.a-12)/3+s.a/6+(s.a-s.b)/10,r2=(s.b-s.a)/10+s.b/12-2,z=x=>Math.abs(x)<1e-6,ok=z(r1)&&z(r2);
+  return {facts:[['(a) مجموع التيارات الخارجة من العقدة 1',DCML.fm(B,z(r1)?0:r1,3)+' A',z(r1)?'hi':'bad'],['(b) مجموع التيارات الخارجة من العقدة 2',DCML.fm(B,z(r2)?0:r2,3)+' A',z(r2)?'hi':'bad'],['<span class="ltr" dir="ltr" style="white-space:normal">I<sub>2</sub> = V<sub>1</sub>/6</span>',DCML.fm(B,s.a/6,3)+' A']],
+   msg:ok?'<b>وجدتها:</b> \\(V_1=9.333\\ \\text{V}\\) و\\(V_2=16\\ \\text{V}\\)، فتيار المقاومة 6 Ω \\(1.556\\ \\text{A}\\) لأسفل.':'المجموع الموجب: الجهد أعلى من اللازم؛ السالب: أقل من اللازم.',cls:ok?'':'warn'}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(4-4)</span>',title:'مثال <span class="ltr">(4-4)</span>',ref:'ص 113–114',
@@ -840,7 +1054,16 @@ B.lesson({
      [String.raw`يتغير \(V_2\) فقط`,false,String.raw`معادلة العقدة 2 لا تحتوي <span class="ltr">9 Ω</span>، و \(V_1\) ثابت، فلا يتغير \(V_2\).`]]}},
     {tip:String.raw`<p>في التحليل العقدي عدد المعادلات = عدد العقد ناقص واحد (عقدة الإسناد)، وكل عقدة موصلة بالإسناد عن طريق بطارية وحدها لا تحتاج معادلة (جهدها معروف كما في هذا المثال). أما في التحليل الحلقي فعدد المعادلات = عدد الحلقات. اختر الطريقة التي تعطيك معادلات أقل.</p>`,title:'أي الطريقتين أختار؟'},
     {watch:String.raw`<p>طُبع السطر الأخير في الكتاب \(V_2=240/40=30\ \text{V}\)، والصحيح \(240/8\)؛ الناتج <span class="ltr">30 V</span> صحيح.</p>`,fix:true},
-    {add:String.raw`<p>التمرينان 2 و 3 من تمارين الوحدة (ص 122) على هذه الطريقة، وتجدهما في درس «تمارين الوحدة الرابعة».</p>`}
+    {add:String.raw`<p>التمرينان 2 و 3 من تمارين الوحدة (ص 122) على هذه الطريقة، وتجدهما في درس «تمارين الوحدة الرابعة».</p>`},
+    {title:'مختبر مصغّر: غيّر المصدرين وراقب V₂',widget:(el,B)=>DCML.lab(el,B,{intro:'الكتاب: بطارية <span class="ltr">40 V</span> ومصدر تيار <span class="ltr">20 A</span>؛ غيرهما أرقام تختارها أنت. المعادلة (b) نفسها: \\(8V_2=V_1+10I_s\\).',
+ predict:{q:'لو ضاعفنا البطارية إلى 80 V وبقي مصدر التيار 20 A، فإن \\(V_2\\)…',opts:[
+  ['يتضاعف إلى 60 V',false,'\\(V_2\\) لا يعتمد على البطارية وحدها؛ مصدر التيار يشارك فيه ولم يتغير.'],
+  ['يصبح 35 V',true,'\\(8V_2=80+200=280\\)، فـ \\(V_2=35\\ \\text{V}\\): زاد بمقدار 5 V فقط.'],
+  ['لا يتغير',false,'\\(V_1\\) يدخل في معادلة العقدة 2 عن طريق المقاومة 10 Ω.']]},
+ ins:[{k:'E',l:'البطارية (= V<sub>1</sub>)',min:0,max:100,step:10,v:40,u:'V'},{k:'I',l:'مصدر التيار I<sub>s</sub>',min:0,max:40,step:5,v:20,u:'A'}],
+ calc:(s,v,B)=>{const V2=(s.E+10*s.I)/8,i10=(V2-s.E)/10;
+  return {facts:[['V<sub>1</sub>',s.E+' V'],['<span class="ltr" dir="ltr" style="white-space:normal">V<sub>2</sub> = (V<sub>1</sub> + 10I<sub>s</sub>)/8</span>',DCML.fm(B,V2,3)+' V','hi'],['تيار 10 Ω من العقدة 2 إلى 1',DCML.fm(B,i10,3)+' A',i10<0?'bad':''],['مجموع التيارات الخارجة من العقدة 2 عبر المقاومات',DCML.fm(B,i10+V2/2+V2/5,3)+' A']],
+   msg:i10<0?'التيار في 10 Ω سالب: يمر في الحقيقة من العقدة 1 إلى العقدة 2.':'تحقق بقانون كيرشوف: تيار المصدر = مجموع التيارات الخارجة من العقدة 2.'}}})}
    ]},
 
   {recap:[
@@ -939,7 +1162,12 @@ B.lesson({
      <li>لجعل <b>مصدر الجهد</b> خارج الخدمة يستبدل بمقاومته الداخلية، وحيث إن مقاومته الداخلية أصغر ما يمكن لذلك نعمل عليه <b>قصر دائرة</b> (Short Circuit).</li>
      <li>لجعل <b>مصدر التيار</b> خارج الخدمة يستبدل بمقاومته الداخلية، حيث إنها تكون أكبر ما يمكن، لذلك نعمل عليه <b>فتح دائرة</b> (Open Circuit).</li></ul>`,ref:'ص 114'},
     {tip:String.raw`<p>«الجمع» جبري: نختار اتجاهاً مرجعياً للتيار في العنصر، وكل تيار جزئي في عكسه يُطرح. والنظرية تصلح للتيار والجهد فقط، <b>لا للقدرة</b>: القدرة تحسب من التيار الكلي بعد الجمع (\(P=I^2R\))، لا بجمع قدرات الحالات.</p>`,title:'انتبه لكلمة «جمع»'},
-    {add:String.raw`<p>البطارية الجيدة مقاومتها الداخلية صغيرة جداً، ولهذا إذا وصلت طرفيها بسلك مباشرة مر تيار كبير خطير (قصر). أما مصدر التيار فيُبنى ليعطي تياره نفسه مهما كان الحمل، ولذلك تكون مقاومته الداخلية كبيرة جداً، فإزالته تشبه قطع السلك.</p>`,title:'لماذا قصر ولماذا فتح؟'}
+    {add:String.raw`<p>البطارية الجيدة مقاومتها الداخلية صغيرة جداً، ولهذا إذا وصلت طرفيها بسلك مباشرة مر تيار كبير خطير (قصر). أما مصدر التيار فيُبنى ليعطي تياره نفسه مهما كان الحمل، ولذلك تكون مقاومته الداخلية كبيرة جداً، فإزالته تشبه قطع السلك.</p>`,title:'لماذا قصر ولماذا فتح؟'},
+    {title:'مختبر مصغّر: قصر أم فتح؟',widget:(el,B)=>DCML.sort(el,B,{intro:'عندما نخرج مصدراً من الخدمة في نظرية التركيب (والمصادر مثالية)، ماذا نضع مكانه؟',cats:['قصر دائرة (سلك)','فتح دائرة'],items:[
+ ['بطارية 20 V',0,'مصدر جهد: مقاومته الداخلية أصغر ما يمكن، فنعمل عليه قصر دائرة.'],
+ ['مصدر تيار 3 A',1,'مصدر تيار: مقاومته الداخلية أكبر ما يمكن، فنعمل عليه فتح دائرة.'],
+ ['مولد تيار مستمر يُعامل مصدر جهد مثالياً',0,'أي مصدر جهد مثالي يُستبدل بمقاومته الداخلية، وهي صفر.'],
+ ['مصدر تيار 15 A في دائرة تحليل عقدي',1,'لا يتغير الحكم بتغير الدائرة: مصدر التيار يُفتح.']]})}
    ]},
 
   {st:2,short:'مثال <span class="ltr">(4-5)</span>',title:'مثال <span class="ltr">(4-5)</span>',ref:'ص 115–116',
@@ -1003,7 +1231,16 @@ B.lesson({
      ['أن المقاومة سالبة',false,'المقاومات موجبة دائماً؛ الإشارة تخص اتجاه التيار.'],
      [String.raw`أن التيار الحقيقي في <span class="ltr">10 Ω</span> عكس السهم: من b إلى a (لأعلى)`,true,'أثر البطارية 20 V (لأعلى) أكبر من أثر البطارية 10 V (لأسفل)، فيغلب.']]}},
     {watch:String.raw`<ul><li>القيمتان المطبوعتان \(I_1=0.0636\) A و \(I_2=1.744\) A، والحساب الدقيق <span class="ltr">0.0638 A</span> و <span class="ltr">1.745 A</span>، فيكون \(I=-1.681\) A. في «الأمثلة المحلولة» مفتاح «كما في الكتاب / المصحح».</li><li>كتب الكتاب \(I=I_1+I_2=0.0636-1.744\): أي أن \(I_2\) أُخذ سالباً لأنه عكس اتجاه I، ولم يذكر ذلك صراحة. وفي الشكل <span class="ltr">(4-10ب)</span> كُتب على السهم «I1» والمقصود \(I_2\).</li></ul>`,fix:true},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر وأطفئ كل بطارية بنفسك</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر وأطفئ كل بطارية بنفسك</button></div>`},
+    {title:'مختبر مصغّر: شغّل كل بطارية وحدها',widget:(el,B)=>DCML.lab(el,B,{intro:'دائرة الشكل <span class="ltr">(4-10)</span>. التيار الموجب في المقاومة <span class="ltr">10 Ω</span> هو اتجاه السهم I (لأسفل). أثر كل بطارية محسوب بتجميع المقاومات كما في التوضيح أعلاه.',
+ predict:{q:'لو ضاعفنا البطارية 10 V إلى 20 V وبقيت الأخرى 20 V، فإن التيار الكلي I…',opts:[
+  ['يتضاعف إلى نحو −3.36 A',false,'التركيب يعني أن الذي يتضاعف هو أثر البطارية 10 V وحده (0.0638 A)، لا المجموع.'],
+  ['يتغير قليلاً فقط: من −1.681 إلى نحو −1.617 A',true,'أثر البطارية الأولى صار \\(2\\times0.0638=0.1277\\ \\text{A}\\)، وأثر الثانية كما هو: \\(0.1277-1.745=-1.617\\ \\text{A}\\).'],
+  ['يصبح صفراً لأن البطاريتين تساوتا',false,'البطاريتان في مكانين مختلفين من الدائرة، فلا يلغي أثر إحداهما الأخرى بمجرد تساوي الجهد.']]},
+ ins:[{k:'e1',l:'البطارية الأولى',seg:[[0,'خارج الخدمة (قصر)'],[10,'<span class="ltr">10 V</span>'],[20,'<span class="ltr">20 V</span>']],v:10},{k:'e2',l:'البطارية الثانية',seg:[[0,'خارج الخدمة (قصر)'],[20,'<span class="ltr">20 V</span>'],[40,'<span class="ltr">40 V</span>']],v:20}],
+ calc:(s,v,B)=>{const a=s.e1*(1/6.811594)*(1/5.307692)*(3/13),b=-s.e2/11.463415,I=a+b;
+  return {facts:[['أثر البطارية الأولى I<sub>1</sub>',DCML.fm(B,a,4)+' A'],['أثر البطارية الثانية I<sub>2</sub>',DCML.fm(B,b,4)+' A',b<0?'bad':''],['<span class="ltr" dir="ltr" style="white-space:normal">I = I<sub>1</sub> + I<sub>2</sub></span>',DCML.fm(B,I,4)+' A','hi']],
+   msg:Math.abs(I)<1e-9?'لا يمر تيار في المقاومة 10 Ω.':(I<0?'I سالب: التيار الحقيقي في 10 Ω لأعلى (من b إلى a).':'I موجب: التيار الحقيقي في 10 Ω لأسفل، باتجاه السهم.')+((s.e1===10&&s.e2===20)?' هذه أرقام الكتاب (الكتاب: 0.0636 و 1.744 و −1.68 A).':'')}}})}
    ]},
 
   {st:4,short:'مثال <span class="ltr">(4-7)</span>',title:'مثال <span class="ltr">(4-7)</span>',ref:'ص 118–121',
@@ -1039,7 +1276,17 @@ B.lesson({
      ['لأن البطارية 60 V وحدها تدفع تياراً في الفرع الأوسط لأسفل، أي عكس الاتجاه الموجب المختار (لأعلى)',true,'في الحالة (ج) تيار البطارية 60 V يتوزع على الفرعين الآخرين نازلاً فيهما.'],
      ['لأن البطارية 60 V موجبها لأسفل',false,'موجب البطارية 60 V لأعلى في الشكل؛ الطرح بسبب اتجاه تيارها في الفرع الأوسط.']]}},
     {tip:String.raw`<p>تحقق بالتحليل العقدي (b = 0): \(V_a=82.5\ \text{V}\)، فيكون تيار الفرع الأيسر <span class="ltr">3.375 A</span> لأسفل، والأوسط <span class="ltr">3.9375 A</span> لأعلى، والأيمن <span class="ltr">0.5625 A</span> لأسفل، وقانون كيرشوف للتيار عند a: \(3.9375=3.375+0.5625\).</p>`,title:'تحقق (ليس من الكتاب)'},
-    {watch:String.raw`<ul><li>في الأشكال <span class="ltr">(4-11)</span> و<span class="ltr">(4-11أ)</span> و<span class="ltr">(4-11ج)</span> في الكتاب رُسم سهم تيار الفرع الأيمن لأسفل، بينما الجمع في ص 121 يعدّه موجباً <b>لأعلى</b>. رسمناه هنا لأعلى ليوافق الجمع، فتكون النتيجة \(I_3=-0.563\) A أي <span class="ltr">0.563 A</span> لأسفل كما يقول الكتاب.</li><li>القيم الدقيقة <span class="ltr">0.5625</span> و <span class="ltr">0.9375</span>، والكتاب كتبها بثلاثة أرقام عشرية دون تقريب (<span class="ltr">0.562</span> و <span class="ltr">0.937</span>).</li><li>في الشكل <span class="ltr">(4-11ج)</span> قيمتا المقاومتين العلويتين غير مكتوبتين، وهما <span class="ltr">15 Ω</span> و <span class="ltr">10 Ω</span> كما في الشكل الأصلي.</li></ul>`,fix:true}
+    {watch:String.raw`<ul><li>في الأشكال <span class="ltr">(4-11)</span> و<span class="ltr">(4-11أ)</span> و<span class="ltr">(4-11ج)</span> في الكتاب رُسم سهم تيار الفرع الأيمن لأسفل، بينما الجمع في ص 121 يعدّه موجباً <b>لأعلى</b>. رسمناه هنا لأعلى ليوافق الجمع، فتكون النتيجة \(I_3=-0.563\) A أي <span class="ltr">0.563 A</span> لأسفل كما يقول الكتاب.</li><li>القيم الدقيقة <span class="ltr">0.5625</span> و <span class="ltr">0.9375</span>، والكتاب كتبها بثلاثة أرقام عشرية دون تقريب (<span class="ltr">0.562</span> و <span class="ltr">0.937</span>).</li><li>في الشكل <span class="ltr">(4-11ج)</span> قيمتا المقاومتين العلويتين غير مكتوبتين، وهما <span class="ltr">15 Ω</span> و <span class="ltr">10 Ω</span> كما في الشكل الأصلي.</li></ul>`,fix:true},
+    {title:'مختبر مصغّر: اجمع الأجزاء الثلاثة',widget:(el,B)=>DCML.lab(el,B,{intro:'شغّل البطاريات أو أطفئها، وراقب الجمع الجبري في كل فرع. الاتجاه الموجب: الأيسر لأسفل، والأوسط والأيمن لأعلى (التيارات الجزئية من حل الكتاب بقيمها الدقيقة).',
+ predict:{q:'لو أطفأنا البطارية 240 V وحدها، فإن تيار الفرع الأيمن \\(I_3\\)…',opts:[
+  ['يبقى سالباً (لأسفل)',false,'الجزء السالب في \\(I_3\\) جاء من البطارية 240 V؛ بإطفائها يبقى جزءان موجبان.'],
+  ['يصبح موجباً (لأعلى) نحو 1.69 A',true,'\\(I_3=0.75+0.9375=1.6875\\ \\text{A}\\) لأعلى.'],
+  ['يصبح صفراً',false,'تبقى البطاريتان 120 V و 60 V تدفعان تياراً في الفرع الأيمن.']]},
+ ins:[{k:'a',l:'',sw:true,v:1,on:'البطارية 120 V: تعمل',off:'البطارية 120 V: خارج الخدمة'},{k:'b',l:'',sw:true,v:1,on:'البطارية 240 V: تعمل',off:'البطارية 240 V: خارج الخدمة'},{k:'c',l:'',sw:true,v:1,on:'البطارية 60 V: تعمل',off:'البطارية 60 V: خارج الخدمة'}],
+ calc:(s,v,B)=>{const P=[[1.5,0.75,0.75],[1.5,3.75,-2.25],[0.375,-0.5625,0.9375]],on=[s.a,s.b,s.c],I=[0,1,2].map(k=>P.reduce((t,p,j)=>t+(on[j]?p[k]:0),0));
+  const d=(x,up)=>DCML.fm(B,Math.abs(x),4)+' A '+(Math.abs(x)<1e-9?'':((x>0)===up?'↑':'↓'));
+  return {facts:[['I<sub>1</sub> الفرع الأيسر',d(I[0],false)],['I<sub>2</sub> الفرع الأوسط',d(I[1],true)],['I<sub>3</sub> الفرع الأيمن',d(I[2],true),I[2]<0?'bad':'']],
+   msg:'تحقق عند العقدة a: \\(I_1=I_2+I_3\\) ← <span class="ltr">'+DCML.fm(B,I[0],4)+' = '+DCML.fm(B,I[1],4)+' + ('+DCML.fm(B,I[2],4)+')</span>'+((s.a&&s.b&&s.c)?'<br>الثلاث تعمل: \\(I_1=3.375\\)، \\(I_2=3.9375\\)، \\(I_3=-0.5625\\ \\text{A}\\) (أي لأسفل) كما في الكتاب.':'')}}})}
    ]},
 
   {recap:[
@@ -1150,7 +1397,10 @@ B.lesson({
     {tip:String.raw`<details><summary><b>اضغط لترى حلاً مقترحاً (ليس من الكتاب)</b></summary><p>الدائرة هي نفسها دائرة المثال <span class="ltr">(4-2)</span>. مع عقارب الساعة:</p>
      $$20=15I_1-3I_2\qquad(a)$$ $$30=-3I_1+12I_2\qquad(b)$$
      <p>بضرب (b) في 5 والجمع: \(170=57I_2\Rightarrow I_2=2.98\) A، ثم \(I_1=(20+3\times2.98)/15=1.929\) A (بدون تقريب: \(I_1=1.930\) و \(I_2=2.982\) A). وتيار الفرع الأوسط \(I_2-I_1\approx1.05\) A لأعلى.</p></details>`,title:'حل مقترح'},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلاتك وإجابتك</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=lab]');if(b)b.click()">افتح المختبر واكتب معادلاتك وإجابتك</button></div>`},
+    {title:'مختبر مصغّر: اكتب المعادلتين بالقاعدة',widget:(el,B)=>DCML.cases(el,B,{intro:'القاعدة من مثال <span class="ltr">(4-2)</span>: معامل تيار الحلقة = مجموع مقاوماتها، ومعامل التيار الآخر = سالب المقاومة المشتركة، والطرف الآخر = البطاريات بإشاراتها.',cases:[
+ {q:'ما معامل \\(I_1\\) في معادلة الحلقة الأولى (5 و 6 و 3 و 1 Ω)؟',opts:[['14',false,'نسيت إحدى المقاومات؛ اجمع الأربع كلها بما فيها المشتركة.'],['15',true,'\\(5+6+3+1=15\\).'],['3',false,'3 هي المقاومة المشتركة، ومعاملها مع \\(I_2\\) بإشارة سالبة.']]},
+ {q:'ما معامل \\(I_1\\) في معادلة الحلقة الثانية؟',opts:[['\\(+3\\)',false,'المقاومة المشتركة تدخل بإشارة سالبة لأن التيارين فيها متعاكسان.'],['\\(-3\\)',true,'سالب المقاومة المشتركة.'],['\\(12\\)',false,'12 معامل \\(I_2\\) نفسه في الحلقة الثانية.']]}]})}
    ]},
 
   {st:2,short:'التمرين 2',title:'التمرين 2: التحليل العقدي — الشكل <span class="ltr">(2)</span>',ref:'ص 122',
@@ -1169,7 +1419,13 @@ B.lesson({
     {tip:String.raw`<details><summary><b>اضغط لترى حلاً مقترحاً (ليس من الكتاب)</b></summary><p>العقدة 1 موصلة بالإسناد عن طريق البطارية فقط، فـ \(V_1=40\) V. العقدة 2:</p>
      $$\frac{V_2-V_1}{10}+\frac{V_2-0}{5}-20=0$$
      <p>وبالضرب في 10: \(V_2-V_1+2V_2-200=0\Rightarrow 3V_2=240\Rightarrow V_2=80\) V.</p></details>`,title:'حل مقترح'},
-    {watch:String.raw`<p>إزالة مقاومة <span class="ltr">2 Ω</span> من العقدة 2 رفعت جهدها من <span class="ltr">30 V</span> في المثال <span class="ltr">(4-4)</span> إلى <span class="ltr">80 V</span> في الحل المقترح: تيار المصدر <span class="ltr">20 A</span> صار يجد طرقاً أقل للخروج من العقدة، فيرتفع جهدها.</p>`}
+    {watch:String.raw`<p>إزالة مقاومة <span class="ltr">2 Ω</span> من العقدة 2 رفعت جهدها من <span class="ltr">30 V</span> في المثال <span class="ltr">(4-4)</span> إلى <span class="ltr">80 V</span> في الحل المقترح: تيار المصدر <span class="ltr">20 A</span> صار يجد طرقاً أقل للخروج من العقدة، فيرتفع جهدها.</p>`},
+    {title:'مختبر مصغّر: ماذا يدخل في معادلة العقدة 2؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الشكل <span class="ltr">(2)</span>: العقدة 2 تجمع ثلاثة أفرع. صنّف كل حد.',cats:['يدخل في معادلة العقدة 2','لا يدخل'],items:[
+ ['\\(\\frac{V_2-V_1}{10}\\)',0,'الفرع 10 Ω بين العقدة 2 والعقدة 1.'],
+ ['\\(\\frac{V_2-0}{5}\\)',0,'الفرع 5 Ω بين العقدة 2 والإسناد.'],
+ ['\\(-20\\)',0,'تيار المصدر 20 A داخل إلى العقدة، فإشارته سالبة.'],
+ ['\\(\\frac{V_2-0}{2}\\)',1,'لا توجد مقاومة 2 Ω في هذا الشكل (كانت في المثال 4-4).'],
+ ['\\(\\frac{V_1-0}{9}\\)',1,'المقاومة 9 Ω متصلة بالعقدة 1، لا بالعقدة 2.']]})}
    ]},
 
   {st:3,short:'التمرين 3',title:'التمرين 3: التحليل العقدي — الشكل <span class="ltr">(3)</span>',ref:'ص 122',
@@ -1189,7 +1445,13 @@ B.lesson({
      <p>العقدة 1: $$\frac{V_1-40}{4}+\frac{V_1-0}{5}+\frac{V_1-V_2}{2}=0$$ وبالضرب في 20: \(19V_1-10V_2=200\).</p>
      <p>العقدة 2: $$\frac{V_2-V_1}{2}+\frac{V_2-0}{4}-15=0$$ وبالضرب في 4: \(-2V_1+3V_2=60\).</p>
      <p>بالحل: \(V_1=1200/37=32.432\) V و \(V_2=41.622\) V.</p></details>`,title:'حل مقترح'},
-    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحلول المقترحة وغيّر الأرقام</button></div>`}
+    {html:String.raw`<div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحلول المقترحة وغيّر الأرقام</button></div>`},
+    {title:'مختبر مصغّر: ماذا يدخل في معادلة العقدة 1؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الشكل <span class="ltr">(3)</span>: العقدة 1 تجمع ثلاثة أفرع. صنّف كل حد.',cats:['يدخل في معادلة العقدة 1','لا يدخل'],items:[
+ ['\\(\\frac{V_1-40}{4}\\)',0,'الفرع (4 Ω + 40 V) وموجب البطارية نحو العقدة 1، فتُطرح.'],
+ ['\\(\\frac{V_1+40}{4}\\)',1,'تُجمع البطارية فقط لو كان موجبها نحو الإسناد.'],
+ ['\\(\\frac{V_1-0}{5}\\)',0,'الفرع 5 Ω إلى الإسناد.'],
+ ['\\(\\frac{V_1-V_2}{2}\\)',0,'الفرع 2 Ω إلى العقدة 2.'],
+ ['\\(-15\\)',1,'مصدر التيار 15 A متصل بالعقدة 2، فيدخل في معادلتها هي.']]})}
    ]},
 
   {recap:[

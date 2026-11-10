@@ -205,7 +205,183 @@ B.lesson({
  title:'التجربة الأولى: شرح استخدام برنامج MATLAB',
  summary:'ندخل كثيرات الحدود في MATLAB على هيئة صفوف من المعاملات، ونكتب دالة التحويل، ونحسب أصفارها وأقطابها بالأمر roots، ونرسمها بالأمر rlocus، ونرسم الاستجابة للخطوة بالأمر step، ثم نبني المخطط نفسه في Simulink ونشغّله ونقرأ النتيجة على Scope.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر مختبر التحكم الآلي.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'تمهيد',title:'تمهيد: ماذا ستتعلم من هذه التجارب؟',ref:'ص 3',
    q:'حقيبة عملية فيها عشر تجارب… ما الذي يُنتظر أن تتعلمه منها، وعلى أي أجهزة تُجرى؟',
@@ -224,7 +400,12 @@ B.lesson({
      <p>وقد تم وضع عشر تجارب مبينة في الفهرس.</p>
      <p>وقد روعي عند إعداد هذه التجارب المختبرات والأجهزة المتوفرة لدينا وهي: مختبر <span class="ltr">Com3Lab</span> من شركة <span class="ltr">Leybold</span> الألمانية. هذا المختبر متوفر في كثير من الكليات التقنية في المملكة. وقد سارعنا بترجمة ملفاته وحررنا مختبرات تتناسب مع محتوياته. نأمل إن شاء الله أن نكون قد وفقنا في ذلك. ورغم المجهودات التي بذلت فهذه المختبرات تعتبر كقاعدة يمكن تطويرها.</p>`,ref:'ص 3'},
     {tip:String.raw`<p>الحقيبة <b>دليل عملي</b>: تخبرك ماذا توصّل وماذا تسجل، لكنها لا تشرح النظرية. لذلك ستجد في كل محطة شرحاً قصيراً منا بكلمات بسيطة، عليه وسم «توضيح للمتدرب»، ونص الكتاب نفسه عليه وسم «نص الكتاب». وفي كل درس «مختبر» افتراضي تجري فيه التجربة بنفسك.</p>`},
-    {add:String.raw`<p><span class="ltr">Com3Lab</span> كرت إلكتروني عليه عدة «لوحات» (حراري، سرعة، إضاءة، حاكمات)، والأجهزة (المولد، الملتيميتر، راسم الذبذبات) أجهزة افتراضية تظهر على شاشة الحاسب ونوصل أسلاكها على صورة اللوحة. ستستعمله من الوحدة الثانية.</p>`,title:'ما هو Com3Lab؟'}
+    {add:String.raw`<p><span class="ltr">Com3Lab</span> كرت إلكتروني عليه عدة «لوحات» (حراري، سرعة، إضاءة، حاكمات)، والأجهزة (المولد، الملتيميتر، راسم الذبذبات) أجهزة افتراضية تظهر على شاشة الحاسب ونوصل أسلاكها على صورة اللوحة. ستستعمله من الوحدة الثانية.</p>`,title:'ما هو Com3Lab؟'},
+    {title:'تحقق سريع: ماذا قال التمهيد؟',widget:(el,B)=>DCML.tf(el,B,{intro:'هذه المحطة نص تمهيدي لا شيء فيه للتجريب. احكم على كل عبارة بحسب نص الكتاب (ص 3).',items:[
+ ['تجارب الحقيبة عشر تجارب مبينة في الفهرس.',true,'نص الكتاب: «وقد تم وضع عشر تجارب مبينة في الفهرس».'],
+ ['أُعدّت التجارب على مختبر Com3Lab من شركة Leybold الألمانية.',true,'هذا هو المختبر المتوفر في كثير من الكليات التقنية في المملكة، كما يذكر التمهيد.'],
+ ['الحقيبة لا تتناول برنامج Matlab.',false,'التمهيد يقول: «كما يتعلم المتدرب استخدام برنامج Matlab في أنظمة التحكم»، وهو موضوع هذه التجربة.'],
+ ['يرى معدّو الحقيبة أن هذه المختبرات نهائية ولا تحتاج تطويراً.',false,'نص الكتاب: «فهذه المختبرات تعتبر كقاعدة يمكن تطويرها».']]})}
    ]},
 
   {st:2,short:'الهدف من التجربة',title:'الوحدة الأولى — الهدف من التجربة',ref:'ص 4–5',
@@ -240,7 +421,14 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>الوحدة الأولى: أساسيات برنامج <span class="ltr">MATLAB</span></b></p>`,ref:'ص 4'},
     {book:String.raw`<p><b>الهدف من التجربة:</b></p><p>أن يتدرب المتدرب من خلال هذه التجربة على:</p><ul><li>أساسيات برنامج ماتلاب <span class="ltr">MATLAB</span>.</li><li>أساسيات برنامج <span class="ltr">SIMULINK</span>.</li></ul>`,ref:'ص 5'},
-    {tip:String.raw`<p><span class="ltr">MATLAB</span> برنامج حسابات: تكتب فيه أمراً في «نافذة الأوامر» بعد العلامة <span class="ltr">&gt;&gt;</span> فينفذه فوراً. و<span class="ltr">Simulink</span> جزء منه نرسم فيه النظام على شكل «صناديق» موصولة بأسهم ثم نشغله.</p>`}
+    {tip:String.raw`<p><span class="ltr">MATLAB</span> برنامج حسابات: تكتب فيه أمراً في «نافذة الأوامر» بعد العلامة <span class="ltr">&gt;&gt;</span> فينفذه فوراً. و<span class="ltr">Simulink</span> جزء منه نرسم فيه النظام على شكل «صناديق» موصولة بأسهم ثم نشغله.</p>`},
+    {title:'مختبر مصغّر: أين تنفّذ هذا العمل؟',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'لكل عمل اختر المكان الذي تنفذه فيه: نافذة الأوامر (تكتب) أم Simulink (ترسم وتوصل).',cats:['نافذة أوامر MATLAB','Simulink'],items:[
+ [`تكتب ${L('roots(d)')} بعد العلامة ${L('&gt;&gt;')} فيطبع الجذور.`,0,'أمر نصي يُكتب في نافذة الأوامر (ص 6).'],
+ [`تسحب كتلة ${L('Step')} وتصلها بسهم إلى كتلة ${L('Transfer Fcn')}.`,1,'ربط الرسوم الجاهزة ببعضها هو عمل Simulink (ص 7).'],
+ [`تكتب ${L('step(n,d)')} فيظهر منحنى الاستجابة.`,0,'أمر نصي في نافذة الأوامر (ص 7)، وهو غير كتلة Step في Simulink.'],
+ [`تنقر ${L('Simulation')} ثم ${L('Start')}.`,1,'هكذا تشغّل المحاكاة في Simulink (ص 8).'],
+ [`تكتب ${L('p=[1 3 1];')} لإدخال كثيرة حدود.`,0,'إدخال صف المعاملات أمر نصي (ص 5).'],
+ [`تنقر مرتين على أيقونة ${L('Scope')} لترى النتيجة.`,1,'جهاز العرض Scope كتلة في مخطط Simulink (ص 8).']]})}}
    ]},
 
   {st:3,short:'الأجهزة',title:'الأجهزة ومكونات التجربة',ref:'ص 5',
@@ -255,7 +443,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأجهزة ومكونات التجربة:</b></p><ul><li>جهاز حاسب.</li><li>برنامج <span class="ltr">MATLAB</span> و <span class="ltr">Simulink</span> محتوياً على الملف الذي يشمل الأدوات الرياضية التي يمكن استعمالها في الحسابات والرسومات وهو <span class="ltr">Control Tool Box</span>.</li></ul>`,ref:'ص 5'},
-    {tip:String.raw`<p>الأوامر <span class="ltr">tf</span> و<span class="ltr">step</span> و<span class="ltr">rlocus</span> تأتي من صندوق أدوات التحكم، واسمه الرسمي <span class="ltr">Control System Toolbox</span> (وفي الكتاب <span class="ltr">Control Tool Box</span>). إذا لم يكن مثبتاً فلن يعرف البرنامج هذه الأوامر.</p>`}
+    {tip:String.raw`<p>الأوامر <span class="ltr">tf</span> و<span class="ltr">step</span> و<span class="ltr">rlocus</span> تأتي من صندوق أدوات التحكم، واسمه الرسمي <span class="ltr">Control System Toolbox</span> (وفي الكتاب <span class="ltr">Control Tool Box</span>). إذا لم يكن مثبتاً فلن يعرف البرنامج هذه الأوامر.</p>`},
+    {title:'تحقق سريع: ماذا تحتاج التجربة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'قائمة أجهزة قصيرة: احكم على كل عبارة بحسب نص الكتاب (ص 5).',items:[
+ ['تحتاج هذه التجربة لوحة Com3Lab وأسلاك توصيل.',false,'الأجهزة في ص 5 جهاز حاسب وبرنامج MATLAB وSimulink فقط؛ لوحة Com3Lab تبدأ من الوحدة الثانية.'],
+ ['يجب أن يحتوي البرنامج على Control Tool Box.',true,'نص الكتاب: «محتوياً على الملف الذي يشمل الأدوات الرياضية… وهو Control Tool Box».'],
+ ['الأوامر tf وroots وstep تعمل في أي نسخة من MATLAB حتى بلا صندوق أدوات التحكم.',false,'roots أمر أساسي، لكن tf وstep وrlocus من صندوق أدوات التحكم؛ بدونه لا يعرفها البرنامج.']]})}
    ]},
 
   {st:4,short:'دالة التحويل',title:'خطوات إجراء التجربة: تعريف دالة التحويل',ref:'ص 5',
@@ -270,7 +462,14 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>بعد تشغيل برنامج ماتلاب نعرف دالة التحويل كما يلي:</p>$$G(s)=\frac{n(s)}{d(s)}$$<p>حيث إن: \(n(s)\) يمثل بسط دالة التحويل. و \(d(s)\) يمثل مقام دالة التحويل وكلاهما يمثل كثيرات الحدود في \(s\) <span class="ltr">(Polynomial in s)</span>.</p>`,ref:'ص 5'},
-    {tip:String.raw`<p>دالة التحويل «وصفة» تربط خرج النظام بدخله. المتغير \(s\) رمز رياضي يمثل التغير مع الزمن: \(s\) في المقام يعني أن النظام «يتأخر» ولا يستجيب فوراً. يكفي الآن أن تعرف أن النظام كله يُكتب بكثيرتي حدود: واحدة فوق (البسط) وواحدة تحت (المقام).</p>`}
+    {tip:String.raw`<p>دالة التحويل «وصفة» تربط خرج النظام بدخله. المتغير \(s\) رمز رياضي يمثل التغير مع الزمن: \(s\) في المقام يعني أن النظام «يتأخر» ولا يستجيب فوراً. يكفي الآن أن تعرف أن النظام كله يُكتب بكثيرتي حدود: واحدة فوق (البسط) وواحدة تحت (المقام).</p>`},
+    {title:'مختبر مصغّر: بسط أم مقام؟',widget:(el,B)=>DCML.sort(el,B,{intro:'من دوال الكتاب نفسها: لكل جزء اختر هل هو البسط \\(n(s)\\) أم المقام \\(d(s)\\).',cats:['البسط n(s)','المقام d(s)'],items:[
+ ['في \\(G(s)=\\frac{s^2+2s+1}{s^3+4s^2+2s+1}\\) (ص 6): الجزء \\(s^2+2s+1\\)',0,'هو فوق الخط، فهو البسط \\(n(s)\\)، وصفّه n=[1 2 1].'],
+ ['في الدالة نفسها: الجزء \\(s^3+4s^2+2s+1\\)',1,'تحت الخط، فهو المقام \\(d(s)\\)، وصفّه d=[1 4 2 1].'],
+ ['في السؤال الأول \\(G(s)=\\frac{s+1}{s(s+2)(s+3)}\\): الجزء \\(s(s+2)(s+3)\\)',1,'تحت الخط: مقام، ونضرب أقواسه قبل إدخاله.'],
+ ['في السؤال الثاني \\(G(s)=\\frac{2}{s(s+1)(s+2)}\\): الرقم \\(2\\)',0,'فوق الخط: بسط، وهو كثيرة حدود من الدرجة صفر.'],
+ ['الجزء الذي نحسب منه الأقطاب بالأمر roots',1,'الأقطاب جذور المقام: roots(d) (ص 6).'],
+ ['الجزء الذي نحسب منه الأصفار بالأمر roots',0,'الأصفار جذور البسط: roots(n) (ص 6).']]})}
    ]},
 
   {st:5,short:'إدخال كثيرة الحدود',title:'خطوات إجراء التجربة: إدخال كثيرة الحدود',ref:'ص 5–6',
@@ -313,7 +512,16 @@ B.lesson({
    body:[
     {book:String.raw`<p>يمكن كتابة الدالة في ماتلاب وذلك بكتابة الأمر التالي:</p><pre class="cl-code">»tf(n,d)</pre>`,ref:'ص 6'},
     {watch:String.raw`<p>طُبع الأمر في الكتاب <span class="ltr">Tf(n,d)</span> بحرف <span class="ltr">T</span> كبير. <span class="ltr">MATLAB</span> يفرّق بين الحرف الكبير والصغير، والصحيح <span class="ltr">tf(n,d)</span>؛ لو كتبت <span class="ltr">Tf</span> في البرنامج الحقيقي لظهرت رسالة خطأ (الدالة غير معروفة). في المختبر الافتراضي نقبل الكتابتين ونذكّرك بالصحيح.</p>`,fix:true},
-    {tip:String.raw`<p>بعد الأمر يطبع <span class="ltr">MATLAB</span> الدالة هكذا:</p>`+'<pre class="cl-code">'+esc('ans ='+tfText(NB,DB))+'</pre>'+String.raw`<p>البسط \(s^2+2s+1\) فوق الخط، والمقام \(s^3+4s^2+2s+1\) تحته، وهي نفس الدالة التي أدخلنا صفيها \(n\) و \(d\).</p>`,title:'ماذا يظهر على الشاشة؟'}
+    {tip:String.raw`<p>بعد الأمر يطبع <span class="ltr">MATLAB</span> الدالة هكذا:</p>`+'<pre class="cl-code">'+esc('ans ='+tfText(NB,DB))+'</pre>'+String.raw`<p>البسط \(s^2+2s+1\) فوق الخط، والمقام \(s^3+4s^2+2s+1\) تحته، وهي نفس الدالة التي أدخلنا صفيها \(n\) و \(d\).</p>`,title:'ماذا يظهر على الشاشة؟'},
+    {title:'مختبر مصغّر: ماذا يطبع tf؟',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'موقفان مع الصفين من مثال ص 6: '+L('n=[1 2 1];')+' و '+L('d=[1 4 2 1];'),cases:[
+ {q:'كتبت '+L('tf(n,d)')+'. ماذا يُطبع فوق الخط؟',opts:[
+  [L('s^3 + 4 s^2 + 2 s + 1'),false,'هذا المقام d، ويُطبع تحت الخط.'],
+  [L('s^2 + 2 s + 1'),true,'الصف الأول في tf هو البسط، فيُطبع فوق الخط.'],
+  [L('1 2 1'),false,'tf لا يطبع الصف كما هو، بل كثيرة الحدود بالمتغير s.']]},
+ {q:'كتبت '+L('tf(d,n)')+' بدل '+L('tf(n,d)')+'. ماذا يحدث؟',opts:[
+  ['تُطبع الدالة نفسها، فالترتيب لا يهم',false,'الترتيب مهم: الصف الأول بسط والثاني مقام.'],
+  ['رسالة خطأ',false,'الأمر مكتوب صحيحاً فيُنفَّذ، لكنه يعطي دالة أخرى.'],
+  ['تُطبع دالة مقلوبة: المقام فوق والبسط تحت',true,'tf يأخذ البسط أولاً ثم المقام، فتبديل الصفين يقلب الدالة.']]}]})}}
    ]},
 
   {st:7,short:'أصفار الدالة',title:'لحساب أصفار الدالة',ref:'ص 6',
@@ -331,7 +539,24 @@ B.lesson({
 
    -1
    -1</pre>`,ref:'ص 6'},
-    {tip:String.raw`<p><b>الأصفار</b> جذور البسط: قيم \(s\) التي تجعل الدالة صفراً. البسط هنا \(n(s)=s^2+2s+1\)، وهو من الدرجة الثانية فله جذران، وكلاهما \(-1\).</p>`}
+    {tip:String.raw`<p><b>الأصفار</b> جذور البسط: قيم \(s\) التي تجعل الدالة صفراً. البسط هنا \(n(s)=s^2+2s+1\)، وهو من الدرجة الثانية فله جذران، وكلاهما \(-1\).</p>`},
+    {title:'مختبر مصغّر: اختر البسط واقرأ أصفاره',widget:(el,B)=>{
+ const NS=[[[1,2,1],'s^2+2s+1','مثال ص 6'],[[1,1],'s+1','السؤال الأول'],[[2],'2','السؤال الثاني']];
+ const R=z=>{const f=v=>{const a=Math.abs(v)<1e-12?0:v;return Number.isInteger(a)?String(a):a.toFixed(4)};return z.im?f(z.re)+(z.im>0?' + ':' - ')+f(Math.abs(z.im))+'i':f(z.re)};
+ const plane=(zs,ps)=>{const W=320,H=150,X=v=>20+(v+4)*(W-40)/5,Y=v=>H/2-v*(H/2-18);let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="المستوى المركب" style="font-family:var(--font)" direction="ltr"><rect x="20" y="10" width="${X(0)-20}" height="${H-20}" fill="var(--on-soft)"/><path d="M14 ${Y(0)}H${W-8}M${X(0)} 8V${H-8}" stroke="var(--fg)" stroke-width="1.4"/>`;
+  for(let k=-4;k<=1;k++)s+=`<path d="M${X(k)} ${Y(0)-4}V${Y(0)+4}" stroke="var(--fg)"/><text x="${X(k)}" y="${Y(0)+17}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${k}</text>`;
+  zs.forEach((z,i)=>{s+=`<circle cx="${X(z.re)+(i%2)*0}" cy="${Y(z.im)}" r="${7+i*3}" fill="none" stroke="var(--on)" stroke-width="2.4"/>`});
+  (ps||[]).forEach(z=>{const x=X(z.re),y=Y(Math.max(-1,Math.min(1,z.im)));s+=`<path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x-6} ${y+6}L${x+6} ${y-6}" stroke="var(--stop)" stroke-width="2.6"/>`});
+  return s+`<text x="${W-10}" y="${H-8}" text-anchor="end" font-size="11" fill="var(--muted)">Real →</text></svg>`};
+ DCML.lab(el,B,{intro:'اختر بسطاً من دوال الكتاب، وشاهد ما يطبعه '+DCML.lt('roots(n)')+' وأين تقع الأصفار (○) على المستوى المركب.',
+  predict:{q:'في السؤال الثاني البسط '+DCML.lt('n=[2];')+'. كم صفراً للدالة؟',opts:[
+   ['صفر واحد يساوي 2',false,'الرقم 2 ثابت لا يصبح صفراً أبداً، فلا توجد قيمة \\(s\\) تجعله صفراً.'],
+   ['لا أصفار، ويطبع roots صفاً فارغاً []',true,'عدد الأصفار = درجة البسط، والدرجة هنا صفر.'],
+   ['صفران',false,'الصفران كانا لبسط مثال ص 6 \\(s^2+2s+1\\) لأنه من الدرجة الثانية.']]},
+  ins:[{k:'k',l:'البسط n(s)',seg:NS.map((x,i)=>[i,DCML.lt('n=['+x[0].join(' ')+']')+' — '+x[2]]),v:0}],
+  calc:(s)=>{const [c,txt]=NS[s.k],z=proots(c);
+   return {pic:plane(z),facts:[['n(s)',txt],['درجة البسط',String(c.length-1)],['عدد الأصفار',String(z.length),'hi']],
+    msg:code('>> roots(n)\nans =\n'+(z.length?z.map(v=>'   '+R(v)).join('\n'):'     []'))+(z.length===2?'الجذر \\(-1\\) مكرر: \\(s^2+2s+1=(s+1)^2\\)، لذلك رسمنا دائرتين حوله.':z.length?'صفر واحد عند \\(s=-1\\).':'كثيرة الحدود ثابت، فلا أصفار.')}}})}}
    ]},
 
   {st:8,short:'أقطاب الدالة',title:'لحساب أقطاب الدالة',ref:'ص 6',
@@ -350,7 +575,23 @@ B.lesson({
    -0.2442 + 0.4745i
    -0.2442 - 0.4745i</pre>`,ref:'ص 6'},
     {tip:String.raw`<p><b>الأقطاب</b> جذور المقام: قيم \(s\) التي تجعل المقام صفراً. والمقام \(s^3+4s^2+2s+1\) من الدرجة الثالثة فله ثلاثة أقطاب.</p>
-     <p>الأقطاب هي الأهم في التحكم: إذا كان الجزء الحقيقي لكل الأقطاب سالباً (كما هنا: <span class="ltr">−3.5115</span> و <span class="ltr">−0.2442</span>) فالنظام <b>مستقر</b> وتهدأ استجابته. القطبان المركّبان <span class="ltr">−0.2442 ± 0.4745i</span> يعنيان استجابة فيها تأرجح بسيط، وجزؤهما الحقيقي الصغير يعني أن الهدوء بطيء. الحرف <span class="ltr">i</span> هو الجزء التخيلي \(\sqrt{-1}\).</p>`}
+     <p>الأقطاب هي الأهم في التحكم: إذا كان الجزء الحقيقي لكل الأقطاب سالباً (كما هنا: <span class="ltr">−3.5115</span> و <span class="ltr">−0.2442</span>) فالنظام <b>مستقر</b> وتهدأ استجابته. القطبان المركّبان <span class="ltr">−0.2442 ± 0.4745i</span> يعنيان استجابة فيها تأرجح بسيط، وجزؤهما الحقيقي الصغير يعني أن الهدوء بطيء. الحرف <span class="ltr">i</span> هو الجزء التخيلي \(\sqrt{-1}\).</p>`},
+    {title:'مختبر مصغّر: اختر المقام واقرأ أقطابه',widget:(el,B)=>{
+ const DS=[[[1,4,2,1],'s^3+4s^2+2s+1','مثال ص 6'],[[1,5,6,0],'s(s+2)(s+3)','السؤال الأول'],[[1,3,2,0],'s(s+1)(s+2)','السؤال الثاني']];
+ const R=z=>{const f=v=>{const a=Math.abs(v)<1e-12?0:v;return Number.isInteger(a)?String(a):a.toFixed(4)};return z.im?f(z.re)+(z.im>0?' + ':' - ')+f(Math.abs(z.im))+'i':f(z.re)};
+ const plane=ps=>{const W=320,H=150,X=v=>20+(v+4)*(W-40)/5,Y=v=>H/2-v*(H/2-18);let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="المستوى المركب: الأقطاب ×" style="font-family:var(--font)" direction="ltr"><rect x="20" y="10" width="${X(0)-20}" height="${H-20}" fill="var(--on-soft)"/><path d="M14 ${Y(0)}H${W-8}M${X(0)} 8V${H-8}" stroke="var(--fg)" stroke-width="1.4"/>`;
+  for(let k=-4;k<=1;k++)s+=`<path d="M${X(k)} ${Y(0)-4}V${Y(0)+4}" stroke="var(--fg)"/><text x="${X(k)}" y="${Y(0)+17}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${k}</text>`;
+  ps.forEach(z=>{const x=X(z.re),y=Y(z.im);s+=`<path d="M${x-7} ${y-7}L${x+7} ${y+7}M${x-7} ${y+7}L${x+7} ${y-7}" stroke="var(--stop)" stroke-width="2.8"/>`});
+  return s+`<text x="${W-10}" y="${H-8}" text-anchor="end" font-size="11" fill="var(--muted)">Real →</text><text x="${X(0)-5}" y="22" text-anchor="end" font-size="11" fill="var(--muted)">Imag</text></svg>`};
+ DCML.lab(el,B,{intro:'اختر مقاماً من دوال الكتاب، وشاهد ما يطبعه '+DCML.lt('roots(d)')+' وأين تقع الأقطاب (×). المنطقة الخضراء = الجهة اليسرى (الجزء الحقيقي سالب).',
+  predict:{q:'في السؤال الأول المقام \\(s(s+2)(s+3)\\). أي قطب تعرفه دون أي حساب؟',opts:[
+   ['\\(s=2\\)',false,'العامل \\((s+2)\\) يصبح صفراً عند \\(s=-2\\) لا \\(+2\\).'],
+   ['\\(s=0\\)',true,'العامل \\(s\\) وحده يصبح صفراً عند \\(s=0\\)، فهو قطب على محور التخيلي نفسه.'],
+   ['\\(s=1\\)',false,'لا يوجد عامل \\((s-1)\\) في المقام.']]},
+  ins:[{k:'k',l:'المقام d(s)',seg:DS.map((x,i)=>[i,DCML.lt('d=['+x[0].join(' ')+']')+' — '+x[2]]),v:0}],
+  calc:(s)=>{const [c,txt]=DS[s.k],p=proots(c),z0=p.some(v=>Math.abs(v.re)<1e-9&&Math.abs(v.im)<1e-9);
+   return {pic:plane(p),facts:[['d(s)',txt],['عدد الأقطاب',String(p.length),'hi']],cls:z0?'warn':'',
+    msg:code('>> roots(d)\nans =\n'+p.map(v=>'   '+R(v)).join('\n'))+(z0?'أحد الأقطاب عند \\(s=0\\) (لا هو يمين ولا يسار): يعمل مثل «مجمّع»، فيبقى خرج الاستجابة للخطوة يزيد ولا يستقر (المحطة 12).':'كل الأقطاب جزؤها الحقيقي سالب (في الجهة اليسرى)، فالنظام مستقر وتهدأ استجابته.')}}})}}
    ]},
 
   {st:9,short:'رسم الأصفار والأقطاب',title:'رسم الأصفار والأقطاب — الشكل <span class="ltr">(1-1)</span>',ref:'ص 6–7',
@@ -367,7 +608,23 @@ B.lesson({
     {book:String.raw`<p>لرسم جذور البسط التي تمثل الأصفار وجذور المقام التي تمثل الأقطاب (شكل <span class="ltr">1-1</span>):</p><pre class="cl-code">»rlocus(n,d)</pre><div class="svgbox" style="max-width:600px;margin-inline:auto">`+rlocusFig(NB,DB)+String.raw`</div><p class="sub">شكل <span class="ltr">1-1</span>: أصفار وأقطاب الدالة</p>`,ref:'ص 6–7'},
     {tip:String.raw`<p>الأمر <span class="ltr">rlocus</span> يرسم أكثر من الأصفار والأقطاب: يرسم «المحل الهندسي للجذور»، أي أين تتحرك أقطاب النظام إذا أغلقنا عليه حلقة تحكم وكبّرنا الكسب \(K\) من الصفر. كل فرع يبدأ من قطب (×) وينتهي عند صفر (○) أو يذهب بعيداً. سترى أثر الكسب على الحلقة المغلقة في الوحدة الثالثة.</p>`},
     {watch:String.raw`<p>الأمر <span class="ltr">rlocus</span> يرسم المحل الهندسي للجذور كاملاً، والأصفار والأقطاب علامات عليه فقط. لرسم الأصفار والأقطاب وحدها يوجد أمر آخر هو <span class="ltr">pzmap(n,d)</span> (غير مذكور في الكتاب).</p>`},
-    {watch:String.raw`<p>عنوان الشكل <span class="ltr">(1-1)</span> في الكتاب «أصفار وأقطاب الدالة»، لكن الأمر <span class="ltr">rlocus</span> الذي رسمه يرسم المحل الهندسي للجذور كاملاً، لا الأصفار والأقطاب وحدها.</p>`,fix:true}
+    {watch:String.raw`<p>عنوان الشكل <span class="ltr">(1-1)</span> في الكتاب «أصفار وأقطاب الدالة»، لكن الأمر <span class="ltr">rlocus</span> الذي رسمه يرسم المحل الهندسي للجذور كاملاً، لا الأصفار والأقطاب وحدها.</p>`,fix:true},
+    {title:'مختبر مصغّر: كبّر الكسب وتابع الأقطاب على الفروع',widget:(el,B)=>{
+ const RL=rlocusData(NB,DB),X0=-6,X1=0.5;
+ const curves=RL.br.map(b=>({pts:b.filter(z=>z.re>=X0&&z.re<=X1&&Math.abs(z.im)<=1.4).map(z=>[z.re,z.im]),col:'--muted',w:2}));
+ const f=v=>(Math.abs(v)<5e-5?0:v).toFixed(3);
+ DCML.lab(el,B,{intro:'الأمر '+DCML.lt('rlocus(n,d)')+' يرسم أين تتحرك أقطاب الحلقة المغلقة كلما كبر الكسب \\(K\\) من الصفر. حرّك \\(K\\) (رقم تختاره أنت) وتابع النقاط البرتقالية على الفروع الرمادية لدالة ص 6.',
+  predict:{q:'نكبّر \\(K\\) كثيراً. إلى أين يتجه القطبان المركّبان؟',opts:[
+   ['إلى الجهة اليمنى فيصبح النظام غير مستقر',false,'فروع هذه الدالة كلها في الجهة اليسرى من المستوى.'],
+   ['لا يتحركان، فالأقطاب ثابتة',false,'الأقطاب ثابتة للدالة وحدها (\\(K=0\\))، أما مع الحلقة المغلقة فتتحرك مع \\(K\\)، وهذا ما يرسمه rlocus.'],
+   ['نحو الصفر المزدوج عند \\(-1\\)',true,'كل فرع يبدأ من قطب وينتهي عند صفر أو يبتعد: القطبان المركّبان ينتهيان عند الصفرين \\(-1\\)، والقطب الحقيقي يبتعد يساراً.']]},
+  ins:[{k:'g',l:'الكسب K (أرقام تختارها أنت)',min:-2,max:2,step:0.01,v:-2,fmt:v=>{const K=Math.pow(10,v);return K<0.1?K.toFixed(3):K<10?K.toFixed(2):K.toFixed(0)}}],
+  calc:(s)=>{const K=Math.pow(10,s.g),nn=[0].concat(NB),c=DB.map((v,j)=>v+K*nn[j]),p=proots(c);
+   const dots=RL.poles.map(z=>[z.re,z.im,'--stop']).concat(p.filter(z=>z.re>=X0).map(z=>[z.re,z.im,'--live']));
+   const out=p.filter(z=>z.re<X0);
+   return {plot:{xr:[X0,X1],yr:[-1.4,1.4],xl:'Real',yl:'Imag',curves,dots:[[-1,0,'--on']].concat(dots),xt:[-6,-5,-4,-3,-2,-1,0],yt:[-1,0,1],fx:v=>String(v),fy:v=>String(v)},
+    facts:[['عدد الأقطاب في الجهة اليسرى',p.filter(z=>z.re<0).length+' / 3','hi']],
+    msg:code('poles =\n'+p.map(z=>'   '+f(z.re)+(z.im?(z.im>0?' + ':' - ')+f(Math.abs(z.im))+'i':'')).join('\n'))+'الأحمر = أقطاب الدالة وحدها عند \\(K=0\\)، والنقطة الخضراء عند \\(-1\\) = الصفر المزدوج، والخطوط الرمادية = الفروع، والبرتقالي = أقطاب الحلقة المغلقة عند هذا الكسب، وهي جذور \\(d(s)+K\\,n(s)\\).'+(out.length?' القطب الحقيقي خرج من حدود الرسم إلى اليسار (انظر قيمته فوق).':'')+' كل الأقطاب في الجهة اليسرى: الحلقة مستقرة لكل قيم الكسب هنا.'}}})}}
    ]},
 
   {st:10,short:'المسح والاستجابة للخطوة',title:'المسح، والاستجابة للخطوة',ref:'ص 7',
@@ -383,7 +640,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>لمسح الرسم من الشاشة نستعمل الأمر:</p><pre class="cl-code">»clf</pre><p>لمسح البرنامج من الشاشة نستعمل الأمر:</p><pre class="cl-code">»clc</pre><p>لرسم استجابة النظام لإشارة الخطوة نستعمل الأمر:</p><pre class="cl-code">»step(n,d)</pre>`,ref:'ص 7'},
     {tip:String.raw`<p><b>إشارة الخطوة</b> دخل يقفز فجأة من 0 إلى 1 عند \(t=0\) ويبقى ثابتاً، مثل أن تضغط مفتاح التشغيل. الاستجابة للخطوة تخبرنا: إلى أي قيمة يصل الخرج، وبأي سرعة، وهل يتجاوزها ثم يرجع. القيمة النهائية هنا \(G(0)=\frac{1}{1}=1\) (نضع \(s=0\)). والاستجابة بطيئة لأن قطبين جزؤهما الحقيقي صغير <span class="ltr">(−0.2442)</span>.</p><div class="svgbox" style="max-width:600px;margin-inline:auto">`+stepFig(NB,DB)+String.raw`</div><p class="sub">ناتج الأمر <span class="ltr">step(n,d)</span> للدالة السابقة (الكتاب لا يعرض هذا الرسم).</p>`,title:'ماذا يرسم step؟'},
-    {watch:String.raw`<p><span class="ltr">clc</span> يمسح الكتابة من نافذة الأوامر فقط؛ المتغيرات <span class="ltr">n</span> و <span class="ltr">d</span> تبقى محفوظة، فتستطيع كتابة <span class="ltr">step(n,d)</span> بعده مباشرة.</p>`}
+    {watch:String.raw`<p><span class="ltr">clc</span> يمسح الكتابة من نافذة الأوامر فقط؛ المتغيرات <span class="ltr">n</span> و <span class="ltr">d</span> تبقى محفوظة، فتستطيع كتابة <span class="ltr">step(n,d)</span> بعده مباشرة.</p>`},
+    {title:'مختبر مصغّر: أي أمر تكتب؟',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'لكل موقف اختر الأمر الذي يحققه من أوامر ص 7.',cats:['clf','clc','step(n,d)'],items:[
+ ['تريد إزالة الرسم من نافذة الشكل.',0,'«لمسح الرسم من الشاشة نستعمل الأمر clf».'],
+ ['امتلأت نافذة الأوامر بالكتابة وتريد مسحها.',1,'«لمسح البرنامج من الشاشة نستعمل الأمر clc».'],
+ ['تريد أن ترى كيف يتصرف النظام مع الزمن عند إشارة الخطوة.',2,'«لرسم استجابة النظام لإشارة الخطوة نستعمل الأمر step(n,d)».'],
+ ['مسحت نافذة الأوامر، وتريد الآن رسم الاستجابة دون إعادة إدخال '+L('n')+' و '+L('d')+'.',2,'clc يمسح الكتابة فقط، والمتغيرات تبقى محفوظة، فتكتب step(n,d) مباشرة.']]})}}
    ]},
 
   {st:11,short:'استعمال SIMULINK',title:'استعمال <span class="ltr">SIMULINK</span>',ref:'ص 7–8',
@@ -399,7 +661,15 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>استعمال <span class="ltr">SIMULINK</span></b> يسهل تمثيل النظم بالرجوع إلى رسوم جاهزة وربطها ببعضها ثم تشغيلها.</p><p>لرسم مخطط باستعمال <span class="ltr">Simulink</span> نقوم بما يلي:</p><ul><li>فتح <span class="ltr">Simulink</span></li><li>التعرف على نوافذ <span class="ltr">Simulink</span></li><li>التعرف على العناصر الأساسية التي سنستخدمها مثل <span class="ltr">Sources</span> و <span class="ltr">Sinks</span> و <span class="ltr">Linear</span></li><li>فتح صفحة جديدة لتمثيل النظام المراد دراسته والاستعانة بالمدرب لبناء المخطط</li><li>لتشغيل المحاكاة ننقر على <span class="ltr">Simulation</span> ثم <span class="ltr">Start</span></li><li>للحصول على النتائج ننقر مرتين على أيقونة جهاز العرض <span class="ltr">Scope</span> فتظهر الاستجابة.</li></ul>`,ref:'ص 7–8'},
     {tip:String.raw`<div class="svgbox" style="max-width:600px;margin-inline:auto">`+slkSVG({num:'s^2+2s+1',den:'s^3+4s^2+2s+1'})+String.raw`</div><p>الكتلة <span class="ltr">Step</span> من مجموعة <span class="ltr">Sources</span> (المصادر)، والكتلة <span class="ltr">Scope</span> من <span class="ltr">Sinks</span> (أجهزة العرض)، والكتلة <span class="ltr">Transfer Fcn</span> من <span class="ltr">Linear</span> (في الإصدارات الحديثة اسمها <span class="ltr">Continuous</span>). الكتاب لا يضم صورة لنوافذ <span class="ltr">Simulink</span> ولا لمخطط، فهذا الرسم منا.</p>`,title:'المخطط لدالة الكتاب'},
-    {watch:String.raw`<p>كتلة <span class="ltr">Step</span> في <span class="ltr">Simulink</span> تقفز عند الزمن <span class="ltr">1 s</span> (القيمة الافتراضية)، وزمن المحاكاة الافتراضي <span class="ltr">10 s</span>؛ أما الأمر <span class="ltr">step</span> في نافذة الأوامر فيبدأ القفزة عند الصفر ويختار الزمن وحده. غيّر <span class="ltr">Stop time</span> إذا لم تكتمل الاستجابة.</p>`}
+    {watch:String.raw`<p>كتلة <span class="ltr">Step</span> في <span class="ltr">Simulink</span> تقفز عند الزمن <span class="ltr">1 s</span> (القيمة الافتراضية)، وزمن المحاكاة الافتراضي <span class="ltr">10 s</span>؛ أما الأمر <span class="ltr">step</span> في نافذة الأوامر فيبدأ القفزة عند الصفر ويختار الزمن وحده. غيّر <span class="ltr">Stop time</span> إذا لم تكتمل الاستجابة.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات Simulink',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي يذكره الكتاب (ص 7–8).',steps:[
+ ['فتح Simulink','لا يمكن عمل شيء قبل فتح البرنامج.'],
+ ['التعرف على نوافذ Simulink','نتعرف على النوافذ قبل أن نختار منها العناصر.'],
+ ['التعرف على العناصر الأساسية مثل Sources و Sinks و Linear','العناصر نحتاجها لبناء المخطط، فنتعرف عليها قبله.'],
+ ['فتح صفحة جديدة وبناء المخطط بمساعدة المدرب','نبني المخطط قبل أن نشغّله.'],
+ ['تشغيل المحاكاة: Simulation ثم Start','لا نتائج قبل التشغيل.'],
+ ['النقر مرتين على أيقونة Scope لرؤية الاستجابة','هذه آخر خطوة: نرى النتيجة بعد التشغيل.']],
+ done:'هذا ترتيب الكتاب. لاحظ أن رؤية النتيجة تأتي بعد التشغيل، والتشغيل بعد بناء المخطط.'})}
    ]},
 
   {st:12,short:'أسئلة ومناقشة',title:'أسئلة ومناقشة',ref:'ص 8',
@@ -414,6 +684,15 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>لدينا دالة التحويل التالية:</p>$$1)\;\; G(s)=\frac{s+1}{s(s+2)(s+3)} \qquad\qquad 2)\;\; G(s)=\frac{2}{s(s+1)(s+2)}$$<ul><li>أوجد الأصفار والأقطاب باستخدام برنامج <span class="ltr">MATLAB</span> لكل دالة.</li><li>ارسم الاستجابة الزمنية لإشارة الخطوة للدالتين باستخدام <span class="ltr">Simulink</span></li></ul>`,ref:'ص 8'},
+    {title:'مختبر مصغّر: صفّا الدالة الثانية',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'الدالة الثانية في الأسئلة: \\(G(s)=\\frac{2}{s(s+1)(s+2)}\\)، ومقامها بعد الضرب \\(s^3+3s^2+2s\\).',cases:[
+ {q:'ما صف البسط؟',opts:[
+  [L('n=[2 0];'),false,'هذا يعني \\(2s\\)، أي كثيرة حدود أخرى.'],
+  [L('n=[1 2];'),false,'هذا يعني \\(s+2\\).'],
+  [L('n=[2];'),true,'البسط ثابت واحد، فالصف عنصر واحد.']]},
+ {q:'ما صف المقام؟',opts:[
+  [L('d=[1 3 2 0];'),true,'الثابت صفر ويجب كتابته، والترتيب من أعلى قوة.'],
+  [L('d=[1 3 2];'),false,'نقص الصفر الأخير فصار الصف لـ \\(s^2+3s+2\\).'],
+  [L('d=[0 2 3 1];'),false,'الترتيب معكوس: الصف يبدأ من أعلى قوة.']]}]})}},
     {tip:String.raw`<details class="cl-q"><summary>1: أوجد الأصفار والأقطاب باستخدام برنامج MATLAB لكل دالة.</summary><div class="cl-ans"><b>إجابة مقترحة (ليست من الكتاب):</b> نضرب أقواس المقام أولاً لأن <span class="ltr">MATLAB</span> يحتاج المعاملات: \(s(s+2)(s+3)=s^3+5s^2+6s\) و \(s(s+1)(s+2)=s^3+3s^2+2s\) (معامل الثابت صفر ويجب كتابته).<pre class="cl-code">n=[1 1];  d=[1 5 6 0];
 roots(n)   →  -1
 roots(d)   →  0 , -3 , -2</pre><pre class="cl-code">n=[2];    d=[1 3 2 0];

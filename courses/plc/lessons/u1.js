@@ -242,7 +242,259 @@ B.lesson({
  title:'ما الحاكم المنطقي المبرمج (PLC)؟ ومكوناته الصلبة',
  summary:'تعريف الحاكم المنطقي المبرمج، ومكوناته الصلبة: وحدة البرمجة، وحدة المعالجة المركزية، وحدات الدخل والخرج، ومصدر القدرة، والربط بينها في الشكل (1-1).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,/*PLCTRY-BEGIN*/(window.PLCTRY=window.PLCTRY||(function(){
+/* «جرّب البرنامج» — مختبر مصغّر لبرامج الـ PLC في محطات الأسلوب التفاعلي (مقرر التحكم المبرمج).
+   يشغّل برنامج STL بمحرك الكتاب المشترك (B.createPLC) نفسه الذي يستعمله تبويب «المختبر»، بأنماط «مختبر مصغّر» (DCML).
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة).
+   o={intro, predict:{q,opts:[[t,ok,why]]}, nets:[[stl…] | {stl,title}], ins:[{a:'I0.1',l:'S1',d:'تشغيل',k:'hold'|'tap',on,off,v}],
+      outs:[{a:'Q4.5',l:'H1',d:'اللمبة',lamp:1}], timers:[{a:'T1',l:'المزمن T1'}], tick:[[ثوانٍ,'نص الزر']], view:'lad'|'fbd'|'stl'|[…],
+      names:{addr:sym}, draw:(P)=>html (رسم خاص بدل LAD/FBD/STL), msg:(g,st,P)=>html, note:html} */
+const css=`
+.ml .pt-in{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin-top:10px}
+.ml .pt-in .ml-b{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 8px}
+.ml .pt-in .ml-b small{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;font-size:12px;opacity:.85}
+.ml .pt-in .ml-b em{font-style:normal;font-size:12.5px;opacity:.9}
+.ml .pt-in .ml-b.tap{border-style:dashed}
+.ml .pt-in .ml-b.tap:active{background:var(--blue-soft)}
+.ml .pt-out{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.ml .pt-o{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:86px;padding:8px 8px;border-radius:12px;background:var(--surface-2);font-size:13px;text-align:center;line-height:1.4}
+.ml .pt-o i{width:26px;height:26px;border-radius:50%;background:var(--lamp-off);border:2px solid var(--fg);display:block;transition:background .15s}
+.ml .pt-o.on i{background:var(--on);box-shadow:0 0 0 5px var(--on-soft)}
+.ml .pt-o.on.lamp i{background:var(--live);box-shadow:0 0 0 5px var(--live-soft)}
+.ml .pt-o b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;font-size:13px}
+.ml .pt-v{margin-top:12px;max-width:600px;margin-inline:auto}
+.ml .pt-v .pt-n{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--surface)}
+.ml .pt-v .pt-n h4{margin:0 0 4px;font-size:13px;unicode-bidi:plaintext;text-align:left;color:var(--muted);font-weight:600}
+.ml .pt-v .pt-n,.ml .pt-v .pt-d{overflow-x:auto;direction:ltr}
+.ml .pt-v .pt-n h4{direction:rtl}
+.ml .pt-v svg{width:100%;height:auto;display:block;min-width:440px}
+.ml .pt-v .net{margin-top:8px}
+.ml .pt-v .stl{margin-top:0;font-size:13px}
+.ml .ml-facts span span{display:inline;font-size:inherit;color:inherit}
+.ml .pt-clk{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;font-size:13px;color:var(--muted)}
+`;
+const addCss=()=>{if(document.getElementById('plctry-css'))return;const s=document.createElement('style');s.id='plctry-css';s.textContent=css;document.head.appendChild(s)};
+const N=a=>String(a).replace(/\s+/g,'');
+const lt=s=>`<span class="ltr">${s}</span>`;
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+function run(el,B,o){if(!document.getElementById('dcml-css')&&window.DCML)DCML.tf(document.createElement('div'),B,{items:[]});addCss();el.classList.add('ml');
+ const P=B.createPLC(o.nets.map(n=>Array.isArray(n)?{stl:n}:n));
+ const ins=o.ins.map(x=>Object.assign({k:'hold'},x,{a:N(x.a)})),outs=o.outs.map(x=>Object.assign({},x,{a:N(x.a)}));
+ const st={};let clock=0;const reset=()=>{P.reset();clock=0;ins.forEach(x=>st[x.a]=x.v||0);scan(0,3)};
+ const scan=(dt,n)=>{for(let i=0;i<(n||1);i++){ins.forEach(x=>P.set(x.a,st[x.a]));P.scan(dt||0)}};
+ const views=o.view?[].concat(o.view):[];let view=views[0]||null;
+ let h=o.intro?`<p class="ml-in">${o.intro}</p>`:'';
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}"><div class="pt-in">${ins.map((x,i)=>`<button type="button" class="ml-b${x.k==='tap'?' tap':''}" data-i="${i}"></button>`).join('')}</div>`;
+ if(o.tick)h+=`<div class="ml-row">${o.tick.map(([s,l])=>`<button type="button" class="ml-b" data-t="${s}">${l.replace(/(\d+(?:\.\d+)?\s?s)$/,m=>lt(m))}</button>`).join('')}<span class="pt-clk" data-clk></span></div>`;
+ h+=`<div class="pt-out" data-out></div><div class="ml-facts" data-tm></div>`;
+ if(views.length||o.draw)h+=`<div class="pt-v">${views.length>1?`<div class="ml-seg" data-vw>${views.map(v=>`<button type="button" class="ml-b" data-v="${v}">${v.toUpperCase()}</button>`).join('')}</div>`:''}<div data-prog${o.draw?' class="pt-d"':''}></div></div>`;
+ h+=`<div class="ml-fb" data-msg></div>${o.note?`<p class="ml-ill">${o.note}</p>`:''}<div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div></div>`;
+ el.innerHTML=h;try{B.math(el)}catch(e){}
+ const g=a=>P.get(N(a));
+ const draw=()=>{
+  qa(el,'[data-i]').forEach(b=>{const x=ins[+b.dataset.i],v=st[x.a];
+   if(x.k==='tap'){b.innerHTML=`<b>${x.l}</b>${x.d?`<em>${x.d}</em>`:''}<small>اضغط لحظة ثم اترك</small>`}
+   else{b.setAttribute('aria-pressed',String(!!v));b.innerHTML=`<b>${x.l}</b><em>${v?(x.on||'مضغوط'):(x.off||'غير مضغوط')}</em><small>${x.a} = ${v}</small>`}});
+  q(el,'[data-out]').innerHTML=outs.map(x=>{const v=g(x.a);return `<div class="pt-o${v?' on':''}${x.lamp?' lamp':''}"><i></i><span>${x.l}${x.d?`<br><small>${x.d}</small>`:''}</span><b>${x.na?'':x.a+' '}= ${v}</b></div>`}).join('');
+  q(el,'[data-tm]').innerHTML=(o.timers||[]).map(x=>{const t=P.tim[N(x.a)];const rem=t&&t.run?Math.max(0,t.tv-t.el):null;
+   return `<div class="${t&&t.q?'hi':''}"><span>${x.l}</span><b>${t&&t.q?'Q = 1':'Q = 0'}${rem!=null?' · '+B.fmtN(rem,1)+' s':''}</b></div>`}).join('');
+  const ck=q(el,'[data-clk]');if(ck)ck.textContent='t = '+B.fmtN(clock,1)+' s';
+  const pg=q(el,'[data-prog]');if(pg&&o.draw){pg.innerHTML=o.draw(P,view)}else if(pg){qa(el,'[data-vw] .ml-b').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===view)));
+   pg.innerHTML=P.nets.map(n=>`<div class="pt-n">${P.nets.length>1||n.title?`<h4>${n.title||('Network '+(n.i+1))}</h4>`:''}${view==='stl'?B.stlTable(n,P):(view==='lad'?B.ladNetwork:B.fbdNetwork)(n,P,o.names||{})}</div>`).join('')}
+  const m=q(el,'[data-msg]');let r='';try{r=o.msg?o.msg(g,st,P):''}catch(e){console.error(e)}m.innerHTML=r||'';try{if(r)B.math(m)}catch(e){}};
+ qa(el,'[data-i]').forEach(b=>b.onclick=()=>{const x=ins[+b.dataset.i];
+  if(x.k==='tap'){st[x.a]=1;scan(0,3);st[x.a]=0;scan(0,3)}else{st[x.a]=st[x.a]?0:1;scan(0,3)}draw()});
+ qa(el,'[data-t]').forEach(b=>b.onclick=()=>{const n=Math.max(1,Math.round(+b.dataset.t/0.1));scan(0.1+1e-6,n);scan(0,3);clock+=n*0.1;draw()});
+ qa(el,'[data-vw] .ml-b').forEach(b=>b.onclick=()=>{view=b.dataset.v;draw()});
+ q(el,'[data-rs]').onclick=()=>{reset();draw()};
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]'),body=q(el,'.ml-body');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;try{B.math(fb)}catch(e){}
+   body.classList.remove('ml-lock');q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ reset();draw();return {P,st,draw}}
+/* دائرة من كائنات الوحدة الأولى (C.ex2 …): {program, inputs, load, io} */
+function circ(el,B,c,o){const nm={};(c.io||[]).forEach(r=>{if(r.addr&&!nm[N(r.addr)])nm[N(r.addr)]=r.sym});
+ return run(el,B,Object.assign({nets:c.program,ins:(c.inputs||[]).map(i=>({a:i.addr,l:i.id,d:i.label})),outs:[{a:c.load.addr,l:c.load.l,d:c.load.name,lamp:/lamp/.test(c.load.kind||'')}],names:nm},o||{}))}
+return {run,circ,lt};
+})())/*PLCTRY-END*/,{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 1',
    q:'لماذا يطلب الكتاب أن تكون قد اجتزت «ورشة التحكم في المحركات» قبل أن تبدأ مع الـ PLC؟',
@@ -262,7 +514,14 @@ B.lesson({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج – حاسب آلي – جهاز عرض (داتا شو) – سبورة – قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز آلات التيار المتردد – ورشة التحكم في المحركات الثلاثية الأوجه.</p>
      <p><b>محتوى الوحدة:</b> الفصل الأول: 1- نبذة عن التحكم المنطقي المبرمج. 2- المكونات الأساسية لعمليات التحكم المنطقي المبرمج. الفصل الثاني: أنواع البرمجة.</p>`,ref:'ص 1'},
-    {tip:String.raw`<p>الفصل الأول (هذا الدرس والدرس التالي) يعرّفك بالجهاز نفسه: مما يتكون، وما البرنامج. والفصل الثاني يعلّمك كيف تكتب البرنامج بثلاث طرق.</p>`,title:'خريطة الوحدة في سطرين'}
+    {tip:String.raw`<p>الفصل الأول (هذا الدرس والدرس التالي) يعرّفك بالجهاز نفسه: مما يتكون، وما البرنامج. والفصل الثاني يعلّمك كيف تكتب البرنامج بثلاث طرق.</p>`,title:'خريطة الوحدة في سطرين'},
+    {title:'تحقق سريع: ما الذي في صفحة الوحدة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'صفحة الوحدة (ص 1) فيها أهداف، ومتطلبات يجب اجتيازها قبل البدء، ووسائل مساعدة. ضع كل بند في مكانه.',cats:['هدف','متطلب سابق','وسيلة مساعدة'],items:[
+ ['معرفة مكونات التحكم في العمليات الصناعية (PLC).',0,'من «الأهداف»: ما ستعرفه عند إكمال الوحدة.'],
+ ['اجتياز آلات التيار المتردد.',1,'من «متطلبات الجدارة»: يجب اجتيازه قبل الوحدة.'],
+ ['مختبر التحكم المنطقي المبرمج.',2,'من «الوسائل المساعدة» التي تُستعمل في التدريب.'],
+ ['معرفة لغة البرمجة وأنواعها.',0,'الهدف الثاني في الوحدة، وهو موضوع الفصل الثاني (أنواع البرمجة).'],
+ ['ورشة التحكم في المحركات الثلاثية الأوجه.',1,'متطلب سابق: دوائر التحكم التي رسمتها في الورشة هي التي سنحوّلها إلى برامج.'],
+ ['جهاز عرض (داتا شو).',2,'وسيلة مساعدة في قائمة ص 1.']]})}
    ]},
 
   {st:2,short:'ما الـ PLC؟',title:'ما الحاكم المنطقي المبرمج؟',ref:'ص 2',
@@ -278,7 +537,12 @@ B.lesson({
      ['قيمة تزيد كلما ضغطت بقوة أكبر',false,'الإشارة الثنائية لها حالتان فقط، ولا تتغير بقوة الضغط.'],
      ['0',false,'0 تعني لا يوجد جهد، أي أن الضاغط غير مضغوط.'],
      ['1',true,'الضاغط مضغوط فيصل الجهد، والإشارة الثنائية = 1.']]}},
-    {add:String.raw`<p>إشارات المرور، والمصاعد، وخطوط التعبئة والتغليف في المصانع، ومحطات ضخ المياه… كثير منها يتحكم فيه <span class="ltr">PLC</span>: يقرأ الحساسات والضواغط، ثم يشغّل المحركات والصمامات والمصابيح حسب البرنامج.</p>`,title:'أين تجده؟'}
+    {add:String.raw`<p>إشارات المرور، والمصاعد، وخطوط التعبئة والتغليف في المصانع، ومحطات ضخ المياه… كثير منها يتحكم فيه <span class="ltr">PLC</span>: يقرأ الحساسات والضواغط، ثم يشغّل المحركات والصمامات والمصابيح حسب البرنامج.</p>`,title:'أين تجده؟'},
+    {title:'تحقق سريع: تعريف الـ PLC',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب تعريف الكتاب (ص 2).',items:[
+ ['الحاكم المنطقي المبرمج يستعمل الحاسب الآلي لتنفيذ عمليات التحكم في الأجهزة والمعدات.',true,'هذا أول التعريف: «استخدام الحاسب الآلي لتنفيذ عمليات التحكم في الأجهزة والمعدات».'],
+ ['إشارة الدخل الثنائية يمكن أن تأخذ أي قيمة بين 0 و 1، مثل 0.5.',false,'الثنائية لها حالتان فقط: 1 (يوجد جهد) أو 0 (لا يوجد).'],
+ ['الـ PLC يقرر ما يفعله بناءً على إشارات الدخل التي يستقبلها.',true,'«ثم يقوم الحاسب بناءً على هذه الإشارات بتنفيذ عمليات التحكم المطلوبة».'],
+ ['الـ PLC يعمل بدون أي إشارات دخل، فهو لا يحتاج إلى ضواغط أو حساسات.',false,'التعريف يبدأ باستقبال إشارات الدخل؛ بدونها لا يعرف متى يشغّل الحمل.']]})}
    ]},
 
   {st:3,short:'المكونات الأساسية',title:'ثانياً: المكونات الأساسية للحاكم المنطقي المبرمج',ref:'ص 2',
@@ -293,7 +557,13 @@ B.lesson({
     {predict:{q:'جهاز PLC موصول بالضواغط والأحمال، لكن لم يُحمَّل عليه أي برنامج. ماذا يحدث عند الضغط على ضاغط التشغيل؟',opts:[
      ['لا يعمل الحمل، لأن العنصر الثاني (البرنامج) هو الذي يحدد عمليات التحكم',true,'الحاكم يتكون من عنصرين أساسيين؛ المكونات الصلبة وحدها لا تعرف متى تشغّل الحمل.'],
      ['يعمل الحمل، لأن المكونات الصلبة كاملة',false,'المكونات الصلبة تستقبل الإشارات وتنقلها، لكن قرار التشغيل يأتي من البرنامج.'],
-     ['يعمل الحمل دائماً حتى دون ضغط',false,'لا يوجد برنامج يأمر وحدة الخرج بالتشغيل.']]}}
+     ['يعمل الحمل دائماً حتى دون ضغط',false,'لا يوجد برنامج يأمر وحدة الخرج بالتشغيل.']]}},
+    {title:'مختبر مصغّر: صلب أم برنامج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الـ PLC عنصران: مكونات صلبة (Hardware) وبرنامج (Software). صنّف كل شيء.',cats:['مكونات صلبة','برنامج'],items:[
+ ['وحدة الدخل التي توصل بها الضواغط.',0,'قطعة حقيقية تُركّب في الجهاز (البند ت، ص 3).'],
+ ['الأوامر التي تقول: «إذا ضُغط S1 فشغّل اللمبة H1».',1,'هذه مجموعة أوامر، وهي تعريف البرنامج في الدرس التالي (ص 5).'],
+ ['وحدة مصدر القدرة.',0,'تغذي الوحدات بالقدرة؛ قطعة حقيقية (البند ح).'],
+ ['برنامج Step7 الذي نكتب به الأوامر على الحاسب.',1,'Step7 برنامج من شركة Siemens (ص 5).'],
+ ['وحدة المعالجة المركزية CPU.',0,'العنصر الأساسي المسؤول عن تنفيذ البرنامج (البند ب).']]})}
    ]},
 
   {st:4,short:'المكونات الصلبة',title:'1- المكونات الصلبة: ما القطع التي يتكون منها؟',ref:'ص 2–3',
@@ -316,7 +586,13 @@ B.lesson({
      <p><b>ح- وحدة مصدر القدرة (Power Supply):</b> تغذي هذه الوحدة وحدات الدخل والخرج ووحدة المعالجة المركزية بالقدرة المطلوبة حيث توصل هذه الوحدة بجهد متردد قدرة (220 فولت متردد) ثم يحول هذا الجهد إلى جهد منخفض (24 فولت مستمر).</p>`,ref:'ص 2–3'},
     {tip:String.raw`<ul><li><b>وحدة البرمجة</b>: نكتب عليها البرنامج.</li><li><b>وحدة المعالجة <span class="ltr">CPU</span></b>: تحفظ البرنامج وتنفّذه.</li><li><b>وحدة الدخل</b>: «تسمع» الضواغط والحساسات.</li><li><b>وحدة الخرج</b>: «تأمر» الأحمال.</li><li><b>مصدر القدرة</b>: يغذي الجميع بجهد <span class="ltr">24 V</span> مستمر.</li></ul>`,title:'عمل كل وحدة في كلمة'},
     {watch:String.raw`<p>العنوان في الكتاب يقول «ثلاثة عناصر أساسية» لكن البنود التي بعده <b>ستة</b> (أ، ب، ت، ث، ج، ح)، و«وحدة البرمجة» مذكورة مرتين: في (أ) تعريف الحاسب الآلي، وفي (ج) التفريق بين الوحدة الثابتة والمتنقلة.</p>`,fix:true},
-    {add:String.raw`<p>نظاما <span class="ltr">Windows95</span> و<span class="ltr">98</span> قديمان جداً. أجهزة الـ <span class="ltr">PLC</span> الحديثة تُبرمج من حاسب محمول عادي بنظام <span class="ltr">Windows</span> حديث، يوصل بالـ <span class="ltr">PLC</span> بكابل أو عبر الشبكة.</p>`,title:'اليوم'}
+    {add:String.raw`<p>نظاما <span class="ltr">Windows95</span> و<span class="ltr">98</span> قديمان جداً. أجهزة الـ <span class="ltr">PLC</span> الحديثة تُبرمج من حاسب محمول عادي بنظام <span class="ltr">Windows</span> حديث، يوصل بالـ <span class="ltr">PLC</span> بكابل أو عبر الشبكة.</p>`,title:'اليوم'},
+    {title:'مختبر مصغّر: من يقوم بهذا العمل؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عمل اضغط الوحدة التي تقوم به حسب بنود الكتاب (ص 2–3).',cats:['وحدة الدخل','وحدة المعالجة CPU','وحدة الخرج','مصدر القدرة','وحدة البرمجة'],items:[
+ ['تستقبل إشارة الضاغط من النظام وتنقلها إلى وحدة المعالجة.',0,'البند (ت): وحدات الدخل تستقبل إشارات الدخل وتنقلها إلى وحدة المعالجة.'],
+ ['تنفّذ البرنامج، وفي ذاكرتها يُخزَّن برنامج التحكم.',1,'البند (ب): العنصر الأساسي المسؤول عن تنفيذ البرنامج، وفيها وحدة الذاكرة.'],
+ ['تستقبل نتيجة البرنامج وتنقل الإشارة إلى اللمبة.',2,'البند (ث): وحدات الخرج تستقبل نتيجة العمليات في الـ CPU وتنقل الإشارات الناتجة.'],
+ ['توصل بجهد 220 فولت متردد وتحوّله إلى 24 فولت مستمر.',3,'البند (ح): وحدة مصدر القدرة.'],
+ ['حاسب عادي نكتب عليه البرنامج، أو وحدة صغيرة متنقلة.',4,'البندان (أ) و(ج): وحدة البرمجة ثابتة (الحاسب) أو متنقلة.']]})}
    ]},
 
   {st:5,short:'مثال المعالجات',title:'مثال الكتاب: معالجان من شركة Siemens',ref:'ص 2',
@@ -331,7 +607,17 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>على سبيل المثال: معالج من إنتاج شركة (Siemens) وهي من الشركات المشهورة في هذا المجال. رقم المعالج (CPU313) له المواصفات التالية: { يعمل على معالجة (<span class="ltr">12KB</span> خلال <span class="ltr">0.6ms</span>) } بينما المعالج (CPU314) { يعمل على معالجة (<span class="ltr">24KB</span> خلال <span class="ltr">0.3ms</span>) }.</p>`,ref:'ص 2'},
-    {tip:String.raw`<p><span class="ltr">KB</span> = كيلوبايت (وحدة لقياس حجم البيانات)، و<span class="ltr">ms</span> = ملّي ثانية (جزء من ألف من الثانية). <span class="ltr">CPU314</span> يعالج ضعف الحجم في نصف الزمن، فهو أسرع بكثير من <span class="ltr">CPU313</span>. لهذا يُختار المعالج حسب حجم البرنامج والسرعة المطلوبة.</p>`}
+    {tip:String.raw`<p><span class="ltr">KB</span> = كيلوبايت (وحدة لقياس حجم البيانات)، و<span class="ltr">ms</span> = ملّي ثانية (جزء من ألف من الثانية). <span class="ltr">CPU314</span> يعالج ضعف الحجم في نصف الزمن، فهو أسرع بكثير من <span class="ltr">CPU313</span>. لهذا يُختار المعالج حسب حجم البرنامج والسرعة المطلوبة.</p>`},
+    {title:'مختبر مصغّر: أي المعالجين أسرع؟',widget:(el,B)=>{const L=DCML.lt;DCML.lab(el,B,{intro:`الكتاب يعطي لكل معالج حجماً وزمناً: ${L('CPU313')} يعالج ${L('12KB')} خلال ${L('0.6ms')}، و${L('CPU314')} يعالج ${L('24KB')} خلال ${L('0.3ms')}. اختر حجم برنامج وقارن الزمن.`,
+ predict:{q:`برنامج حجمه ${L('24KB')}. كم مرة يحتاج ${L('CPU313')} من زمن ${L('CPU314')} لمعالجته؟`,opts:[
+  ['المدة نفسها',false,'CPU313 يعالج في الدفعة نصف الحجم، وفي ضعف الزمن.'],
+  ['أربعة أضعاف',true,`${L('CPU313')}: دفعتان من ${L('12KB')} = ${L('1.2ms')}. ${L('CPU314')}: دفعة واحدة = ${L('0.3ms')}. و${L('1.2 ÷ 0.3 = 4')}.`],
+  ['ضعف الزمن فقط',false,'الفرق مضاعف مرتين: نصف الحجم في كل مرة، وضعف الزمن لكل مرة.']]},
+ ins:[{k:'kb',l:'حجم البرنامج (KB): 12 و24 من الكتاب، و48 و96 أرقام تختارها أنت',seg:[[12,'12'],[24,'24'],[48,'48'],[96,'96 KB']],v:24}],
+ calc:(s,P,B)=>{const t3=s.kb/12*0.6,t4=s.kb/24*0.3;
+  return {bars:[{l:'CPU313',v:t3,max:4.8,txt:B.fmtN(t3,2)+' ms',col:'--stop'},{l:'CPU314',v:t4,max:4.8,txt:B.fmtN(t4,2)+' ms',col:'--on'}],
+   facts:[['زمن CPU313',B.fmtN(t3,2)+' ms'],['زمن CPU314',B.fmtN(t4,2)+' ms','hi'],['النسبة',B.fmtN(t3/t4,0)+' ×']],
+   msg:'الحساب هنا تقسيم بسيط: كم «دفعة» من حجم الكتاب يحتاجها البرنامج، ثم نضرب في زمن الدفعة. هذه طريقة للمقارنة فقط، وليست طريقة الشركة في قياس السرعة.'}}})}}
    ]},
 
   {st:6,short:'مواصفات الدخل والخرج',title:'بماذا تختلف وحدات الدخل والخرج؟',ref:'ص 2–3',
@@ -349,7 +635,12 @@ B.lesson({
     {book:String.raw`<p><b>ولوحدات الخرج مواصفات تختلف من شركة منتجة إلى أخرى من حيث:</b></p><ol><li>النوع. هل هي وحدات رقمية (Digital) أم تماثلية (Analog)؟</li><li>من حيث عدد نقاط الدخل هل هي (8 نقاط) أم (16 نقطة)؟</li><li>من حيث الجهد هل هو مستمر أم متردد؟</li><li>من حيث قيمة الجهد المغذي للحمل (24V) أو (120V) أو (240V) وهكذا...</li><li>من حيث قيم التيار التي يمكن أن تتحمله الوحدة في تغذية الحمل (10mA) أو (1A) أو (2A) أو (10A) وهكذا..</li></ol>`,ref:'ص 3'},
     {watch:String.raw`<p>في قائمة وحدات <b>الخرج</b> البند الثاني مكتوب «عدد نقاط <b>الدخل</b>»، والمقصود عدد نقاط <b>الخرج</b>.</p>`,fix:true},
     {watch:String.raw`<p>الفرق الوحيد بين قائمتي وحدات الدخل والخرج هو البند الخامس (التيار)، وهو لوحدات الخرج فقط.</p>`},
-    {add:String.raw`<p><b>رقمية</b>: الإشارة لها حالتان فقط، مثل ضاغط أو مفتاح حد (مضغوط / غير مضغوط). <b>تماثلية</b>: الإشارة قيمة تتغير باستمرار، مثل حساس الحرارة أو حساس الضغط في خزان.</p>`,title:'رقمية أم تماثلية؟'}
+    {add:String.raw`<p><b>رقمية</b>: الإشارة لها حالتان فقط، مثل ضاغط أو مفتاح حد (مضغوط / غير مضغوط). <b>تماثلية</b>: الإشارة قيمة تتغير باستمرار، مثل حساس الحرارة أو حساس الضغط في خزان.</p>`,title:'رقمية أم تماثلية؟'},
+    {title:'مختبر مصغّر: مواصفة لوحدات الدخل أم الخرج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'قارن قائمتي مواصفات وحدات الدخل والخرج (ص 2–3). لكل مواصفة: هل تُذكر للنوعين أم لوحدات الخرج فقط؟',cats:['للدخل والخرج معاً','لوحدات الخرج فقط'],items:[
+ ['النوع: رقمية (Digital) أم تماثلية (Analog).',0,'البند الأول في القائمتين.'],
+ ['عدد النقاط: 8 نقاط أم 16 نقطة.',0,'في القائمتين (وفي قائمة الخرج كُتب «نقاط الدخل» والمقصود نقاط الخرج).'],
+ ['قيمة التيار الذي تتحمله الوحدة في تغذية الحمل: 10mA أو 1A أو 2A أو 10A.',1,'هذا البند الخامس، وهو في قائمة وحدات الخرج فقط: الخرج هو الذي يغذي الحمل.'],
+ ['الجهد: مستمر أم متردد، وقيمته 24V أو 120V أو 240V.',0,'في القائمتين؛ لكن في الدخل «الجهد المغذي لها» وفي الخرج «الجهد المغذي للحمل».']]})}
    ]},
 
   {st:7,short:'الربط بين المكونات',title:'كيف تترابط المكونات؟ الشكل <span class="ltr">(1-1)</span>',ref:'ص 4',
@@ -513,7 +804,12 @@ B.lesson({
      <p>ومن أشهر هذه البرامج وأحدثها برنامج (<span class="ltr">Step7</span>) وهو برنامج منتج من شركة (Siemens) ويعمل تحت نظام التشغيل (<span class="ltr">Windows95</span> أو 98) بالإضافة إلى برنامج (<span class="ltr">Step5</span>) ومنه عدة إصدارات تعمل على نظام التشغيل (<span class="ltr">Dos3.1</span>) أو نظام (<span class="ltr">Windows 3.11</span>).</p>
      <p>وهناك شركات أخرى تنتج برامج تحكم ولكنها تماثل (<span class="ltr">Step7</span>).</p>`,ref:'ص 5'},
     {tip:String.raw`<p>الجهاز (المكونات الصلبة) لا يعرف وحده متى يشغّل الحمل. البرنامج هو الذي يقول له: «إذا ضُغط هذا الضاغط فشغّل هذا الحمل». وبرنامج <span class="ltr">Step7</span> هو الأداة التي نكتب بها هذه الأوامر على الحاسب.</p>`},
-    {add:String.raw`<p>اسم برنامج شركة <span class="ltr">Siemens</span> الحالي <span class="ltr">TIA Portal</span>، وبداخله إصدار حديث من <span class="ltr">Step7</span> يعمل على أنظمة <span class="ltr">Windows</span> الحديثة. أما <span class="ltr">Windows95/98</span> و<span class="ltr">DOS</span> فأنظمة قديمة جداً لم تعد تُستخدم.</p>`,title:'اليوم'}
+    {add:String.raw`<p>اسم برنامج شركة <span class="ltr">Siemens</span> الحالي <span class="ltr">TIA Portal</span>، وبداخله إصدار حديث من <span class="ltr">Step7</span> يعمل على أنظمة <span class="ltr">Windows</span> الحديثة. أما <span class="ltr">Windows95/98</span> و<span class="ltr">DOS</span> فأنظمة قديمة جداً لم تعد تُستخدم.</p>`,title:'اليوم'},
+    {title:'تحقق سريع: برامج التحكم',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 5).',items:[
+ ['البرنامج (Software) مجموعة من الأوامر تُنفَّذ بطريقة منطقية لتنفيذ عملية التحكم المطلوبة.',true,'هذا تعريف الكتاب للبرنامج.'],
+ ['برنامج Step5 يعمل تحت نظام التشغيل Windows95 أو 98.',false,'هذا Step7. أما Step5 فإصداراته تعمل على Dos3.1 أو Windows 3.11.'],
+ ['Step7 برنامج من إنتاج شركة Siemens.',true,'«وهو برنامج منتج من شركة (Siemens)».'],
+ ['لا توجد شركة غير Siemens تنتج برامج تحكم.',false,'الكتاب: «وهناك شركات أخرى تنتج برامج تحكم ولكنها تماثل (Step7)».']]})}
    ]},
 
   {st:2,short:'أنواع البلوكات',title:'أنواع البلوكات: أين يُحفظ البرنامج؟',ref:'ص 5',
@@ -530,7 +826,12 @@ B.lesson({
     {predict:{q:'أي بلوك تتوقع أنه لا يحمل أوامر تحكم، بل يحفظ البيانات فقط؟',opts:[
      ['DB',true,'جدول العمليات (ص 6): العملية الوحيدة لبلوك البيانات DB هي تخزين البيانات. والحرف D من Data.'],
      ['OB',false,'OB هو البلوك التنظيمي الذي يبدأ منه البرنامج، وفيه تُجرى أغلب العمليات.'],
-     ['PB',false,'PB بلوك برامج: فيه أوامر، وتُجرى فيه أغلب العمليات مثل OB و FB.']]}}
+     ['PB',false,'PB بلوك برامج: فيه أوامر، وتُجرى فيه أغلب العمليات مثل OB و FB.']]}},
+    {title:'مختبر مصغّر: صِل الوصف بالبلوك',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط رمز البلوك المناسب (جدولا ص 5–6 وفقرة ص 6).',cats:['OB','PB','FB','DB'],items:[
+ ['البلوك الذي يبدأ منه البرنامج.',0,'«يبدأ البرنامج من البلوك التنظيمي (OB)» (ص 6).'],
+ ['بلوك عمليته الوحيدة في الجدول تخزين البيانات.',3,'بلوك البيانات DB: العملية 10 «تخزين البيانات».'],
+ ['بلوك برامج يُقفز إليه من البلوك التنظيمي.',1,'PB = بلوك برامج، ويُقفز إليه بعمليات القفز المشروط وغير المشروط.'],
+ ['عملية الضرب تُكتب في بلوك منه رقمه 242.',2,'الضرب في FB242، أي بلوك وظيفي بعينه.']]})}
    ]},
 
   {st:3,short:'العمليات على البلوكات',title:'أي عملية في أي بلوك؟',ref:'ص 5–6',
@@ -547,7 +848,14 @@ B.lesson({
     {book:String.raw`<p>والجدول التالي يعرض العمليات المختلفة التي يمكن إجراؤها على البلوكات التالية:</p>
      <div class="tablebox"><table class="tt"><thead><tr><th>رقم</th><th>العملية</th><th>البلوكات</th></tr></thead><tbody>${OPS.map((o,i)=>`<tr><td>${i+1}</td><td>${o[0]}</td><td class="mono">${o[1]}</td></tr>`).join('')}</tbody></table></div>`,ref:'ص 5–6'},
     {tip:String.raw`<p>اقرأ الجدول في ثلاث مجموعات:</p><ul><li>أغلب العمليات اليومية (المنطقية، المزمنات، العدادات، المقارنة، الجمع والطرح…) ← في <span class="ltr">OB</span> و<span class="ltr">PB</span> و<span class="ltr">FB</span>.</li><li>تخزين البيانات ← في <span class="ltr">DB</span> فقط.</li><li>عمليات لها بلوك بعينه برقمه، مثل الضرب <span class="ltr">FB242</span> والقسمة <span class="ltr">FB243</span>، أو في <span class="ltr">FB</span> فقط مثل الإزاحة والقفز داخل البرنامج.</li></ul>`,title:'كيف تقرأ الجدول بسرعة؟'},
-    {watch:String.raw`<p>الرقم بجانب البلوك (مثل <span class="ltr">FB242</span>) يعني بلوكاً واحداً بعينه، وليس أي بلوك <span class="ltr">FB</span>. أما كتابة <span class="ltr">FB</span> بلا رقم فتعني بلوكات الوظائف عموماً.</p>`}
+    {watch:String.raw`<p>الرقم بجانب البلوك (مثل <span class="ltr">FB242</span>) يعني بلوكاً واحداً بعينه، وليس أي بلوك <span class="ltr">FB</span>. أما كتابة <span class="ltr">FB</span> بلا رقم فتعني بلوكات الوظائف عموماً.</p>`},
+    {title:'مختبر مصغّر: في أي بلوك تُكتب العملية؟',widget:(el,B)=>DCML.sort(el,B,{intro:'استعمل جدول العمليات (ص 5–6). لكل عملية اضغط مكانها.',cats:['OB و PB و FB','DB','FB (بلا رقم)','بلوك محدد برقمه'],items:[
+ ['المزمنات',0,'البند 3: OB, PB, FB.'],
+ ['تخزين البيانات',1,'البند 10: DB وحده.'],
+ ['القسمة',3,'البند 12: FB243، بلوك واحد بعينه.'],
+ ['عملية الإزاحة',2,'البند 14: FB بلا رقم، أي بلوكات الوظائف عموماً.'],
+ ['التوقف عند تلف البطارية',3,'البند 18: OB34.'],
+ ['القفز من بلوك إلى آخر',0,'البند 23: OB, PB, FB.']]})}
    ]},
 
   {st:4,short:'ترابط البلوكات',title:'كيف تترابط البلوكات؟ الشكل <span class="ltr">(2-1)</span>',ref:'ص 6',
@@ -567,7 +875,12 @@ B.lesson({
      ['لا، 16 هو أقصى مستوى مسموح به للتطبيق الواحد',true,'الكتاب: «أقصى مستوى عدد مسموح به للتطبيق الواحد هو (16) عدداً» (ص 6).'],
      ['نعم، إذا كان البلوك الجديد من نوع DB',false,'الحد 16 للتطبيق الواحد كله، أياً كان نوع البلوك.'],
      ['نعم، لا يوجد حد للمستويات',false,'الكتاب يحدد الحد الأقصى بـ 16.']]}},
-    {tip:String.raw`<p>جرّب الاستدعاء والرجوع خطوة بخطوة، وجرّب الوصول إلى الحد 16، في تبويب «المختبر».</p>`}
+    {tip:String.raw`<p>جرّب الاستدعاء والرجوع خطوة بخطوة، وجرّب الوصول إلى الحد 16، في تبويب «المختبر».</p>`},
+    {title:'تحقق سريع: ترابط البلوكات',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب ص 6 والشكل (2-1).',items:[
+ ['في البرامج المركبة يُستعمل عدة بلوكات مختلفة، وفي البرامج البسيطة يكفي بلوك واحد.',true,'«ففي حالة البرمجة يوضح البرنامج في بلوك واحد أما في حالة البرامج المركبة يستخدم عدة بلوكات مختلفة».'],
+ ['يمكن أن يبدأ البرنامج من أي بلوك برامج PB.',false,'البداية دائماً من البلوك التنظيمي OB.'],
+ ['يمكن استدعاء بلوك بيانات DB للحصول على كلمات بيانات مخزنة فيه.',true,'«وكذلك يمكن استدعاء أي بلوك بيانات للحصول على بعض كلمات البيانات المخزنة فيه».'],
+ ['عدد المستويات في التطبيق الواحد غير محدود.',false,'أقصى عدد مسموح به للتطبيق الواحد 16.']]})}
    ]},
 
   {recap:[
@@ -693,7 +1006,12 @@ B.lesson({
      ['لأنه الطريقة الوحيدة التي يقبلها برنامج Step7',false,'برنامج Step7 يقبل الطرق الثلاث: LAD و FBD و STL (ص 7).'],
      ['لأنه لا يحتاج ترقيم نقاط الدخل والخرج',false,'كل الطرق تحتاج الترقيم، فهو خطوة قبل كتابة البرنامج (ص 9).'],
      ['لأنه أقرب ما يكون لمخطط مسار التيار الذي يعرفه الكهربائي',true,'هذا ما يذكره الكتاب في ص 7: الفرق الأساسي فقط أنه يُرسم أفقياً.']]}},
-    {tip:String.raw`<p>اقرأ سطر الـ <span class="ltr">LAD</span> كما تقرأ مسار التيار: من خط التغذية، عبر التلامسات، إلى الحمل. إذا كانت كل التلامسات في الطريق موصّلة، يعمل الحمل.</p>`}
+    {tip:String.raw`<p>اقرأ سطر الـ <span class="ltr">LAD</span> كما تقرأ مسار التيار: من خط التغذية، عبر التلامسات، إلى الحمل. إذا كانت كل التلامسات في الطريق موصّلة، يعمل الحمل.</p>`},
+    {title:'مختبر مصغّر: اقرأ السطر كمسار تيار',widget:(el,B)=>PLCTRY.circ(el,B,C.ex1,{view:'lad',intro:'سطر LAD من مثال 1 (ص 10): تلامس مفتوح <span class="ltr">I0.0</span> (الضاغط <span class="ltr">S1</span>) ثم الخرج <span class="ltr">Q4.5</span> (اللمبة <span class="ltr">H1</span>). اضغط <span class="ltr">S1</span> وراقب اللون البرتقالي يمشي في السطر من خط التغذية إلى الملف.',
+ predict:{q:'الضاغط غير مضغوط. إلى أين يصل «التيار» في السطر؟',opts:[
+  ['يقف عند التلامس I0.0، فلا يصل إلى Q4.5',true,'التلامس المفتوح لا يوصّل إلا إذا كانت إشارته 1، تماماً كضاغط مفتوح في مخطط مسار التيار.'],
+  ['يصل إلى Q4.5 لأن خط التغذية موصول دائماً',false,'خط التغذية في الأيسر موصول، لكن الطريق ينقطع عند التلامس المفتوح.'],
+  ['لا يوجد تيار في LAD أصلاً، فلا معنى للسؤال',false,'LAD «أقرب ما تكون لمخطط مسار التيار»، فنقرؤه بفكرة مرور التيار نفسها.']]}})}
    ]},
 
   {st:3,short:'جدول الرموز',title:'جدول الربط بين رموز الدائرة الكهربائية ورموز المخطط السلّمي',ref:'ص 8',
@@ -712,7 +1030,13 @@ B.lesson({
       <tr><td class="mono">S1, N.O.</td><td>${symE('nob','S1')}${symE('no','S1')}</td><td class="mono">I0.0, I7.7</td><td>${symL('no','I0.0')}</td><td>المفتاح المفتوح أو ضاغط التوصيل</td></tr>
       <tr><td class="mono">S0, N.C.</td><td>${symE('ncb','S3')}${symE('nc','S3')}</td><td class="mono">I0.1, I5.3</td><td>${symL('nc','I0.1')}</td><td>المفتاح المغلق أو ضاغط الفصل</td></tr>
       <tr><td class="mono">H1, Q3, M</td><td>${symE('lamp','H1')}${symE('coil','Q3')}</td><td class="mono">Q3.3, Q0.0</td><td>${symL('coil','Q3.3')}</td><td>الحمل (الخرج) المصباح (اللمبة)، والمتمم، والمحرك</td></tr></tbody></table></div>`,ref:'ص 8'},
-    {watch:String.raw`<p>في جدول ص 8 عمود المسمى يقول <span class="ltr">S0, N.C.</span> بينما الرمز المرسوم بجانبه معنون <span class="ltr">S3</span>. المقصود في الحالتين ضاغط فصل مغلق.</p>`,fix:true}
+    {watch:String.raw`<p>في جدول ص 8 عمود المسمى يقول <span class="ltr">S0, N.C.</span> بينما الرمز المرسوم بجانبه معنون <span class="ltr">S3</span>. المقصود في الحالتين ضاغط فصل مغلق.</p>`,fix:true},
+    {title:'مختبر مصغّر: من الدائرة إلى السلّم',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'جدول ص 8: لكل عنصر في الدائرة الكهربائية اختر رمزه في المخطط السلّمي.',cats:[L('-| |-'),L('-|/|-'),L('-( )-')],items:[
+ [`${L('S1, N.O.')} ضاغط التوصيل`,0,'المفتاح المفتوح أو ضاغط التوصيل.'],
+ [`${L('S0, N.C.')} ضاغط الفصل`,1,'المفتاح المغلق أو ضاغط الفصل.'],
+ [`${L('H1')} المصباح`,2,'الحمل (الخرج): رمز واحد لكل الأحمال.'],
+ [`${L('Q3')} المتمم`,2,'المتمم حمل أيضاً، فرمزه رمز الخرج نفسه.'],
+ [`${L('M')} المحرك`,2,'الجدول يضع H1 و Q3 و M في سطر الحمل نفسه.']]})}}
    ]},
 
   {st:4,short:'شرح الرموز',title:'ماذا يمثل كل رمز في المخطط السلّمي؟',ref:'ص 8–9',
@@ -732,7 +1056,16 @@ B.lesson({
      [String.raw`<span class="ltr mono">-| |-</span> مفتوح`,false,'المفتوح يمثل مفاتيح التشغيل وضواغط التشغيل.'],
      [String.raw`<span class="ltr mono">-( )-</span> خرج`,false,'المصهر ليس حملاً، بل عنصر في طريق التيار.'],
      [String.raw`<span class="ltr mono">-|/|-</span> مغلق`,true,'الكتاب: المفتاح المغلق «تمثل مفاتيح الفصل، والمصهرات، وضواغط الفصل» (ص 8).']]}},
-    {tip:String.raw`<p>التلامس المفتوح <span class="ltr mono">-| |-</span> يوصّل عندما تضغط، والتلامس المغلق <span class="ltr mono">-|/|-</span> يوصّل وأنت لا تضغط، ويقطع عندما تضغط. لهذا يُستعمل المفتوح للتشغيل والمغلق للفصل.</p>`}
+    {tip:String.raw`<p>التلامس المفتوح <span class="ltr mono">-| |-</span> يوصّل عندما تضغط، والتلامس المغلق <span class="ltr mono">-|/|-</span> يوصّل وأنت لا تضغط، ويقطع عندما تضغط. لهذا يُستعمل المفتوح للتشغيل والمغلق للفصل.</p>`},
+    {title:'مختبر مصغّر: التلامس المفتوح والمغلق على ضاغط واحد',widget:(el,B)=>PLCTRY.run(el,B,{view:'lad',intro:'الضاغط نفسه مقروء في سطرين: في الأول بتلامس مفتوح <span class="ltr">-| |-</span>، وفي الثاني بتلامس مغلق <span class="ltr">-|/|-</span>. اضغط وراقب أي السطرين يوصّل.',
+ note:'العناوين <span class="ltr">I0.0</span> و<span class="ltr">Q3.3</span> و<span class="ltr">Q0.0</span> من أمثلة جدول ص 8، والبرنامج للتوضيح فقط.',
+ predict:{q:'الضاغط غير مضغوط (<span class="ltr">I0.0 = 0</span>). أي الخرجين يعمل؟',opts:[
+  ['الخرج بعد التلامس المغلق',true,'التلامس المغلق N.C. يوصّل وأنت لا تضغط، ويقطع عندما تضغط.'],
+  ['الخرج بعد التلامس المفتوح',false,'المفتوح N.O. لا يوصّل إلا عند الضغط.'],
+  ['الاثنان معاً',false,'الرمزان عكس بعضهما: في أي لحظة يوصّل أحدهما فقط.']]},
+ nets:[['A I 0.0','= Q 3.3'],['AN I 0.0','= Q 0.0']],
+ ins:[{a:'I0.0',l:'الضاغط',d:'I0.0'}],
+ outs:[{a:'Q3.3',l:'بعد <span class="ltr">-| |-</span>'},{a:'Q0.0',l:'بعد <span class="ltr">-|/|-</span>'}]})}
    ]},
 
   {st:5,short:'العنوان I k.g',title:'كيف تُرقَّم نقاط الدخل؟ <span class="ltr">I k.g</span>',ref:'ص 8–9',
@@ -752,7 +1085,13 @@ B.lesson({
      ['I0.8',true,'رقم النقطة 8 أكبر من 7، والوحدة فيها 8 نقاط فقط مرقمة من 0 إلى 7.'],
      ['I7.7',false,'هذا عنوان صحيح ومذكور في جدول ص 8: النقطة 7 في الوحدة 7.'],
      ['Q0.0',false,'هذا عنوان صحيح ومذكور في جدول ص 8: أول نقطة خرج في الوحدة 0.']]}},
-    {watch:String.raw`<p>النقطة في العنوان فاصل وليست فاصلة عشرية: <span class="ltr">I1.3</span> لا تعني «واحد وثلاثة أعشار»، بل الوحدة 1 والنقطة 3. وجرّب كتابة عناوين وفحصها في «مولّد العناوين» في تبويب «المختبر».</p>`}
+    {watch:String.raw`<p>النقطة في العنوان فاصل وليست فاصلة عشرية: <span class="ltr">I1.3</span> لا تعني «واحد وثلاثة أعشار»، بل الوحدة 1 والنقطة 3. وجرّب كتابة عناوين وفحصها في «مولّد العناوين» في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: عنوان ممكن أم غير ممكن؟',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:`في كل وحدة دخل 8 نقاط (ص 9)، فرقم النقطة ${L('G')} من 0 إلى 7. احكم على كل عنوان.`,cats:['عنوان دخل ممكن','غير ممكن'],items:[
+ [L('I7.7'),0,'الوحدة 7، النقطة 7 (آخر نقطة فيها). وهو في جدول ص 8.'],
+ [L('I0.8'),1,'لا توجد نقطة رقم 8: النقاط من 0 إلى 7. النقطة التاسعة هي I1.0.'],
+ [L('I5.3'),0,'الوحدة 5، النقطة 3. وهو في جدول ص 8.'],
+ [L('I1.0'),0,'أول نقطة في الوحدة 1.'],
+ [L('I2.9'),1,'رقم النقطة 9 أكبر من 7.']]})}}
    ]},
 
   {st:6,short:'العنوان Q n.m',title:'كيف تُرقَّم نقاط الخرج؟ <span class="ltr">Q n.m</span>',ref:'ص 9',
@@ -767,7 +1106,10 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>وجميع نقاط الخرج في دائرة (LAD) تأخذ الرمز (<b class="ltr">Q N.M</b>) حيث إن (Q) تمثل نقطة الخرج. والرقم (N) يمثل رقم وحدة الخرج. والرقم (M) يمثل رقم نقطة الخرج داخل الوحدة (N) والرمز (.) النقطة هي التي تفصل بين رقم الوحدة ورقم النقطة داخل الوحدة.</p>`,ref:'ص 9'},
-    {tip:String.raw`<p>عنوان الخرج يُبنى بالطريقة نفسها التي يُبنى بها عنوان الدخل، والفرق في الحرف فقط: <span class="ltr">Q</span> للخرج بدل <span class="ltr">I</span> للدخل. فالعنوان <span class="ltr">Q4.5</span> = النقطة 5 في وحدة الخرج 4.</p>`}
+    {tip:String.raw`<p>عنوان الخرج يُبنى بالطريقة نفسها التي يُبنى بها عنوان الدخل، والفرق في الحرف فقط: <span class="ltr">Q</span> للخرج بدل <span class="ltr">I</span> للدخل. فالعنوان <span class="ltr">Q4.5</span> = النقطة 5 في وحدة الخرج 4.</p>`},
+    {title:'مختبر مصغّر: اقرأ العنوان واكتبه',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{cases:[
+ {q:`أي هذه العناوين نقطة خرج؟`,opts:[[L('I4.5'),false,'الحرف I يعني نقطة دخل.'],[L('Q3.3'),true,'الحرف Q يعني نقطة خرج: الوحدة 3، النقطة 3 (من جدول ص 8).'],[L('I0.0'),false,'نقطة دخل: الوحدة 0، النقطة 0.']]},
+ {q:`لمبة موصولة على النقطة 2 في وحدة الخرج رقم 4. ما عنوانها؟`,opts:[[L('Q2.4'),false,'الرقم الأول رقم الوحدة (N) والثاني رقم النقطة (M)، فالترتيب معكوس هنا.'],[L('I4.2'),false,'اللمبة خرج، فحرفها Q لا I.'],[L('Q4.2'),true,'Q للخرج، ثم رقم الوحدة 4، ثم النقطة، ثم رقم النقطة 2.']]}]})}}
    ]},
 
   {st:7,short:'خطوات أي برنامج',title:'ثلاث خطوات لكتابة أي برنامج',ref:'ص 9',
@@ -783,7 +1125,11 @@ B.lesson({
    body:[
     {book:String.raw`<p>ولكتابة أي برنامج يجب أن يمر بثلاث خطوات أساسية وهي:</p><ol><li>دراسة النظام المراد التحكم فيه (دائرة التحكم).</li><li>ترميز نقاط الدخل والخرج.</li><li>كتابة البرنامج.</li></ol>`,ref:'ص 9'},
     {tip:String.raw`<p>هذه الخطوات الثلاث (الدراسة، الترميز، الرسم) تجدها في كل مثال وتمرين في بقية الوحدة، بدءاً من مثال 1 في الدرس القادم.</p>`},
-    {watch:String.raw`<p>كل دوائر هذه الوحدة <b>بلا تعويض ذاتي</b> (لا يوجد تلامس للمتمم موازٍ لضاغط التشغيل)، لذلك يعمل الحمل فقط ما دام شرط التشغيل متحققاً. والكتاب يستعمل كلمتي «مفتاح» و«ضاغط» بالتبادل.</p>`}
+    {watch:String.raw`<p>كل دوائر هذه الوحدة <b>بلا تعويض ذاتي</b> (لا يوجد تلامس للمتمم موازٍ لضاغط التشغيل)، لذلك يعمل الحمل فقط ما دام شرط التشغيل متحققاً. والكتاب يستعمل كلمتي «مفتاح» و«ضاغط» بالتبادل.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات كتابة البرنامج',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات الثلاث بالترتيب الذي يذكره الكتاب (ص 9).',steps:[
+ ['دراسة النظام المراد التحكم فيه (دائرة التحكم)','قبل أي شيء يجب أن تعرف ما الدخل وما الخرج ومتى يعمل الحمل.'],
+ ['ترميز نقاط الدخل والخرج','لا يمكن رسم البرنامج قبل أن يكون لكل ضاغط وحمل عنوان.'],
+ ['كتابة البرنامج','هذه آخر خطوة: تحتاج العناوين من خطوة الترميز.']],done:'هذه الخطوات الثلاث ستجدها في كل مثال وتمرين في الوحدة.'})}
    ]},
 
   {recap:[
@@ -887,7 +1233,11 @@ circuitLesson({
      ['تضيء بنصف شدتها',false,'الضاغط إما يوصّل أو يقطع؛ لا توجد حالة وسط.'],
      ['تنطفئ فوراً',true,'<span class="ltr">S1</span> ضاغط مفتوح <span class="ltr">N.O.</span>: عندما تتركه يرجع مفتوحاً فينقطع التيار عن <span class="ltr">H1</span>.']]}},
     {book:String.raw`<p>ولكتابة أي برنامج يجب أن يمر بثلاث خطوات أساسية وهي:</p><ol><li>دراسة النظام المراد التحكم فيه (دائرة التحكم).</li><li>ترميز نقاط الدخل والخرج.</li><li>كتابة البرنامج.</li></ol>`,ref:'ص 9'},
-    {tip:String.raw`<p>نحوّل هذه الدائرة إلى برنامج بالخطوات الثلاث نفسها: <b>الدراسة</b> ثم <b>الترميز</b> ثم <b>الرسم</b>. المحطات التالية تمشي معك فيها خطوة خطوة.</p>`,title:'الخطة'}
+    {tip:String.raw`<p>نحوّل هذه الدائرة إلى برنامج بالخطوات الثلاث نفسها: <b>الدراسة</b> ثم <b>الترميز</b> ثم <b>الرسم</b>. المحطات التالية تمشي معك فيها خطوة خطوة.</p>`,title:'الخطة'},
+    {title:'مختبر مصغّر: رتّب حل المثال',widget:(el,B)=>{const L=DCML.lt;DCML.order(el,B,{intro:'هذه خطوات حل مثال الشكل (1-2) مخلوطة. اضغطها بترتيب الخطوات الثلاث.',steps:[
+ [`الدراسة: اللمبة ${L('H1')} تعمل بالضغط على ${L('S1')}`,'الدراسة أولاً: نعرف من يأمر ومن ينفّذ قبل أن نعطي العناوين.'],
+ [`الترميز: ${L('S1 = I0.0')} و ${L('H1 = Q4.5')}`,'لا نرسم قبل أن يكون لكل نقطة عنوان.'],
+ [`الرسم: تلامس مفتوح ${L('I0.0')} ثم الخرج ${L('Q4.5')}`,'الرسم آخر خطوة، ويستعمل عناوين الترميز.']],done:'هذه هي الخطوات الثلاث نفسها التي ستتكرر في كل تمرين.'})}}
    ]},
 
   {st:2,short:'الدراسة',title:'الخطوة 1 — الدراسة: من يأمر ومن ينفّذ؟',ref:'ص 10',
@@ -903,7 +1253,12 @@ circuitLesson({
    ],
    body:[
     {book:String.raw`<p>تبدأ عملية البرمجة بتحديد و بدراسة النظام المراد التحكم فيه وتحليله من خلال تحديد نقاط الدخل (مفاتيح التشغيل مثل الضواغط أو الحساسات). كما يتم تحديد نقاط الخرج مثل المتممات والمرحلات.</p>`,ref:'ص 7'},
-    {tip:String.raw`<p>الدراسة هنا سطر واحد، لكنها أهم خطوة: نعرف منها نقاط الدخل (<span class="ltr">S1</span>) ونقاط الخرج (<span class="ltr">H1</span>)، ونعرف متى يعمل الحمل: <b>ما دام</b> <span class="ltr">S1</span> مضغوطاً.</p>`}
+    {tip:String.raw`<p>الدراسة هنا سطر واحد، لكنها أهم خطوة: نعرف منها نقاط الدخل (<span class="ltr">S1</span>) ونقاط الخرج (<span class="ltr">H1</span>)، ونعرف متى يعمل الحمل: <b>ما دام</b> <span class="ltr">S1</span> مضغوطاً.</p>`},
+    {title:'مختبر مصغّر: دخل أم خرج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الدراسة تبدأ بتحديد نقاط الدخل ونقاط الخرج (ص 7). صنّف كل عنصر.',cats:['نقطة دخل','نقطة خرج'],items:[
+ ['الضاغط S1',0,'يعطي الأمر للـ PLC: نقطة دخل.'],
+ ['اللمبة H1',1,'تنفّذ الأمر: نقطة خرج (الحمل).'],
+ ['حساس',0,'الكتاب يذكر «الضواغط أو الحساسات» أمثلة على نقاط الدخل.'],
+ ['متمم',1,'الكتاب يذكر «المتممات والمرحلات» أمثلة على نقاط الخرج.']]})}
    ]},
 
   {st:3,short:'الترميز',title:'الخطوة 2 — الترميز: عنوان لكل نقطة',ref:'ص 10',
@@ -921,7 +1276,10 @@ circuitLesson({
     {book:String.raw`<p>وجميع المفاتيح في دائرة <span class="ltr">(LAD)</span> تأخذ الرمز <span class="ltr">(I K.G)</span> حيث إن <span class="ltr">(I)</span> تمثل نقطة الدخل، وهي مفتاح تشغيل أو فصل. أما <span class="ltr">(k)</span> يمثل رقم الوحدة التابعة لها نقطة الدخل وهي متغيرة القيمة على حسب عدد وحدات الدخل المتوفرة في المختبر. ثم (.) النقطة وهي التي تفصل بين رقم الوحدة والمفتاح داخل الوحدة. أما الرقم <span class="ltr">(G)</span> فيمثل رقم المفتاح داخل الوحدة <span class="ltr">(K)</span>. حيث إنه في كل وحدة دخل يوجد بها <span class="ltr">(8)</span> نقاط دخل.</p>
      <p>وجميع نقاط الخرج في دائرة <span class="ltr">(LAD)</span> تأخذ الرمز <span class="ltr">(Q N.M)</span> حيث إن <span class="ltr">(Q)</span> تمثل نقطة الخرج. والرقم <span class="ltr">(N)</span> يمثل رقم وحدة الخرج. والرقم <span class="ltr">(M)</span> يمثل رقم نقطة الخرج داخل الوحدة <span class="ltr">(N)</span> والرمز (.) النقطة هي التي تفصل بين رقم الوحدة ورقم النقطة داخل الوحدة.</p>`,ref:'ص 8–9'},
     {tip:String.raw`<p>اقرأ العنوان من اليسار إلى اليمين: <span class="ltr">I0.0</span> = دخل، في الوحدة <span class="ltr">0</span>، النقطة <span class="ltr">0</span>. و<span class="ltr">Q4.5</span> = خرج، في الوحدة <span class="ltr">4</span>، النقطة <span class="ltr">5</span>.</p>`,title:'كيف تقرأ العنوان؟'},
-    {watch:String.raw`<p>الرقم <span class="ltr">4</span> في <span class="ltr">Q4.5</span> ليس ثابتاً في كل البرامج؛ هو رقم وحدة الخرج التي وُصلت عليها اللمبة. لو وُصلت على وحدة أو نقطة أخرى لتغيّر العنوان، والبرنامج يتبع جدول الترميز دائماً.</p>`}
+    {watch:String.raw`<p>الرقم <span class="ltr">4</span> في <span class="ltr">Q4.5</span> ليس ثابتاً في كل البرامج؛ هو رقم وحدة الخرج التي وُصلت عليها اللمبة. لو وُصلت على وحدة أو نقطة أخرى لتغيّر العنوان، والبرنامج يتبع جدول الترميز دائماً.</p>`},
+    {title:'مختبر مصغّر: ماذا لو تغيّر التوصيل؟',widget:(el,B)=>{const L=DCML.lt;DCML.cases(el,B,{intro:'الترميز يتبع المكان الذي وُصل عليه كل عنصر في الجهاز.',cases:[
+ {q:`ما معنى الرقم ${L('0')} الأول في ${L('I0.0')}؟`,opts:[['رقم النقطة داخل الوحدة',false,'رقم النقطة هو الرقم بعد النقطة (G).'],['رقم وحدة الدخل (k)',true,'I k.g: الرقم قبل النقطة رقم الوحدة، وبعدها رقم المفتاح داخل الوحدة.'],['قيمة الإشارة: الضاغط غير مضغوط',false,'العنوان مكان ثابت، وقيمة الإشارة (0 أو 1) شيء آخر.']]},
+ {q:`نقلنا سلك اللمبة إلى النقطة 6 في وحدة الخرج نفسها. ماذا يتغير؟`,opts:[[`عنوانها يصبح ${L('Q4.6')}، ونكتبه في البرنامج بدل ${L('Q4.5')}`,true,'رقم الوحدة 4 كما هو، ورقم النقطة صار 6. والبرنامج يتبع جدول الترميز دائماً.'],['لا شيء، فالعنوان ثابت لكل لمبة',false,'العنوان يدل على مكان التوصيل، لا على العنصر نفسه.'],[`عنوانها يصبح ${L('I4.6')}`,false,'اللمبة ما زالت خرجاً، فحرفها Q.']]}]})}}
    ]},
 
   {st:4,short:'الرسم',title:'الخطوة 3 — الرسم: المخطط السلمي',ref:'ص 10',
@@ -1008,7 +1366,12 @@ circuitLesson({
      ['لا، لأن <span class="ltr">S1</span> غير مضغوط',false,'<span class="ltr">S1</span> و<span class="ltr">S2</span> على التوازي، فلا يحتاج أحدهما إلى الآخر.'],
      ['لا، لأن <span class="ltr">S0</span> يقطع التيار وهو غير مضغوط',false,'<span class="ltr">S0</span> ضاغط مغلق <span class="ltr">N.C.</span>: يمرّر التيار ما دام غير مضغوط.'],
      ['نعم، لأن <span class="ltr">S2</span> وحده يكمل المسار عبر <span class="ltr">S0</span> المغلق',true,'المسار: <span class="ltr">L1</span> ← <span class="ltr">S0</span> (مغلق) ← <span class="ltr">S2</span> (مضغوط) ← <span class="ltr">H1</span> ← <span class="ltr">N</span>.']]}},
-    {tip:String.raw`<p><b>التوالي = «و»</b>: كل ما على الخط يجب أن يوصّل. <b>التوازي = «أو»</b>: يكفي فرع واحد. لذلك تعمل <span class="ltr">H1</span> إذا كان <span class="ltr">S0</span> غير مضغوط <b>و</b> (<span class="ltr">S1</span> <b>أو</b> <span class="ltr">S2</span>) مضغوطاً.</p>`,title:'اقرأ الدائرة بكلمتين'}
+    {tip:String.raw`<p><b>التوالي = «و»</b>: كل ما على الخط يجب أن يوصّل. <b>التوازي = «أو»</b>: يكفي فرع واحد. لذلك تعمل <span class="ltr">H1</span> إذا كان <span class="ltr">S0</span> غير مضغوط <b>و</b> (<span class="ltr">S1</span> <b>أو</b> <span class="ltr">S2</span>) مضغوطاً.</p>`,title:'اقرأ الدائرة بكلمتين'},
+    {title:'مختبر مصغّر: جرّب الضواغط الثلاثة',widget:(el,B)=>PLCTRY.circ(el,B,C.ex2,{intro:'هذه دائرة الشكل (3-2) يحسبها برنامج المثال نفسه. المفاتيح تبقى على وضعها حتى تنقرها ثانية، فتستطيع ضغط أكثر من مفتاح معاً.',
+ predict:{q:'<span class="ltr">S1</span> و<span class="ltr">S2</span> مضغوطان معاً، ثم ضغطت <span class="ltr">S0</span> أيضاً. ما حالة <span class="ltr">H1</span>؟',opts:[
+  ['تبقى مضاءة، لأن ضاغطي تشغيل أقوى من ضاغط فصل واحد',false,'لا توجد «قوة» للضواغط؛ المهم هل الطريق موصول.'],
+  ['تنطفئ، لأن S0 على التوالي مع كل الدائرة',true,'S0 قبل الفرعين على التوالي: إذا فتح انقطع الطريق كله، مهما كان عدد ضواغط التشغيل المضغوطة.'],
+  ['تنطفئ نصف الإضاءة فقط',false,'الحمل كله على مسار واحد بعد S0، فإما يعمل كله أو يفصل كله.']]}})}
    ]},
 
   {st:2,short:'الدراسة',title:'الخطوة 1 — الدراسة: من يشغّل ومن يفصل؟',ref:'ص 11',
@@ -1024,7 +1387,12 @@ circuitLesson({
      ['لا تعمل',true,'<span class="ltr">S0</span> على التوالي قبل الضاغطين، فإذا ضُغط قطع المسار عنهما معاً.'],
      ['تعمل لأن <span class="ltr">S1</span> مضغوط',false,'<span class="ltr">S1</span> يوصّل فعلاً، لكن التيار لا يصل إليه أصلاً لأن <span class="ltr">S0</span> قطع الطريق قبله.'],
      ['تعمل ثم تنطفئ بعد قليل',false,'لا يوجد مؤقت في هذه الدائرة؛ النتيجة فورية.']]}},
-    {watch:String.raw`<p>لا يوجد في دوائر هذه الوحدة ما يحفظ التشغيل: <span class="ltr">H1</span> تعمل فقط ما دام <span class="ltr">S1</span> أو <span class="ltr">S2</span> مضغوطاً و<span class="ltr">S0</span> غير مضغوط.</p>`}
+    {watch:String.raw`<p>لا يوجد في دوائر هذه الوحدة ما يحفظ التشغيل: <span class="ltr">H1</span> تعمل فقط ما دام <span class="ltr">S1</span> أو <span class="ltr">S2</span> مضغوطاً و<span class="ltr">S0</span> غير مضغوط.</p>`},
+    {title:'تحقق سريع: ماذا تقول الدراسة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب دراسة الشكل (3-2) (ص 11).',items:[
+ ['H1 تعمل بالضغط على S1 أو على S2.',true,'«يتم تشغيل الحمل … بالضغط على الضاغط (S1 أو S2)».'],
+ ['يجب ضغط S1 و S2 معاً حتى تعمل H1.',false,'الضاغطان على التوازي («أو»): يكفي أحدهما.'],
+ ['بعد أن ترفع إصبعك عن S1 تبقى H1 مضاءة.',false,'لا يوجد في دوائر هذه الوحدة تعويض ذاتي يحفظ التشغيل.'],
+ ['الضغط على S0 يفصل H1.',true,'«والفصل بالضغط على (S0)».']]})}
    ]},
 
   {st:3,short:'الترميز',title:'الخطوة 2 — الترميز: أربعة عناوين',ref:'ص 11',
@@ -1039,7 +1407,12 @@ circuitLesson({
      ['ثلاث وحدات، واحدة لكل ضاغط',false,'كل وحدة دخل فيها <span class="ltr">8</span> نقاط (ص 8–9)، فتكفي الضواغطَ الثلاثة وحدةٌ واحدة.'],
      ['وحدة واحدة هي الوحدة <span class="ltr">0</span>',true,'<span class="ltr">I0.0</span> و<span class="ltr">I0.1</span> و<span class="ltr">I0.2</span>: رقم الوحدة فيها كلها <span class="ltr">0</span>، والنقاط <span class="ltr">0</span> و<span class="ltr">1</span> و<span class="ltr">2</span>.'],
      ['لا تحتاج وحدة دخل لأن <span class="ltr">S0</span> ضاغط فصل',false,'ضاغط الفصل نقطة دخل مثل ضاغط التشغيل، ويأخذ عنواناً يبدأ بـ <span class="ltr">I</span>.']]}},
-    {tip:String.raw`<p>لاحظ أن ضاغط الفصل <span class="ltr">S0</span> أخذ عنوان دخل <span class="ltr">I0.0</span> مثل ضاغطي التشغيل تماماً. الـ <span class="ltr">PLC</span> لا يعرف من العنوان أنه «فصل»؛ يعرف ذلك من طريقة رسمه في البرنامج (المحطة التالية).</p>`}
+    {tip:String.raw`<p>لاحظ أن ضاغط الفصل <span class="ltr">S0</span> أخذ عنوان دخل <span class="ltr">I0.0</span> مثل ضاغطي التشغيل تماماً. الـ <span class="ltr">PLC</span> لا يعرف من العنوان أنه «فصل»؛ يعرف ذلك من طريقة رسمه في البرنامج (المحطة التالية).</p>`},
+    {title:'مختبر مصغّر: أعطِ كل عنصر عنوانه',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'من جدول الترميز (ص 11): اختر العنوان لكل عنصر.',cats:[L('I0.0'),L('I0.1'),L('I0.2'),L('Q4.5')],items:[
+ [`${L('S0')} ضاغط الفصل`,0,'ضاغط الفصل أخذ أول نقطة دخل I0.0، مثل أي ضاغط آخر.'],
+ [`${L('S1')} ضاغط التشغيل الأول`,1,'I0.1.'],
+ [`${L('S2')} ضاغط التشغيل الثاني`,2,'I0.2.'],
+ [`${L('H1')} مجموعة الإضاءة`,3,'الحمل نقطة خرج: Q4.5.']]})}}
    ]},
 
   {st:4,short:'الرسم',title:'الخطوة 3 — الرسم: تلامس مغلق وفرعان',ref:'ص 12',
@@ -1131,7 +1504,12 @@ const curL6=circuitLesson({
      ['نعم، لأن <span class="ltr">Q4.5</span> خاص باللمبات فقط',false,'رمز الخرج ثابت لجميع أنواع المخارج: المصابيح والمتممات والمحركات (ص 9).']]}}
    ],
    body:[
-    {tip:String.raw`<p>كل تمرين هنا مبني من قطع عرفتها في المثالين: <b>توالي</b> (و)، و<b>توازي</b> (أو)، وضاغط فصل يُرسم تلامساً مغلقاً <span class="ltr">-|/|-</span>. الجديد فقط أن القطع أكثر، وأن ضاغط الفصل قد يفصل جزءاً من الدائرة لا كلها.</p>`,title:'لا جديد إلا الحجم'}
+    {tip:String.raw`<p>كل تمرين هنا مبني من قطع عرفتها في المثالين: <b>توالي</b> (و)، و<b>توازي</b> (أو)، وضاغط فصل يُرسم تلامساً مغلقاً <span class="ltr">-|/|-</span>. الجديد فقط أن القطع أكثر، وأن ضاغط الفصل قد يفصل جزءاً من الدائرة لا كلها.</p>`,title:'لا جديد إلا الحجم'},
+    {title:'مختبر مصغّر: أي قطعة هذه؟',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'كل تمرين مبني من ثلاث قطع. لكل جزء من الدوائر اختر كيف يُرسم في المخطط السلمي.',cats:['فرعان متوازيان (أو)','على التوالي (و)','تلامس مغلق '+L('-|/|-')],items:[
+ [`${L('S1')} أو ${L('S2')} في التمرين (أ)`,0,'مجموعة توازٍ في مخطط مسار التيار تبقى فرعين متوازيين في السطر.'],
+ [`ضاغط الفصل ${L('S3')} في التمرين (أ)`,2,'ضاغط فصل ← تلامس مغلق، لأن إشارته 1 عند الضغط.'],
+ [`مجموعة (${L('S1')} أو ${L('S2')}) مع مجموعة (${L('S4')} أو ${L('S5')})`,1,'«مع» تعني أن المجموعتين على التوالي: يجب أن تتحقق الاثنتان.'],
+ [`${L('S2')} مع ${L('S5')} في التمرين (ب)`,1,'تشغيل «اثنان على التوالي»: يجب ضغطهما معاً.']]})}}
    ]},
 
   {st:2,short:'تمرين أ',title:'التمرين (أ): إضاءة <span class="ltr">H7</span> من أربعة أماكن',ref:'ص 12–13',
@@ -1149,7 +1527,12 @@ const curL6=circuitLesson({
     {book:String.raw`<p>1- من الشكل المبين يتم تشغيل الحمل (مجموعة الإضاءة <span class="ltr">H7</span>) بالضغط على المفتاح (<span class="ltr">S1</span> أو <span class="ltr">S2</span>) مع الضغط على المفتاح (<span class="ltr">S4</span> أو <span class="ltr">S5</span>). أما الضاغط <span class="ltr">(S3)</span> فهو ضاغط فصل</p><p>2- الترميز:</p>`+bookTable([['S1','I0.1'],['S2','I0.2'],['S4','I0.4'],['S5','I0.5'],['S3','I0.3'],['H7','Q4.5']]),ref:'ص 13'},
     {book:String.raw`<p>3- الرسم <span class="ltr">(LAD)</span>:</p>`+progFig(C.A.program,'lad',C.A.io),ref:'ص 13'},
     {tip:String.raw`<p>اقرأ السطر من اليسار إلى اليمين: (<span class="ltr">I0.1</span> أو <span class="ltr">I0.2</span>) <b>و</b> <span class="ltr">I0.3</span> غير مضغوط <b>و</b> (<span class="ltr">I0.4</span> أو <span class="ltr">I0.5</span>) ← <span class="ltr">Q4.5</span>. كل مجموعة توازي في مخطط مسار التيار صارت فرعين متوازيين في السطر.</p>`},
-    {watch:String.raw`<p>العناوين هنا تبدأ من <span class="ltr">I0.1</span> وليس <span class="ltr">I0.0</span>، ورقم النقطة يطابق رقم الضاغط (<span class="ltr">S3 = I0.3</span>). هذا ما اختاره جدول الترميز، وليس قاعدة: في التمرين (ج) لن يتطابقا.</p>`}
+    {watch:String.raw`<p>العناوين هنا تبدأ من <span class="ltr">I0.1</span> وليس <span class="ltr">I0.0</span>، ورقم النقطة يطابق رقم الضاغط (<span class="ltr">S3 = I0.3</span>). هذا ما اختاره جدول الترميز، وليس قاعدة: في التمرين (ج) لن يتطابقا.</p>`},
+    {title:'مختبر مصغّر: شغّل H7',widget:(el,B)=>PLCTRY.circ(el,B,C.A,{view:'lad',intro:'برنامج LAD للتمرين (أ) بعناوين جدول الترميز. المفاتيح تبقى على وضعها حتى تنقرها ثانية. راقب أي التلامسات توصّل.',
+ predict:{q:'ما أقل عدد من الضواغط يجب ضغطه لتعمل <span class="ltr">H7</span>؟',opts:[
+  ['ضاغط واحد',false,'ضاغط واحد يحقق مجموعة واحدة فقط، والمجموعتان على التوالي.'],
+  ['ضاغطان: واحد من (S1 أو S2) وواحد من (S4 أو S5)',true,'الدراسة: «بالضغط على (S1 أو S2) مع الضغط على (S4 أو S5)»، و S3 غير مضغوط.'],
+  ['أربعة ضواغط: S1 و S2 و S4 و S5',false,'داخل كل مجموعة توازٍ يكفي ضاغط واحد.']]}})}
    ]},
 
   {st:3,short:'تمرين ب',title:'التمرين (ب): متمم <span class="ltr">K10</span> بفرعين وثلاثة ضواغط فصل',ref:'ص 13–15',
@@ -1200,7 +1583,12 @@ const curL6=circuitLesson({
     {book:String.raw`<p>2- الترميز:</p>`+bookTable([['N.O1','I1.4'],['N.O2','I1.2'],['N.O3','I1.3'],['N.C1','I1.1'],['N.C2','I1.5'],['K5','Q4.5']])+String.raw`<p>3- الرسم <span class="ltr">(LAD)</span>:</p>`+progFig(C.C.program,'lad',C.C.io),ref:'ص 16'},
     {watch:String.raw`<p>نص الدراسة يسمّي الحمل «المحرك <span class="ltr">(M)</span>»، بينما الرسم والترميز يستعملان <span class="ltr">K5</span>. المقصود واحد: <span class="ltr">K5</span> ملف المتمم الذي يشغّل المحرك.</p>`,fix:true},
     {watch:String.raw`<p>رقم الضاغط في اسمه ليس رقم نقطته: <span class="ltr">N.O1</span> عنوانه <span class="ltr">I1.4</span>، و<span class="ltr">N.O2</span> عنوانه <span class="ltr">I1.2</span>. خذ العنوان دائماً من جدول الترميز. ولاحظ أن وحدة الدخل هنا رقمها <span class="ltr">1</span> وليس <span class="ltr">0</span>.</p>`},
-    {tip:String.raw`<p>الشكل قريب من التمرين (ب)، لكن فرع التوالي (<span class="ltr">S2</span> مع <span class="ltr">S5</span> ومعهما <span class="ltr">S6</span>) صار هنا ضاغطاً واحداً <span class="ltr">N.O1</span> بلا ضاغط فصل خاص به. لذلك لا يوقف <span class="ltr">N.O1</span> إلا <span class="ltr">N.C1</span>.</p>`,title:'قارن بالتمرين (ب)'}
+    {tip:String.raw`<p>الشكل قريب من التمرين (ب)، لكن فرع التوالي (<span class="ltr">S2</span> مع <span class="ltr">S5</span> ومعهما <span class="ltr">S6</span>) صار هنا ضاغطاً واحداً <span class="ltr">N.O1</span> بلا ضاغط فصل خاص به. لذلك لا يوقف <span class="ltr">N.O1</span> إلا <span class="ltr">N.C1</span>.</p>`,title:'قارن بالتمرين (ب)'},
+    {title:'مختبر مصغّر: من يفصل نقاط التوازي فقط؟',widget:(el,B)=>PLCTRY.circ(el,B,C.C,{view:'lad',intro:'برنامج LAD للتمرين (ج). جرّب التشغيل من كل مكان، ثم جرّب ضاغطي الفصل.',
+ predict:{q:'المحرك يدور بالضغط على <span class="ltr">N.O1</span> وحده، وضغطت <span class="ltr">N.C2</span>. ماذا يحدث؟',opts:[
+  ['يتوقف المحرك',false,'N.C2 على التوالي مع مجموعة N.O2 / N.O3 فقط، وليس مع N.O1.'],
+  ['يبقى المحرك دائراً',true,'الدراسة: N.C2 «فصل لنقاط تشغيل التوازي». فرع N.O1 لا يمر به، ولا يوقفه إلا N.C1.'],
+  ['يتوقف ثم يعود وحده',false,'لا يوجد في البرنامج ما يجعله يعود وحده؛ الحالة تتبع الضواغط فقط.']]}})}
    ]},
 
   {recap:[
@@ -1273,7 +1661,12 @@ circuitLesson({
     {predict:{q:String.raw`فتحت برنامج <span class="ltr">Step7</span> لتكتب البرنامج بالبوابات. ما اسم هذه الطريقة الذي ستجده فيه؟`,opts:[
      [String.raw`<span class="ltr">CSF</span>`,false,String.raw`هذا اسمها في برنامج <span class="ltr">Step5</span> الأقدم.`],
      [String.raw`<span class="ltr">FBD</span>`,true,String.raw`في <span class="ltr">Step7</span> تسمى <span class="ltr">Function Block Diagram</span> واختصارها <span class="ltr">FBD</span> (ص 17).`],
-     [String.raw`<span class="ltr">STL</span>`,false,String.raw`<span class="ltr">STL</span> قائمة الإجراءات، وهي الطريقة الثالثة التي تُكتب فيها أوامر بالحروف.`]]}}
+     [String.raw`<span class="ltr">STL</span>`,false,String.raw`<span class="ltr">STL</span> قائمة الإجراءات، وهي الطريقة الثالثة التي تُكتب فيها أوامر بالحروف.`]]}},
+    {title:'مختبر مصغّر: أي اسم لأي برنامج؟',widget:(el,B)=>DCML.sort(el,B,{intro:'الطريقة نفسها لها اسمان (ص 17). لكل اسم اختر البرنامج الذي يستعمله.',cats:['Step5','Step7'],items:[
+ ['Control System Flowchart',0,'في Step5 تسمى CSF.'],
+ ['FBD',1,'في Step7: Function Block Diagram.'],
+ ['CSF',0,'اختصار Control System Flowchart، على برنامج Step5.'],
+ ['Function Block Diagram',1,'الاسم على برنامج Step7.']]})}
    ]},
 
   {st:2,short:'بوابة AND',title:'بوابة (و) AND: كل المداخل معاً',ref:'ص 17',
@@ -1291,7 +1684,14 @@ circuitLesson({
      ['لا يعمل',true,'AND تحتاج كل المداخل؛ مدخل واحد غير مضغوط يقطع الخرج كما يقطع مفتاح مفتوح دائرة التوالي.'],
      ['يعمل، لأن أغلب المداخل مضغوطة',false,'لا يوجد «أغلبية» في AND؛ هذا يشبه ثلاثة مفاتيح على التوالي أحدها مفتوح.'],
      ['يعمل لأن المدخل الأول مضغوط',false,'هذا سلوك OR وليس AND.']]}},
-    {watch:String.raw`<p>بوابة AND لا تكون بمدخل واحد: «على الأقل دخلان». وأقصى عدد مداخل لها في الكتاب <span class="ltr">8</span>.</p>`}
+    {watch:String.raw`<p>بوابة AND لا تكون بمدخل واحد: «على الأقل دخلان». وأقصى عدد مداخل لها في الكتاب <span class="ltr">8</span>.</p>`},
+    {title:'مختبر مصغّر: بوابة AND بثلاثة مداخل',widget:(el,B)=>PLCTRY.run(el,B,{view:'fbd',intro:'بوابة & بثلاثة مداخل، كل مدخل مفتاح. بدّل المفاتيح وراقب الخرج.',
+ note:'العناوين هنا للتوضيح فقط، وليست من مثال في الكتاب.',
+ predict:{q:'كم مدخلاً يجب أن يكون <span class="ltr">1</span> حتى يصبح الخرج <span class="ltr">1</span>؟',opts:[
+  ['مدخل واحد على الأقل',false,'هذه بوابة OR. في AND يكفي مدخل واحد 0 ليصبح الخرج 0.'],
+  ['المداخل الثلاثة كلها',true,'AND تكافئ مفاتيح على التوالي: يجب أن تكون كلها مغلقة (1).'],
+  ['مدخلان من ثلاثة',false,'لا توجد بوابة «أغلبية» هنا؛ AND تحتاج كل المداخل.']]},
+ nets:[['A I 0.1','A I 0.2','A I 0.3','= Q 4.5']],ins:[{a:'I0.1',l:'المدخل 1'},{a:'I0.2',l:'المدخل 2'},{a:'I0.3',l:'المدخل 3'}],outs:[{a:'Q4.5',l:'خرج AND'}]})}
    ]},
 
   {st:3,short:'بوابة OR',title:'بوابة (أو) OR: يكفي مدخل واحد',ref:'ص 17',
@@ -1308,7 +1708,14 @@ circuitLesson({
     {predict:{q:'أيّ توصيل يكافئ بوابة OR لها مدخلان؟',opts:[
      ['مفتاحان على التوالي',false,'التوالي يكافئ AND.'],
      ['مفتاح مغلق N.C',false,'المفتاح المغلق يكافئ NOT (المحطة القادمة).'],
-     ['مفتاحان على التوازي',true,'«تكافئ توصيل مفتاحين على التوازي إذا كان لها مدخلان» (ص 17).']]}}
+     ['مفتاحان على التوازي',true,'«تكافئ توصيل مفتاحين على التوازي إذا كان لها مدخلان» (ص 17).']]}},
+    {title:'مختبر مصغّر: بوابة OR بثلاثة مداخل',widget:(el,B)=>PLCTRY.run(el,B,{view:'fbd',intro:'بوابة <span class="ltr">&gt;=1</span> بثلاثة مداخل. بدّل المفاتيح وراقب الخرج.',
+ note:'العناوين هنا للتوضيح فقط، وليست من مثال في الكتاب.',
+ predict:{q:'المداخل الثلاثة كلها <span class="ltr">1</span>. ما الخرج؟',opts:[
+  ['0، لأن OR تحتاج مدخلاً واحداً فقط',false,'«واحد أو أكثر»: إذا كانت كلها 1 فالشرط متحقق أيضاً.'],
+  ['1',true,'الرمز >=1 يعني واحد أو أكثر، فثلاثة مداخل 1 تعطي خرجاً 1، كفروع توازٍ كلها مغلقة.'],
+  ['يتعطل الخرج',false,'لا يوجد تعارض في OR؛ كل فرع مغلق يوصّل.']]},
+ nets:[['O I 0.1','O I 0.2','O I 0.3','= Q 4.5']],ins:[{a:'I0.1',l:'المدخل 1'},{a:'I0.2',l:'المدخل 2'},{a:'I0.3',l:'المدخل 3'}],outs:[{a:'Q4.5',l:'خرج OR'}]})}
    ]},
 
   {st:4,short:'بوابة NOT',title:'بوابة (لا) NOT: الدائرة الصغيرة تعكس',ref:'ص 17',
@@ -1362,7 +1769,12 @@ circuitLesson({
     {predict:{q:'ضغطت S1 و S0 معاً. ماذا يحدث للمصباح H1؟',opts:[
      ['يضيء، لأن S1 مضغوط',false,'خرج OR صار 1، لكن AND تحتاج أيضاً مدخل S0 المعكوس.'],
      ['يضيء نصف إضاءة',false,'الخرج في البوابات إما 1 أو 0 فقط.'],
-     ['ينطفئ: S0 المضغوط يصبح 0 بعد الدائرة الصغيرة فتقطع AND',true,'الفصل يتغلب على التشغيل، كما في الدائرة الكهربائية تماماً.']]}}
+     ['ينطفئ: S0 المضغوط يصبح 0 بعد الدائرة الصغيرة فتقطع AND',true,'الفصل يتغلب على التشغيل، كما في الدائرة الكهربائية تماماً.']]}},
+    {title:'مختبر مصغّر: شغّل حل FBD لمثال 1',widget:(el,B)=>PLCTRY.circ(el,B,C.F1,{view:'fbd',intro:'حل الكتاب (ص 19) يعمل أمامك: بوابة OR لـ <span class="ltr">S1</span> و<span class="ltr">S2</span>، ثم بوابة AND مع <span class="ltr">S0</span> المعكوس.',
+ predict:{q:'لم يُضغط أي مفتاح. ما قيمة مدخل بوابة AND الذي يأتي من <span class="ltr">S0</span> (بعد الدائرة الصغيرة)؟',opts:[
+  ['0',false,'S0 غير مضغوط يعطي 0، لكن الدائرة الصغيرة تعكسه.'],
+  ['1',true,'S0 غير مضغوط ← 0 ← الدائرة الصغيرة تعكسه إلى 1، فيمر شرط S0. لذلك يكفي الآن S1 أو S2.'],
+  ['لا قيمة له حتى يُضغط',false,'كل مدخل له قيمة دائماً: 0 أو 1.']]}})}
    ]},
 
   {st:6,short:'مثال 2',title:'مثال 2: متمم له شروط خاصة',ref:'ص 19–20',
@@ -1383,7 +1795,12 @@ circuitLesson({
     {predict:{q:'في حل المثال، أيّ مدخلين يدخلان البوابات بدائرة صغيرة؟',opts:[
      ['S3 و S6',true,'كلاهما تلامس مغلق N.C في الشكل (6-2)، والدائرة الصغيرة تمثل المفتاح المغلق.'],
      ['S1 و S2',false,'S1 و S2 تلامسان مفتوحان يدخلان AND مباشرة.'],
-     ['S4 و S5',false,'S4 و S5 تلامسان مفتوحان.']]}}
+     ['S4 و S5',false,'S4 و S5 تلامسان مفتوحان.']]}},
+    {title:'مختبر مصغّر: شغّل حل FBD لمثال 2',widget:(el,B)=>PLCTRY.circ(el,B,C.F2,{view:'fbd',intro:'حل الكتاب (ص 20). العناوين <span class="ltr">I3.1…I3.6</span> مربوطة بـ <span class="ltr">S1…S6</span> استنتاجاً من الحل (انظر «انتبه» أعلاه).',
+ predict:{q:'<span class="ltr">S1</span> و<span class="ltr">S2</span> مضغوطان و<span class="ltr">K10</span> يعمل. ضغطت <span class="ltr">S3</span> أيضاً. ماذا يحدث؟',opts:[
+  ['يفصل K10',false,'S3 داخل الفرع الأيمن فقط؛ الفرع الأيسر (S1 و S2) ما زال يوصّل.'],
+  ['يبقى K10 يعمل',true,'الفرعان متوازيان في OR: يكفي الفرع الأيسر. والذي يفصل الكل هو S6 فقط.'],
+  ['يعمل K10 ويعمل معه خرج آخر',false,'البرنامج له خرج واحد Q5.2.']]}})}
    ]},
 
   {recap:[
@@ -1473,7 +1890,12 @@ circuitLesson({
    ],
    body:[
     {tip:String.raw`<p>لكل تمرين نتبع الخطوات نفسها: <b>(1)</b> نقرأ الدراسة لنعرف متى يعمل الحمل ومتى يفصل، <b>(2)</b> نأخذ العناوين من جدول الترميز، <b>(3)</b> نحوّل: كل مجموعة توازٍ ← OR، وكل توالٍ ← AND، وكل مفتاح مغلق ← دائرة صغيرة.</p>`,title:'طريقة الحل'},
-    {watch:String.raw`<p>في رسوم هذه المجموعة تختلف العناوين أحياناً عن جدول الترميز الذي فوقها. سننبهك في كل تمرين؛ والقاعدة: <b>البرنامج يُكتب بعناوين جدول الترميز</b>، لأنه هو الذي يحدد أين وصّلنا كل مفتاح.</p>`}
+    {watch:String.raw`<p>في رسوم هذه المجموعة تختلف العناوين أحياناً عن جدول الترميز الذي فوقها. سننبهك في كل تمرين؛ والقاعدة: <b>البرنامج يُكتب بعناوين جدول الترميز</b>، لأنه هو الذي يحدد أين وصّلنا كل مفتاح.</p>`},
+    {title:'تحقق سريع: قواعد التحويل إلى FBD',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل قاعدة من قواعد هذه المجموعة.',items:[
+ ['كل مجموعة مفاتيح على التوازي تصبح بوابة OR.',true,'التوازي = «أو».'],
+ ['كل مفتاح مغلق (ضاغط فصل) يصبح بوابة OR مستقلة.',false,'المفتاح المغلق يدخل البوابة بدائرة صغيرة (NOT).'],
+ ['المفاتيح على التوالي تصبح بوابة AND.',true,'التوالي = «و».'],
+ ['إذا اختلفت عناوين الرسم عن جدول الترميز، نكتب البرنامج بعناوين الرسم.',false,'القاعدة: البرنامج يُكتب بعناوين جدول الترميز، لأنه يحدد أين وُصّل كل مفتاح.']]})}
    ]},
 
   {st:2,short:'تمرين أ',title:'أ- تشغيل مجموعة إضاءة من أربعة أماكن، التشغيل من مكانين على التوالي',ref:'ص 20–21',
@@ -1495,7 +1917,12 @@ circuitLesson({
     {predict:{q:'كم مدخلاً لبوابة AND الأخيرة في هذا الحل؟',opts:[
      ['مدخلان',false,'نسيت S3: هو أيضاً على التوالي مع المجموعتين.'],
      ['ثلاثة مداخل',true,'خرج OR الأولى، و S3 بدائرة صغيرة، وخرج OR الثانية — كلها على التوالي.'],
-     ['خمسة مداخل',false,'المفاتيح المتوازية تدخل بوابتي OR أولاً، ولا تدخل AND مباشرة.']]}}
+     ['خمسة مداخل',false,'المفاتيح المتوازية تدخل بوابتي OR أولاً، ولا تدخل AND مباشرة.']]}},
+    {title:'مختبر مصغّر: شغّل حل التمرين (أ)',widget:(el,B)=>PLCTRY.circ(el,B,C.FA,{view:'fbd',intro:'الحل بعناوين جدول الترميز: بوابتا OR ثم AND بثلاثة مداخل.',
+ predict:{q:'ضغطت <span class="ltr">S2</span> و<span class="ltr">S5</span> و<span class="ltr">S3</span>. هل تعمل <span class="ltr">H7</span>؟',opts:[
+  ['نعم، المجموعتان متحققتان',false,'المجموعتان متحققتان فعلاً، لكن S3 ضاغط فصل وقد ضُغط.'],
+  ['لا، لأن S3 مضغوط',true,'S3 يدخل AND بدائرة صغيرة: مضغوط ← 1 ← يُعكس إلى 0، فيصبح خرج AND صفراً.'],
+  ['تعمل نصف الإضاءة',false,'الخرج واحد: إما 1 أو 0.']]}})}
    ]},
 
   {st:3,short:'تمرين ب',title:'ب- تشغيل متمم من أربعة أماكن، والفصل من ثلاثة أماكن',ref:'ص 21–23',
@@ -1513,7 +1940,12 @@ circuitLesson({
     {book:String.raw`<p><b>الدراسة:</b></p><p>من الشكل المبين يتم تشغيل المتمم <span class="ltr">(k10)</span> بالضغط على المفتاح (<span class="ltr">S4</span> أو <span class="ltr">S3</span>) أو بالضغط على (<span class="ltr">S2</span> مع <span class="ltr">S5</span>) بالتوالي. أما الفصل فيتم عن طريق مفتاح الفصل الرئيس (<span class="ltr">S1</span>) أو مفتاح الفصل (<span class="ltr">S7</span>) الخاص بفصل مجموعة التشغيل (<span class="ltr">S3</span> أو <span class="ltr">S4</span>) أو ضاغط الفصل (<span class="ltr">S6</span>) الخاص بمجموعة التشغيل على التوالي (<span class="ltr">S2</span> مع <span class="ltr">S5</span>).</p><p>الترميز:</p>`+bookTable([['S1','I1.1'],['S2','I1.2'],['S5','I1.5'],['S3','I1.3'],['S4','I1.4'],['S6','I1.6'],['S7','I1.7'],['K10','Q4.5']]),ref:'ص 22'},
     {tip:String.raw`<ol><li>الفرع الأخضر: <span class="ltr">S3</span> <b>أو</b> <span class="ltr">S4</span> ← OR، ثم <b>و</b> <span class="ltr">S7</span> بدائرة صغيرة ← AND.</li><li>الفرع البرتقالي: <span class="ltr">S2</span> <b>و</b> <span class="ltr">S5</span> <b>و</b> <span class="ltr">S6</span> بدائرة صغيرة ← AND بثلاثة مداخل.</li><li>الفرعان متوازيان ← OR.</li><li>ثم <b>و</b> <span class="ltr">S1</span> بدائرة صغيرة ← AND أخيرة ← <span class="ltr">K10</span>.</li></ol>`+progFig(C.FB.program,'fbd',C.FB.io),title:'الحل بعناوين جدول الترميز'},
     {watch:String.raw`<p>رسم FBD في الكتاب (ص 23) يستعمل <span class="ltr">I3.1…I3.7</span> والخرج <span class="ltr">Q4.1</span>، بينما الترميز <span class="ltr">I1.1…I1.7</span> و<span class="ltr">Q4.5</span>. ترتيب البوابات صحيح (<span class="ltr">I3.n</span> تقابل <span class="ltr">Sn</span>)، فنكتب البرنامج بعناوين الترميز.</p>`,fix:true},
-    {html:String.raw`<p>رسم الكتاب كما هو:</p>`+progFig([{title:'كما في الكتاب',stl:STL.B_fbd_draw}],'fbd',[])}
+    {html:String.raw`<p>رسم الكتاب كما هو:</p>`+progFig([{title:'كما في الكتاب',stl:STL.B_fbd_draw}],'fbd',[])},
+    {title:'مختبر مصغّر: شغّل حل التمرين (ب)',widget:(el,B)=>PLCTRY.circ(el,B,C.FB,{view:'fbd',intro:'الحل بعناوين جدول الترميز. جرّب الفرعين، وجرّب كل ضاغط فصل.',
+ predict:{q:'<span class="ltr">K10</span> يعمل بالضغط على <span class="ltr">S3</span>. أي ضاغط فصل يوقفه؟',opts:[
+  ['S6',false,'S6 داخل فرع التوالي S2 و S5 فقط.'],
+  ['S7 أو S1',true,'S7 يفصل مجموعة (S3 أو S4)، و S1 الفصل الرئيس يفصل كل شيء.'],
+  ['S7 فقط',false,'S1 أيضاً: هو على التوالي مع الفرعين كليهما.']]}})}
    ]},
 
   {st:4,short:'تمرين ج',title:'ج- تشغيل محرك من ثلاثة أماكن، والفصل من ثلاثة أماكن',ref:'ص 23–24',
@@ -1541,7 +1973,16 @@ circuitLesson({
     {predict:{q:'ما الحل الصحيح للدائرة المرسومة في التمرين (ج)؟',opts:[
      ['حل الكتاب في ص 24 كما هو',false,'هذا الحل لدائرة N.O / N.C، فلا يطابق الدائرة المرسومة (انظر الجدول).'],
      ['حل مثال 1',false,'مثال 1 دائرة ثلاثة مفاتيح فقط.'],
-     ['نفس حل التمرين (ب)، لأن الدائرة المرسومة هي دائرة (ب) نفسها',true,'S1 فصل للكل، و S6 لمفتاحي التوالي، و S7 لـ S3 أو S4 — تماماً كالتمرين (ب).']]}}
+     ['نفس حل التمرين (ب)، لأن الدائرة المرسومة هي دائرة (ب) نفسها',true,'S1 فصل للكل، و S6 لمفتاحي التوالي، و S7 لـ S3 أو S4 — تماماً كالتمرين (ب).']]}},
+    {title:'مختبر مصغّر: حل الكتاب أمام الحل المصحح',widget:(el,B)=>PLCTRY.run(el,B,{intro:'المفاتيح هنا مفاتيح الدائرة المرسومة (عناوين التمرين ب). البرنامج يحسب حل الكتاب والحل المصحح معاً على الضغطات نفسها، فترى أين يختلفان.',
+ predict:{q:'ضغطت <span class="ltr">S2</span> وحده. ماذا يفعل حل الكتاب؟',opts:[
+  ['لا يعمل، مثل الدائرة المرسومة',false,'في حل الكتاب العنوان I1.2 هو N.O2 (تشغيل توازٍ)، فيكفي وحده.'],
+  ['يعمل، بينما الدائرة المرسومة تحتاج S2 مع S5',true,'هذا أول اختلاف في جدول المقارنة: حل الكتاب مكتوب لدائرة N.O / N.C لا للدائرة المرسومة.'],
+  ['يعمل الحلان معاً',false,'الحل المصحح يتبع الدائرة المرسومة: S2 وحده لا يكفي.']]},
+ nets:[STL.C_fbd_book,STL.B_lad.map(x=>x==='= Q 4.5'?'= Q 4.6':x)],
+ ins:C.B.inputs.map(i=>({a:i.addr,l:i.id,d:i.label})),
+ outs:[{a:'Q4.5',l:'حل الكتاب',na:1},{a:'Q4.6',l:'الحل المصحح',na:1}],
+ msg:g=>g('Q4.5')===g('Q4.6')?'الحلان متفقان في هذه الحالة.':'<b>الحلان مختلفان هنا.</b> الحل المصحح يتبع الدائرة المرسومة: S1 فصل للكل، و S6 لمفتاحي التوالي S2 و S5، و S7 لـ S3 أو S4.'})}
    ]},
 
   {recap:[
@@ -1617,7 +2058,12 @@ circuitLesson({
     {predict:{q:'مفتاح فصل مغلق N.C موصول على التوالي مع ما قبله. أيّ أمر يُكتب له؟',opts:[
      [String.raw`<span class="ltr mono">A</span>`,false,'A وحدها لتلامس مفتوح على التوالي.'],
      [String.raw`<span class="ltr mono">O</span>`,false,'O للتوازي، وهذا المفتاح على التوالي.'],
-     [String.raw`<span class="ltr mono">AN</span>`,true,'A للتوالي و N للمفتاح المغلق.']]}}
+     [String.raw`<span class="ltr mono">AN</span>`,true,'A للتوالي و N للمفتاح المغلق.']]}},
+    {title:'مختبر مصغّر: أي حرف لأي عملية؟',widget:(el,B)=>{const L=DCML.lt;DCML.sort(el,B,{intro:'من قائمة الحروف (ص 25): اختر الأمر المناسب لكل حالة.',cats:[L('A'),L('AN'),L('O'),L('A( … )')],items:[
+ ['مفتاح تشغيل مفتوح على التوالي مع ما قبله',0,'عمليات التوالي (AND) رمزها A.'],
+ ['ضاغط فصل مغلق على التوالي مع ما قبله',1,'توالٍ (A) مع مفتاح مغلق (N) ← AN.'],
+ ['مفتاح من مجموعة متوازية، داخل القوس',2,'عمليات التوازي (OR) رمزها O.'],
+ ['مجموعة توازٍ كاملة تأتي على التوالي مع بقية الدائرة',3,'«الأقواس تمثل مجموعة التوازي»: نفتح A( ونكتب داخله O لكل مفتاح، ثم نغلق ).']]})}}
    ]},
 
   {st:2,short:'مثال 1',title:'مثال 1: تشغيل حمل مع الفصل في ثلاثة أسطر',ref:'ص 25–26',
@@ -1668,7 +2114,12 @@ circuitLesson({
      ['طريقة كتابة البرنامج فقط: أسطر بحروف STL بدل الرسم',true,'المطلوب في ص 26: كتابة برنامج التحكم باستخدام (STL).']]}}
    ],
    body:[
-    {tip:String.raw`<p>لكل تمرين نتبع الخطوات نفسها: <b>(1)</b> نقرأ الدراسة لنعرف متى يعمل الحمل ومتى يفصل، <b>(2)</b> نأخذ العناوين من جدول الترميز، <b>(3)</b> نحوّل: كل توالٍ ← <span class="ltr mono">A</span>، وكل مفتاح مغلق ← <span class="ltr mono">AN</span>، وكل مجموعة توازٍ ← قوس <span class="ltr mono">A( … )</span> فيه <span class="ltr mono">O</span>.</p>`,title:'طريقة الحل'}
+    {tip:String.raw`<p>لكل تمرين نتبع الخطوات نفسها: <b>(1)</b> نقرأ الدراسة لنعرف متى يعمل الحمل ومتى يفصل، <b>(2)</b> نأخذ العناوين من جدول الترميز، <b>(3)</b> نحوّل: كل توالٍ ← <span class="ltr mono">A</span>، وكل مفتاح مغلق ← <span class="ltr mono">AN</span>، وكل مجموعة توازٍ ← قوس <span class="ltr mono">A( … )</span> فيه <span class="ltr mono">O</span>.</p>`,title:'طريقة الحل'},
+    {title:'تحقق سريع: قواعد التحويل إلى STL',widget:(el,B)=>{const L=DCML.lt;DCML.tf(el,B,{intro:'احكم على كل قاعدة.',items:[
+ [`المفتاح المغلق على التوالي يُكتب ${L('AN')}.`,true,'A للتوالي و N للمفتاح المغلق.'],
+ [`مجموعة التوازي تُكتب داخل قوس ${L('A(')} … ${L(')')} وفيه ${L('O')} قبل كل مفتاح.`,true,'هذا ما يفعله حل التمرين (أ): O I 1.1 ثم O I 1.2 داخل القوس.'],
+ [`السطر الأخير ${L('= Q 2.5')} يقرأ حالة الخرج.`,false,'السطر = يكتب النتيجة (RLO) في المخرج، ولا يقرأه.'],
+ ['ترتيب الأسطر لا يغيّر شيئاً في البرنامج.',false,'الـ PLC يقرأ الأسطر من الأعلى إلى الأسفل، وموضع السطر قد يغيّر المعنى (انظر التمرين ج).']]})}}
    ]},
 
   {st:4,short:'تمرين أ',title:'أ- تشغيل مجموعة إضاءة من أربعة أماكن',ref:'ص 26–27',
@@ -1685,7 +2136,12 @@ circuitLesson({
    body:[
     {book:String.raw`<p><b>الدراسة:</b></p><p>1- من الشكل المبين يتم تشغيل الحمل (مجموعة الإضاءة <span class="ltr">H7</span>) بالضغط على المفتاح (<span class="ltr">S1</span> أو <span class="ltr">S2</span>) مع الضغط على المفتاح (<span class="ltr">S4</span> أو <span class="ltr">S5</span>). أما الضاغط (<span class="ltr">S3</span>) فهو ضاغط فصل</p><p>2- الترميز:</p>`+bookTable([['S1','I1.1'],['S2','I1.2'],['S4','I1.4'],['S5','I1.5'],['S3','I1.3'],['H7','Q2.5']])+String.raw`<p>3- قائمة الإجراءات <span class="ltr">(STL)</span>:</p>`+progFig(C.SA.program,'stl'),ref:'ص 27'},
     {tip:String.raw`<p>اقرأ البرنامج هكذا: <b>(</b><span class="ltr">S1</span> أو <span class="ltr">S2</span><b>)</b> و ليس <span class="ltr">S3</span> و <b>(</b><span class="ltr">S4</span> أو <span class="ltr">S5</span><b>)</b> ← <span class="ltr">H7</span>. هو نفس ترتيب حل FBD للتمرين نفسه: بوابتا OR ثم AND بثلاثة مداخل؛ كل بوابة OR صارت قوساً.</p>`,title:'قارن بحل البوابات'},
-    {watch:String.raw`<p>داخل القوس نكتب <span class="ltr mono">O</span> قبل كل مفتاح من المجموعة المتوازية، حتى الأول منها: <span class="ltr mono">O I 1.1</span> ثم <span class="ltr mono">O I 1.2</span>. ولا تنسَ القوس المغلق <span class="ltr mono">)</span> بعد آخر مفتاح.</p>`}
+    {watch:String.raw`<p>داخل القوس نكتب <span class="ltr mono">O</span> قبل كل مفتاح من المجموعة المتوازية، حتى الأول منها: <span class="ltr mono">O I 1.1</span> ثم <span class="ltr mono">O I 1.2</span>. ولا تنسَ القوس المغلق <span class="ltr mono">)</span> بعد آخر مفتاح.</p>`},
+    {title:'مختبر مصغّر: نفّذ برنامج التمرين (أ)',widget:(el,B)=>PLCTRY.circ(el,B,C.SA,{view:'stl',intro:'البرنامج بعناوين جدول الترميز (ص 27). بجانب كل سطر قيمة <span class="ltr">RLO</span> بعد تنفيذه. بدّل المفاتيح وراقب أين تصبح <span class="ltr">0</span>.',
+ predict:{q:'ضغطت <span class="ltr">S1</span> و<span class="ltr">S4</span>. ما قيمة RLO بعد السطر <span class="ltr">AN I 1.3</span>؟',opts:[
+  ['1',true,'القوس الأول (S1 أو S2) = 1، و S3 غير مضغوط فـ AN يعطي 1، فيبقى RLO = 1.'],
+  ['0',false,'AN يعطي 0 فقط إذا كان S3 مضغوطاً (I1.3 = 1).'],
+  ['لا تُحسب قيمة لهذا السطر',false,'كل سطر منطقي يعدّل RLO، وقيمته تظهر بجانبه.']]}})}
    ]},
 
   {st:5,short:'تمرين ب',title:'ب- تشغيل متمم من أربعة أماكن، والفصل من ثلاثة أماكن',ref:'ص 27–29',
@@ -1739,7 +2195,12 @@ circuitLesson({
    body:[
     {book:String.raw`<p><b>الدراسة:</b></p><p>1- من الشكل المبين يتم تشغيل المحرك (<span class="ltr">K5</span>) عن طريق المفاتيح (<span class="ltr">N.O1</span> أو <span class="ltr">N.O2</span> أو <span class="ltr">N.O3</span>). والفصل عن طريق (<span class="ltr">N.C1</span> أو <span class="ltr">N.C2</span>).</p><p>2- الترميز:</p>`+bookTable([['N.O1','I0.2'],['N.O2','I0.4'],['N.O3','I0.3'],['N.C1','I0.1'],['N.C2','I0.7'],['K5','Q4.4']])+String.raw`<p>3- قائمة الإجراءات <span class="ltr">(STL)</span>:</p>`+progFig(C.SC.program,'stl'),ref:'ص 30–31'},
     {tip:String.raw`<p>الـ PLC يحسب «و» قبل «أو». لذلك تُقرأ الأسطر داخل القوس الكبير هكذا: <b>(</b>(<span class="ltr">N.O2</span> أو <span class="ltr">N.O3</span>) و ليس <span class="ltr">N.C2</span><b>)</b> أو <span class="ltr">N.O1</span>. ولهذا جاء <span class="ltr mono">O I 0.2</span> في آخر القوس: هو «أو» مع كل ما سبقه داخل القوس.</p>`,title:'لماذا آخر سطر داخل القوس؟'},
-    {watch:String.raw`<p>لا تنقل السطر <span class="ltr mono">O I 0.2</span> من مكانه: موضعه في آخر القوس، بعد <span class="ltr mono">AN I 0.7</span>، هو الذي يجعل <span class="ltr">N.C2</span> لا يفصل <span class="ltr">N.O1</span>؛ فالدراسة تقول إن <span class="ltr">N.C2</span> فصل لنقاط تشغيل التوازي فقط. ترتيب الأسطر جزء من معنى البرنامج.</p>`}
+    {watch:String.raw`<p>لا تنقل السطر <span class="ltr mono">O I 0.2</span> من مكانه: موضعه في آخر القوس، بعد <span class="ltr mono">AN I 0.7</span>، هو الذي يجعل <span class="ltr">N.C2</span> لا يفصل <span class="ltr">N.O1</span>؛ فالدراسة تقول إن <span class="ltr">N.C2</span> فصل لنقاط تشغيل التوازي فقط. ترتيب الأسطر جزء من معنى البرنامج.</p>`},
+    {title:'مختبر مصغّر: نفّذ برنامج التمرين (ج)',widget:(el,B)=>PLCTRY.circ(el,B,C.SC,{view:'stl',intro:'البرنامج بعناوين جدول الترميز (ص 31). جرّب: هل يفصل <span class="ltr">N.C2</span> كل التشغيل أم بعضه؟',
+ predict:{q:'المحرك يدور بالضغط على <span class="ltr">N.O2</span>، وضغطت <span class="ltr">N.C2</span>. ماذا يحدث؟',opts:[
+  ['يبقى دائراً',false,'N.O2 من نقاط تشغيل التوازي، و N.C2 فصل لها.'],
+  ['يتوقف',true,'السطر AN I 0.7 يأتي بعد قوس (N.O2 أو N.O3)، فيقطع هذه المجموعة. أما N.O1 فيدخل بـ O I 0.2 بعده فلا يتأثر.'],
+  ['يتوقف ثم يدور بعد لحظة',false,'لا يوجد مزمن في البرنامج.']]}})}
    ]},
 
   {st:7,short:'المطلوب',title:'المطلوب: من الورق إلى الجهاز',ref:'ص 31',
@@ -1754,7 +2215,9 @@ circuitLesson({
      ['يعمل K10 في الثلاث: البرنامج نفسه بثلاث طرق كتابة',true,'LAD و FBD و STL ثلاث طرق لكتابة الشرط نفسه.']]}}
    ],
    body:[
-    {tip:String.raw`<p>دوائر <span class="ltr">H7</span> و<span class="ltr">K10</span> و<span class="ltr">K5</span> تكررت في المجموعات الثلاث (LAD ثم FBD ثم STL) بعناوين مختلفة في كل مرة. عند الاختبار جرّب <b>كل حالة ضغط</b> مذكورة في الدراسة: التشغيل من كل مكان، والفصل من كل مفتاح فصل، وتأكد أن الحمل يعمل أو يفصل كما تقول الدراسة. وفي تبويب المختبر يمكنك أن تبدّل بين LAD و FBD و STL للدائرة نفسها.</p>`,title:'كيف تختبر؟'}
+    {tip:String.raw`<p>دوائر <span class="ltr">H7</span> و<span class="ltr">K10</span> و<span class="ltr">K5</span> تكررت في المجموعات الثلاث (LAD ثم FBD ثم STL) بعناوين مختلفة في كل مرة. عند الاختبار جرّب <b>كل حالة ضغط</b> مذكورة في الدراسة: التشغيل من كل مكان، والفصل من كل مفتاح فصل، وتأكد أن الحمل يعمل أو يفصل كما تقول الدراسة. وفي تبويب المختبر يمكنك أن تبدّل بين LAD و FBD و STL للدائرة نفسها.</p>`,title:'كيف تختبر؟'},
+    {title:'مختبر مصغّر: الدائرة نفسها بالطرق الثلاث',widget:(el,B)=>PLCTRY.circ(el,B,C.SB,{view:['lad','fbd','stl'],intro:'برنامج دائرة <span class="ltr">K10</span> (التمرين ب، بعناوين ص 28). اختبره كما تختبره على الجهاز: جرّب كل حالة في الدراسة، وبدّل طريقة العرض وتأكد أن النتيجة واحدة.',
+ msg:g=>'K10 '+(g('Q4.4')?'<b>يعمل</b>':'<b>متوقف</b>')+' في الطرق الثلاث: البرنامج واحد، والعرض فقط هو الذي يتغير.'})}
    ]},
 
   {recap:[

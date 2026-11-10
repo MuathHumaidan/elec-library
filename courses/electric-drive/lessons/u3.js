@@ -203,7 +203,183 @@ lesson({
  title:'أنواع محركات التحريك، وخواص محرك التوالي للتيار المستمر',
  summary:'أنواع المحركات المستخدمة في التحريك الكهربائي: محركات التيار المستمر والمحركات الحثية والتزامنية. ثم خواص محرك التوالي: العزم يتناسب مع مربع تيار المنتج قبل التشبع ومع التيار نفسه بعده، والسرعة تنخفض كلما زاد الحمل، ولا يُشغَّل بلا حمل.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'أهداف الوحدة',title:'الوحدة الثالثة: الهدف العام والأهداف التفصيلية',ref:'ص 33',
    q:'أي المحركات تصلح لتحريك قطار أو رافعة؟ هذه الوحدة تعرّفك بخواص أربعة منها.',
@@ -219,7 +395,11 @@ lesson({
    body:[
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة خواص محركات التيار المستمر والتيار المتردد المستخدمة في التحريك الكهربائي.</p>
      <p><b>الأهداف التفصيلية:</b></p><ul><li>أن يعرف المتدرب خواص محركات التيار المستمر من النوع التوالي والمركب.</li><li>أن يعرف المتدرب خواص محركات التيار المتردد المستخدمة في التحريك.</li></ul>`,ref:'ص 33'},
-    {tip:String.raw`<p>«الخواص» هنا تعني ثلاث علاقات ستتكرر مع كل محرك: <b>العزم مع تيار المنتج</b>، و<b>السرعة مع تيار المنتج</b>، و<b>السرعة مع العزم</b>. والسؤال الذي يجمعها: كيف يتصرف المحرك عندما يزيد حمله أو ينقص؟</p>`}
+    {tip:String.raw`<p>«الخواص» هنا تعني ثلاث علاقات ستتكرر مع كل محرك: <b>العزم مع تيار المنتج</b>، و<b>السرعة مع تيار المنتج</b>، و<b>السرعة مع العزم</b>. والسؤال الذي يجمعها: كيف يتصرف المحرك عندما يزيد حمله أو ينقص؟</p>`},
+    {title:'تحقق سريع: أهداف الوحدة الثالثة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب أهداف الوحدة (ص 33).',items:[
+ ['تدرس الوحدة خواص محركات التيار المستمر من النوع التوالي والمركب.',true,'الهدف التفصيلي الأول.'],
+ ['تدرس الوحدة خواص محركات التيار المتردد المستخدمة في التحريك.',true,'الهدف التفصيلي الثاني (الدرس الثالث).'],
+ ['هدف الوحدة تعلّم لف ملفات المحركات وصيانتها.',false,'الهدف العام «معرفة خواص» المحركات المستخدمة في التحريك، لا لفها أو صيانتها.']]})}
    ]},
 
   {st:2,short:'أنواع المحركات',title:'أنواع المحركات الكهربائية المستخدمة في التحريك الكهربائي',ref:'ص 34',
@@ -242,7 +422,12 @@ lesson({
      <tr><td>الحثي ذو القفص السنجابي</td><td>بسيط، رخيص، صلب</td><td>السرعة الثابتة</td></tr>
      <tr><td>الحثي ذو العضو الدوار الملفوف</td><td>عزم بدء كبير بتيار بدء أقل، سهولة التحكم في السرعة</td><td>الأحمال الثقيلة عند البدء</td></tr>
      <tr><td>التزامني</td><td>سرعة ثابتة، قدرات كبيرة، معامل قدرة عالٍ وكفاءة مرتفعة حتى في السرعات البطيئة</td><td>القدرات الكبيرة بسرعة ثابتة</td></tr></tbody></table>`,title:'الأنواع في جدول'},
-    {add:String.raw`<p>المحرك القفصي هو محرك المضخات والمراوح والسيور الناقلة في أغلب المصانع، لأن سرعتها لا تحتاج إلى تغيير. أما الرافعات الكبيرة التي تبدأ حركتها وهي محمّلة فكثيراً ما تستعمل المحرك ذا العضو الدوار الملفوف.</p>`}
+    {add:String.raw`<p>المحرك القفصي هو محرك المضخات والمراوح والسيور الناقلة في أغلب المصانع، لأن سرعتها لا تحتاج إلى تغيير. أما الرافعات الكبيرة التي تبدأ حركتها وهي محمّلة فكثيراً ما تستعمل المحرك ذا العضو الدوار الملفوف.</p>`},
+    {title:'مختبر مصغّر: صِل الميزة بالمحرك',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل ميزة اضغط نوع المحرك الذي يذكرها له الكتاب (ص 34).',cats:['تيار مستمر','حثي قفص سنجابي','حثي عضو دوار ملفوف','تزامني'],items:[
+ ['مدى واسع لتغيير السرعة، وعكس اتجاه الدوران بسهولة',0,'من مميزات محركات التيار المستمر.'],
+ ['بساطة التركيب وقلة التكاليف والصلابة، للتطبيقات ذات السرعة الثابتة',1,'وصف النوع الأول من المحركات الحثية.'],
+ ['عزم كبير لبدء الحركة مع تيار بدء أقل، وسهولة التحكم في السرعة',2,'وصف النوع الثاني من المحركات الحثية.'],
+ ['سرعة ثابتة القيمة وقدرات كبيرة، ويعمل بسرعات بطيئة بمعامل قدرة عالٍ',3,'وصف المحركات التزامنية.']]})}
    ]},
 
   {st:3,short:'محرك التوالي',title:'محركات التيار المستمر كمحركات للتحريك — خواص محرك التوالي',ref:'ص 35',
@@ -257,7 +442,16 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>في محركات التيار المستمر إثارة توالي توصل ملفات المجال <b>على التوالي</b> مع ملفات المنتج. ومن الواضح أن تيار المنتج يمر في ملفات المجال، فعند زيادة التحميل يزداد تيار المنتج وبالتالي تيار المجال. إذاً <b>يزداد المجال المغناطيسي في محركات التوالي مع زيادة تيار المنتج بزيادة التحميل</b>.</p>`,ref:'ص 35'},
-    {tip:String.raw`<p>حمل أكبر ← تيار منتج أكبر ← تيار مجال أكبر (لأنه التيار نفسه) ← مجال مغناطيسي أقوى. هذه الحلقة هي سر كل خواص محرك التوالي التي ستراها في المحطات الثلاث القادمة.</p>`,title:'الفكرة في سطر'}
+    {tip:String.raw`<p>حمل أكبر ← تيار منتج أكبر ← تيار مجال أكبر (لأنه التيار نفسه) ← مجال مغناطيسي أقوى. هذه الحلقة هي سر كل خواص محرك التوالي التي ستراها في المحطات الثلاث القادمة.</p>`,title:'الفكرة في سطر'},
+    {title:'مختبر مصغّر: حمّل محرك التوالي',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر الحمل وراقب تيار المنتج وتيار المجال والمجال المغناطيسي (أطوال نسبية، بلا أرقام).',
+ predict:{q:'في محرك التوالي، تيار ملفات المجال مقارنة بتيار المنتج:',opts:[
+  ['أصغر منه بكثير وثابت',false,'هذا حال ملف التوازي، لا ملف التوالي.'],
+  ['يساويه دائماً',true,'ملفات المجال على التوالي مع المنتج، فيمر فيها تيار المنتج نفسه (ص 35).'],
+  ['يتناقص كلما زاد الحمل',false,'العكس: يزداد مع تيار المنتج.']]},
+ ins:[{k:'L',l:'الحمل',seg:[[1,'خفيف'],[2,'متوسط'],[3,'كبير']],v:1}],
+ calc:(s,P,B)=>{const I=[0,0.25,0.55,0.9][s.L],ph=Math.min(I,0.7)/0.7*0.85;
+  return {bars:[{l:'تيار المنتج I<sub>a</sub>',v:I,max:1,txt:['','صغير','متوسط','كبير'][s.L]},{l:'تيار المجال (هو نفسه)',v:I,max:1,txt:['','صغير','متوسط','كبير'][s.L],col:'--live'},{l:'المجال المغناطيسي φ',v:ph,max:1,txt:s.L===3?'قرب التشبع':'يقوى',col:'--on'}],
+   msg:'زيادة التحميل ← يزداد تيار المنتج ← يزداد تيار المجال (لأنه التيار نفسه) ← يقوى المجال المغناطيسي.'}}})}
    ]},
 
   {st:4,short:'العزم مع التيار',title:'أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 35',
@@ -313,7 +507,17 @@ lesson({
      <p>وعندما يصل المحرك لمستوى التشبع تثبت قيمة المجال المغناطيسي وتثبت السرعة أيضاً. <b>سرعة محرك التوالي تتناسب عكسياً مع تيار المجال قبل التشبع المغناطيسي ثم تصبح ثابتة بعد الوصول إلى التشبع</b>، الشكل <span class="ltr">(3-1b)</span>.</p>`,ref:'ص 35'},
     {tip:String.raw`<p><b>الرموز:</b> \(n\) السرعة، \(E\) القوة الدافعة الكهربائية العكسية، \(V\) جهد المصدر، \(R_a\) مقاومة المنتج، \(R_s\) مقاومة ملف التوالي، \(\phi\) المجال المغناطيسي، والرمز \(\propto\) يعني «يتناسب مع».</p>
      <p>المعادلة \(n\propto E/\phi\) تقول: المجال الأقوى يجعل المحرك <b>أبطأ</b> لنفس الجهد. لذلك حين يقوى المجال مع الحمل في محرك التوالي تنخفض سرعته.</p>`},
-    {watch:String.raw`<p>بعد التشبع «تثبت» السرعة تقريباً فقط: تنخفض قليلاً لأن \(E\) نفسها تنقص قليلاً مع زيادة التيار. وجملة الكتاب عن التشبع جملة مستقلة؛ العلاقة \(n\propto 1/I_a\) تخص ما <b>قبل</b> التشبع فقط.</p>`}
+    {watch:String.raw`<p>بعد التشبع «تثبت» السرعة تقريباً فقط: تنخفض قليلاً لأن \(E\) نفسها تنقص قليلاً مع زيادة التيار. وجملة الكتاب عن التشبع جملة مستقلة؛ العلاقة \(n\propto 1/I_a\) تخص ما <b>قبل</b> التشبع فقط.</p>`},
+    {title:'مختبر مصغّر: تحرّك على منحنى السرعة',widget:(el,B)=>{const l=DCML.lt;return DCML.lab(el,B,{intro:'حرّك تيار المنتج على منحنى محرك توالٍ (قيم توضيحية، نفس قيم رسم الشكل أعلاه)، واقرأ السرعة.',ill:true,
+ predict:{q:'<b>بعد</b> الوصول إلى التشبع المغناطيسي، زاد تيار المنتج. السرعة:',opts:[
+  ['تنخفض بسرعة كبيرة',false,'هذا قبل التشبع، حين يقوى المجال مع التيار.'],
+  ['تكاد تثبت',true,'نص الكتاب ص 35: «عندما يصل المحرك لمستوى التشبع تثبت قيمة المجال المغناطيسي وتثبت السرعة أيضاً».'],
+  ['ترتفع',false,'المجال لا يضعف مع التيار في محرك التوالي.']]},
+ ins:[{k:'I',l:'تيار المنتج I<sub>a</sub>',u:'A',min:6,max:110,step:1,v:20}],
+ calc:(s,P,B)=>{const M=dcModel(SER_DEF,'series'),n=M.n(s.I),sat=s.I>=SER_DEF.Is;
+  return {facts:[['I<sub>a</sub>',s.I+' A'],['السرعة n',DCML.fm(B,n,0)+' rpm','hi'],['الحالة',sat?'بعد التشبع':'قبل التشبع',sat?'':'bad']],
+   plot:{xr:[0,110],yr:[0,4000],xl:'Ia (A)',yl:'n (rpm)',aria:'السرعة مع تيار المنتج',curves:[{f:x=>{const n=x<1?NaN:M.n(x);return n>4000?NaN:n},col:'--blue'}],cur:[s.I,n]},
+   msg:sat?'بعد التشبع المجال ثابت، فالسرعة تكاد تثبت (تنقص قليلاً فقط بسبب هبوط الجهد في المقاومة).':'قبل التشبع: ضاعف التيار من 20 إلى 40 A ولاحظ أن السرعة تنقص إلى النصف تقريباً.'}}})}}
    ]},
 
   {st:6,short:'العزم مع السرعة',title:'ج- علاقة العزم مع السرعة <span class="ltr">T = f(n)</span>',ref:'ص 36',
@@ -333,7 +537,17 @@ lesson({
      <tr><td><span class="ltr">(b)</span></td><td>السرعة مع تيار المنتج</td><td>عالية جداً عند التيار الصغير، تنخفض ثم تكاد تثبت</td></tr>
      <tr><td><span class="ltr">(c)</span></td><td>السرعة مع العزم</td><td>عالية عند العزم الصغير، منخفضة عند العزم الكبير</td></tr></tbody></table>
      <p>الشكل كاملاً مرسوم في الأسلوب الرسمي لهذا الدرس، وفي المختبر تتحرك نقطة التشغيل على المنحنيات الثلاثة.</p>`,title:'الشكل (3-1) في جدول'},
-    {add:String.raw`<p>لهذه الخاصية استُعمل محرك التوالي للتيار المستمر زمناً طويلاً في القطارات الكهربائية وعربات الترام: عند البدء والصعود يعطي عزماً كبيراً بسرعة منخفضة، وعلى الأرض المستوية يسرع وحده.</p>`}
+    {add:String.raw`<p>لهذه الخاصية استُعمل محرك التوالي للتيار المستمر زمناً طويلاً في القطارات الكهربائية وعربات الترام: عند البدء والصعود يعطي عزماً كبيراً بسرعة منخفضة، وعلى الأرض المستوية يسرع وحده.</p>`},
+    {title:'مختبر مصغّر: غيّر الحمل واقرأ نقطة التشغيل',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر عزم الحمل على محرك توالٍ (قيم توضيحية، نفس قيم الشكل أعلاه)، وانظر أين تقع نقطة التشغيل على منحنى السرعة مع العزم.',ill:true,
+ predict:{q:'خففنا الحمل كثيراً (عزم صغير جداً). سرعة محرك التوالي:',opts:[
+  ['تنخفض',false,'العكس: العزم الصغير يحتاج تياراً صغيراً، فيضعف المجال وترتفع السرعة.'],
+  ['ترتفع كثيراً',true,'«محرك التوالي يولد عزماً كبيراً عند السرعات المنخفضة والعكس صحيح» (ص 36).'],
+  ['لا تتغير',false,'سرعة محرك التوالي تتغير تلقائياً مع الحمل.']]},
+ ins:[{k:'T',l:'عزم الحمل',u:'N·m',min:5,max:200,step:5,v:60}],
+ calc:(s,P,B)=>{const M=dcModel(SER_DEF,'series'),o=M.op(s.T+SER_DEF.Tf);const pts=[];for(let i=2;i<=110;i++){const n=M.n(i);if(n<=4000)pts.push([M.T(i),n])}
+  return {facts:[['عزم المحرك (الحمل + الاحتكاك)',DCML.fm(B,o.T,0)+' N·m'],['تيار المنتج',DCML.fm(B,o.I,1)+' A'],['السرعة',DCML.fm(B,o.n,0)+' rpm','hi']],
+   plot:{xr:[0,220],yr:[0,4000],xl:'T (N·m)',yl:'n (rpm)',aria:'السرعة مع العزم',curves:[{pts,col:'--blue'}],cur:[o.T,o.n]},
+   msg:s.T<=15?'الحمل خفيف جداً والسرعة عالية: لهذا لا يبدأ محرك التوالي حركته بدون حمل (المحطة التالية).':s.T>=150?'حمل كبير: عزم كبير وسرعة منخفضة، مثل قطار يبدأ الحركة أو يصعد مرتفعاً.':'',cls:s.T<=15?'warn':''}}})}
    ]},
 
   {st:7,short:'ملاحظات مهمة',title:'يجب ملاحظة النقاط التالية في خواص محرك التوالي',ref:'ص 36',
@@ -529,7 +743,13 @@ lesson({
     {tip:String.raw`<table class="tt"><thead><tr><th>النوع</th><th>مجال ملف التوالي</th><th>المجال الكلي</th></tr></thead><tbody>
      <tr><td>المركب التراكمي</td><td>يساعد مجال ملف التوازي</td><td>مجموع المجالين</td></tr>
      <tr><td>المركب الفرقي (التفاضلي)</td><td>يعاكس مجال ملف التوازي</td><td>الفرق بين المجالين</td></tr></tbody></table>
-     <p>ملف التوازي يعطي مجالاً ثابتاً تقريباً، وملف التوالي يعطي مجالاً يتغير مع الحمل. الفرق بين النوعين هو اتجاه توصيل ملف التوالي فقط.</p>`,title:'النوعان في سطرين'}
+     <p>ملف التوازي يعطي مجالاً ثابتاً تقريباً، وملف التوالي يعطي مجالاً يتغير مع الحمل. الفرق بين النوعين هو اتجاه توصيل ملف التوالي فقط.</p>`,title:'النوعان في سطرين'},
+    {title:'مختبر مصغّر: تراكمي أم فرقي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط نوع المحرك المركب الذي يناسبه (ص 37–38).',cats:['التراكمي','الفرقي (التفاضلي)'],items:[
+ ['مجال ملف التوالي يساعد مجال ملف التوازي',0,'«في الحالة الأولى يسمى المحرك بالمحرك المركب التراكمي».'],
+ [String.raw`\(\phi_t=\phi_{sh}-\phi_{se}\)`,1,'المجالان متعاكسان، فالمحصلة هي الفرق بينهما.'],
+ ['تقل سرعته مع زيادة الحمل',0,'المجال الكلي يزيد مع الحمل فتقل السرعة.'],
+ ['تزداد سرعته مع زيادة الحمل',1,'المجال المحصل يتناقص مع الحمل فتزيد السرعة.'],
+ ['يجب تجنب استخدامه كمحرك للتحريك',1,'ملحوظة الكتاب ص 39 عن المركب الفرقي.']]})}
    ]},
 
   {st:2,short:'التراكمي',title:'خواص المحرك المركب تراكمياً',ref:'ص 37',
@@ -546,7 +766,16 @@ lesson({
     {book:String.raw`<p>في المحرك المركب تراكمياً يوصل ملف التوالي بحيث يكون المجال المغناطيسي الناتج عنه في <b>نفس اتجاه</b> المجال الناتج عن ملف التوازي، أي أن ملف التوالي يساعد ملف التوازي. فعند أي حمل يكون المجال المغناطيسي الإجمالي هو مجموع مجالي ملفي التوازي والتوالي. إذاً محصلة المجال المغناطيسي تعتمد على قيمة التيار في كل من ملفي التوازي والتوالي.</p>
      <div class="eq">$$\phi_t=\phi_{sh}+\phi_{se}$$</div>`,ref:'ص 37'},
     {tip:String.raw`<p><b>الرموز:</b> \(\phi_t\) المجال الكلي (المحصلة)، \(\phi_{sh}\) مجال ملف التوازي <span class="ltr">(shunt)</span>، \(\phi_{se}\) مجال ملف التوالي <span class="ltr">(series)</span>.</p>
-     <p>كلما زاد الحمل زاد \(\phi_{se}\) فزاد \(\phi_t\)، لكن \(\phi_t\) لا ينزل أبداً تحت \(\phi_{sh}\).</p>`}
+     <p>كلما زاد الحمل زاد \(\phi_{se}\) فزاد \(\phi_t\)، لكن \(\phi_t\) لا ينزل أبداً تحت \(\phi_{sh}\).</p>`},
+    {title:'مختبر مصغّر: اجمع المجالين',widget:(el,B)=>DCML.lab(el,B,{intro:'زِد تيار المنتج (الحمل) في محرك مركب تراكمي، وراقب مجال كل ملف والمجال الكلي (أطوال نسبية من نموذج توضيحي).',ill:true,
+ predict:{q:'زاد الحمل على المحرك المركب التراكمي. المجال الكلي:',opts:[
+  ['يقل',false,'هذا في الفرقي، حيث ملف التوالي يعاكس.'],
+  ['يزيد',true,String.raw`\(\phi_t=\phi_{sh}+\phi_{se}\): مجال التوازي باقٍ ومجال التوالي يكبر مع تيار المنتج.`],
+  ['يبقى ثابتاً',false,'مجال ملف التوالي يتغير مع تيار المنتج.']]},
+ ins:[{k:'I',l:'تيار المنتج I<sub>a</sub>',u:'A',min:0,max:100,step:5,v:20}],
+ calc:(s,P,B)=>{const d=CMP_DEF,sh=d.ksh,se=d.c*s.I,t=Math.min(sh+se,d.ksat),mx=d.ksat;
+  return {bars:[{l:'مجال ملف التوازي φ<sub>sh</sub>',v:sh,max:mx,txt:'ثابت',col:'--on'},{l:'مجال ملف التوالي φ<sub>se</sub>',v:se,max:mx,txt:s.I?'يكبر مع الحمل':'صفر',col:'--live'},{l:'المجال الكلي φ<sub>t</sub> (كم مرة مجال التوازي)',v:t,max:mx,txt:'× '+DCML.fm(B,t/sh,2)}],
+   msg:s.I===0?'بلا تيار في المنتج يبقى مجال ملف التوازي وحده؛ لذلك لا يضعف المجال تماماً عند اللاحمل.':''}}})}
    ]},
 
   {st:3,short:'العزم (التراكمي)',title:'التراكمي: أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 37',
@@ -561,7 +790,16 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>بما أن \((T\propto I_a\,\phi_t)\) وأن \((\phi_t=\phi_{sh}+\phi_{se})\) فإن محصلة المجال الكلي أصبحت أكبر من ذي قبل. وبالتالي سيزداد العزم بما يتناسب مع الزيادة في المجال، الشكل <span class="ltr">(3-2a)</span>. <b>العزم المتولد سيكون أكبر من ذلك العزم المتولد عندما يعمل المحرك بأي من الملفين على حدة.</b></p>`,ref:'ص 37'},
-    {tip:String.raw`<p>العزم يتناسب مع حاصل ضرب التيار في المجال. لنفس التيار: المجال الكلي في التراكمي = مجال التوازي + مجال التوالي، فهو أكبر من كل منهما وحده، فيكون العزم أكبر.</p>`}
+    {tip:String.raw`<p>العزم يتناسب مع حاصل ضرب التيار في المجال. لنفس التيار: المجال الكلي في التراكمي = مجال التوازي + مجال التوالي، فهو أكبر من كل منهما وحده، فيكون العزم أكبر.</p>`},
+    {title:'مختبر مصغّر: أي توصيل يعطي عزماً أكبر؟',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر تيار المنتج وقارن العزم لو عمل المحرك بملف التوازي وحده، أو بملف التوالي وحده، أو بالملفين معاً تراكمياً (نموذج توضيحي).',ill:true,
+ predict:{q:'عند تيار المنتج نفسه، أي حالة تعطي أكبر عزم؟',opts:[
+  ['ملف التوازي وحده',false,'المجال هنا مجال ملف واحد فقط.'],
+  ['الملفان معاً تراكمياً',true,'«العزم المتولد سيكون أكبر من ذلك العزم المتولد عندما يعمل المحرك بأي من الملفين على حدة» (ص 37).'],
+  ['ملف التوالي وحده',false,'المجال هنا مجال ملف واحد فقط.']]},
+ ins:[{k:'I',l:'تيار المنتج I<sub>a</sub>',u:'A',min:10,max:100,step:5,v:50}],
+ calc:(s,P,B)=>{const d=CMP_DEF,Tsh=dcModel(d,'shunt').T(s.I),Tse=dcModel(d,'series').T(s.I),Tc=dcModel(d,'cum').T(s.I),mx=dcModel(d,'cum').T(100)*1.05;
+  return {bars:[{l:'ملف التوازي وحده',v:Tsh,max:mx,txt:DCML.fm(B,Tsh,0)+' N·m',col:'--on'},{l:'ملف التوالي وحده',v:Tse,max:mx,txt:DCML.fm(B,Tse,0)+' N·m',col:'--live'},{l:'الملفان معاً (تراكمي)',v:Tc,max:mx,txt:DCML.fm(B,Tc,0)+' N·m'}],
+   msg:String.raw`\(T\propto I_a\,\phi_t\): المجال الكلي أكبر من مجال أي ملف وحده، فالعزم أكبر.`}}})}
    ]},
 
   {st:4,short:'السرعة (التراكمي)',title:'التراكمي: ب- علاقة السرعة مع تيار المنتج <span class="ltr">n = f(I<sub>a</sub>)</span>',ref:'ص 37–38',
@@ -577,7 +815,17 @@ lesson({
    body:[
     {book:String.raw`<p>بما أن \((n\propto E/\phi_t)\) وأن \((\phi_t=\phi_{sh}+\phi_{se})\)، فعند زيادة الحمل فإن مجال ملف التوالي يساعد مجال ملف التوازي مما يزيد من المجال الكلي للمحرك، لذلك <b>تقل سرعة المحرك مع زيادة الحمل</b>. وتكون السرعة أقل من تلك السرعة التي يدور بها المحرك عندما يعمل بأي من الملفين كل على حدة. من خلال الشكل <span class="ltr">(3-2b)</span> يمكن ملاحظة النقاط التالية:</p>
      <ul><li>أن سرعة المحرك المركب التراكمي تقل مع زيادة التحميل كما في حالة محرك التوالي.</li><li>أن سرعة المحرك تكون في الحدود المعقولة عندما يدور المحرك بدون أحمال، بسبب أن مجال ملف التوازي يكون موجوداً عند تلاشي مجال ملف التوالي.</li></ul>`,ref:'ص 37–38'},
-    {tip:String.raw`<p>التراكمي أخذ من محرك التوالي ميزته (السرعة تنخفض مع الحمل والعزم يزيد)، وأخذ من محرك التوازي أمانه (مجال لا ينهار عند اللاحمل).</p>`,title:'أفضل ما في الاثنين'}
+    {tip:String.raw`<p>التراكمي أخذ من محرك التوالي ميزته (السرعة تنخفض مع الحمل والعزم يزيد)، وأخذ من محرك التوازي أمانه (مجال لا ينهار عند اللاحمل).</p>`,title:'أفضل ما في الاثنين'},
+    {title:'مختبر مصغّر: السرعة مع الحمل — تراكمي وتوالٍ',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك تيار المنتج على منحنى السرعة للمحرك التراكمي (الأزرق)، وقارنه بمحرك يعمل بملف التوالي وحده (المتقطع). نموذج توضيحي.',ill:true,
+ predict:{q:'زاد الحمل (زاد تيار المنتج) على المحرك التراكمي. سرعته:',opts:[
+  ['تزداد',false,'هذا سلوك الفرقي.'],
+  ['تقل',true,'«تقل سرعة المحرك مع زيادة الحمل» لأن المجال الكلي يزيد (ص 37).'],
+  ['لا تتغير أبداً',false,'المجال الكلي يتغير مع الحمل فتتغير السرعة.']]},
+ ins:[{k:'I',l:'تيار المنتج I<sub>a</sub>',u:'A',min:2,max:100,step:1,v:10}],
+ calc:(s,P,B)=>{const d=CMP_DEF,Mc=dcModel(d,'cum'),Ms=dcModel(d,'series'),nc=Mc.n(s.I),ns=Ms.n(s.I);
+  return {facts:[['سرعة التراكمي',DCML.fm(B,nc,0)+' rpm','hi'],['بملف التوالي وحده',ns>9999?'عالية جداً':DCML.fm(B,ns,0)+' rpm',ns>4500?'bad':'']],
+   plot:{xr:[0,100],yr:[0,4500],xl:'Ia (A)',yl:'n (rpm)',aria:'السرعة مع تيار المنتج',curves:[{f:x=>{const n=x<1?NaN:Ms.n(x);return n>4500?NaN:n},col:'--stop',dash:'6 5',w:2},{f:x=>Mc.n(Math.max(x,0.01)),col:'--blue'}],cur:[s.I,nc]},
+   msg:s.I<=5?'قرب اللاحمل: التراكمي سرعته في الحدود المعقولة لأن مجال ملف التوازي موجود، أما ملف التوالي وحده فسرعته ترتفع جداً.':''}}})}
    ]},
 
   {st:5,short:'الخواص الميكانيكية (التراكمي)',title:'التراكمي: ج- علاقة العزم مع السرعة <span class="ltr">T = f(n)</span>',ref:'ص 38',
@@ -595,7 +843,11 @@ lesson({
     {tip:String.raw`<table class="tt"><thead><tr><th>الرسم في الشكل (3-2)</th><th>المحوران</th><th>شكل المنحنى</th></tr></thead><tbody>
      <tr><td><span class="ltr">(a)</span></td><td>العزم مع تيار المنتج</td><td>يبدأ من الصفر ويرتفع أسرع من الخط المستقيم</td></tr>
      <tr><td><span class="ltr">(b)</span></td><td>السرعة مع تيار المنتج</td><td>يبدأ من سرعة لاحمل محدودة ثم ينخفض تدريجياً</td></tr>
-     <tr><td><span class="ltr">(c)</span></td><td>السرعة مع العزم</td><td>يبدأ من قيمة محدودة وينخفض تدريجياً دون أن يصل إلى الصفر</td></tr></tbody></table>`,title:'الشكل (3-2) في جدول'}
+     <tr><td><span class="ltr">(c)</span></td><td>السرعة مع العزم</td><td>يبدأ من قيمة محدودة وينخفض تدريجياً دون أن يصل إلى الصفر</td></tr></tbody></table>`,title:'الشكل (3-2) في جدول'},
+    {title:'تحقق سريع: الخواص الميكانيكية للتراكمي',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب الشكل (3-2c) ونص الكتاب (ص 38).',items:[
+ ['سرعة المحرك المركب التراكمي تنخفض مع زيادة الحمل، كما في محرك التوالي.',true,'«للمحرك خواص التوالي، أي انخفاض السرعة مع زيادة الحمل».'],
+ ['سرعة اللاحمل للتراكمي عالية إلى درجة الخطورة، كمحرك التوالي.',false,'«سرعة اللاحمل تكون في الحدود المسموح بها ميكانيكياً».'],
+ ['خواصه الميكانيكية تقع بين خواص محرك التوازي ومحرك التوالي.',true,'نص الكتاب ص 38.']]})}
    ]},
 
   {st:6,short:'الفرقي',title:'خواص المحرك المركب فرقياً (أو التفاضلي)',ref:'ص 38',
@@ -611,7 +863,16 @@ lesson({
    body:[
     {book:String.raw`<p>في المحرك المركب فرقياً يوصل ملف التوالي بحيث يكون المجال المغناطيسي الناتج عنه في <b>عكس اتجاه</b> المجال الناتج عن ملف التوازي، أي أن ملف التوالي يعاكس ملف التوازي. فعند أي حمل تكون محصلة المجال المغناطيسي هي الفرق بين مجالي ملفي التوازي والتوالي:</p>
      <div class="eq">$$\phi_t=\phi_{sh}-\phi_{se}$$</div>`,ref:'ص 38'},
-    {watch:String.raw`<p>التراكمي والفرقي قد يكونان المحرك نفسه تماماً؛ الفرق في <b>اتجاه توصيل</b> طرفي ملف التوالي فقط. لذلك يجب التأكد من التوصيل الصحيح عند تركيب المحرك أو صيانته.</p>`}
+    {watch:String.raw`<p>التراكمي والفرقي قد يكونان المحرك نفسه تماماً؛ الفرق في <b>اتجاه توصيل</b> طرفي ملف التوالي فقط. لذلك يجب التأكد من التوصيل الصحيح عند تركيب المحرك أو صيانته.</p>`},
+    {title:'مختبر مصغّر: ساعد أم عاكس؟',widget:(el,B)=>DCML.lab(el,B,{intro:'بدّل طريقة توصيل ملف التوالي، وزِد تيار المنتج، وراقب المجال المحصل (أطوال نسبية من نموذج توضيحي).',ill:true,
+ predict:{q:'في الفرقي يزيد تيار المنتج حتى يقترب مجال التوالي من مجال التوازي. المجال المحصل يقترب من:',opts:[
+  ['ضعف مجال التوازي',false,'هذا لو كان المجالان في اتجاه واحد (تراكمي).'],
+  ['الصفر',true,String.raw`\(\phi_t=\phi_{sh}-\phi_{se}\): الفرق يصغر حتى يقترب من الصفر، وهنا الخطر على السرعة.`],
+  ['مجال التوازي نفسه دون تغيير',false,'مجال التوالي يُطرح منه، فلا يبقى كما هو.']]},
+ ins:[{k:'t',l:'توصيل ملف التوالي',seg:[['cum','يساعد (تراكمي)'],['diff','يعاكس (فرقي)']],v:'diff'},{k:'I',l:'تيار المنتج I<sub>a</sub>',u:'A',min:0,max:90,step:5,v:30}],
+ calc:(s,P,B)=>{const d=CMP_DEF,sh=d.ksh,se=d.c*s.I,t=s.t==='cum'?Math.min(sh+se,d.ksat):Math.max(sh-se,0),mx=d.ksat;
+  return {bars:[{l:'مجال ملف التوازي φ<sub>sh</sub>',v:sh,max:mx,txt:'ثابت',col:'--on'},{l:'مجال ملف التوالي φ<sub>se</sub>',v:se,max:mx,txt:s.t==='cum'?'يُجمع':'يُطرح',col:'--live'},{l:(s.t==='cum'?'المحصل φ<sub>sh</sub> + φ<sub>se</sub>':'المحصل φ<sub>sh</sub> − φ<sub>se</sub>')+' (كم مرة مجال التوازي)',v:t,max:mx,txt:'× '+DCML.fm(B,t/sh,2),col:s.t==='diff'&&t<sh*0.4?'--stop':'--blue'}],
+   msg:s.t==='diff'&&t<sh*0.4?'المجال المحصل ضعف كثيراً، والسرعة تتناسب عكسياً مع المجال: هذا سبب ازدياد سرعة الفرقي مع الحمل (المحطة 8).':'',cls:s.t==='diff'&&t<sh*0.4?'bad':''}}})}
    ]},
 
   {st:7,short:'العزم (الفرقي)',title:'الفرقي: أ- علاقة العزم مع تيار المنتج <span class="ltr">T = f(I<sub>a</sub>)</span>',ref:'ص 38',
@@ -626,7 +887,11 @@ lesson({
    ],
    body:[
     {book:String.raw`<p>بما أن مجال ملف التوالي يعاكس مجال ملف التوازي، فإن محصلة المجال المغناطيسي تتناقص مع زيادة تيار الحمل. في هذه الحالة سيزداد العزم المتولد ولكن <b>بمعدل أقل</b> من محرك التوالي، الشكل <span class="ltr">(3-3a)</span>.</p>`,ref:'ص 38'},
-    {tip:String.raw`<p>العزم \(T\propto I_a\,\phi_t\): التيار يكبر، والمجال \(\phi_t\) يصغر. الحاصل ما زال يكبر، لكن أبطأ؛ لذلك ينحني المنحنى إلى الأسفل بدل أن يكون مستقيماً.</p>`}
+    {tip:String.raw`<p>العزم \(T\propto I_a\,\phi_t\): التيار يكبر، والمجال \(\phi_t\) يصغر. الحاصل ما زال يكبر، لكن أبطأ؛ لذلك ينحني المنحنى إلى الأسفل بدل أن يكون مستقيماً.</p>`},
+    {title:'تحقق سريع: عزم الفرقي',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 38).',items:[
+ ['في الفرقي يزداد العزم مع تيار المنتج، لكن بمعدل أقل من محرك التوالي.',true,'نص الكتاب، الشكل (3-3a).'],
+ ['في الفرقي يقوى المجال المحصل كلما زاد تيار الحمل.',false,'«محصلة المجال المغناطيسي تتناقص مع زيادة تيار الحمل».'],
+ [String.raw`سبب بطء زيادة العزم: \(T\propto I_a\,\phi_t\)، والتيار يزيد بينما المجال المحصل ينقص.`,true,'زيادة أحد العاملين يقابلها نقص الآخر، فيزيد حاصل الضرب ببطء.']]})}
    ]},
 
   {st:8,short:'السرعة (الفرقي)',title:'الفرقي: ب- علاقة السرعة مع تيار المنتج <span class="ltr">n = f(I<sub>a</sub>)</span>',ref:'ص 38',
@@ -678,7 +943,11 @@ lesson({
      <tr><td>العزم مع التيار</td><td>أكبر من عزم أي من الملفين وحده</td><td>يزيد بمعدل أقل من محرك التوالي</td></tr>
      <tr><td>السرعة مع الحمل</td><td>تنخفض (كالتوالي)، واللاحمل محدود</td><td>ترتفع، وقد تتجاوز الحد المسموح</td></tr>
      <tr><td>في التحريك</td><td>مناسب</td><td>يجب تجنبه</td></tr></tbody></table>`,title:'المقارنة في جدول'},
-    {watch:String.raw`<p>في الكتاب يُطبع رمز التناسب كأنه الحرف «α» (مثل <span class="ltr">T α Ia . φt</span> في ص 37)، والمقصود \(\propto\) «يتناسب مع».</p>`,fix:true}
+    {watch:String.raw`<p>في الكتاب يُطبع رمز التناسب كأنه الحرف «α» (مثل <span class="ltr">T α Ia . φt</span> في ص 37)، والمقصود \(\propto\) «يتناسب مع».</p>`,fix:true},
+    {title:'تحقق سريع: لماذا يُتجنب الفرقي؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب الشكل (3-3c) ونص الكتاب (ص 38–39).',items:[
+ ['في الفرقي كلما ازداد العزم ازدادت السرعة.',true,'نص الكتاب: «كلما ازداد العزم ازدادت السرعة».'],
+ ['الكتاب يوصي باستخدام المركب الفرقي محركاً للتحريك لأن سرعته تزيد مع الحمل.',false,'ملحوظة الكتاب: «يجب تجنب استخدام هذا النوع كمحرك للتحريك».'],
+ ['عند زيادة العزم زيادة كبيرة قد تزيد السرعة عن الحدود المسموح بها.',true,'نص الكتاب ص 38–39.']]})}
    ]},
 
   {recap:[
@@ -824,7 +1093,11 @@ lesson({
    body:[
     {book:String.raw`<p>محرك التوالي العام أو <b>المحرك العام</b> هو محرك يعمل على كل من مصدري التيار المستمر والتيار المتردد، وله نفس تركيب آلات التيار المستمر ذات تغذية التوالي مع إدخال بعض التعديلات لتحسين أداء المحرك عند تشغيله بالتيار المتردد، وهذا النوع من المحركات يمكنه أن يعمل بسرعات عالية، وينتج عزماً كبيراً، فهو <b>ذو قدرة عالية مقارنة بحجمه</b>. لذلك يستخدم في التطبيقات التي تتطلب خفة في وزن المحرك المستخدم مع قدرات عالية.</p>`,ref:'ص 39'},
     {add:String.raw`<p>المحرك العام الصغير موجود في بيتك: في المثقاب الكهربائي، والمكنسة الكهربائية، والخلاط. كلها تحتاج سرعة عالية وقدرة كبيرة من محرك خفيف صغير. وفي التحريك الكهربائي يُستخدم المحرك العام بقدرات كبيرة لجر القطارات على شبكات التيار المتردد.</p>`},
-    {tip:String.raw`<p>لماذا يعمل محرك التوالي على التيار المتردد أصلاً؟ لأن تيار المنتج وتيار المجال هما التيار نفسه؛ فإذا انعكس اتجاه التيار انعكس الاثنان معاً، فيبقى العزم في الاتجاه نفسه.</p>`}
+    {tip:String.raw`<p>لماذا يعمل محرك التوالي على التيار المتردد أصلاً؟ لأن تيار المنتج وتيار المجال هما التيار نفسه؛ فإذا انعكس اتجاه التيار انعكس الاثنان معاً، فيبقى العزم في الاتجاه نفسه.</p>`},
+    {title:'تحقق سريع: المحرك العام',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص الكتاب (ص 39).',items:[
+ ['المحرك العام يعمل على مصدر التيار المستمر ومصدر التيار المتردد.',true,'«محرك يعمل على كل من مصدري التيار المستمر والتيار المتردد».'],
+ ['تركيبه مثل آلات التيار المستمر ذات تغذية التوازي.',false,'تركيبه مثل آلات التيار المستمر ذات تغذية <b>التوالي</b>، مع بعض التعديلات للعمل بالتيار المتردد.'],
+ ['قدرته عالية مقارنة بحجمه، لذلك يناسب التطبيقات التي تتطلب خفة الوزن مع قدرات عالية.',true,'نص الكتاب ص 39.']]})}
    ]},
 
   {st:2,short:'خواص المحرك العام',title:'خواص محرك التوالي العام',ref:'ص 39–40',
@@ -869,7 +1142,17 @@ lesson({
    body:[
     {book:String.raw`<p>عند بدء الحركة \((E=0)\) يكون معامل القدرة رديئاً (منخفضاً) إذاً لنفس التيار يكون <b>عزم بدء الحركة أقل بكثير</b> من العزم المتولد في محرك التيار المستمر. نتيجة لقلة عزم بدء الحركة فإن هذه المحركات <b>ليست مناسبة لوسائل التحريك داخل المدن</b> حيث يتكرر الوقوف وبدء الحركة، لكنها تكون مناسبة للاستعمال في وسائل التحريك <b>خارج المدن</b> حيث تكون المسافات طويلة بين الوقفات، ولا يكون التسارع العالي ضرورياً في هذه الحالة.</p>`,ref:'ص 40'},
     {tip:String.raw`<p>عند البدء لا يدور المحرك، فالقوة الدافعة العكسية \(E=0\). يبقى في الدائرة المقاومة والمعاوقة فقط، ومعاوقة الملفات على التيار المتردد كبيرة، فيصبح معامل القدرة رديئاً، فيقل الجزء المفيد من التيار الذي يولد العزم.</p>`},
-    {add:String.raw`<p>قطارات المسافات الطويلة بين المدن تبدأ حركتها مرات قليلة في الرحلة، ثم تسير طويلاً بسرعة شبه ثابتة؛ أما قطار الأنفاق (المترو) فيقف ويبدأ كل دقيقة أو دقيقتين تقريباً، فيحتاج تسارعاً عالياً وعزم بدء كبيراً.</p>`}
+    {add:String.raw`<p>قطارات المسافات الطويلة بين المدن تبدأ حركتها مرات قليلة في الرحلة، ثم تسير طويلاً بسرعة شبه ثابتة؛ أما قطار الأنفاق (المترو) فيقف ويبدأ كل دقيقة أو دقيقتين تقريباً، فيحتاج تسارعاً عالياً وعزم بدء كبيراً.</p>`},
+    {title:'مختبر مصغّر: داخل المدينة أم خارجها؟',widget:(el,B)=>DCML.cases(el,B,{intro:'قرّر لكل موقف بحسب ما يقوله الكتاب عن عزم بدء المحرك العام (ص 40).',cases:[
+ {q:'قطار ركاب داخل المدينة يقف ويبدأ الحركة كل دقيقتين تقريباً. هل يناسبه المحرك العام؟',opts:[
+  ['نعم، لأن قدرته عالية مقارنة بحجمه',false,'القدرة العالية لا تكفي: المشكلة هنا كثرة البدء.'],
+  ['لا، لأن عزم بدء حركته قليل وهنا يتكرر الوقوف والبدء',true,'«ليست مناسبة لوسائل التحريك داخل المدن حيث يتكرر الوقوف وبدء الحركة».']]},
+ {q:'قطار بين مدينتين، المسافات طويلة بين الوقفات ولا يلزم تسارع عالٍ. هل يناسبه المحرك العام؟',opts:[
+  ['نعم',true,'«تكون مناسبة للاستعمال في وسائل التحريك خارج المدن حيث تكون المسافات طويلة بين الوقفات».'],
+  ['لا',false,'البدء هنا نادر والتسارع العالي غير ضروري، فقلة عزم البدء لا تضر كثيراً.']]},
+ {q:'ما سبب قلة عزم البدء في المحرك العام على التيار المتردد؟',opts:[
+  [String.raw`عند البدء \(E=0\) فيكون معامل القدرة رديئاً، فلنفس التيار يكون العزم أقل`,true,'نص الكتاب ص 40.'],
+  ['لأن المحرك العام صغير الحجم',false,'الكتاب يربط قلة عزم البدء بمعامل القدرة الرديء عند البدء، لا بالحجم.']]}]})}
    ]},
 
   {st:4,short:'المحرك الحثي',title:'المحرك الحثي ثلاثي الأوجه',ref:'ص 41',
@@ -924,7 +1207,12 @@ lesson({
      <p><b><span class="ltr">3-3</span>:</b> لأن مجال ملف التوالي فيه يعاكس مجال ملف التوازي، فتتناقص محصلة المجال مع زيادة الحمل، فتزداد السرعة بزيادة الحمل؛ وعند زيادة العزم زيادة كبيرة تزداد السرعة عن الحدود المسموح بها، وهذا خطر على المحرك (ص 38–39).</p>
      <p><b><span class="ltr">3-4</span>:</b> المنحنى كما في الشكل (3-5) والمحطة الرابعة: يبدأ عند السكون <span class="ltr">(n = 0، s = 1)</span> بعزم البدء، ويرتفع مع زيادة السرعة حتى أقصى عزم عند الانزلاق <span class="ltr">s<sub>m</sub></span> (الجزء غير المتزن)، ثم ينحدر بشدة حتى الصفر عند السرعة التزامنية <span class="ltr">(n = n<sub>s</sub>، s = 0)</span> (الجزء المتزن).</p>
      <p><b><span class="ltr">3-5</span>:</b> في محرك التوالي ملف مجال واحد على التوالي مع المنتج، فالمجال كله يأتي من تيار المنتج: يتلاشى عند اللاحمل فتجمح السرعة، ولذلك لا يُشغَّل بلا حمل. أما المركب التراكمي ففيه ملف توالٍ وملف توازٍ يساعد أحدهما الآخر <span class="ltr">(φt = φsh + φse)</span>: سرعته تقل مع زيادة الحمل كالتوالي، وعزمه أكبر من عزم أي من الملفين وحده، وسرعة اللاحمل محدودة لأن مجال ملف التوازي يبقى موجوداً؛ وخواصه الميكانيكية تقع بين خواص التوازي والتوالي (ص 35–38).</p>`,title:'إجابات مقترحة'},
-    {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لأسئلة ص 42؛ الإجابات المقترحة هنا مأخوذة من نص الوحدة، وهي نفسها التي في الأسلوب الرسمي، ويعتمدها المدرب.</p>`}
+    {watch:String.raw`<p>الكتاب لا يعطي مفتاح إجابة لأسئلة ص 42؛ الإجابات المقترحة هنا مأخوذة من نص الوحدة، وهي نفسها التي في الأسلوب الرسمي، ويعتمدها المدرب.</p>`},
+    {title:'مختبر مصغّر: راجع الوحدة في دقيقة',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عبارة اضغط المحرك الذي تصفه (من محطات الوحدة).',cats:['توالي (مستمر)','مركب فرقي','المحرك العام','الحثي ثلاثي الأوجه'],items:[
+ ['سرعته تتغير تلقائياً مع الحمل، ويولد عزماً كبيراً عند السرعات المنخفضة',0,'خواص محرك التوالي التي تجعله مناسباً للتحريك (السؤال 3-1).'],
+ ['سرعته تزداد بزيادة الحمل فيجب تجنبه كمحرك جر',1,'السؤال 3-3.'],
+ ['يناسب وسائل التحريك خارج المدن',2,'السؤال 3-2: عزم بدئه قليل والوقفات متباعدة.'],
+ [String.raw`تشغيله متزن في الجزء من \(s_m\) إلى \(s=0\)`,3,'السؤال 3-4، الشكل (3-5).']]})}
    ]},
 
   {recap:[

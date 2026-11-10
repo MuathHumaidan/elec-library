@@ -236,7 +236,183 @@ B.lesson({
  title:'مقدمة المحرك الحثي ثلاثي الأوجه وتركيبه',
  summary:'لماذا المحرك الحثي هو الأكثر انتشاراً في الصناعة، ومزاياه وعيوبه، ثم أجزاؤه: العضو الثابت المصنوع من شرائح معزولة وملفاته الثلاثة، ونوعا العضو الدوار: الملفوف ذو حلقات الانزلاق وذو القفص السنجابي.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'تمهيد الحقيبة',title:'تمهيد الحقيبة: ماذا ستدرس في هذا المقرر؟',ref:'ص 7',
    q:'قبل أن تبدأ: ما الآلات التي يدرسها هذا المقرر كله، وأين يقع هذا الدرس منها؟',
@@ -253,7 +429,13 @@ B.lesson({
     {book:String.raw`<p>تهدف هذه الحقيبة التدريبية السابعة في تخصص الآلات والمعدات الكهربائية، إلى تعريف المتدرب بتركيب وأساسيات تشغيل وأداء آلات التيار المتردد الشائعة الاستخدام كالمحركات الحثية والآلات التزامنية، كذلك تهدف إلى تعريف المتدرب تطبيقات هذه الآلات واستخداماتها في الصناعة، كما تهدف أيضاً إلى تدريب المتدرب على كيفية قياس الخواص الهامة لهذه الآلات وتحديد مدى تشغيلها وكذلك تدريبه على إجراء الحسابات المتعلقة بتلك الآلات. وهذه الحقيبة تشتمل على أربع وحدات تدريبية، خاصة بالمقرر النظري الذي يدرس للمتدرب في الفصل وهي كما يلي:</p>
      <ul><li>الوحدة الأولى: المحركات الحثية ثلاثية الأوجه.</li><li>الوحدة الثانية: المحركات الحثية أحادية الوجه.</li><li>الوحدة الثالثة: المولدات التزامنية ثلاثية الأوجه.</li><li>الوحدة الرابعة: المحركات التزامنية ثلاثية الأوجه.</li></ul>
      <p>وقد قسمت كل وحدة إلى عدد من الفصول، كل فصل يختص بموضوع أو أكثر بالإضافة إلى عدد من الأمثلة الحسابية المحلولة حلاً تفصيلياً حول ذلك الموضوع، كما يوجد في نهاية كل فصل مجموعة من الأسئلة والتمارين الخاصة بموضوع ذلك الفصل والتي تعتبر وسيلة مراجعة وتثبيت للمعلومات التي درست للمتدرب في ذلك الفصل.</p>`,ref:'ص 7'},
-    {tip:String.raw`<p>كل فصل في الكتاب يسير هكذا: <b>شرح ← أمثلة محلولة ← أسئلة وتمارين</b>. حل التمارين بعد كل فصل هو أفضل طريقة لتتأكد أنك فهمت؛ وستجدها في آخر درس من كل جزء في هذا الموقع.</p>`}
+    {tip:String.raw`<p>كل فصل في الكتاب يسير هكذا: <b>شرح ← أمثلة محلولة ← أسئلة وتمارين</b>. حل التمارين بعد كل فصل هو أفضل طريقة لتتأكد أنك فهمت؛ وستجدها في آخر درس من كل جزء في هذا الموقع.</p>`},
+    {title:'مختبر مصغّر: في أي وحدة تدرسها؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل آلة اضغط الوحدة التي تدرسها فيها حسب تمهيد الحقيبة (ص 7).',cats:['الوحدة الأولى','الوحدة الثانية','الوحدة الثالثة','الوحدة الرابعة','ليست في الحقيبة'],items:[
+ ['المحركات الحثية أحادية الوجه',1,'«الوحدة الثانية: المحركات الحثية أحادية الوجه».'],
+ ['المحركات الحثية ثلاثية الأوجه',0,'«الوحدة الأولى: المحركات الحثية ثلاثية الأوجه»، وهي موضوع هذا الدرس.'],
+ ['المحركات التزامنية ثلاثية الأوجه',3,'«الوحدة الرابعة: المحركات التزامنية ثلاثية الأوجه».'],
+ ['محركات التيار المستمر',4,'الحقيبة عن آلات التيار المتردد: المحركات الحثية والآلات التزامنية.'],
+ ['المولدات التزامنية ثلاثية الأوجه',2,'«الوحدة الثالثة: المولدات التزامنية ثلاثية الأوجه».']]})}
    ]},
 
   {st:2,short:'أهداف الوحدة',title:'الوحدة الأولى: الهدف العام والأهداف التفصيلية',ref:'ص 9',
@@ -271,7 +453,14 @@ B.lesson({
      <p><b>الأهداف التفصيلية:</b></p>
      <ol><li>أن يلم المتدرب بأنواع وتركيب المحركات الحثية ثلاثية الأوجه.</li><li>أن يلم المتدرب بكيفية توليد المجال المغناطيسي الدوار في هذه المحركات.</li><li>أن يفهم المتدرب نظرية عمل المحركات الحثية ثلاثية الأوجه.</li><li>أن يتمكن المتدرب من بخواص المحركات الحثية ثلاثية الأوجه وطبيعة عملها.</li><li>أن يلم المتدرب بطرق عكس اتجاه دوران المحركات الحثية ثلاثية الأوجه.</li><li>أن يتمكن المتدرب من إجراء الاختبارات الروتينية على هذه المحركات.</li><li>أن يتمكن المتدرب من حساب ثوابت الدائرة المكافئة لهذه المحركات.</li><li>أن يفهم المتدرب المنحنيات الخاصة بأداء هذه المحركات.</li><li>أن يتمكن المتدرب من إجراء الحسابات المتعلقة بهذه المحركات مثل حساب القدرة والعزم والكفاءة.</li><li>أن يلم المتدرب بطرق بدء الحركة للمحركات الحثية ثلاثية الأوجه.</li><li>أن يلم المتدرب بكيفية تغيير سرعة دوران المحركات الحثية ثلاثية الأوجه.</li></ol>`,ref:'ص 9'},
     {watch:String.raw`<p>الهدف الرابع طُبع «أن يتمكن المتدرب <b>من بخواص</b> المحركات…» وفيه كلمة ناقصة؛ المقصود غالباً «أن يتمكن المتدرب من <b>الإلمام</b> بخواص المحركات…».</p>`,fix:true},
-    {tip:String.raw`<p>هذا الجزء من الكتاب (الفصلان الأول والثاني) يغطي الأهداف 1 و2 و3 و5 و6 و7. والأهداف الباقية في الفصلين الثالث والرابع، في الدروس التالية من الوحدة.</p>`}
+    {tip:String.raw`<p>هذا الجزء من الكتاب (الفصلان الأول والثاني) يغطي الأهداف 1 و2 و3 و5 و6 و7. والأهداف الباقية في الفصلين الثالث والرابع، في الدروس التالية من الوحدة.</p>`},
+    {title:'مختبر مصغّر: أين يُدرس هذا الهدف؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل هدف من أهداف الوحدة اضغط الجزء الذي يغطيه.',cats:['الفصلان الأول والثاني','الفصلان الثالث والرابع'],items:[
+ ['الهدف 2: كيفية توليد المجال المغناطيسي الدوار',0,'المجال الدوار في الفصل الأول (ص 14–17).'],
+ ['الهدف 9: حساب القدرة والعزم والكفاءة',1,'القدرة والعزم في الفصل الثالث.'],
+ ['الهدف 7: حساب ثوابت الدائرة المكافئة',0,'ثوابت الدائرة المكافئة في الفصل الثاني (ص 27–31).'],
+ ['الهدف 11: تغيير سرعة الدوران',1,'التحكم في السرعة في الفصل الرابع.'],
+ ['الهدف 5: عكس اتجاه الدوران',0,'عكس الاتجاه في آخر الفصل الأول (ص 17).'],
+ ['الهدف 10: طرق بدء الحركة',1,'طرق البدء في الفصل الرابع.']]})}
    ]},
 
   {st:3,short:'لماذا هو الأكثر انتشاراً؟',title:'الفصل الأول — تمهيد: لماذا المحرك الحثي هو الأكثر انتشاراً؟',ref:'ص 10',
@@ -295,7 +484,14 @@ B.lesson({
      <tr><td>قدرات من جزء من الحصان إلى أكثر من <span class="ltr">10000</span> حصان</td><td>معامل القدرة منخفض عند الأحمال الخفيفة</td></tr>
      <tr><td>لا يحتاج إلى أي وسيلة إثارة، وكفاءته عالية</td><td>(تغلبت عليها حديثاً وسائل التحكم الإلكترونية)</td></tr></tbody></table>`,title:'المزايا والعيوب في جدول'},
     {tip:String.raw`<p>«<span class="ltr">6–8</span> أضعاف» تعني أن المحرك لحظة تشغيله يسحب من المصدر ستة إلى ثمانية أمثال التيار الذي يسحبه وهو يعمل بحمله الكامل. لهذا تحتاج المحركات الكبيرة إلى طرق خاصة لبدء الحركة (الفصل الرابع من الوحدة).</p>
-     <p>و<span class="ltr">150</span> مليون حصان تساوي تقريباً <span class="ltr">150000000 × 746 W ≈ 112 GW</span>.</p>`}
+     <p>و<span class="ltr">150</span> مليون حصان تساوي تقريباً <span class="ltr">150000000 × 746 W ≈ 112 GW</span>.</p>`},
+    {title:'مختبر مصغّر: ميزة أم عيب؟',widget:(el,B)=>DCML.sort(el,B,{intro:'صنّف كل صفة من صفات المحرك الحثي كما ذكرها الكتاب (ص 10).',cats:['ميزة','عيب'],items:[
+ ['المتانة وبساطة التركيب',0,'من المزايا التي جعلته الأكثر انتشاراً.'],
+ ['ليس من السهل التحكم في سرعته',1,'أول عيب يذكره الكتاب.'],
+ ['لا يحتاج إلى أي وسيلة إثارة',0,'من المزايا: لا يحتاج إلى مصدر منفصل يغذي دواره.'],
+ ['تيار البدء <span class="ltr">6–8</span> أضعاف تيار الحمل الكامل',1,'تيار البدء العالي من العيوب، ولهذا توجد طرق بدء خاصة.'],
+ ['قلة الصيانة وانخفاض الثمن',0,'من المزايا مقارنة بالمحركات الأخرى.'],
+ ['معامل القدرة منخفض عند الأحمال الخفيفة',1,'من العيوب، ويتحسن مع زيادة الحمل.']]})}
    ]},
 
   {st:4,short:'تركيب المحرك',title:'تركيب المحرك الحثي: عضوان رئيسان',ref:'ص 10–11',
@@ -311,7 +507,13 @@ B.lesson({
    body:[
     {book:String.raw`<p>المحرك الحثي ثلاثي الأوجه <span class="ltr">Three Phase Induction Motor</span> يتركب من عضوين رئيسين كأي محرك آخر: هما <b>العضو الثابت Stator</b> و<b>العضو الدوار Rotor</b>، انظر الشكل (1-1).</p>`,ref:'ص 10–11'},
     {tip:String.raw`<p><b>العضو الثابت</b> هو الجزء الخارجي المثبت في هيكل المحرك، وهو الذي يتصل بالمصدر. <b>العضو الدوار</b> في داخله، مركب على العمود ويدور معه. وبينهما مسافة صغيرة جداً اسمها <b>الثغرة الهوائية</b> (ستقابلها في الدرس التالي).</p>`},
-    {add:String.raw`<p>على لوحة البيانات المثبتة على جسم المحرك تجد عبارة <span class="ltr">Induction Motor</span>، أي «محرك حثي»، ومعها بيانات مثل الجهد والتردد والسرعة.</p>`}
+    {add:String.raw`<p>على لوحة البيانات المثبتة على جسم المحرك تجد عبارة <span class="ltr">Induction Motor</span>، أي «محرك حثي»، ومعها بيانات مثل الجهد والتردد والسرعة.</p>`},
+    {title:'مختبر مصغّر: في أي عضو يوجد هذا الجزء؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل جزء اضغط العضو الذي ينتمي إليه.',cats:['العضو الثابت','العضو الدوار'],items:[
+ ['الأطراف الستة التي توصل نجمة أو دلتا',0,'«من خلال هذه الأطراف الستة يتم تغذية العضو الثابت» (ص 12).'],
+ ['حلقات الانزلاق والفرش الكربونية',1,'في الدوار الملفوف: الحلقات «مركبة على نفس العمود» (ص 12).'],
+ ['القضبان وحلقتا القصر',1,'هذا هو الدوار ذو القفص السنجابي (ص 14).'],
+ ['فتحات التهوية بين الشرائح في المحركات الكبيرة',0,'«يوجد في المحركات الكبيرة عادةً فتحات تهوية بين الشرائح في العضو الثابت» (ص 11).'],
+ ['الجزء الذي يتصل بمصدر الجهد ثلاثي الأوجه',0,'العضو الثابت يُغذّى من المصدر؛ الدوار لا يتصل بالمصدر.']]})}
    ]},
 
   {st:5,short:'العضو الثابت',title:'العضو الثابت: شرائح معزولة وثلاثة ملفات',ref:'ص 11–12',
@@ -358,7 +560,13 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p>يوجد منه نوعان مختلفان في التركيب ومتقاربان في الخواص الكهربائية، ويسمى المحرك عادةً باسم عضوه الدوار للتمييز بين نوعيه وهما: <b>العضو الدوار الملفوف أو ذو حلقات الانزلاق</b> و<b>العضو الدوار ذو القفص السنجابي</b>.</p>`,ref:'ص 12'},
-    {tip:String.raw`<p>«مختلفان في التركيب» لأن في أحدهما ملفات وحلقات وفرشاً وفي الآخر قضباناً فقط. و«متقاربان في الخواص الكهربائية» لأن كليهما يدور بالطريقة نفسها: بالحث من المجال الدوار (الدرس الثالث).</p>`}
+    {tip:String.raw`<p>«مختلفان في التركيب» لأن في أحدهما ملفات وحلقات وفرشاً وفي الآخر قضباناً فقط. و«متقاربان في الخواص الكهربائية» لأن كليهما يدور بالطريقة نفسها: بالحث من المجال الدوار (الدرس الثالث).</p>`},
+    {title:'مختبر مصغّر: ملفوف أم قفص سنجابي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل صفة اضغط نوع العضو الدوار الذي تصفه.',cats:['الدوار الملفوف','القفص السنجابي'],items:[
+ ['قضبان من النحاس أو الألمنيوم في المجاري',1,'«بدلاً من وضع ملفات في المجاري فإنه توضع قضبان» (ص 14).'],
+ ['ثلاث حلقات انزلاق على العمود',0,'أطراف ملفاته الثلاثة توصل إلى ثلاث حلقات انزلاق (ص 12).'],
+ ['لا يقسم إلى عدد معين من الأقطاب',1,'«يستطيع التكيف تلقائياً مع عدد الأقطاب والأوجه للعضو الثابت» (ص 14).'],
+ ['عدد أقطابه مساوٍ لأقطاب العضو الثابت',0,'«يقسم العضو الدوار إلى عدد من الأقطاب مساوٍ لأقطاب العضو الثابت» (ص 12).'],
+ ['يمكن توصيله بمقاومات خارجية متغيرة',0,'عن طريق الحلقات والفرش (ص 13).']]})}
    ]},
 
   {st:7,short:'الدوار الملفوف',title:'العضو الدوار الملفوف (ذو حلقات الانزلاق)',ref:'ص 12–13',
@@ -409,7 +617,17 @@ B.lesson({
      <tr><td>طريقة القصر</td><td>نجمة داخل الدوار + حلقات انزلاق وفرش</td><td>حلقتان من نفس مادة القضبان</td></tr>
      <tr><td>توصيله بدائرة خارجية</td><td>ممكن (مقاومات متغيرة على التوالي)</td><td>غير ممكن</td></tr>
      <tr><td>تغيير خواص التشغيل / التحكم في السرعة</td><td>ممكن على نطاق واسع</td><td>غير ممكن</td></tr></tbody></table>`,title:'مقارنة بين نوعي العضو الدوار'},
-    {watch:String.raw`<p>«لا يمكن التحكم في سرعته» هنا معناها: لا يمكن عن طريق دائرة خارجية في الدوار. وقد ذكر الكتاب في التمهيد (ص 10) أن وسائل التحكم الإلكترونية الحديثة تغلبت على هذا العيب.</p>`}
+    {watch:String.raw`<p>«لا يمكن التحكم في سرعته» هنا معناها: لا يمكن عن طريق دائرة خارجية في الدوار. وقد ذكر الكتاب في التمهيد (ص 10) أن وسائل التحكم الإلكترونية الحديثة تغلبت على هذا العيب.</p>`},
+    {title:'مختبر مصغّر: أي دوار يناسب الموقف؟',widget:(el,B)=>DCML.cases(el,B,{intro:'اختر الإجابة في كل موقف، ثم اقرأ السبب.',cases:[
+ {q:'تريد أن تتحكم في بدء دوران المحرك بمقاومات خارجية متغيرة. أي دوار تحتاج؟',opts:[
+  ['القفص السنجابي',false,'لا توجد به حلقات انزلاق، فلا يمكن توصيله بدائرة خارجية (ص 14).'],
+  ['الدوار الملفوف ذو حلقات الانزلاق',true,'ملفاته تخرج عبر الحلقات والفرش إلى مقاومات خارجية «من أجل التحكم في بدء دوران المحرك أو في تنظيم سرعته» (ص 13).']]},
+ {q:'دوار قفص سنجابي رُكّب في عضو ثابت عدد أقطابه مختلف (بالمقاس نفسه). هل تحتاج أن تعيد تقسيم الدوار إلى أقطاب؟',opts:[
+  ['لا، يتكيف تلقائياً',true,'«هذا النوع لا يقسم إلى عدد معين من الأقطاب وإنما يستطيع التكيف تلقائياً مع عدد الأقطاب والأوجه للعضو الثابت» (ص 14).'],
+  ['نعم، يجب أن يساوي عدد أقطاب الثابت',false,'هذا شرط الدوار الملفوف، لا القفص السنجابي.']]},
+ {q:'أين تجد حلقتي القصر في القفص السنجابي؟',opts:[
+  ['على العمود خارج الدوار وتلامسهما فرش',false,'هذه حلقات الانزلاق في الدوار الملفوف.'],
+  ['في طرفي القضبان من الجهتين، ومن نفس مادتها',true,'«مقصورة أطرافها مع بعض من الجهتين بحلقتين من نفس مادة القضبان» (ص 14).']]}]})}
    ]},
 
   {recap:[
@@ -594,7 +812,15 @@ B.lesson({
      <ul><li><b>120° فراغية:</b> في المكان؛ الملفات الثلاثة موزعة حول العضو الثابت.</li>
      <li><b>120° بين التيارات:</b> في الزمن؛ كل تيار يصل إلى قمته بعد الذي قبله بثلث دورة.</li></ul>
      <p>اجتماع الاثنين معاً هو الذي يجعل محصلة المجال تدور.</p>`,title:'نوعان من الـ 120°'},
-    {add:String.raw`<p>تشبيه قريب: لوحة إعلانات فيها مصابيح ثابتة في أماكنها، تضيء واحداً بعد الآخر بالترتيب، فترى الضوء «يجري» حول اللوحة مع أن المصابيح لا تتحرك. كذلك الملفات ثابتة، وتياراتها تقوى وتضعف بالترتيب فيدور المجال.</p>`}
+    {add:String.raw`<p>تشبيه قريب: لوحة إعلانات فيها مصابيح ثابتة في أماكنها، تضيء واحداً بعد الآخر بالترتيب، فترى الضوء «يجري» حول اللوحة مع أن المصابيح لا تتحرك. كذلك الملفات ثابتة، وتياراتها تقوى وتضعف بالترتيب فيدور المجال.</p>`},
+    {title:'مختبر مصغّر: ماذا لو…؟',widget:(el,B)=>DCML.cases(el,B,{intro:'اختر الإجابة في كل موقف، ثم اقرأ السبب.',cases:[
+ {q:'غذّينا الملفات الثلاثة نفسها بتيار <b>مستمر</b> بدل المصدر المتردد ثلاثي الأوجه. ماذا ينشأ؟',opts:[
+  ['مجال مغناطيسي دوار بالسرعة التزامنية',false,'التيار المستمر لا يقوى ولا يضعف، فلا شيء «يتقدم» من ملف إلى الذي يليه.'],
+  ['مجال ثابت في مكانه لا يدور',true,'شرط الكتاب تيارات متزنة بين كل تيار وآخر 120°؛ التيار المستمر لا يحققه، فيبقى المجال في مكانه.']]},
+ {q:'الملفات مثبتة في العضو الثابت ولا تتحرك. فما الذي يجعل محصلة المجال تدور؟',opts:[
+  ['الدوار يسحب المجال معه وهو يدور',false,'المجال الدوار ينشأ من العضو الثابت وحده، حتى قبل أن يتحرك الدوار.'],
+  ['الملفات موزعة حول العضو الثابت، وتياراتها تصل إلى قمتها واحداً بعد الآخر',true,'الـ 120° الفراغية مع الـ 120° بين التيارات معاً (ص 14): كل ملف يقوى في دوره، فتنتقل المحصلة من مكان إلى مكان.'],
+  ['جهد المصدر يرتفع وينخفض',false,'لو كان ملفاً واحداً لتغيرت شدة مجاله فقط دون أن يدور؛ الدوران يحتاج ثلاثة ملفات موزعة.']]}]})}
    ]},
 
   {st:2,short:'السرعة التزامنية',title:'السرعة التزامنية: بأي سرعة يدور المجال؟',ref:'ص 14',
@@ -613,7 +839,16 @@ B.lesson({
      <p>حيث: \(n_s\): السرعة التزامنية. \(f_s\): تردد تيار العضو الثابت. \(p\): عدد أقطاب الآلة.</p>`,ref:'ص 14'},
     {tip:String.raw`<p>الكتاب لا يذكر الوحدات عند المعادلة، والأمثلة تستعمل \(n_s\) بالدورة في الدقيقة <span class="ltr">(rpm)</span> و\(f_s\) بالهرتز <span class="ltr">(Hz)</span>. الرقم 120 يأتي من 60 ثانية في الدقيقة × 2 (كل زوج من الأقطاب يحتاج دورة تيار كاملة ليدور المجال دورة واحدة).</p>
      <table class="tt"><thead><tr><th>p</th><th>عند <span class="ltr">50 Hz</span></th><th>عند <span class="ltr">60 Hz</span></th></tr></thead><tbody><tr><td>2</td><td>3000 rpm</td><td>3600 rpm</td></tr><tr><td>4</td><td>1500 rpm</td><td>1800 rpm</td></tr><tr><td>6</td><td>1000 rpm</td><td>1200 rpm</td></tr><tr><td>8</td><td>750 rpm</td><td>900 rpm</td></tr></tbody></table>`,title:'جدول من المعادلة (1-1)'},
-    {watch:String.raw`<p>\(p\) هو <b>عدد الأقطاب</b> وليس عدد أزواج الأقطاب. كلما زاد عدد الأقطاب <b>قلّت</b> السرعة التزامنية.</p>`}
+    {watch:String.raw`<p>\(p\) هو <b>عدد الأقطاب</b> وليس عدد أزواج الأقطاب. كلما زاد عدد الأقطاب <b>قلّت</b> السرعة التزامنية.</p>`},
+    {title:'مختبر مصغّر: الأقطاب والتردد',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر عدد الأقطاب وتردد المصدر، واقرأ السرعة التزامنية من المعادلة (1-1).',
+ predict:{q:'إذا ضاعفنا عدد الأقطاب وبقي التردد كما هو، فإن السرعة التزامنية…',opts:[
+  ['تتضاعف',false,'عدد الأقطاب في <b>مقام</b> المعادلة (1-1)، فزيادته تنقص السرعة.'],
+  ['تنقص إلى النصف',true,'\\(n_s=\\frac{120f_s}{p}\\): مضاعفة المقام تنصّف الناتج، مثل 3000 ← 1500 rpm عند 50 Hz.'],
+  ['لا تتغير',false,'السرعة التزامنية تعتمد على عدد الأقطاب والتردد كليهما.']]},
+ ins:[{k:'p',l:'عدد الأقطاب p',seg:[[2,'2'],[4,'4'],[6,'6'],[8,'8']],v:4},{k:'f',l:'تردد المصدر f<sub>s</sub>',seg:[[50,'50 Hz'],[60,'60 Hz']],v:50}],
+ calc:(s,v,B)=>{const ns=120*s.f/s.p;return {pic:DCML.gauge(B,{v:ns,max:3600,lab:'rpm',txt:DCML.fm(B,ns,0)}),
+  facts:[['120 × f<sub>s</sub>',DCML.fm(B,120*s.f,0)],['p',String(s.p)],['n<sub>s</sub> (1-1)',DCML.fm(B,ns,0)+' rpm','hi']],
+  msg:s.p===4&&s.f===50?'هذه أرقام مثال (1-1): <span class="ltr">1500 rpm</span>.':''}}})}
    ]},
 
   {st:3,short:'التيارات اللحظية',title:'التيارات اللحظية في الأوجه الثلاثة',ref:'ص 15',
@@ -631,7 +866,16 @@ B.lesson({
      <table class="tt"><thead><tr><th>θ</th><th>I<sub>a</sub></th><th>I<sub>b</sub></th><th>I<sub>c</sub></th></tr></thead><tbody>
      <tr><td>0°</td><td><span class="ltr">+10</span></td><td><span class="ltr">−5</span></td><td><span class="ltr">−5</span></td></tr><tr><td>60°</td><td><span class="ltr">+5</span></td><td><span class="ltr">+5</span></td><td><span class="ltr">−10</span></td></tr><tr><td>120°</td><td><span class="ltr">−5</span></td><td><span class="ltr">+10</span></td><td><span class="ltr">−5</span></td></tr><tr><td>180°</td><td><span class="ltr">−10</span></td><td><span class="ltr">+5</span></td><td><span class="ltr">+5</span></td></tr><tr><td>240°</td><td><span class="ltr">−5</span></td><td><span class="ltr">−5</span></td><td><span class="ltr">+10</span></td></tr><tr><td>300°</td><td><span class="ltr">+5</span></td><td><span class="ltr">−10</span></td><td><span class="ltr">+5</span></td></tr></tbody></table>
      <p>لاحظ أن مجموع التيارات الثلاثة في أي لحظة يساوي صفراً (مثلاً عند 0°: <span class="ltr">10 − 5 − 5 = 0</span>)؛ هذا معنى أنها «متزنة».</p>`,title:'قيم مقروءة من الرسم'},
-    {watch:String.raw`<p>في رسم الكتاب طُبعت القيم السالبة على المحور الرأسي «5» و«10» بلا إشارة السالب، والصحيح <span class="ltr">−5</span> و<span class="ltr">−10</span>. رسمناها هنا بالإشارة الصحيحة.</p>`,fix:true}
+    {watch:String.raw`<p>في رسم الكتاب طُبعت القيم السالبة على المحور الرأسي «5» و«10» بلا إشارة السالب، والصحيح <span class="ltr">−5</span> و<span class="ltr">−10</span>. رسمناها هنا بالإشارة الصحيحة.</p>`,fix:true},
+    {title:'مختبر مصغّر: حرّك اللحظة واقرأ التيارات',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك الخط الأسود على الرسم (الزاوية θ) واقرأ التيارات الثلاثة ومجموعها. القمة 10 كما في رسم الكتاب.',
+ predict:{q:'في أي لحظة يكون مجموع التيارات الثلاثة صفراً؟',opts:[
+  ['في اللحظة الأولى فقط',false,'عند 0° المجموع \\(10-5-5=0\\)، لكن هذا يتكرر في غيرها أيضاً.'],
+  ['لا يكون صفراً أبداً',false,'التيارات متزنة، وهذا بالضبط معنى أن مجموعها صفر.'],
+  ['في كل لحظة',true,'لأنها «تيارات متزنة» بين كل تيار وآخر 120° (ص 14): ما يزيد في أحدها يقابله نقص في الآخرين.']]},
+ ins:[{k:'th',l:'الزاوية θ',min:0,max:420,step:5,v:60,u:'°',dp:0}],
+ calc:(s,v,B)=>{const c=phaseCur(s.th,0),z=c.a+c.b+c.c,on=[0,60,120,180,240,300,360,420].indexOf(s.th);
+  return {pic:wavesSVG(s.th,0,{h:230}),facts:[['I<sub>a</sub>',DCML.fm(B,c.a,1)],['I<sub>b</sub>',DCML.fm(B,c.b,1)],['I<sub>c</sub>',DCML.fm(B,c.c,1)],['I<sub>a</sub>+I<sub>b</sub>+I<sub>c</sub>',DCML.fm(B,Math.abs(z)<1e-9?0:z,1),'hi']],
+   msg:on>=0?`أنت على الخط رقم ${on+1} من الرسم، وهو اللحظة ${['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'][on]} في الشكل (1-7).`:''}}})}
    ]},
 
   {st:4,short:'الشكل <span class="ltr">(1-7)</span> لحظة بلحظة',title:'الشكل <span class="ltr">(1-7)</span>: المجال لحظة بلحظة',ref:'ص 15–16',
@@ -656,7 +900,16 @@ B.lesson({
      <tr><td>السادسة</td><td>300°</td><td>+</td><td>−</td><td>−</td><td>−</td><td>+</td><td>+</td><td>نحو أسفل اليسار</td></tr>
      <tr><td>السابعة</td><td>360°</td><td>+</td><td>+</td><td>−</td><td>−</td><td>−</td><td>+</td><td>مثل الأولى</td></tr>
      <tr><td>الثامنة</td><td>420°</td><td>+</td><td>+</td><td>+</td><td>−</td><td>−</td><td>−</td><td>مثل الثانية</td></tr></tbody></table></div>
-     <p class="sub">في تبويب «المختبر» تحرّك الزاوية بنفسك وترى الإشارات والسهم يتغيران.</p>`,title:'ما يظهر في لقطات الشكل (1-7)'}
+     <p class="sub">في تبويب «المختبر» تحرّك الزاوية بنفسك وترى الإشارات والسهم يتغيران.</p>`,title:'ما يظهر في لقطات الشكل (1-7)'},
+    {title:'مختبر مصغّر: لقطات الشكل (1-7)',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر اللحظة وانظر إلى إشارات الموصلات الستة وإلى سهم المحصلة.',
+ predict:{q:'من اللحظة الأولى إلى الثانية، أي جانبين تنقلب إشارتهما؟',opts:[
+  ['A و <span class="ltr">A\'</span>',false,'\\(I_a\\) ينقص من +10 إلى +5 لكنه يبقى موجباً، فلا تتغير إشارتا A و <span class="ltr">A\'</span>.'],
+  ['B و <span class="ltr">B\'</span>',true,'\\(I_b\\) ينتقل من −5 إلى +5: صار B موجباً و <span class="ltr">B\'</span> سالباً، كما في جدول اللقطات.'],
+  ['C و <span class="ltr">C\'</span>',false,'\\(I_c\\) ينتقل من −5 إلى −10: يبقى سالباً فلا تتغير إشارتاه.']]},
+ ins:[{k:'i',l:'اللحظة',seg:[[0,'1'],[1,'2'],[2,'3'],[3,'4'],[4,'5'],[5,'6']],v:0}],
+ calc:(s,v,B)=>{const r=T17[s.i],th=r[0];
+  const N=['A',"C'",'B',"A'",'C',"B'"],tb=`<table class="tt" dir="ltr" style="margin:8px auto 0;width:auto"><tr>${N.map(n=>`<th>${n}</th>`).join('')}</tr><tr>${N.map((n,j)=>`<td class="${r[3+j]==='+'?'im-sgn-p':'im-sgn-m'}">${r[3+j]}</td>`).join('')}</tr></table>`;
+  return {pic:`<div style="max-width:240px;margin:auto">${ringSVG(th)}</div>${tb}`,facts:[['θ',th+'°']],msg:'<b>اتجاه المحصلة:</b> '+r[9]+'.'}}})}
    ]},
 
   {st:5,short:'60° لكل لحظة',title:'ماذا نلاحظ؟ المجال يدور 60° مع كل لحظة',ref:'ص 17',
@@ -672,7 +925,16 @@ B.lesson({
    body:[
     {book:String.raw`<p>يتضح من تتبع اتجاه محصلة المجال الناتج عن الأوجه الثلاثة للمحرك، نتيجة لمرور التيارات اللحظية ثلاثية الأوجه بملفات العضو الثابت، عند اللحظات المتتالية المبينة في الشكل (1-7) أن <b>المجال يدور 60° في الفراغ كلما مرت لحظة زمنية معينة</b>، ويكتمل دوران المجال <b>360° كل دورة كاملة للتيار</b>.</p>`,ref:'ص 17'},
     {tip:String.raw`<p>عند <span class="ltr">50 Hz</span> يكمل التيار خمسين دورة في الثانية، فيدور المجال في المحرك ذي القطبين خمسين دورة في الثانية = <span class="ltr">3000</span> دورة في الدقيقة؛ وهذا ما تعطيه المعادلة (1-1) عندما \(p=2\).</p>
-     <p>في محرك ذي أربعة أقطاب تتكرر المواضع الستة مرتين حول الدائرة، فيقطع المجال نصف دورة فقط مع كل دورة تيار، ولذلك تكون سرعته التزامنية النصف. جرّب ذلك في تبويب «المختبر».</p>`}
+     <p>في محرك ذي أربعة أقطاب تتكرر المواضع الستة مرتين حول الدائرة، فيقطع المجال نصف دورة فقط مع كل دورة تيار، ولذلك تكون سرعته التزامنية النصف. جرّب ذلك في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: قطبان أم أربعة أقطاب؟',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر زاوية التيار لحظة بلحظة، وقارن كم يدور القطب N في الفراغ في آلة ذات قطبين وآلة ذات أربعة أقطاب.',
+ predict:{q:'في آلة ذات <b>أربعة</b> أقطاب، كم يدور المجال في الفراغ مع كل لحظة (60° من دورة التيار)؟',opts:[
+  ['60°',false,'هذا في الآلة ذات القطبين، كما في الشكل (1-7).'],
+  ['30°',true,'المواضع الست تتكرر مرتين حول الدائرة، فيقطع المجال نصف المسافة: 60° ÷ 2 = 30°، ونصف دورة مع كل دورة تيار.'],
+  ['120°',false,'لو كان كذلك لدار المجال أسرع مع زيادة الأقطاب، والمعادلة (1-1) تقول العكس.']]},
+ ins:[{k:'p',l:'عدد الأقطاب',seg:[[2,'2'],[4,'4']],v:2},{k:'th',l:'زاوية التيار θ',seg:[[0,'0°'],[60,'60°'],[120,'120°'],[180,'180°'],[240,'240°'],[300,'300°'],[360,'360°']],v:0}],
+ calc:(s,v,B)=>{const m=s.th/(s.p/2);
+  return {pic:`<div style="max-width:260px;margin:auto">${ringPSVG(s.th,s.p,0)}</div>`,facts:[['زاوية التيار',s.th+'°'],['دوران المجال في الفراغ',DCML.fm(B,m,0)+'°','hi'],['دورة تيار كاملة تعطي',s.p===2?'360°':'180°']],
+   msg:s.th===360?(s.p===2?'دورة كاملة للتيار = دورة كاملة للمجال (ص 17).':'دورة كاملة للتيار = نصف دورة للمجال فقط؛ لذلك \\(n_s\\) للأربعة أقطاب نصف \\(n_s\\) للقطبين.'):''}}})}
    ]},
 
   {st:6,short:'عكس اتجاه الدوران',title:'عكس اتجاه دوران المحرك',ref:'ص 17',
@@ -689,7 +951,16 @@ B.lesson({
     {book:String.raw`<p>يلاحظ أنه <b>إذا تم عكس طرفين من بين الأطراف الثلاثة فإن اتجاه المجال سيتغير</b> وبالتالي يمكن عكس اتجاه دوران المحرك.</p>`,ref:'ص 17'},
     {tip:String.raw`<p>بعد تبديل خطين يصل كل تيار إلى قمته في الملفات بترتيب معكوس (A ثم C ثم B بدل A ثم B ثم C)، فيدور المجال في الاتجاه المعاكس، والدوار يتبع المجال دائماً.</p>`},
     {add:String.raw`<p>في الميدان: إذا دارت مضخة أو مروحة في الاتجاه الخطأ بعد التركيب، يفصل الفني الكهرباء ثم يبدّل سلكين من الأسلاك الثلاثة الواصلة إلى المحرك، فيعمل في الاتجاه الصحيح دون أي تغيير داخل المحرك.</p>`},
-    {watch:String.raw`<p>بدّل <b>طرفين فقط</b>. لو نقلت الأطراف الثلاثة كلها بالدور (L1 مكان L2، وL2 مكان L3، وL3 مكان L1) يبقى ترتيب الأوجه كما هو، ولا ينعكس الدوران. وأي تبديل يتم والكهرباء مفصولة.</p>`}
+    {watch:String.raw`<p>بدّل <b>طرفين فقط</b>. لو نقلت الأطراف الثلاثة كلها بالدور (L1 مكان L2، وL2 مكان L3، وL3 مكان L1) يبقى ترتيب الأوجه كما هو، ولا ينعكس الدوران. وأي تبديل يتم والكهرباء مفصولة.</p>`},
+    {title:'مختبر مصغّر: بدّل الأطراف وراقب الاتجاه',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر طريقة توصيل الأطراف الثلاثة، ثم حرّك زاوية التيار وتابع السهم.',
+ predict:{q:'نقلنا الأطراف الثلاثة كلها بالدور (L1 مكان L2، وL2 مكان L3، وL3 مكان L1). ماذا يحدث لاتجاه الدوران؟',opts:[
+  ['ينعكس',false,'النقل بالدور يُبقي ترتيب وصول التيارات إلى قممها كما هو.'],
+  ['لا يتغير',true,'ترتيب الأوجه نفسه <span class="ltr">(A → B → C)</span> يبقى، فيبقى الاتجاه. الذي يعكسه هو تبديل <b>طرفين فقط</b> (ص 17).'],
+  ['يتوقف المجال عن الدوران',false,'التيارات ما زالت ثلاثة متزنة في ملفات موزعة، فالمجال يدور.']]},
+ ins:[{k:'m',l:'التوصيل',seg:[['n','الأصلي'],['s','تبديل L2 و L3'],['c','نقل الثلاثة بالدور']],v:'n'},{k:'th',l:'زاوية التيار θ',min:0,max:360,step:15,v:0,u:'°',dp:0}],
+ calc:(s,v,B)=>{const sh=s.m==='c'?120:0,rv=s.m==='s'?1:0;const f=t=>{const q=fieldVec(phaseCur(t+sh,rv));return Math.atan2(q.y,q.x)};
+  let d=f(s.th+10)-f(s.th);d=Math.atan2(Math.sin(d),Math.cos(d));const cw=d<0;
+  return {pic:`<div style="max-width:240px;margin:auto">${ringSVG(s.th+sh,{rev:rv})}</div>`,cls:cw?'':'warn',msg:`<b>اتجاه دوران المجال: ${cw?'مع عقارب الساعة':'عكس عقارب الساعة'}.</b> تصل التيارات إلى قممها في الملفات بالترتيب <span class="ltr">${rv?'A → C → B':'A → B → C'}</span>. `+(s.m==='s'?'انعكس الاتجاه بتبديل طرفين فقط.':s.m==='c'?'السهم بدأ من موضع آخر، لكنه يدور في الاتجاه الأصلي نفسه.':'')}}})}
    ]},
 
   {recap:[
@@ -1108,7 +1379,16 @@ B.lesson({
    body:[
     {book:String.raw`<p>الدائرة المكافئة لكل وجه للمحرك الحثي ثلاثي الأوجه <b>تشبه تماماً الدائرة المكافئة للمحول</b>، غير أن المحرك دوار لذلك تم <b>تمثيل الحركة في الدائرة المكافئة بالمقاومة \(\left(\frac{R_2}{S}\right)\)</b> كما هو موضح في الشكل (1-8).</p>`,ref:'ص 23'},
     {tip:String.raw`<p>تذكّر من الدرس الثالث أن المحرك الحثي يسمى أحياناً «محولاً دواراً»: العضو الثابت هو الابتدائي والعضو الدوار هو الثانوي. لذلك تشبه دائرته دائرة المحول، ويبقى الفرق الوحيد هو الحركة؛ فنمثلها بمقاومة تتغير مع الانزلاق \(S\).</p>`},
-    {tip:String.raw`<p>تتبّع الدائرة من اليسار: الجهد \(V_{ph}\) ← مقاومة الملفات \(R_1\) وممانعتها \(X_1\) ← الفرع المغناطيسي ← المحول المثالي ← دائرة الدوار: \(X_2\) ثم \(\frac{R_2}{S}\).</p>`,title:'اقرأ الدائرة خطوة خطوة'}
+    {tip:String.raw`<p>تتبّع الدائرة من اليسار: الجهد \(V_{ph}\) ← مقاومة الملفات \(R_1\) وممانعتها \(X_1\) ← الفرع المغناطيسي ← المحول المثالي ← دائرة الدوار: \(X_2\) ثم \(\frac{R_2}{S}\).</p>`,title:'اقرأ الدائرة خطوة خطوة'},
+    {title:'مختبر مصغّر: الحركة مقاومة تتغير',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر حالة الدوار (قيمة الانزلاق S) وانظر كم مرة تكبر المقاومة \\(R_2/S\\) عن مقاومة الملفات \\(R_2\\) نفسها.',
+ predict:{q:'كلما دار الدوار أسرع (قلّ الانزلاق S)، فإن المقاومة \\(R_2/S\\)…',opts:[
+  ['تصغر',false,'الانزلاق في <b>المقام</b>؛ إذا صغر المقام كبر الناتج.'],
+  ['لا تتغير',false,'لو كانت لا تتغير لما مثّلت الحركة؛ هي تتغير مع \\(S\\) وحده.'],
+  ['تكبر',true,'مثلاً عند \\(S=0.05\\) تصبح \\(R_2/S=20\\,R_2\\). وعند \\(S=1\\) (الدوار واقف) تساوي \\(R_2\\) نفسها.']]},
+ ins:[{k:'S',l:'الانزلاق S',seg:[[1,'1 (واقف)'],[0.5,'0.5'],[0.2,'0.2'],[0.1,'0.1'],[0.05,'0.05'],[0.02,'0.02']],v:1}],
+ calc:(s,v,B)=>{const k=1/s.S;return {facts:[['S',String(s.S)],['R<sub>2</sub>/S',DCML.fm(B,k,0)+' × R<sub>2</sub>','hi']],
+  bars:[{l:'مقاومة الملفات R<sub>2</sub>',v:1,max:50,txt:'1 × R<sub>2</sub>',col:'--muted'},{l:'المقاومة في دائرة الدوار R<sub>2</sub>/S',v:k,max:50,txt:DCML.fm(B,k,0)+' × R<sub>2</sub>',col:'--blue'}],
+  msg:s.S===1?'الدوار واقف: \\(R_2/S=R_2\\)، ولا يبقى في دائرة الدوار إلا مقاومة ملفاته.':'الملفات لم تتغير، لكن الحركة جعلت الدوار «يرى» مقاومة أكبر؛ هذا معنى تمثيل الحركة بالمقاومة \\(R_2/S\\) (ص 23).'}}})}
    ]},
 
   {st:2,short:'جدول الرموز',title:'جدول الرموز: ماذا يعني كل عنصر؟',ref:'ص 23',
@@ -1132,7 +1412,15 @@ B.lesson({
      <ul><li><b>العضو الثابت:</b> \(R_1\) و\(X_1\) و\(I_{ph}\) و\(N_s\).</li>
      <li><b>العضو الدوار:</b> \(R_2\) و\(X_2\) و\(I_2\) و\(N_r\). (الرقم 1 للثابت، والرقم 2 للدوار.)</li>
      <li><b>القلب الحديدي (الفرع المغناطيسي):</b> \(R_c\) و\(X_m\) وتيارهما \(I_c\) و\(I_m\)، ومجموعهما \(I_{10}\).</li></ul>`,title:'ثلاث مجموعات'},
-    {watch:String.raw`<p>كُتب معنى \(V_{ph}\) «جهد الوجه (الطرف)»، وهذا يجمع بين شيئين مختلفين: جهد الوجه وجهد الطرف (الخط). المقصود في الدائرة <b>جهد الوجه</b>؛ وفي الأمثلة يُحسب من جهد الخط: نجمة \(V_{ph}=V_L/\sqrt3\)، دلتا \(V_{ph}=V_L\).</p>`,fix:true}
+    {watch:String.raw`<p>كُتب معنى \(V_{ph}\) «جهد الوجه (الطرف)»، وهذا يجمع بين شيئين مختلفين: جهد الوجه وجهد الطرف (الخط). المقصود في الدائرة <b>جهد الوجه</b>؛ وفي الأمثلة يُحسب من جهد الخط: نجمة \(V_{ph}=V_L/\sqrt3\)، دلتا \(V_{ph}=V_L\).</p>`,fix:true},
+    {title:'مختبر مصغّر: أين مكان كل رمز؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل رمز من جدول الرموز (ص 23) اضغط الجزء الذي ينتمي إليه في الدائرة.',cats:['العضو الثابت','الفرع المغناطيسي','العضو الدوار'],items:[
+ ['\\(X_2\\): ممانعة التسرب الحثية',2,'الرقم 2 للعضو الدوار.'],
+ ['\\(R_c\\): تمثل المفاقيد الحديدية',1,'مقاومة القلب الحديدي، في الفرع المغناطيسي.'],
+ ['\\(R_1\\): مقاومة الملفات لكل وجه',0,'الرقم 1 للعضو الثابت.'],
+ ['\\(I_m\\): التيار الغير فعال (تيار التمغنط)',1,'يمر في \\(X_m\\) في الفرع المغناطيسي.'],
+ ['\\(I_{ph}\\): التيار لكل وجه من المصدر',0,'تيار العضو الثابت لكل وجه.'],
+ ['\\(I_2\\): التيار لكل وجه في القضبان أو الملفات المقصورة',2,'تيار العضو الدوار لكل وجه.'],
+ ['\\(I_{10}\\): التيار الابتدائي عند اللاحمل',1,'هو مجموع \\(I_c\\) و\\(I_m\\) في الفرع المغناطيسي.']]})}
    ]},
 
   {st:3,short:'نسبة الدوار إلى الثابت',title:'نسبة دائرة الدوار إلى العضو الثابت',ref:'ص 24',
@@ -1153,7 +1441,15 @@ B.lesson({
     {tip:String.raw`<p>لماذا لا يتغير شيء بحذف المحول؟ لأن القدرة في مقاومة الدوار تبقى كما هي:</p>
      <div class="eq">$$I_2'^2R_2'=\left(I_2\frac{N_r}{N_s}\right)^2\left(R_2\frac{N_s^2}{N_r^2}\right)=I_2^2R_2$$</div>
      <p>التيار يصغر بالنسبة، والمقاومة تكبر بمربعها، فتبقى القدرة نفسها.</p>`,title:'القدرة لا تتغير'},
-    {watch:String.raw`<p>الشرطة (\(R_2'\) و\(X_2'\) و\(I_2'\)) تعني «منسوب إلى العضو الثابت». المعادلات الثلاث في ص 24 بلا أرقام في الكتاب.</p>`}
+    {watch:String.raw`<p>الشرطة (\(R_2'\) و\(X_2'\) و\(I_2'\)) تعني «منسوب إلى العضو الثابت». المعادلات الثلاث في ص 24 بلا أرقام في الكتاب.</p>`},
+    {title:'مختبر مصغّر: انسب الدوار إلى الثابت',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر نسبة اللفات \\(N_s/N_r\\) وانظر كيف تتغير قيم الدوار المنسوبة، وماذا يحدث للقدرة في مقاومته. النسب هنا <b>أرقام تختارها أنت</b>؛ الكتاب لا يعطي أرقاماً لهذه المعادلات.',
+ predict:{q:'لفات العضو الثابت ضعف لفات الدوار \\((N_s/N_r=2)\\). كم تصبح \\(R_2\'\\)؟',opts:[
+  ['\\(2\\,R_2\\)',false,'المقاومة تُضرب في <b>مربع</b> النسبة، لا في النسبة نفسها.'],
+  ['\\(4\\,R_2\\)',true,'\\(R_2\'=R_2\\left(\\frac{N_s}{N_r}\\right)^2=R_2\\times2^2=4R_2\\).'],
+  ['\\(\\frac12\\,R_2\\)',false,'بالنسبة المقلوبة يُنسب <b>التيار</b>: \\(I_2\'=I_2\\frac{N_r}{N_s}\\).']]},
+ ins:[{k:'a',l:'نسبة اللفات N<sub>s</sub>/N<sub>r</sub>',seg:[[0.5,'0.5'],[1,'1'],[2,'2'],[3,'3'],[4,'4']],v:1}],
+ calc:(s,v,B)=>{const a=s.a,k=a*a,g=x=>String(+x.toFixed(2));return {facts:[["R<sub>2</sub>' و X<sub>2</sub>'",g(k)+' ×'],["I<sub>2</sub>'",g(1/a)+' ×'],["I<sub>2</sub>'<sup>2</sup> R<sub>2</sub>'",'1 ×','hi']],
+  msg:`المقاومة والممانعة ضُربتا في ${DCML.lt(g(k))} والتيار في ${DCML.lt(g(1/a))}، فالقدرة \\(I_2'^2R_2'\\) ضُربت في ${DCML.lt(g(1/a)+'² × '+g(k)+' = 1')}: لم تتغير. لهذا نحذف المحول دون أن يتغير شيء.`}}})}
    ]},
 
   {st:4,short:'فصل مقاومة الحمل',title:'فصل مقاومة الحمل من مقاومة الدوار',ref:'ص 24–25',
@@ -1175,7 +1471,16 @@ B.lesson({
      <tr><td>بلا حمل (يدور قريباً من \(n_s\))</td><td>≈ 0</td><td>∞</td><td>مفتوحة</td></tr>
      <tr><td>يدور بحمل</td><td><span class="ltr">0.03–0.05</span></td><td>كبيرة</td><td>حمل عادي</td></tr>
      <tr><td>الدوار ممنوع من الحركة</td><td>1</td><td>0</td><td>مقصورة</td></tr></tbody></table>
-     <p>هاتان الحالتان الطرفيتان هما أساس اختباري اللاحمل وعدم الحركة في الدرس التالي. جرّب ذلك بمنزلق \(S\) في «المختبر».</p>`,title:'مقاومة الحمل تحكي حالة المحرك'}
+     <p>هاتان الحالتان الطرفيتان هما أساس اختباري اللاحمل وعدم الحركة في الدرس التالي. جرّب ذلك بمنزلق \(S\) في «المختبر».</p>`,title:'مقاومة الحمل تحكي حالة المحرك'},
+    {title:'مختبر مصغّر: جزء ثابت وجزء يتبع الانزلاق',widget:(el,B)=>DCML.lab(el,B,{intro:'بقيمة \\(R_2\'=0.379\\ \\Omega\\) من مثال (1-5)، غيّر الانزلاق وانظر إلى الجزأين.',
+ predict:{q:'الدوار ممنوع من الحركة \\((S=1)\\). كم تصبح مقاومة الحمل \\(R_2\'\\frac{1-S}{S}\\)؟',opts:[
+  ['ما لانهاية',false,'ما لانهاية عندما \\(S\\approx0\\) (بلا حمل)، لا عندما يكون الدوار واقفاً.'],
+  ['صفراً',true,'\\(R_2\'\\frac{1-1}{1}=0\\): الدائرة من جهة الدوار مقصورة؛ وهذا أساس اختبار إعاقة الحركة.'],
+  ['تساوي \\(R_2\'\\)',false,'هذا يحدث عند \\(S=0.5\\) فقط.']]},
+ ins:[{k:'S',l:'الانزلاق S',seg:[[1,'1'],[0.5,'0.5'],[0.2,'0.2'],[0.05,'0.05'],[0.03,'0.03'],[0.001,'0.001']],v:0.05}],
+ calc:(s,v,B)=>{const R2=P15.R2,RL=R2*(1-s.S)/s.S,mx=R2/0.03;return {facts:[["R<sub>2</sub>'/S",fmR(R2/s.S)+' Ω'],["R<sub>2</sub>'",fmR(R2)+' Ω'],["R<sub>2</sub>'(1−S)/S",fmR(RL)+' Ω','hi']],
+  bars:[{l:"R<sub>2</sub>' (لا يتغير)",v:R2,max:mx,txt:fmR(R2)+' Ω',col:'--muted'},{l:"R<sub>2</sub>'(1−S)/S (الحمل)",v:RL,max:mx,txt:fmR(RL)+' Ω',col:'--blue'}],
+  msg:s.S===1?'الحمل صفر: الدائرة مقصورة من جهة الدوار.':s.S<=0.001?'الحمل كبير جداً (أكبر من 300 Ω): الدائرة شبه مفتوحة، كما عند اللاحمل.':s.S===0.5?'عند \\(S=0.5\\) يتساوى الجزآن.':''}}})}
    ]},
 
   {st:5,short:'الدائرة التقريبية',title:'الدائرة المكافئة التقريبية',ref:'ص 25–26',
@@ -1194,7 +1499,16 @@ B.lesson({
      <div class="eq">$$R_{eq}=R_1+R_2' \qquad X_{eq}=X_1+X_2'$$</div>
      <p>وبالتالي يمكن إعادة رسم الدائرة المكافئة كما في الشكل التالي:</p>`,ref:'ص 26'},
     {tip:String.raw`<p>بعد نقل الفرع المغناطيسي صارت \(R_1\) و\(X_1\) و\(R_2'\) و\(X_2'\) كلها على التوالي في فرع واحد (الشكل 1-11)، فجمعنا المقاومتين في \(R_{eq}\) والممانعتين في \(X_{eq}\) (الشكل 1-12). الحمل \(R_2'\frac{1-S}{S}\) بقي وحده.</p>`},
-    {watch:String.raw`<p>الشكلان (1-11) ص 25 و(1-12) ص 26 يحملان العنوان نفسه «الدائرة المكافئة التقريبية لكل وجه للمحرك الحثي ثلاثي الأوجه» مع أنهما مختلفان: الثاني بعد دمج \(R_{eq}\) و\(X_{eq}\).</p>`}
+    {watch:String.raw`<p>الشكلان (1-11) ص 25 و(1-12) ص 26 يحملان العنوان نفسه «الدائرة المكافئة التقريبية لكل وجه للمحرك الحثي ثلاثي الأوجه» مع أنهما مختلفان: الثاني بعد دمج \(R_{eq}\) و\(X_{eq}\).</p>`},
+    {title:'مختبر مصغّر: كم يخطئ التقريب؟',widget:(el,B)=>DCML.lab(el,B,{intro:'بأرقام مثال (1-5) لوجه واحد \\((V_{ph}=127\\ V)\\)، قارن تيار الدخل في الدائرة الكاملة وفي الدائرة التقريبية عند انزلاقات مختلفة.',
+ predict:{q:'عند التشغيل العادي، كم يختلف تيار الدخل \\(I_{ph}\\) في الدائرة التقريبية عن الدائرة الكاملة؟',opts:[
+  ['يتطابقان تماماً',false,'التقريب يغيّر الحساب قليلاً، فلا يتطابقان تماماً.'],
+  ['يختلفان قليلاً (بضعة في المئة)',true,'بأرقام مثال (1-5) الفرق نحو 5–6 %، وهذا ثمن مقبول لحساب أسهل بكثير.'],
+  ['التقريبي ضعف الكامل أو أكثر',false,'الفرق صغير لأن تيار اللاحمل صغير مقارنة بتيار الحمل، وهذا شرط التقريب (ص 25).']]},
+ ins:[{k:'S',l:'الانزلاق S',seg:[[1,'1'],[0.2,'0.2'],[0.1,'0.1'],[0.05,'0.05'],[0.03,'0.03']],v:0.05}],
+ calc:(s,v,B)=>{const e=eqSolve(false,s.S,P15),a=eqSolve(true,s.S,P15),d=(a.Iph-e.Iph)/e.Iph*100;
+  return {facts:[['I<sub>ph</sub> الكاملة',DCML.fm(B,e.Iph,2)+' A'],['I<sub>ph</sub> التقريبية',DCML.fm(B,a.Iph,2)+' A'],['الفرق',DCML.fm(B,d,1)+' %','hi'],['I<sub>10</sub>',DCML.fm(B,a.I10,2)+' A']],
+   bars:[{l:'الكاملة',v:e.Iph,max:70,u:'A',dp:2,col:'--blue'},{l:'التقريبية',v:a.Iph,max:70,u:'A',dp:2,col:'--live'}]}}})}
    ]},
 
   {st:6,short:'معنى الدائرة التقريبية',title:'ماذا تعني الدائرة التقريبية؟',ref:'ص 26',
@@ -1211,7 +1525,17 @@ B.lesson({
     {book:String.raw`<p>وبهذا التبسيط تصبح الدائرة المكافئة التقريبية لكل وجه للمحرك الحثي ثلاثي الأوجه مشابهة تماماً للدائرة المكافئة التقريبية للمحول، حيث <b>تعتبر المقاومة \(R_2'\left(\frac{1-S}{S}\right)\) حملاً للمحول</b>، و<b>القدرة المفقودة في هذه المقاومة تمثل القدرة الميكانيكية المتولدة من المحرك</b>.</p>
      <p>يلاحظ أن الدائرة المكافئة التقريبية لكل وجه أعلاه تعبر عن وجه واحد من أوجه المحرك الثلاثة وذلك للتشابه التام بين الأوجه الثلاثة، فليس هناك ما يدعو إلى تكرارها ثلاث مرات، ولكن عند إجراء الحسابات على هذه الدائرة يجب أن يؤخذ ذلك في الاعتبار حيث تحتاج بعض الكميات إلى <b>ضربها بعدد الأوجه أو بجذر ثلاثة</b> حسب طريقة توصيل ملفات المحرك.</p>`,ref:'ص 26'},
     {tip:String.raw`<p>في المحرك الحقيقي لا توجد «مقاومة حمل» داخل الملفات؛ القدرة التي «تُفقد» فيها على الورق هي في الواقع القدرة التي تخرج من العمود لتدير الحمل. لهذا سميناها حملاً.</p>`},
-    {add:String.raw`<p>مثال على «الضرب بعدد الأوجه»: القدرة المحسوبة من دائرة وجه واحد تُضرب في 3 لنحصل على قدرة المحرك كله. وستظهر \(\sqrt3\) عند التحويل بين قيم الخط وقيم الوجه، كما في أمثلة الدرس التالي.</p>`}
+    {add:String.raw`<p>مثال على «الضرب بعدد الأوجه»: القدرة المحسوبة من دائرة وجه واحد تُضرب في 3 لنحصل على قدرة المحرك كله. وستظهر \(\sqrt3\) عند التحويل بين قيم الخط وقيم الوجه، كما في أمثلة الدرس التالي.</p>`},
+    {title:'مختبر مصغّر: من وجه واحد إلى المحرك كله',widget:(el,B)=>DCML.lab(el,B,{intro:'الدائرة التقريبية بأرقام مثال (1-5) لوجه واحد. غيّر الانزلاق، واقرأ القدرة في مقاومة الحمل لوجه واحد ثم للمحرك كله.',
+ predict:{q:'حسبنا القدرة في مقاومة الحمل لوجه واحد. كيف نصل إلى القدرة الميكانيكية للمحرك كله؟',opts:[
+  ['نضربها في \\(\\sqrt3\\)',false,'\\(\\sqrt3\\) تظهر عند التحويل بين قيم الخط وقيم الوجه، لا عند جمع قدرات الأوجه.'],
+  ['هي نفسها، لا نضرب شيئاً',false,'الدائرة لوجه واحد فقط، والمحرك له ثلاثة أوجه متشابهة.'],
+  ['نضربها في 3',true,'الأوجه الثلاثة متشابهة تماماً، فالقدرة الكلية ثلاثة أضعاف قدرة الوجه (ص 26).']]},
+ ins:[{k:'S',l:'الانزلاق S',seg:[[0.5,'0.5'],[0.2,'0.2'],[0.1,'0.1'],[0.05,'0.05'],[0.03,'0.03']],v:0.05}],
+ calc:(s,v,B)=>{const a=eqSolve(true,s.S,P15),pm=a.Pm,pc=a.I2*a.I2*P15.R2;
+  return {facts:[["I<sub>2</sub>'",DCML.fm(B,a.I2,2)+' A'],['قدرة الحمل لوجه',DCML.fm(B,pm,0)+' W'],['للمحرك كله × 3',DCML.fm(B,3*pm,0)+' W','hi'],["حرارة R<sub>2</sub>' لوجه",DCML.fm(B,pc,0)+' W']],
+   bars:[{l:'حركة: القدرة في R<sub>2</sub>\'(1−S)/S',v:pm,max:pm+pc,dp:0,u:'W',col:'--on'},{l:"حرارة: القدرة في R<sub>2</sub>'",v:pc,max:pm+pc,dp:0,u:'W',col:'--stop'}],
+   msg:`نصيب الحرارة من مجموع الاثنين = ${DCML.lt(DCML.fm(B,pc/(pm+pc),2))} = الانزلاق نفسه. ستعود هذه الفكرة في درس القدرة.`}}})}
    ]},
 
   {recap:[
@@ -1443,7 +1767,13 @@ B.lesson({
     {tip:String.raw`<table class="tt"><thead><tr><th>الاختبار</th><th>حالة الدوار</th><th>القدرة المقروءة تمثل تقريباً</th><th>يعطي</th></tr></thead><tbody>
      <tr><td>اللاحمل (الدائرة المفتوحة)</td><td>يدور حراً، \(S\approx0\)</td><td>المفاقيد الحديدية (الثابتة)</td><td>\(R_c, X_m\)</td></tr>
      <tr><td>إعاقة الحركة (الدائرة المقصورة)</td><td>ممنوع من الحركة، \(S=1\)</td><td>المفاقيد النحاسية (المتغيرة)</td><td>\(R_{eq}, X_{eq}\)</td></tr>
-     <tr><td>التيار المستمر</td><td>ساكن</td><td>—</td><td>\(R_1\)</td></tr></tbody></table>`,title:'الاختبارات الثلاثة في جدول'}
+     <tr><td>التيار المستمر</td><td>ساكن</td><td>—</td><td>\(R_1\)</td></tr></tbody></table>`,title:'الاختبارات الثلاثة في جدول'},
+    {title:'مختبر مصغّر: أي اختبار يعطي هذا الثابت؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل ثابت من ثوابت الدائرة اضغط الاختبار الذي نحسبه منه.',cats:['اللاحمل','إعاقة الحركة','التيار المستمر'],items:[
+ ['\\(X_m\\)',0,'من اختبار اللاحمل: المعادلة (1-7).'],
+ ['\\(R_1\\)',2,'من اختبار التيار المستمر: المعادلتان (1-14) و(1-15).'],
+ ['\\(R_{eq}\\)',1,'من اختبار إعاقة الحركة: المعادلة (1-11).'],
+ ['\\(R_c\\)',0,'من اختبار اللاحمل: المعادلة (1-6).'],
+ ['\\(X_{eq}\\)',1,'من اختبار إعاقة الحركة: المعادلة (1-13).']]})}
    ]},
 
   {st:2,short:'اختبار اللاحمل',title:'اختبار اللاحمل No load Test: التوصيل والقراءات',ref:'ص 27–28',
@@ -1461,7 +1791,16 @@ B.lesson({
      <div class="eq">$$P_{10}=W_1+W_2$$</div>
      <p>مع ملاحظة أن <b>قيم الجهد والتيار المقروءة هي للخط</b> وأن <b>القدرة المقروءة تمثل تقريباً المفاقيد الحديدية (المفاقيد الثابتة)</b>.</p>`,ref:'ص 27–28'},
     {tip:String.raw`<p>في اختبار اللاحمل معامل القدرة صغير جداً (أقل من <span class="ltr">0.5</span>)، وعندها يقرأ أحد الواطميترين قيمة <b>سالبة</b>: ينحرف مؤشره عكسياً فتُعكس أطراف ملف الجهد وتُسجل القراءة بإشارة سالب. القدرة الكلية تبقى \(W_1+W_2\) بالإشارة. سترى ذلك في منضدة الاختبار في «المختبر».</p>`,title:'قراءة سالبة لأحد الواطميترين'},
-    {watch:String.raw`<p>الأجهزة تقرأ قيم <b>الخط</b>، أما معادلات الحساب في المحطة التالية فتستعمل قيم <b>الوجه</b>. لا تعوّض قراءة الفولتميتر مباشرة قبل التحويل.</p>`}
+    {watch:String.raw`<p>الأجهزة تقرأ قيم <b>الخط</b>، أما معادلات الحساب في المحطة التالية فتستعمل قيم <b>الوجه</b>. لا تعوّض قراءة الفولتميتر مباشرة قبل التحويل.</p>`},
+    {title:'مختبر مصغّر: من قراءة الجهاز إلى قيمة الوجه',widget:(el,B)=>DCML.lab(el,B,{intro:'الأجهزة تقرأ قيم الخط. اختر أحد مثالي الكتاب وانظر كيف تتحول القراءات إلى قيم الوجه.',
+ predict:{q:'في مثال (1-5) الملفات دلتا، وتيار الخط في اختبار اللاحمل <span class="ltr">7.53 A</span>. كم تيار الوجه \\(I_{10}\\)؟',opts:[
+  ['<span class="ltr">7.53 A</span>',false,'هذا تيار الخط نفسه؛ في الدلتا يتوزع تيار الخط على ملفين.'],
+  ['<span class="ltr">4.35 A</span>',true,'\\(I_{10}=\\frac{7.53}{\\sqrt3}\\approx4.35\\ A\\): في الدلتا نقسم التيار على \\(\\sqrt3\\)، والجهد يبقى كما هو.'],
+  ['<span class="ltr">13.04 A</span>',false,'هذا ناتج الضرب في \\(\\sqrt3\\)؛ في الدلتا نقسم عليها.']]},
+ ins:[{k:'ex',l:'المثال',seg:[[4,'مثال (1-4) نجمة'],[5,'مثال (1-5) دلتا']],v:4}],
+ calc:(s,v,B)=>{const Y=s.ex===4,VL=Y?220:127,IL=Y?20:7.53,P=Y?600:179,Vp=Y?VL/SQ3:VL,Ip=Y?IL:IL/SQ3;
+  return {facts:[['الفولتميتر V<sub>L</sub>',VL+' V'],['الأميتر I<sub>L</sub>',IL+' A'],['W<sub>1</sub>+W<sub>2</sub> = P<sub>10</sub>',P+' W'],['V<sub>ph</sub>',DCML.fm(B,Vp,1)+' V','hi'],['I<sub>10</sub>',DCML.fm(B,Ip,2)+' A','hi']],
+   msg:Y?'نجمة: \\(V_{ph}=V_L/\\sqrt3\\) والتيار كما هو \\(I_{10}=I_L\\).':'دلتا: \\(V_{ph}=V_L\\) والتيار \\(I_{10}=I_L/\\sqrt3\\).'}}})}
    ]},
 
   {st:3,short:'حساب Rc و Xm',title:'اختبار اللاحمل: لماذا يعطي Rc و Xm؟ وكيف نحسبهما؟',ref:'ص 27–28',
@@ -1520,7 +1859,17 @@ B.lesson({
      <div class="eq">$$X_{eq}=\sqrt{Z_{eq}^2-R_{eq}^2}$$<span class="eqno">(1-13)</span></div>`,ref:'ص 29'},
     {tip:String.raw`<p>\(V_{sc}\) و\(I_{sc}\) في المعادلات (1-11) إلى (1-13) قيم <b>وجه</b>؛ هذا يتضح من الأمثلة لا من نص المعادلات. حوّل قراءات الخط أولاً بالجدول نفسه في المحطة السابقة.</p>
      <p>و\(X_{eq}\) من (1-13) هي ضلع مثلث قائم: الوتر \(Z_{eq}\) والضلع الآخر \(R_{eq}\).</p>`},
-    {watch:String.raw`<p>اسم الاختبار غير موحد في الكتاب: الفهرس «اختبار عدم الحركة»، والمتن «اختبار إعاقة الحركة Locked Rotor Test»، ومثال (1-4) «تجربة عدم الحركة»، ومثال (1-5) «اختبار الدائرة المقصورة»، والتمارين «تجربة القصر». وكذلك «اللاحمل / عدم الحمل / الدائرة المفتوحة». كلها تعني الاختبار نفسه.</p>`,fix:true}
+    {watch:String.raw`<p>اسم الاختبار غير موحد في الكتاب: الفهرس «اختبار عدم الحركة»، والمتن «اختبار إعاقة الحركة Locked Rotor Test»، ومثال (1-4) «تجربة عدم الحركة»، ومثال (1-5) «اختبار الدائرة المقصورة»، والتمارين «تجربة القصر». وكذلك «اللاحمل / عدم الحمل / الدائرة المفتوحة». كلها تعني الاختبار نفسه.</p>`,fix:true},
+    {title:'مختبر مصغّر: ارفع الجهد تدريجياً',widget:(el,B)=>DCML.lab(el,B,{intro:'الدوار ممنوع من الحركة. بأرقام مثال (1-4) (نجمة): وصل التيار إلى <span class="ltr">50 A</span> عند جهد خط <span class="ltr">30 V</span>. ارفع الجهد وراقب الأميتر.',
+ predict:{q:'لو سلّطنا الجهد المقنن <span class="ltr">220 V</span> مباشرة والدوار ممنوع من الحركة، كم يكون التيار تقريباً؟',opts:[
+  ['<span class="ltr">50 A</span>',false,'50 A هو التيار عند 30 V فقط. التيار يزيد مع الجهد.'],
+  ['نحو <span class="ltr">367 A</span>، أكثر من سبعة أضعاف',true,'الممانعة نفسها مع جهد أكبر بنحو 7.3 مرة تعطي تياراً أكبر بالنسبة نفسها؛ «تيار كبير جداً قد يتلف ملفات المحرك» (ص 28).'],
+  ['صفراً، لأن الدوار لا يدور',false,'العكس: الدوار الواقف يجعل الدائرة مقصورة \\((S=1)\\) فلا يحد التيار إلا \\(Z_{eq}\\) الصغيرة.']]},
+ ins:[{k:'V',l:'جهد الخط V<sub>L</sub>',min:0,max:220,step:5,v:0,u:'V',dp:0}],
+ calc:(s,v,B)=>{const Z=(30/SQ3)/50,Vp=s.V/SQ3,I=Vp/Z,k=I/50;
+  return {pic:DCML.gauge(B,{v:I,max:400,lab:'A',txt:DCML.fm(B,I,0)+' A'}),
+   facts:[['V<sub>ph</sub>',DCML.fm(B,Vp,1)+' V'],['Z<sub>eq</sub> (1-12)',DCML.fm(B,Z,4)+' Ω'],['I<sub>sc</sub>',DCML.fm(B,I,1)+' A',k>1.02?'bad':'hi'],['مضاعف التيار المقنن',DCML.fm(B,k,2)+' ×']],
+   cls:k>1.02?'bad':'',msg:s.V===30?'هنا تتوقف في الاختبار: التيار وصل إلى قيمته المقننة، فتسجل القراءات.':k>1.02?'تجاوز التيار قيمته المقننة: في الاختبار الحقيقي تتوقف قبل هذا حتى لا تتلف الملفات.':'',}},ill:false})}
    ]},
 
   {st:5,short:'اختبار التيار المستمر',title:'اختبار التيار المستمر DC Test',ref:'ص 30–31',
@@ -1543,7 +1892,16 @@ B.lesson({
      <p>وحيث أن المحرك يعمل بالتيار المتردد فيجب أن يؤخذ <b>تأثير الخاصية القشرية skin effect</b> في الاعتبار وذلك <b>بإضافة حوالي 10% من قيمة المقاومة المقاسة</b> عند مرور التيار المتردد داخل الملفات.</p>`,ref:'ص 30–31'},
     {tip:String.raw`<p>في الدلتا: ملف \(R_1\) على التوازي مع ملفين على التوالي \(2R_1\)، فالمقاومة بين الطرفين \(\frac{R_1\times 2R_1}{R_1+2R_1}=\frac{2}{3}R_1\). وفي النجمة ملفان على التوالي \(2R_1\).</p>`,title:'من أين جاءت ⅔؟'},
     {tip:String.raw`<p>لماذا تيار <b>مستمر</b>؟ لأن التيار المستمر لا يولد مجالاً متغيراً، فلا تظهر ممانعات ولا يتولد شيء في الدوار؛ فيقيس الجهاز مقاومة الملفات وحدها. ثم نحصل على \(R_2'=R_{eq}-R_1\).</p>`},
-    {watch:String.raw`<p>القيمة المقاسة بالتيار المستمر أقل من مقاومة الملف الفعلية بالتيار المتردد؛ لذلك يذكر الكتاب إضافة حوالي <span class="ltr">10%</span> لها (الخاصية القشرية).</p>`}
+    {watch:String.raw`<p>القيمة المقاسة بالتيار المستمر أقل من مقاومة الملف الفعلية بالتيار المتردد؛ لذلك يذكر الكتاب إضافة حوالي <span class="ltr">10%</span> لها (الخاصية القشرية).</p>`},
+    {title:'مختبر مصغّر: نجمة أم دلتا؟',widget:(el,B)=>DCML.lab(el,B,{intro:'بقراءتي مثال (1-5): <span class="ltr">V<sub>DC</sub> = 9 V</span> و<span class="ltr">I<sub>DC</sub> = 20 A</span>. اختر التوصيل، وأضف الـ 10% للخاصية القشرية إن شئت.',
+ predict:{q:'بالقراءتين نفسيهما، أي التوصيلين يعطي \\(R_1\\) أكبر؟',opts:[
+  ['النجمة',false,'في النجمة بين الطرفين ملفان على التوالي \\((2R_1)\\)، فيكون \\(R_1\\) نصف ما يقرؤه الجهاز.'],
+  ['الدلتا',true,'في الدلتا بين الطرفين \\(\\frac23R_1\\) فقط، فيكون \\(R_1\\) مرة ونصف ما يقرؤه الجهاز: ثلاثة أضعاف قيمة النجمة.'],
+  ['متساويان',false,'المقاومة التي يراها الجهاز بين الطرفين تختلف بين التوصيلين.']]},
+ ins:[{k:'c',l:'توصيل الملفات',seg:[['Y','نجمة (1-14)'],['D','دلتا (1-15)']],v:'D'},{k:'sk',l:'أضف 10% للخاصية القشرية',sw:true,v:0,on:'مع إضافة 10%',off:'بدون إضافة 10%'}],
+ calc:(s,v,B)=>{const r=9/20,R1=s.c==='Y'?r/2:1.5*r,Rf=s.sk?R1*1.1:R1;
+  return {facts:[['V<sub>DC</sub>/I<sub>DC</sub>',DCML.fm(B,r,3)+' Ω'],['R<sub>1</sub> المقاسة',DCML.fm(B,R1,4)+' Ω'],['R<sub>1</sub> المستعملة',DCML.fm(B,Rf,4)+' Ω','hi']],
+   msg:s.c==='D'&&!s.sk?'هذه نتيجة الكتاب في مثال (1-5): <span class="ltr">R<sub>1</sub> = 0.675 Ω</span>؛ والمثال لم يضف نسبة الـ 10%.':s.sk?'الكتاب يذكر إضافة «حوالي 10%» (ص 31)، فالقيمة هنا تقريبية.':''}}})}
    ]},
 
   {st:6,short:'الأمثلة',title:'أمثلة محلولة',ref:'ص 32–35',
@@ -1567,7 +1925,15 @@ B.lesson({
      [String.raw`<span class="ltr">127 V</span>`,true,String.raw`\(V_{ph}=\frac{220}{\sqrt3}=127\ \text{V}\) كما في حل الكتاب.`],
      [String.raw`<span class="ltr">381 V</span>`,false,String.raw`هذا ناتج الضرب في \(\sqrt3\)؛ في النجمة نقسم عليها.`]]}},
     {watch:String.raw`<p><b>مثال (1-4) ص 32:</b> في سطر \(\cos\theta\) طُبع البسط <b>127</b> والصحيح \(P_{10}=600\): \(\cos\theta=\frac{600}{3\times127\times20}=0.0787\)؛ الناتج 0.0787 صحيح. وطُبع \(\theta=85.48^\circ\) و\(R_c=80.68\ \Omega\) بالبتر، والتقريب الصحيح \(85.49^\circ\) و\(80.69\ \Omega\) (الفرق صغير جداً).</p>
-     <p><b>مثال (1-5) ص 34:</b> طُبع \(\theta=\cos^{-1}(0.0787)\) والصحيح \(\cos^{-1}(0.108)\)؛ الناتج 83.8° صحيح. وطُبع \(R_c=270.78\ \Omega\) والصحيح <b>270.51 Ω</b>، وطُبع \(X_m=29.435\ \Omega\) والصحيح <b>29.387 Ω</b>. ولم يُضف المثال نسبة الـ 10% للخاصية القشرية المذكورة في ص 31. في تبويب «الأمثلة المحلولة» الحل كما في الكتاب والحل المصحح.</p>`,fix:true}
+     <p><b>مثال (1-5) ص 34:</b> طُبع \(\theta=\cos^{-1}(0.0787)\) والصحيح \(\cos^{-1}(0.108)\)؛ الناتج 83.8° صحيح. وطُبع \(R_c=270.78\ \Omega\) والصحيح <b>270.51 Ω</b>، وطُبع \(X_m=29.435\ \Omega\) والصحيح <b>29.387 Ω</b>. ولم يُضف المثال نسبة الـ 10% للخاصية القشرية المذكورة في ص 31. في تبويب «الأمثلة المحلولة» الحل كما في الكتاب والحل المصحح.</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب خطوات حل مثال (1-4)',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط الخطوات بالترتيب الذي يحل به الكتاب مثال (1-4).',steps:[
+ ['حوّل جهد الخط إلى جهد الوجه: \\(V_{ph}=220/\\sqrt3=127\\ V\\)','كل المعادلات تستعمل قيم الوجه؛ ابدأ بالتحويل.'],
+ ['احسب الزاوية \\(\\theta\\) من (1-10)','تحتاج \\(V_{ph}\\) أولاً.'],
+ ['احسب \\(I_c\\) و\\(I_m\\) من (1-8) و(1-9)','تحتاج الزاوية \\(\\theta\\) أولاً.'],
+ ['احسب \\(R_c\\) و\\(X_m\\) من (1-6) و(1-7)','تحتاج \\(I_c\\) و\\(I_m\\) أولاً.'],
+ ['احسب \\(R_{eq}\\) من (1-11) و\\(Z_{eq}\\) من (1-12)','هذه من اختبار عدم الحركة؛ الكتاب ينهي اختبار اللاحمل أولاً.'],
+ ['احسب \\(X_{eq}\\) من (1-13)','تحتاج \\(Z_{eq}\\) و\\(R_{eq}\\) أولاً.']],
+ done:'النتائج في الكتاب: <span class="ltr">R<sub>c</sub> = 80.68 Ω</span> و<span class="ltr">X<sub>m</sub> = 6.37 Ω</span> و<span class="ltr">R<sub>eq</sub> = 0.2 Ω</span> و<span class="ltr">X<sub>eq</sub> = 0.2828 Ω</span>.'})}
    ]},
 
   {recap:[
@@ -1743,7 +2109,13 @@ B.lesson({
      <details class="im-q"><summary>س5: ما هي الشروط اللازمة لتوليد مجال مغناطيسي دوار منتظم؟</summary><div class="im-ans">(ص 14) ثلاثة ملفات في العضو الثابت بين كل ملف وآخر زاوية فراغية قدرها 120°، تغذى من مصدر ثلاثي الأوجه فتمر فيها تيارات متزنة بين كل تيار وآخر 120°.</div></details>
      <details class="im-q"><summary>س6: اشرح كيف يتولد عزم فعال يؤدي إلى دوران العضو الدوار.</summary><div class="im-ans">(ص 17) المجال الدوار للعضو الثابت يولد بالحث قوة دافعة كهربائية ثلاثية الأوجه في موصلات الدوار، ولأنها مقصورة تمر فيها تيارات ثلاثية الأوجه تولد مجالاً دواراً ثانياً. المجالان يدوران بنفس السرعة (\(n_s\) بالنسبة للعضو الثابت) ونفس الاتجاه، فيتولد عزم فعال يدير الدوار في اتجاه المجالين.</div></details>
      <details class="im-q"><summary>س7: هل يمكن لسرعة العضو الدوار أن تصل إلى السرعة التزامنية؟</summary><div class="im-ans">لا. لو وصل الدوار إلى \(n_s\) لأصبح \(S=0\) فلا قطع لخطوط المجال، ولا قوة دافعة كهربائية ولا تيار في الدوار (\(f_r=0\)، ص 19) وبالتالي لا عزم، فتنقص السرعة بفعل الاحتكاك. تستقر السرعة قريباً من \(n_s\) عندما يساوي العزم الاحتكاك أو عزم الحمل (ص 18).</div></details>
-     <details class="im-q"><summary>س8: ما المقصود بمعامل الانزلاق؟</summary><div class="im-ans">سرعة الانزلاق \((n_s-n)\) منسوبة إلى السرعة التزامنية: \(S=\frac{n_s-n}{n_s}\)، المعادلة (1-3). قيمته بين 0 (الدوار بالسرعة التزامنية) و1 (الدوار ثابت)؛ من 0.01 إلى 0.02 عند اللاحمل في المحركات الصغيرة (وقد تصل 0.005 في الكبيرة)، ومن 0.03 إلى 0.05 عند التحميل (ص 18).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <details class="im-q"><summary>س8: ما المقصود بمعامل الانزلاق؟</summary><div class="im-ans">سرعة الانزلاق \((n_s-n)\) منسوبة إلى السرعة التزامنية: \(S=\frac{n_s-n}{n_s}\)، المعادلة (1-3). قيمته بين 0 (الدوار بالسرعة التزامنية) و1 (الدوار ثابت)؛ من 0.01 إلى 0.02 عند اللاحمل في المحركات الصغيرة (وقد تصل 0.005 في الكبيرة)، ومن 0.03 إلى 0.05 عند التحميل (ص 18).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'راجع أفكار أسئلة الفصل الأول قبل أن تكتب إجاباتك.',items:[
+ ['تُصنع الأعضاء من شرائح حديدية معزولة لتقليل حرارة الحديد الناتجة عن التيارات الدوامية.',true,'هذا جواب السؤال 1 (ص 11).'],
+ ['فائدة حلقات الانزلاق أن يُغذّى العضو الدوار من المصدر مباشرة.',false,'الحلقات والفرش توصل ملفات الدوار بمقاومات خارجية متغيرة للتحكم في البدء أو تنظيم السرعة (ص 13).'],
+ ['يكفي لتوليد مجال دوار منتظم وجود ثلاثة ملفات بينها 120° فراغية، أياً كانت التيارات فيها.',false,'لا بد أيضاً من تيارات متزنة بين كل تيار وآخر 120° (ص 14).'],
+ ['إذا كان الدوار ثابتاً لا يتحرك فإن معامل الانزلاق يساوي 1.',true,'\\(S=\\frac{n_s-0}{n_s}=1\\) من المعادلة (1-3).'],
+ ['إذا أزلنا الحمل كله يصل الدوار إلى السرعة التزامنية.',false,'لو وصلها لانعدم قطع خطوط المجال فانعدم التيار والعزم في الدوار؛ فيبقى أبطأ قليلاً (السؤال 7).']]})}
    ]},
 
   {st:2,short:'الفصل الأول: تمارين',title:'تمارين الفصل الأول الحسابية (س9–س12)',ref:'ص 22',
@@ -1771,7 +2143,16 @@ B.lesson({
      <details class="im-q"><summary>س11</summary><div class="im-ans">\(S=2.7/60=0.045\)، \(n_s=1800\) rpm، \(n=1800(1-0.045)=1719\) rpm.</div></details>
      <details class="im-q"><summary>س12</summary><div class="im-ans">أ) \(n_s=3600\) rpm، ب) \(n=3600(1-0.05)=3420\) rpm، جـ) \(f_r=0.05\times60=3\) Hz. (الجهد والتوصيل لا يدخلان في الحل.)</div></details>
      <div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`,title:'الإجابات (ليست من الكتاب)'},
-    {watch:String.raw`<p>في س12 الجهد <span class="ltr">220 V</span> والتوصيل «نجمة» معطيات لا تدخل في الحل، تماماً كما في مثال (1-1).</p>`}
+    {watch:String.raw`<p>في س12 الجهد <span class="ltr">220 V</span> والتوصيل «نجمة» معطيات لا تدخل في الحل، تماماً كما في مثال (1-1).</p>`},
+    {title:'مختبر مصغّر: حاسبة الفصل الأول',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر عدد الأقطاب والتردد من التمرين، ثم حرّك الانزلاق وتابع النتائج بالمعادلات (1-1) و(1-4) و(1-5).',
+ predict:{q:'التمرين 12: قطبان، <span class="ltr">60 Hz</span>، والانزلاق <span class="ltr">0.05</span>. كم تردد التيارات في العضو الدوار؟',opts:[
+  ['<span class="ltr">60 Hz</span>',false,'هذا تردد المصدر. تيارات الدوار ترددها أصغر بكثير.'],
+  ['<span class="ltr">3 Hz</span>',true,'\\(f_r=S\\,f_s=0.05\\times60=3\\ Hz\\) من المعادلة (1-5).'],
+  ['<span class="ltr">0.05 Hz</span>',false,'هذا الانزلاق نفسه؛ يجب ضربه في تردد المصدر.']]},
+ ins:[{k:'p',l:'عدد الأقطاب p',seg:[[2,'2'],[4,'4'],[6,'6'],[8,'8']],v:2},{k:'f',l:'تردد المصدر f<sub>s</sub>',seg:[[50,'50 Hz'],[60,'60 Hz']],v:60},{k:'S',l:'الانزلاق S',min:0,max:0.1,step:0.0005,v:0.05,dp:4}],
+ calc:(s,v,B)=>{const ns=120*s.f/s.p,n=ns*(1-s.S),fr=s.S*s.f;
+  return {facts:[['n<sub>s</sub> (1-1)',DCML.fm(B,ns,0)+' rpm'],['n (1-4)',DCML.fm(B,n,2)+' rpm','hi'],['n<sub>s</sub> − n (1-2)',DCML.fm(B,ns-n,2)+' rpm'],['f<sub>r</sub> (1-5)',DCML.fm(B,fr,3)+' Hz','hi']],
+   msg:s.p===8&&s.f===50?'التمرين 10: حرّك الانزلاق حتى تقترب السرعة من <span class="ltr">716 rpm</span>.':s.p===4&&s.f===60?'التمرين 11: حرّك الانزلاق حتى يقترب تردد الدوار من <span class="ltr">2.7 Hz</span>.':s.p===2&&s.f===60?'التمرينان 9 و12: قطبان على <span class="ltr">60 Hz</span>.':''}}})}
    ]},
 
   {st:3,short:'الفصل الثاني: أسئلة نظرية',title:'أسئلة الفصل الثاني (س1–س6)',ref:'ص 36',
@@ -1792,7 +2173,14 @@ B.lesson({
      <details class="im-q"><summary>س3: لماذا تحدد \(R_c, X_m\) باستخدام اختبار عدم الحمل؟</summary><div class="im-ans">في اختبار عدم الحمل يكون الثانوي مفتوحاً فيمر تيار الاختبار في \(R_c\) و\(X_m\) فقط (ص 28)، والجهد هو المقنن فتظهر المفاقيد الحديدية كاملة. أما في اختبار عدم الحركة فالثانوي مقصور والجهد منخفض فيمر التيار تقريباً في \(R_{eq}\) و\(X_{eq}\) فقط ويكون أثر الفرع المغناطيسي مهملاً.</div></details>
      <details class="im-q"><summary>س4: لماذا تحدد \(R_{eq}, X_{eq}\) باستخدام اختبار عدم الحركة؟</summary><div class="im-ans">في اختبار عدم الحركة الثانوي مقصور فيمر تيار الاختبار في \(R_{eq}\) و\(X_{eq}\) فقط (\(I_{ph}=I_2'\)) والتيار هو المقنن فتظهر المفاقيد النحاسية (ص 29). في اختبار عدم الحمل التيار صغير ويكاد لا يمر شيء في فرع الدوار.</div></details>
      <details class="im-q"><summary>س5: لماذا يسلط الجهد تدريجياً في اختبار عدم الحركة؟</summary><div class="im-ans">لأن «توصيل المحرك على الجهد المقنن سوف يتسبب في مرور تيار كبير جداً قد يتلف ملفات المحرك»، فيرفع الجهد تدريجياً حتى يصل التيار إلى القيمة المقننة (ص 28).</div></details>
-     <details class="im-q"><summary>س6: ما المقصود بالخاصية القشرية skin effect؟</summary><div class="im-ans">الكتاب يذكرها دون تعريف (ص 31). المقصود: عند مرور التيار المتردد في موصل يميل التيار إلى التركز قرب سطحه الخارجي، فتقل المساحة الفعالة وتزيد المقاومة عن قيمتها بالتيار المستمر؛ لذلك يضيف الكتاب حوالي 10% إلى المقاومة المقاسة في اختبار التيار المستمر.</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <details class="im-q"><summary>س6: ما المقصود بالخاصية القشرية skin effect؟</summary><div class="im-ans">الكتاب يذكرها دون تعريف (ص 31). المقصود: عند مرور التيار المتردد في موصل يميل التيار إلى التركز قرب سطحه الخارجي، فتقل المساحة الفعالة وتزيد المقاومة عن قيمتها بالتيار المستمر؛ لذلك يضيف الكتاب حوالي 10% إلى المقاومة المقاسة في اختبار التيار المستمر.</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: أي اختبار؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل عبارة اضغط الاختبار الذي تصفه.',cats:['اللاحمل','عدم الحركة'],items:[
+ ['الدائرة المكافئة مقصورة من جهة الدوار.',1,'\\(S=1\\) فتصبح مقاومة الحمل صفراً (السؤال 2).'],
+ ['يُسلّط الجهد المقنن على أطراف المحرك.',0,'في اللاحمل الجهد مقنن؛ في عدم الحركة يُرفع تدريجياً.'],
+ ['الانزلاق صغير جداً، يقارب الصفر.',0,'الدوار يدور حراً قريباً من السرعة التزامنية (السؤال 1).'],
+ ['يُرفع الجهد تدريجياً حتى يصل التيار إلى قيمته المقننة.',1,'حتى لا يمر تيار كبير يتلف الملفات (السؤال 5).'],
+ ['منه نحسب \\(R_c\\) و\\(X_m\\).',0,'تيار الاختبار يمر في الفرع المغناطيسي فقط (السؤال 3).'],
+ ['القدرة المقروءة تمثل تقريباً المفاقيد النحاسية.',1,'التيار مقنن والثانوي مقصور (ص 29).']]})}
    ]},
 
   {st:4,short:'الفصل الثاني: تمارين',title:'تمارين الفصل الثاني الحسابية (س7–س9)',ref:'ص 36–37',
@@ -1814,7 +2202,18 @@ B.lesson({
      <details class="im-q"><summary>س8 (دلتا)</summary><div class="im-ans">\(V_{ph}=415\)، \(I_{10}=12.12\) A، \(\cos\theta=0.0828\)، <b>\(R_c\approx 413.5\ \Omega\)، \(X_m\approx 34.36\ \Omega\)</b>؛ \(V_{sc}=100\)، \(I_{sc}=25.98\) A، <b>\(R_{eq}\approx 1.348\ \Omega\)</b>، \(Z_{eq}=3.849\)، <b>\(X_{eq}\approx 3.605\ \Omega\)</b>. الأرقام الدقيقة بخطواتها في الحاسبة.</div></details>
      <details class="im-q"><summary>س9 (نجمة)</summary><div class="im-ans">\(V_{ph}=219.4\) V، \(I_{10}=16.5\) A، \(\cos\theta=0.0967\)، <b>\(R_c\approx 137.5\ \Omega\)، \(X_m\approx 13.36\ \Omega\)</b>؛ \(V_{sc}=49.65\) V، \(I_{sc}=32\) A، \(R_{eq}=0.6035\)، \(X_{eq}=1.43\ \Omega\)، ومنها <b>\(R_1=R_2'\approx 0.302\ \Omega\)</b> و<b>\(X_1=X_2'\approx 0.715\ \Omega\)</b>.</div></details>
      <div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحاسبات في «الأمثلة المحلولة»</button></div>`,title:'الإجابات (ليست من الكتاب)'},
-    {watch:String.raw`<p>في التمرين 8 كُتبت القدرة في الكتاب «29.84 KW» بحرف K كبير، والصحيح «kW». والقدرات (<span class="ltr">5 hp</span> و<span class="ltr">29.84 kW</span> و<span class="ltr">20 hp</span>) وعدد الأقطاب في التمرين 7 معطيات لا تلزم للحل.</p>`,fix:true}
+    {watch:String.raw`<p>في التمرين 8 كُتبت القدرة في الكتاب «29.84 KW» بحرف K كبير، والصحيح «kW». والقدرات (<span class="ltr">5 hp</span> و<span class="ltr">29.84 kW</span> و<span class="ltr">20 hp</span>) وعدد الأقطاب في التمرين 7 معطيات لا تلزم للحل.</p>`,fix:true},
+    {title:'مختبر مصغّر: حوّل قبل أن تعوّض',widget:(el,B)=>DCML.cases(el,B,{intro:'لكل قراءة من التمارين اختر قيمتي الوجه الصحيحتين.',cases:[
+ {q:'التمرين 7 (دلتا) — اللاحمل: <span class="ltr">220 V, 3.86 A</span>',opts:[
+  ['<span class="ltr">127 V</span> و <span class="ltr">3.86 A</span>',false,'هذا تحويل النجمة؛ الملفات هنا دلتا.'],
+  ['<span class="ltr">220 V</span> و <span class="ltr">2.229 A</span>',true,'دلتا: الجهد كما هو، والتيار ÷ \\(\\sqrt3\\).'],
+  ['<span class="ltr">220 V</span> و <span class="ltr">3.86 A</span>',false,'في الدلتا تيار الوجه أصغر من تيار الخط.']]},
+ {q:'التمرين 9 (نجمة) — اللاحمل: <span class="ltr">380 V, 16.5 A</span>',opts:[
+  ['<span class="ltr">380 V</span> و <span class="ltr">9.53 A</span>',false,'هذا تحويل الدلتا؛ الملفات هنا نجمة.'],
+  ['<span class="ltr">219.4 V</span> و <span class="ltr">16.5 A</span>',true,'نجمة: الجهد ÷ \\(\\sqrt3\\)، والتيار كما هو.']]},
+ {q:'التمرين 8 (دلتا) — عدم الحركة: <span class="ltr">100 V, 45 A</span>',opts:[
+  ['<span class="ltr">100 V</span> و <span class="ltr">25.98 A</span>',true,'دلتا: \\(V_{sc}=100\\ V\\) و\\(I_{sc}=45/\\sqrt3=25.98\\ A\\).'],
+  ['<span class="ltr">57.7 V</span> و <span class="ltr">45 A</span>',false,'هذا تحويل النجمة.']]}]})}
    ]},
 
   {recap:[

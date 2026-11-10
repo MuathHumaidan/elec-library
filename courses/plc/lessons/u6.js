@@ -287,7 +287,207 @@ L6({
  title:'إشارة المرور مع إشارة المشاة: الفكرة وشروط التشغيل',
  summary:'كيف تعمل إشارة المشاة: الوضع الطبيعي أخضر للسيارات، وعند ضغط S1 تمر الإشارة بثلاث فترات زمنية T1 و T2 و T3 ثم تعود، مع المخطط الزمني (3-6).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,(window.U6ML=window.U6ML||{
+/* «مختبر مصغّر» للوحدة 6: Network 1 (التخزين M1.1) و Networks 2–4 (المزمنات) من برنامج الكتاب، تُرسم حيّة بـ LAD أو FBD.
+   o={view:'lad'|'fbd', intro, predict} */
+ nm:{'I0.1':'S1','Q4.1':'G.C.','Q4.2':'Y.C.','Q4.3':'R.C.','Q4.4':'G.P.','Q4.5':'R.P.'},
+ net(B,P,i,view){return `<div class="net static"><header><h3>Network ${i+1}</h3></header><div class="svgbox">${(view==='fbd'?B.fbdNetwork:B.ladNetwork)(P.nets[i],P,U6ML.nm).replace('<svg','<svg style="min-width:420px"')}</div></div>`},
+ sr(el,B,o){const P=B.createPLC(PROG_BOOK),lt=s=>`<span class="ltr">${s}</span>`;
+  return DCML.lab(el,B,{intro:o.intro,predict:o.predict,
+   ins:[{k:'s1',l:'S1',sw:true,v:0,on:'S1 مضغوط '+lt('(I0.1 = 1)'),off:'S1 متروك '+lt('(I0.1 = 0)')},
+    {k:'t3',l:'T3',sw:true,v:0,on:'T3 انتهى '+lt('(T3 = 1)'),off:'T3 لم ينتهِ '+lt('(T3 = 0)')}],
+   calc:s=>{P.set('I0.1',s.s1);P.timer('T3').q=s.t3?1:0;P.runNet(0);const m=P.get('M1.1');
+    const msg=s.s1&&s.t3?`الطرفان ${lt('S')} و ${lt('R')} عليهما ${lt('1')} معاً: الإلغاء له الأولوية، فـ ${lt('M1.1 = 0')}.`
+     :s.s1?`${lt('1')} على ${lt('S')}: ثُبّتت ${lt('M1.1 = 1')} — بدأ طلب العبور. الآن اترك ${lt('S1')} ولاحظ أنها تبقى ${lt('1')}.`
+     :s.t3?`${lt('1')} على ${lt('R')} (انتهى ${lt('T3')}): أُلغيت ${lt('M1.1')} — انتهت الدورة.`
+     :m?`لا شيء على ${lt('S')} ولا على ${lt('R')}، فتبقى ${lt('M1.1 = 1')}: الصندوق يتذكّر الضغطة.`:`لا طلب عبور: ${lt('M1.1 = 0')} والإشارة في وضعها الطبيعي.`;
+    return {pic:U6ML.net(B,P,0,o.view),facts:[['S (I0.1)',String(s.s1)],['R (T3)',String(s.t3)],['M1.1',String(m),m?'hi':'']],msg,cls:s.s1&&s.t3?'warn':''}}})},
+ tm(el,B,o){const lt=s=>`<span class="ltr">${s}</span>`;
+  return DCML.lab(el,B,{intro:o.intro,predict:o.predict,
+   ins:[{k:'t',l:'الزمن منذ الضغط على S1',min:0,max:125,step:1,v:o.t0||0,fmt:v=>mmss(v)}],
+   calc:s=>{const P=B.createPLC(PROG_BOOK);P.set('I0.1',1);P.scan(0);P.set('I0.1',0);const dt=0.25;for(let x=0;x<s.t-1e-9;x+=dt)P.scan(dt);
+    const st=k=>{const T=P.timer(k);return T.q?['انتهى','1']:T.run?['يعدّ — الباقي',mmss(T.tv-T.el)]:['لا يعدّ','0']};
+    const m=P.get('M1.1'),ph=!m?0:!P.get('T1')?1:!P.get('T2')?2:3;
+    const facts=[['M1.1',String(m),m?'hi':''],...['T1','T2','T3'].map(k=>{const r=st(k);return [k+' '+r[0],r[1],P.timer(k).run&&!P.get(k)?'hi':'']})];
+    const msg=`<b>${PH6[ph].n}</b>: ${PH6[ph].d}.`+(ph===0&&s.t>0?` انتهى ${lt('T3')} عند ${lt('2:00')} فأُلغيت ${lt('M1.1')} وتصفّرت المزمنات الثلاثة معاً.`:ph===1?` ${lt('M1.1 = 1')} على الطرف ${lt('S')} لصندوق ${lt('T1')}.`:ph===2?` ${lt('T1 = 1')} على الطرف ${lt('S')} لصندوق ${lt('T2')}.`:ph===3?` ${lt('T2 = 1')} على الطرف ${lt('S')} لصندوق ${lt('T3')}.`:'');
+    return {pic:[1,2,3].map(i=>U6ML.net(B,P,i,o.view)).join(''),facts,msg}}})}
+}),{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'ماذا ستتعلم في هذه الوحدة؟',ref:'ص 107',
    q:'إشارة مرور يعرفها كل سائق… فما الجديد الذي ستتعلمه عنها في مختبر الـ PLC؟',
@@ -307,7 +507,12 @@ L6({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج – حاسب آلي – جهاز عرض (داتا شو) – سبورة – قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة أساسيات الكهرباء – اجتياز الرسم الفني.</p>`,ref:'ص 107'},
     {tip:String.raw`<p>هذا الدرس: كيف تعمل الإشارة وشروط تشغيلها ومخططها الزمني. الدرس الثاني: جدول المداخل والمخارج ودائرة التحكم. ثم ثلاثة دروس للبرنامج نفسه بالطرق الثلاث <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span>.</p>`,title:'خريطة الوحدة'},
-    {watch:String.raw`<p>رقم هذه الصفحة مطبوع في الكتاب «107»، بينما تسلسل الصفحات يقتضي أن يكون 115 (الصفحة التي بعدها 116). على الأرجح خطأ طباعي، وأبقينا الرقم كما هو مطبوع.</p>`,fix:true}
+    {watch:String.raw`<p>رقم هذه الصفحة مطبوع في الكتاب «107»، بينما تسلسل الصفحات يقتضي أن يكون 115 (الصفحة التي بعدها 116). على الأرجح خطأ طباعي، وأبقينا الرقم كما هو مطبوع.</p>`,fix:true},
+    {title:'مختبر مصغّر: صح أم خطأ؟',widget:(el,B)=>DCML.tf(el,B,{intro:'اقرأ كل عبارة عن صفحة الجدارة وقرّر: صح أم خطأ؟',items:[
+     [String.raw`من أهداف الوحدة أن يكتب المتدرب برامج للتحكم في إشارة مرور مزدوجة.`,true,String.raw`هذا الهدف الثاني في صفحة الجدارة.`],
+     [String.raw`ستكتب برنامج الإشارة بلغة <span class="ltr">LAD</span> فقط.`,false,String.raw`المطلوب تنفيذها بالطرق الثلاث <span class="ltr">LAD</span> و <span class="ltr">FBD</span> و <span class="ltr">STL</span>، ولكل طريقة درس في هذه الوحدة.`],
+     [String.raw`متطلبات الجدارة: اجتياز ورشة أساسيات الكهرباء واجتياز الرسم الفني.`,true,String.raw`هذا نص متطلبات الجدارة.`],
+     [String.raw`الوقت المتوقع للتدريب على هذه الجدارة أربع ساعات.`,false,String.raw`الوقت المتوقع في الكتاب: ساعتان.`]]})}
    ]},
 
   {st:2,short:'إشارة السيارات والمشاة',title:'إشارة المرور المزدوجة وإشارة المشاة',ref:'ص 116',
@@ -327,7 +532,13 @@ L6({
      ['وقوف السيارات',false,'هذا معنى الحمراء.'],
      ['الاستعداد لتوقف السيارات',true,'«صفراء. تعني الاستعداد لتوقف السيارات» (ص 116). لذلك تأتي قبل الأحمر لتعطي السائق وقتاً ليتوقف.']]}},
     {tip:String.raw`<p>المشاة لا يحتاجون لمبة صفراء: الشخص الواقف على الرصيف يستطيع أن يتوقف فوراً، أما السيارة المسرعة فتحتاج مسافة لتتوقف؛ لذلك يأتي الأصفر للسيارات فقط.</p>`,title:'لماذا لمبتان فقط للمشاة؟'},
-    {add:String.raw`<p>في شارع طويل بين تقاطعين بعيدين، أو أمام مدرسة، لا تحتاج السيارات أن تتوقف كل دقيقة. لذلك تبقى الإشارة خضراء لها، ولا تتوقف إلا عندما يطلب أحد المشاة العبور بالضغط على زر في العمود.</p>`,title:'من الواقع'}
+    {add:String.raw`<p>في شارع طويل بين تقاطعين بعيدين، أو أمام مدرسة، لا تحتاج السيارات أن تتوقف كل دقيقة. لذلك تبقى الإشارة خضراء لها، ولا تتوقف إلا عندما يطلب أحد المشاة العبور بالضغط على زر في العمود.</p>`,title:'من الواقع'},
+    {title:'مختبر مصغّر: ماذا تقول كل لمبة؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل لمبة اضغط معناها كما في الكتاب (ص 116).',cats:['اذهب: مرور / عبور','استعد للتوقف','قف: وقوف / عدم عبور'],items:[
+     ['الحمراء على إشارة السيارات',2,'«حمراء: وقوف السيارات».'],
+     ['الخضراء على إشارة المشاة',0,'«خضراء: تعني عبور المشاة».'],
+     ['الصفراء على إشارة السيارات',1,'«صفراء: تعني الاستعداد لتوقف السيارات». ولا توجد صفراء للمشاة.'],
+     ['الحمراء على إشارة المشاة',2,'«حمراء: تعني عدم عبور المشاة».'],
+     ['الخضراء على إشارة السيارات',0,'«خضراء: تعني مرور السيارات».']]})}
    ]},
 
   {st:3,short:'نظرية التشغيل',title:'نظرية التشغيل: الإشارة تنتظر طلب المشاة',ref:'ص 117',
@@ -343,7 +554,17 @@ L6({
    ],
    body:[
     {tip:String.raw`<p>الإشارة العادية تدور ألوانها بالزمن وحده. أما هنا فالدورة <b>لا تبدأ إلا بطلب</b>: ضغطة واحدة على <span class="ltr">S1</span>. ولذلك يحتاج البرنامج أن «يتذكر» هذه الضغطة حتى لو رفع الشخص إصبعه فوراً، وسترى ذلك في الذاكرة <span class="ltr">M1.1</span> في الدروس القادمة.</p>`,title:'ما الفرق عن الإشارة العادية؟'},
-    {watch:String.raw`<p>في الشكل (2-6) يظهر ضاغطان، واحد على كل عمود، وكلاهما باسم <span class="ltr">S1</span>، بينما جدول الدخل والخرج (ص 119) فيه مدخل واحد <span class="ltr">I0.1</span>. معنى ذلك أن الضاغطين موصولان على التوازي إلى نفس المدخل، والكتاب لم يذكر ذلك صراحة.</p>`,fix:true}
+    {watch:String.raw`<p>في الشكل (2-6) يظهر ضاغطان، واحد على كل عمود، وكلاهما باسم <span class="ltr">S1</span>، بينما جدول الدخل والخرج (ص 119) فيه مدخل واحد <span class="ltr">I0.1</span>. معنى ذلك أن الضاغطين موصولان على التوازي إلى نفس المدخل، والكتاب لم يذكر ذلك صراحة.</p>`,fix:true},
+    {title:'مختبر مصغّر: ماذا يحدث لو…؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+     {q:'ضغط أحد المشاة الضاغط <span class="ltr">S1</span> ثانية واحدة ثم رفع إصبعه فوراً. ماذا يحدث؟',opts:[
+      ['تتوقف الدورة لحظة رفع الإصبع',false,'لو كان كذلك لاضطر الشخص أن يبقى ضاغطاً طوال الدورة.'],
+      ['تبدأ الدورة وتكتمل، لأن البرنامج يتذكّر الضغطة',true,'ضغطة واحدة تكفي؛ البرنامج يحفظها في الذاكرة <span class="ltr">M1.1</span> حتى نهاية الدورة.']]},
+     {q:'ضغط شخصان الضاغطين على العمودين في اللحظة نفسها. كم دورة تبدأ؟',opts:[
+      ['دورتان متتاليتان',false,'الـ <span class="ltr">PLC</span> لا يرى إلا مدخلاً واحداً للضاغطين.'],
+      ['دورة واحدة، لأن الضاغطين على المدخل نفسه <span class="ltr">I0.1</span>',true,'في جدول الدخل والخرج مدخل واحد <span class="ltr">I0.1</span>، فالضاغطان موصولان على التوازي إليه.']]},
+     {q:'ما الذي يبدأ دورة هذه الإشارة؟',opts:[
+      ['ضغطة أحد المشاة على <span class="ltr">S1</span>',true,'الإشارة تبقى أخضر للسيارات وأحمر للمشاة إلى أن يطلب أحد العبور.'],
+      ['مرور زمن ثابت',false,'هذا في الإشارة العادية؛ أما هذه فتنتظر طلب المشاة.']]}]})}
    ]},
 
   {st:4,short:'شروط التشغيل',title:'شروط التشغيل: ثلاث فترات بعد الضغط',ref:'ص 117',
@@ -621,7 +842,11 @@ L6({
      [String.raw`<span class="ltr">0</span>، لأن الإلغاء R له الأولوية في صندوق SR`,true,'في صندوق SR الأولوية للإلغاء، فإذا تحقق الشرطان معاً تكون النتيجة 0.'],
      ['تتبدّل بين 0 و 1',false,'الصندوق يعطي نتيجة واحدة ثابتة في كل دورة مسح.']]}},
     {add:String.raw`<p>هذا يشبه جرس الطلب في المطعم: تضغطه مرة واحدة فيضيء رقمك على اللوحة ويبقى مضيئاً حتى يُخدم طلبك، مهما رفعت يدك عن الزر.</p>`,title:'تشبيه'},
-    {watch:String.raw`<p>في تبويب المختبر تُرسم Network 1 بملفّين منفصلين <span class="ltr">S</span> و<span class="ltr">R</span> بدل صندوق <span class="ltr">SR</span>، لأن المحاكاة تُبنى من برنامج <span class="ltr">STL</span> (ص 124). السلوك واحد: الإلغاء له الأولوية في الحالتين.</p>`}
+    {watch:String.raw`<p>في تبويب المختبر تُرسم Network 1 بملفّين منفصلين <span class="ltr">S</span> و<span class="ltr">R</span> بدل صندوق <span class="ltr">SR</span>، لأن المحاكاة تُبنى من برنامج <span class="ltr">STL</span> (ص 124). السلوك واحد: الإلغاء له الأولوية في الحالتين.</p>`},
+    {title:'مختبر مصغّر: شغّل صندوق SR',widget:(el,B)=>U6ML.sr(el,B,{view:'lad',intro:'هذه <span class="ltr">Network 1</span> من البرنامج (مرسومة بملفّي <span class="ltr">S</span> و <span class="ltr">R</span> كما في المختبر). غيّر الطرفين واحداً واحداً وراقب <span class="ltr">M1.1</span>. الخطوط الملونة = إشارة <span class="ltr">1</span> تمر.',
+      predict:{q:String.raw`ضغطت <span class="ltr">S1</span> فصارت <span class="ltr">M1.1 = 1</span>، ثم رفعت إصبعك و <span class="ltr">T3</span> لم ينتهِ. ما قيمة <span class="ltr">M1.1</span>؟`,opts:[
+       [String.raw`<span class="ltr">0</span>، لأن <span class="ltr">I0.1</span> رجع <span class="ltr">0</span>`,false,String.raw`هذا سلوك ملف عادي؛ صندوق <span class="ltr">SR</span> يحفظ حالته.`],
+       [String.raw`<span class="ltr">1</span>، حتى يصل <span class="ltr">1</span> إلى طرف <span class="ltr">R</span>`,true,String.raw`الصندوق يتذكّر الضغطة، ولا يلغيها إلا انتهاء <span class="ltr">T3</span>.`]]}})}
    ]},
 
   {st:2,short:'Networks 2–4: المزمنات',title:'<span class="ltr">Networks 2–4</span>: ثلاثة مزمنات <span class="ltr">S_ODT</span> متتالية',ref:'ص 121',
@@ -639,7 +864,12 @@ L6({
     {tip:String.raw`<p><span class="ltr">S_ODT</span> مزمن <b>تأخير التوصيل</b>: يبدأ العدّ عندما يصير <span class="ltr">S = 1</span>، ويصبح خرجه (وتلامسه) 1 بعد انتهاء الزمن <span class="ltr">TV</span> ما دام <span class="ltr">S</span> ما زال 1. إذا رجع <span class="ltr">S</span> إلى 0 يتصفّر المزمن فوراً. لذلك عندما تُلغى <span class="ltr">M1.1</span> في نهاية الدورة تتصفّر <span class="ltr">T1</span> ثم <span class="ltr">T2</span> ثم <span class="ltr">T3</span> معاً.</p>
      <p>أطراف الصندوق: <span class="ltr">TV</span> الزمن المحدد، و<span class="ltr">R</span> تصفير المزمن، و<span class="ltr">BI</span> و<span class="ltr">BCD</span> الزمن المتبقي بصيغتين رقميتين. في الكتاب <span class="ltr">R</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> فارغة (<span class="ltr">...</span>).</p>`,title:'كيف يعمل S_ODT؟'},
     {tip:String.raw`<p><span class="ltr">S5T#20S</span> = 20 ثانية، و<span class="ltr">S5T#1M20S</span> = دقيقة و 20 ثانية (<span class="ltr">M</span> دقائق و<span class="ltr">S</span> ثوانٍ). وهي القيم 20 و 80 المكتوبة بجانب المزمنات في الشكل (4-6).</p>`,title:'كيف تقرأ TV؟'},
-    {watch:String.raw`<p>مخرج <span class="ltr">Q</span> لصناديق المزمنات في الكتاب غير موصول بأي ملف، والمزمنات تُستخدم بتلامساتها <span class="ltr">T1</span> و<span class="ltr">T2</span> و<span class="ltr">T3</span> في الشبكات الأخرى. هذا صحيح ولا يغيّر شيئاً، لكنه قد يربك المبتدئ.</p>`,fix:true}
+    {watch:String.raw`<p>مخرج <span class="ltr">Q</span> لصناديق المزمنات في الكتاب غير موصول بأي ملف، والمزمنات تُستخدم بتلامساتها <span class="ltr">T1</span> و<span class="ltr">T2</span> و<span class="ltr">T3</span> في الشبكات الأخرى. هذا صحيح ولا يغيّر شيئاً، لكنه قد يربك المبتدئ.</p>`,fix:true},
+    {title:'مختبر مصغّر: حرّك الزمن وتابع المزمنات',widget:(el,B)=>U6ML.tm(el,B,{view:'lad',intro:'المنزلق هو الزمن منذ ضغطة قصيرة على <span class="ltr">S1</span>، بأزمنة الكتاب. تابع أي مزمن يعدّ، ومتى يصبح تلامسه <span class="ltr">1</span>.',
+      predict:{q:String.raw`بعد <span class="ltr">30</span> ثانية من الضغط على <span class="ltr">S1</span>، أيّ المزمنات يعدّ الآن؟`,opts:[
+       [String.raw`<span class="ltr">T1</span>`,false,String.raw`<span class="ltr">T1</span> زمنه <span class="ltr">20</span> ثانية، فقد انتهى وصار <span class="ltr">1</span>.`],
+       [String.raw`<span class="ltr">T2</span>`,true,String.raw`<span class="ltr">T1</span> انتهى عند <span class="ltr">20</span> ثانية فبدأ <span class="ltr">T2</span>، وزمنه دقيقة و <span class="ltr">20</span> ثانية.`],
+       [String.raw`<span class="ltr">T3</span>`,false,String.raw`<span class="ltr">T3</span> لا يبدأ إلا بعد انتهاء <span class="ltr">T2</span>، أي بعد <span class="ltr">100</span> ثانية من الضغط.`]]}})}
    ]},
 
   {st:3,short:'Networks 5–9: المخارج',title:'<span class="ltr">Networks 5–9</span>: لكل لمبة <span class="ltr">Network</span>',ref:'ص 122',
@@ -744,7 +974,11 @@ L6({
      ['يكتب نتيجة صندوق SR في العنوان M1.1',true,'«=» يخصّص النتيجة للعنوان المكتوب فوقه، مثل الملف في LAD.'],
      ['يقارن M1.1 برقم',false,'المقارنة لها صناديق أخرى؛ «=» تخصيص.'],
      ['يصفّر M1.1',false,'التصفير (الإلغاء) يأتي من الطرف R لصندوق SR.']]}},
-    {watch:String.raw`<p>في تبويب المختبر يُرسم <span class="ltr">Network 1</span> بصندوقي <span class="ltr">S</span> و<span class="ltr">R</span> منفصلين بدل صندوق <span class="ltr">SR</span>، لأنه يُبنى من <span class="ltr">STL</span> (ص 124)، والسلوك واحد.</p>`}
+    {watch:String.raw`<p>في تبويب المختبر يُرسم <span class="ltr">Network 1</span> بصندوقي <span class="ltr">S</span> و<span class="ltr">R</span> منفصلين بدل صندوق <span class="ltr">SR</span>، لأنه يُبنى من <span class="ltr">STL</span> (ص 124)، والسلوك واحد.</p>`},
+    {title:'مختبر مصغّر: صندوق SR بالبوابات',widget:(el,B)=>U6ML.sr(el,B,{view:'fbd',intro:'هذه <span class="ltr">Network 1</span> بلغة <span class="ltr">FBD</span> (مرسومة بصندوقي <span class="ltr">S</span> و <span class="ltr">R</span> كما في المختبر). غيّر الطرفين وراقب <span class="ltr">M1.1</span>.',
+      predict:{q:String.raw`أثناء الدورة صادف أن انتهى <span class="ltr">T3</span> في اللحظة التي ضغط فيها شخص <span class="ltr">S1</span>. ما قيمة <span class="ltr">M1.1</span>؟`,opts:[
+       [String.raw`<span class="ltr">0</span>: الإلغاء له الأولوية`,true,String.raw`في صندوق <span class="ltr">SR</span> إذا وصل <span class="ltr">1</span> إلى الطرفين معاً فالكلمة للإلغاء <span class="ltr">R</span>.`],
+       [String.raw`<span class="ltr">1</span>: التثبيت له الأولوية`,false,String.raw`هذا سلوك صندوق آخر (<span class="ltr">RS</span>)؛ في <span class="ltr">SR</span> الإلغاء أقوى.`]]}})}
    ]},
 
   {st:2,short:'Networks 2–4: المزمنات',title:'<span class="ltr">Networks 2–4</span>: صناديق <span class="ltr">S_ODT</span> بلا تلامسات',ref:'ص 122–123',
@@ -759,7 +993,12 @@ L6({
    ],
    body:[
     {book:String.raw`<div class="svgbox fixed"><svg viewBox="0 0 400 450" role="img" aria-label="Networks 2 إلى 4"><text class="txt b" x="8" y="18" text-anchor="start">Network 2</text><text class="txt " x="180" y="54" text-anchor="end">M1.1</text><path class="w " d="M184 50H190"/><rect class="fbox" x="190" y="32" width="120" height="108" rx="3"/><text class="txt " x="250" y="26" text-anchor="middle">T1</text><text class="txt " x="250" y="50" text-anchor="b">S_ODT</text><text class="txt " x="196" y="54" text-anchor="start">S</text><text class="txt " x="196" y="94" text-anchor="start">TV</text><text class="txt " x="196" y="132" text-anchor="start">R</text><text class="txt " x="304" y="54" text-anchor="end">Q</text><text class="txt " x="304" y="94" text-anchor="end">BI</text><text class="txt " x="304" y="132" text-anchor="end">BCD</text><path class="w " d="M170 90H190"/><text class="txt " x="166" y="94" text-anchor="end">S5T#20S</text><path class="w " d="M170 128H190"/><text class="txt m" x="166" y="132" text-anchor="end">...</text><path class="w " d="M310 50H350"/><path class="w " d="M310 90H330"/><text class="txt m" x="334" y="94" text-anchor="start">...</text><path class="w " d="M310 128H330"/><text class="txt m" x="334" y="132" text-anchor="start">...</text><text class="txt b" x="8" y="168" text-anchor="start">Network 3</text><text class="txt " x="180" y="204" text-anchor="end">T1</text><path class="w " d="M184 200H190"/><rect class="fbox" x="190" y="182" width="120" height="108" rx="3"/><text class="txt " x="250" y="176" text-anchor="middle">T2</text><text class="txt " x="250" y="200" text-anchor="b">S_ODT</text><text class="txt " x="196" y="204" text-anchor="start">S</text><text class="txt " x="196" y="244" text-anchor="start">TV</text><text class="txt " x="196" y="282" text-anchor="start">R</text><text class="txt " x="304" y="204" text-anchor="end">Q</text><text class="txt " x="304" y="244" text-anchor="end">BI</text><text class="txt " x="304" y="282" text-anchor="end">BCD</text><path class="w " d="M170 240H190"/><text class="txt " x="166" y="244" text-anchor="end">S5T#1M20S</text><path class="w " d="M170 278H190"/><text class="txt m" x="166" y="282" text-anchor="end">...</text><path class="w " d="M310 200H350"/><path class="w " d="M310 240H330"/><text class="txt m" x="334" y="244" text-anchor="start">...</text><path class="w " d="M310 278H330"/><text class="txt m" x="334" y="282" text-anchor="start">...</text><text class="txt b" x="8" y="318" text-anchor="start">Network 4</text><text class="txt " x="180" y="354" text-anchor="end">T2</text><path class="w " d="M184 350H190"/><rect class="fbox" x="190" y="332" width="120" height="108" rx="3"/><text class="txt " x="250" y="326" text-anchor="middle">T3</text><text class="txt " x="250" y="350" text-anchor="b">S_ODT</text><text class="txt " x="196" y="354" text-anchor="start">S</text><text class="txt " x="196" y="394" text-anchor="start">TV</text><text class="txt " x="196" y="432" text-anchor="start">R</text><text class="txt " x="304" y="354" text-anchor="end">Q</text><text class="txt " x="304" y="394" text-anchor="end">BI</text><text class="txt " x="304" y="432" text-anchor="end">BCD</text><path class="w " d="M170 390H190"/><text class="txt " x="166" y="394" text-anchor="end">S5T#20S</text><path class="w " d="M170 428H190"/><text class="txt m" x="166" y="432" text-anchor="end">...</text><path class="w " d="M310 350H350"/><path class="w " d="M310 390H330"/><text class="txt m" x="334" y="394" text-anchor="start">...</text><path class="w " d="M310 428H330"/><text class="txt m" x="334" y="432" text-anchor="start">...</text></svg></div>`,ref:'ص 122–123'},
-    {tip:String.raw`<p><span class="ltr">T1</span> يدخل عليه <span class="ltr">M1.1</span> (<span class="ltr">TV = S5T#20S</span>)، و<span class="ltr">T2</span> يدخل عليه <span class="ltr">T1</span> (<span class="ltr">TV = S5T#1M20S</span>)، و<span class="ltr">T3</span> يدخل عليه <span class="ltr">T2</span> (<span class="ltr">TV = S5T#20S</span>). الأطراف <span class="ltr">R</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> فارغة، والمخرج <span class="ltr">Q</span> غير موصول.</p>`,title:'المزمنات الثلاثة'}
+    {tip:String.raw`<p><span class="ltr">T1</span> يدخل عليه <span class="ltr">M1.1</span> (<span class="ltr">TV = S5T#20S</span>)، و<span class="ltr">T2</span> يدخل عليه <span class="ltr">T1</span> (<span class="ltr">TV = S5T#1M20S</span>)، و<span class="ltr">T3</span> يدخل عليه <span class="ltr">T2</span> (<span class="ltr">TV = S5T#20S</span>). الأطراف <span class="ltr">R</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> فارغة، والمخرج <span class="ltr">Q</span> غير موصول.</p>`,title:'المزمنات الثلاثة'},
+    {title:'مختبر مصغّر: صناديق S_ODT مع الزمن',widget:(el,B)=>U6ML.tm(el,B,{view:'fbd',t0:0,intro:'المنزلق هو الزمن منذ ضغطة قصيرة على <span class="ltr">S1</span>، بأزمنة الكتاب. لاحظ ما يدخل على الطرف <span class="ltr">S</span> لكل صندوق.',
+      predict:{q:String.raw`بعد <span class="ltr">110</span> ثوانٍ من الضغط على <span class="ltr">S1</span>، ما حالة الصندوق <span class="ltr">T3</span>؟`,opts:[
+       [String.raw`لم يبدأ بعد`,false,String.raw`<span class="ltr">T2</span> انتهى عند <span class="ltr">100</span> ثانية (<span class="ltr">20 + 80</span>)، فصار على طرف <span class="ltr">S</span> لـ <span class="ltr">T3</span> واحد.`],
+       [String.raw`يعدّ، وباقٍ له <span class="ltr">10</span> ثوانٍ`,true,String.raw`بدأ عند <span class="ltr">100</span> ثانية وزمنه <span class="ltr">20</span> ثانية، فينتهي عند <span class="ltr">120</span>.`],
+       [String.raw`انتهى`,false,String.raw`ينتهي <span class="ltr">T3</span> عند <span class="ltr">120</span> ثانية، أي بعد دقيقتين من الضغط.`]]}})}
    ]},
 
   {st:3,short:'Networks 5–9: البوابات',title:'<span class="ltr">Networks 5–9</span>: بوابات <span class="ltr">&amp;</span> ودائرة النفي',ref:'ص 123',
@@ -871,7 +1110,22 @@ L6({
      [String.raw`<span class="ltr">1</span>، لأن S جاء أولاً`,false,'S كتب 1، لكن R جاء بعده فكتب 0 فوقها.'],
      ['خطأ في البرنامج يوقف الـ PLC',false,'لا خطأ؛ الأوامر تُنفَّذ بالترتيب.'],
      [String.raw`<span class="ltr">0</span>: الـ PLC ينفّذ الأسطر بالترتيب، فآخر أمر هو الذي يبقى`,true,'لذلك الأولوية للإلغاء، كصندوق SR في LAD و FBD.']]}},
-    {watch:String.raw`<p>في <span class="ltr">LAD</span> و<span class="ltr">FBD</span> يستخدم الكتاب صندوق <span class="ltr">SR</span> في <span class="ltr">Network 1</span>، أما في <span class="ltr">STL</span> فيستخدم أمرَي <span class="ltr">S</span> و<span class="ltr">R</span> منفصلين ثم <span class="ltr mono">A M 1.1 / = M 1.1</span> (تخصيص <span class="ltr">M1.1</span> لنفسه، زائد لا يغيّر شيئاً). السلوك في الحالتين واحد لأن الإلغاء له الأولوية.</p>`,fix:true}
+    {watch:String.raw`<p>في <span class="ltr">LAD</span> و<span class="ltr">FBD</span> يستخدم الكتاب صندوق <span class="ltr">SR</span> في <span class="ltr">Network 1</span>، أما في <span class="ltr">STL</span> فيستخدم أمرَي <span class="ltr">S</span> و<span class="ltr">R</span> منفصلين ثم <span class="ltr mono">A M 1.1 / = M 1.1</span> (تخصيص <span class="ltr">M1.1</span> لنفسه، زائد لا يغيّر شيئاً). السلوك في الحالتين واحد لأن الإلغاء له الأولوية.</p>`,fix:true},
+    {title:'مختبر مصغّر: نفّذ Network 1 سطراً سطراً',widget:(el,B)=>{const LN=['A I 0.1','S M 1.1','A T 3','R M 1.1','A M 1.1','= M 1.1'],lt=s=>`<span class="ltr">${s}</span>`;
+      return DCML.lab(el,B,{intro:'اختر حالة المداخل وقيمة <span class="ltr">M1.1</span> قبل المسح، ثم حرّك المنزلق الأول سطراً سطراً وتابع <span class="ltr">RLO</span> و <span class="ltr">M1.1</span>.',
+      predict:{q:String.raw`<span class="ltr">M1.1 = 1</span> من قبل، و <span class="ltr">S1</span> متروك، و <span class="ltr">T3</span> لم ينتهِ. ماذا يفعل السطر <span class="ltr">S M 1.1</span>؟`,opts:[
+       [String.raw`يكتب <span class="ltr">0</span> في <span class="ltr">M1.1</span> لأن <span class="ltr">RLO = 0</span>`,false,String.raw`الأمر <span class="ltr">S</span> لا يكتب <span class="ltr">0</span> أبداً.`],
+       [String.raw`لا يفعل شيئاً، فتبقى <span class="ltr">M1.1 = 1</span>`,true,String.raw`<span class="ltr">S</span> يكتب <span class="ltr">1</span> فقط إذا كانت <span class="ltr">RLO = 1</span>؛ وإلا يترك العنوان كما هو. وهذه هي «الذاكرة».`]]},
+      ins:[{k:'n',l:'عدد الأسطر المنفّذة',min:0,max:6,step:1,v:0,fmt:v=>v+' / 6'},
+       {k:'s1',l:'S1',sw:true,v:0,on:'S1 مضغوط '+lt('(I0.1 = 1)'),off:'S1 متروك '+lt('(I0.1 = 0)')},
+       {k:'t3',l:'T3',sw:true,v:0,on:'T3 انتهى '+lt('(T3 = 1)'),off:'T3 لم ينتهِ '+lt('(T3 = 0)')},
+       {k:'m0',l:'M1.1',sw:true,v:1,on:'قبل المسح: '+lt('M1.1 = 1'),off:'قبل المسح: '+lt('M1.1 = 0')}],
+      calc:s=>{let m=s.m0,rlo=0;const R=[];
+       for(let i=0;i<s.n;i++){if(i===0)rlo=s.s1;else if(i===1){if(rlo)m=1}else if(i===2)rlo=s.t3;else if(i===3){if(rlo)m=0}else if(i===4)rlo=m;else m=rlo;R.push([rlo,m])}
+       const say=['هل الضاغط مضغوط؟ ← '+lt('RLO = '+s.s1),rlo=>rlo?lt('RLO = 1')+'، فثُبّتت '+lt('M1.1 = 1')+'.':lt('RLO = 0')+'، فلا يفعل '+lt('S')+' شيئاً.','هل انتهى '+lt('T3')+'؟ ← '+lt('RLO = '+s.t3)+' (سطر جديد بعد '+lt('S')+' يبدأ قراءة جديدة).',rlo=>rlo?lt('RLO = 1')+'، فأُلغيت '+lt('M1.1 = 0')+'.':lt('RLO = 0')+'، فلا يفعل '+lt('R')+' شيئاً.','قراءة '+lt('M1.1')+' نفسها ← '+lt('RLO = '+(R[4]?R[4][0]:'')),'تخصيص '+lt('M1.1')+' لنفسه: لا يغيّر قيمتها.'];
+       const tb=`<div style="overflow-x:auto;direction:ltr"><table style="border-collapse:collapse;font-family:var(--mono);font-size:13.5px;width:100%;text-align:left"><thead><tr style="color:var(--muted)"><th>STL</th><th>RLO</th><th>M1.1</th></tr></thead><tbody>${LN.map((l,i)=>`<tr style="${i===s.n-1?'background:var(--blue-soft);font-weight:700':''}${i>=s.n?';color:var(--muted)':''}"><td>${l}</td><td>${i<s.n&&[0,2,4].includes(i)?R[i][0]:''}</td><td>${i<s.n?R[i][1]:''}</td></tr>`).join('')}</tbody></table></div>`;
+       const k=s.n-1,f=say[k];
+       return {pic:tb,facts:[['RLO',s.n?String(R[k][0]):'—'],['M1.1',String(m),m?'hi':'']],msg:s.n?`<b>السطر ${lt(LN[k])}:</b> ${typeof f==='function'?f(R[k][0]):f}`:'حرّك المنزلق الأول لتنفيذ أول سطر.'}}})}}
    ]},
 
   {st:2,short:'Networks 2–4: المزمنات',title:'<span class="ltr">Networks 2–4</span>: تحميل الزمن ثم تشغيل المزمن',ref:'ص 124',
@@ -887,7 +1141,19 @@ L6({
      ['تصفير المزمن T1',false,'التصفير يكون بالأمر R.'],
      ['تشغيل T1 كمزمن تأخير توصيل (S_ODT) بالزمن الذي حُمّل في السطر السابق',true,'SD = S_ODT، والزمن هو S5T#20S من السطر L.'],
      ['قراءة الزمن المتبقي من T1',false,'القراءة تكون بـ BI أو BCD، وهي غير مستخدمة هنا.']]}},
-    {watch:String.raw`<p>الكتاب لم يشرح أسطر <span class="ltr mono">NOP 0</span>. هي ما يولّده برنامج <span class="ltr">STEP 7</span> عند تحويل صندوق مزمن أطرافه <span class="ltr">R</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> و<span class="ltr">Q</span> فارغة إلى <span class="ltr">STL</span>، ولا تؤثر على التشغيل.</p>`}
+    {watch:String.raw`<p>الكتاب لم يشرح أسطر <span class="ltr mono">NOP 0</span>. هي ما يولّده برنامج <span class="ltr">STEP 7</span> عند تحويل صندوق مزمن أطرافه <span class="ltr">R</span> و<span class="ltr">BI</span> و<span class="ltr">BCD</span> و<span class="ltr">Q</span> فارغة إلى <span class="ltr">STL</span>، ولا تؤثر على التشغيل.</p>`},
+    {title:'مختبر مصغّر: A ثم L ثم SD',widget:(el,B)=>{const lt=s=>`<span class="ltr">${s}</span>`;
+      return DCML.lab(el,B,{intro:'هذه <span class="ltr">Network 2</span>. غيّر <span class="ltr">M1.1</span> والزمن منذ صارت <span class="ltr">1</span>، وتابع ما يفعله كل سطر.',
+      predict:{q:String.raw`<span class="ltr">M1.1 = 1</span> منذ <span class="ltr">10</span> ثوانٍ. ما قيمة <span class="ltr">T1</span> (تلامسه)؟`,opts:[
+       [String.raw`<span class="ltr">1</span>، لأن شرط التشغيل <span class="ltr">A M 1.1</span> متحقق`,false,String.raw`<span class="ltr">SD</span> مزمن تأخير توصيل: يصبح <span class="ltr">1</span> بعد انتهاء الزمن المحمّل لا لحظة تحقق الشرط.`],
+       [String.raw`<span class="ltr">0</span>، وباقٍ له <span class="ltr">10</span> ثوانٍ`,true,String.raw`الزمن المحمّل <span class="ltr">S5T#20S</span>، فيصبح <span class="ltr">T1 = 1</span> بعد <span class="ltr">20</span> ثانية ما دامت <span class="ltr">M1.1 = 1</span>.`]]},
+      ins:[{k:'m',l:'M1.1',sw:true,v:1,on:lt('M1.1 = 1')+' (طلب عبور)',off:lt('M1.1 = 0')+' (لا طلب)'},
+       {k:'t',l:'الزمن منذ صارت M1.1 = 1',min:0,max:30,step:1,v:10,u:'s'}],
+      calc:s=>{const el2=s.m?Math.min(s.t,20):0,q=s.m&&s.t>=20?1:0;
+       const rows=[['A M 1.1',`RLO = ${s.m}`],['L S5T#20S','ACCU1 = 20 s'],['SD T 1',s.m?(q?'T1 = 1 (انتهى)':`يعدّ: ${el2} / 20 s`):'RLO = 0 ← T1 يُصفَّر'],['NOP 0 ×4','لا عملية']];
+       return {pic:`<div style="overflow-x:auto;direction:ltr"><table style="border-collapse:collapse;font-family:var(--mono);font-size:13.5px;width:100%;text-align:left"><tbody>${rows.map(r=>`<tr><td style="padding:3px 8px 3px 0;white-space:nowrap">${r[0]}</td><td style="unicode-bidi:plaintext">${r[1]}</td></tr>`).join('')}</tbody></table></div>`,
+        facts:[['RLO',String(s.m)],['ACCU1','20 s'],['T1',String(q),q?'hi':'']],bars:[{l:'زمن T1',v:el2,max:20,txt:el2+' / 20 s',col:q?'--on':'--live'}],
+        msg:!s.m?`${lt('M1.1 = 0')}: ${lt('RLO = 0')} عند ${lt('SD T 1')}، فيُصفَّر المزمن فوراً ويبقى ${lt('T1 = 0')}.`:q?`انتهى الزمن ${lt('S5T#20S')} و ${lt('M1.1')} ما زالت ${lt('1')}، فصار ${lt('T1 = 1')} وبدأ ${lt('T2')} في ${lt('Network 3')}.`:`المزمن يعدّ؛ باقٍ ${lt((20-el2)+' s')} حتى يصبح ${lt('T1 = 1')}.`}}})}}
    ]},
 
   {st:3,short:'Networks 5–9: المخارج',title:'<span class="ltr">Networks 5–9</span>: <span class="ltr">A</span> و<span class="ltr">AN</span> ثم <span class="ltr">=</span>',ref:'ص 124',
@@ -949,7 +1215,15 @@ L6({
    ],
    body:[
     {tip:String.raw`<ol><li>الوضع الطبيعي: <span class="ltr">Q4.1</span> و<span class="ltr">Q4.5</span> فقط.</li><li>ضغطة قصيرة على <span class="ltr">S1</span> تبدأ الدورة (لا يلزم الاستمرار في الضغط).</li><li>قِس الأزمنة: أصفر 20 ث، ثم أحمر سيارات + أخضر مشاة 80 ث، ثم أحمر للجميع 20 ث.</li><li>الضغط على <span class="ltr">S1</span> أثناء الدورة لا يؤثر.</li><li>لا يضيء الأخضر للسيارات مع الأخضر للمشاة أبداً.</li></ol><p>وفي تبويب المختبر تستطيع اختيار «زمن مختصر للعرض» لترى الدورة كاملة في 12 ثانية بدل دقيقتين.</p>`,title:'كيف تختبر صحة الدائرة؟'},
-    {add:String.raw`<p>إذا ضغط أحد المشاة <span class="ltr">S1</span> مباشرة بعد نهاية الدورة تبدأ دورة جديدة فوراً، فيرى السائقون الأخضر لحظة قصيرة فقط. البرنامج يحقق شروط الكتاب، لكن الإشارات الحقيقية تضيف عادة زمناً أدنى للأخضر قبل قبول طلب جديد.</p>`,title:'للتفكير'}
+    {add:String.raw`<p>إذا ضغط أحد المشاة <span class="ltr">S1</span> مباشرة بعد نهاية الدورة تبدأ دورة جديدة فوراً، فيرى السائقون الأخضر لحظة قصيرة فقط. البرنامج يحقق شروط الكتاب، لكن الإشارات الحقيقية تضيف عادة زمناً أدنى للأخضر قبل قبول طلب جديد.</p>`,title:'للتفكير'},
+    {title:'مختبر مصغّر: رتّب ما يجب أن تراه',widget:(el,B)=>DCML.order(el,B,{intro:'أثناء اختبار الدائرة على الجهاز، اضغط ما تراه بالترتيب من البداية إلى نهاية الدورة.',steps:[
+     [String.raw`الوضع الطبيعي: أخضر للسيارات وأحمر للمشاة (<span class="ltr">Q4.1</span> و <span class="ltr">Q4.5</span>)`,String.raw`قبل أي ضغطة تكون الإشارة في وضعها الطبيعي.`],
+     [String.raw`ضغطة قصيرة على <span class="ltr">S1</span>`,String.raw`لا يتغير شيء قبل طلب العبور.`],
+     [String.raw`أصفر للسيارات وأحمر للمشاة: <span class="ltr">20</span> ثانية (<span class="ltr">T1</span>)`,String.raw`بعد الضغط يأتي الأصفر أولاً لتستعد السيارات للتوقف.`],
+     [String.raw`أحمر للسيارات وأخضر للمشاة: دقيقة و <span class="ltr">20</span> ثانية (<span class="ltr">T2</span>)`,String.raw`عبور المشاة لا يبدأ قبل أن تتوقف السيارات (بعد الأصفر).`],
+     [String.raw`أحمر للسيارات وأحمر للمشاة: <span class="ltr">20</span> ثانية (<span class="ltr">T3</span>)`,String.raw`إخلاء الطريق يأتي بعد عبور المشاة.`],
+     [String.raw`عودة إلى الوضع الطبيعي`,String.raw`العودة تأتي بعد انتهاء <span class="ltr">T3</span> فقط.`]],
+     done:String.raw`ولا يجوز في أي لحظة أن يضيء الأخضر للسيارات مع الأخضر للمشاة.`})}
    ]},
 
   {recap:[

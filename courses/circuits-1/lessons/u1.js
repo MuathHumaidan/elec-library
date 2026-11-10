@@ -183,7 +183,183 @@ B.lesson({
  title:'المكثف الكهربائي: تعريفه وأنواعه وسعته',
  summary:'مقدمة الحقيبة وتمهيدها وأهداف الوحدة الأولى، ثم المكثف: لوحان موصلان بينهما عازل، يسمى باسم عازله، وسعته (الشحنة ÷ الجهد) بالفاراد وأجزائه، وتعتمد على مساحة اللوحين والمسافة بينهما والعازل، ورموز أنواع المكثفات.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'مقدمة الحقيبة',title:'مقدمة الحقيبة: لمن كُتبت؟',ref:'ص 1',
    q:'قبل أن تبدأ: لمتدربي أي التخصصات كُتبت هذه الحقيبة، وبأي أسلوب؟',
@@ -202,7 +378,11 @@ B.lesson({
      <p>وتتناول هذه الحقيبة التدريبية "دوائر كهربائية - ١" لمتدربي تخصصات "<b>الآلات والمعدات الكهربائية والقوى الكهربائية ومشغل لوحة التحكم</b>" للكليات التقنية موضوعات حيوية تتناول كيفية اكتساب المهارات اللازمة لهذا التخصص.</p>
      <p>والإدارة العامة لتصميم وتطوير المناهج وهي تضع بين يديك هذه الحقيبة التدريبية تأمل من الله عز وجلّ أن تسهم بشكل مباشر في تأصيل المهارات الضرورية اللازمة، بأسلوب مبسط يخلو من التعقيد، مدعم بالتطبيقات والأشكال التي تدعم عملية اكتساب هذه المهارات.</p>
      <p>والله نسأل أن يوفق القائمين على إعدادها والمستفيدين منها لما يحبه ويرضاه؛ إنه سميع مجيب الدعاء.</p>`,ref:'ص 1'},
-    {tip:String.raw`<p>الخلاصة: هذه الحقيبة أساس لكل ما بعدها في تخصصك. ستجد فيها شرحاً مبسطاً و<b>أمثلة محلولة</b> و<b>أشكالاً</b>؛ وفي هذا الموقع تجد مع كل درس مختبراً تفاعلياً واختباراً قصيراً.</p>`}
+    {tip:String.raw`<p>الخلاصة: هذه الحقيبة أساس لكل ما بعدها في تخصصك. ستجد فيها شرحاً مبسطاً و<b>أمثلة محلولة</b> و<b>أشكالاً</b>؛ وفي هذا الموقع تجد مع كل درس مختبراً تفاعلياً واختباراً قصيراً.</p>`},
+    {title:'تحقق سريع: مقدمة الحقيبة',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب نص المقدمة.',items:[
+ ['الحقيبة كُتبت لمتدربي ثلاثة تخصصات: الآلات والمعدات الكهربائية، والقوى الكهربائية، ومشغل لوحة التحكم.',true,'هذا نص المقدمة (ص 1).'],
+ ['اللجان التي تبني المعايير المهنية الوطنية تمثل المؤسسة العامة للتدريب التقني والمهني وحدها.',false,'المقدمة تقول إن اللجان التخصصية «تمثل سوق العمل والمؤسسة» معاً، حتى تتوافق الرؤية العلمية مع الواقع العملي.'],
+ ['الحقيبة مكتوبة بأسلوب مبسط، مدعم بالتطبيقات والأشكال.',true,'«بأسلوب مبسط يخلو من التعقيد، مدعم بالتطبيقات والأشكال» (ص 1).']]})}
    ]},
 
   {st:2,short:'تمهيد',title:'تمهيد: ست وحدات أساسية',ref:'ص 6',
@@ -227,7 +407,14 @@ B.lesson({
      <tr><td>الثالثة</td><td>دوائر التيار المستمر: قانون أوم، القدرة، كيرشوف</td></tr>
      <tr><td>الرابعة</td><td>طرق تحليل الدوائر البسيطة</td></tr>
      <tr><td>الخامسة</td><td>المغناطيسية الطبيعية والكهرومغناطيسية</td></tr>
-     <tr><td>السادسة</td><td>الدوائر المغناطيسية</td></tr></tbody></table>`,title:'الوحدات الست في جدول'}
+     <tr><td>السادسة</td><td>الدوائر المغناطيسية</td></tr></tbody></table>`,title:'الوحدات الست في جدول'},
+    {title:'مختبر مصغّر: في أي وحدة ستدرسه؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل موضوع اضغط رقم الوحدة التي يدرسه فيها التمهيد.',cats:['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة'],items:[
+ ['قانون أوم وقانونا كيرشوف للجهد والتيار',2,'الوحدة الثالثة: دوائر التيار المستمر.'],
+ ['الطاقة المختزنة في المكثفات وطرق توصيلها',0,'الوحدة الأولى: المكثفات الكهربائية.'],
+ ['الخلايا الابتدائية والخلايا الثانوية وطرق تجميعها',1,'الوحدة الثانية: البطاريات.'],
+ ['خطوط القوى والفيض المغناطيسي وكثافته',4,'الوحدة الخامسة: المغناطيسية الطبيعية والكهرومغناطيسية.'],
+ ['قوانين وطرق تحليل الدوائر الكهربائية البسيطة',3,'الوحدة الرابعة.'],
+ ['القوانين التي تحكم الدائرة المغناطيسية وأساليب تحليلها',5,'الوحدة السادسة: الدوائر المغناطيسية.']]})}
    ]},
 
   {st:3,short:'أهداف الوحدة',title:'الوحدة الأولى: المكثفات الكهربائية — الأهداف',ref:'ص 7–8',
@@ -244,7 +431,13 @@ B.lesson({
     {book:String.raw`<p><b>الهدف العام للوحدة:</b> معرفة وفهم المكثفات الكهربائية وطرق توصيلها وحساب سعتها الكلية.</p>
      <p><b>الأهداف التفصيلية:</b></p>
      <ol><li>أن يتمكن المتدرب من تركيب المكثف الكهربائي وحساب سعته.</li><li>أن يتمكن المتدرب من إيجاد العلاقة بين الشحنة والجهد والسعة.</li><li>أن يتمكن المتدرب من توصيل المكثفات على التوازي والتوالي.</li><li>أن يتمكن المتدرب من حساب السعة الإجمالية لمجموعة من المكثفات.</li><li>أن يتمكن المتدرب من حساب الطاقة المخزونة في المكثفات.</li></ol>`,ref:'ص 8'},
-    {tip:String.raw`<p>الوحدة في هذا الموقع أربعة دروس: <b>هذا الدرس</b> (الهدفان 1 و2)، ثم <b>التوالي</b>، ثم <b>التوازي والتوصيل المركب</b> (الهدفان 3 و4)، ثم <b>الطاقة المختزنة</b> (الهدف 5).</p>`}
+    {tip:String.raw`<p>الوحدة في هذا الموقع أربعة دروس: <b>هذا الدرس</b> (الهدفان 1 و2)، ثم <b>التوالي</b>، ثم <b>التوازي والتوصيل المركب</b> (الهدفان 3 و4)، ثم <b>الطاقة المختزنة</b> (الهدف 5).</p>`},
+    {title:'مختبر مصغّر: أين يُدرس كل هدف؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل هدف من أهداف الوحدة اختر الدرس الذي يغطيه في هذا الموقع.',cats:['هذا الدرس','درسا التوالي والتوازي','درس الطاقة المختزنة'],items:[
+ ['حساب الطاقة المخزونة في المكثفات',2,'الهدف 5، في الدرس الرابع من الوحدة.'],
+ ['تركيب المكثف الكهربائي وحساب سعته',0,'الهدف 1: تعريف المكثف وسعته في هذا الدرس.'],
+ ['توصيل المكثفات على التوازي والتوالي',1,'الهدف 3: التوالي في الدرس الثاني، والتوازي في الثالث.'],
+ ['إيجاد العلاقة بين الشحنة والجهد والسعة',0,String.raw`الهدف 2: المعادلة \(C=Q/V\) في هذا الدرس.`],
+ ['حساب السعة الإجمالية لمجموعة من المكثفات',1,'الهدف 4: السعة المكافئة للتوالي ثم للتوازي والتوصيل المركب.']]})}
    ]},
 
   {st:4,short:'تعريف المكثف',title:'تعريف المكثف: لوحان وعازل',ref:'ص 9',
@@ -262,7 +455,13 @@ B.lesson({
     {tip:String.raw`<table class="tt"><thead><tr><th>المادة العازلة</th><th>اسم المكثف</th></tr></thead><tbody>
      <tr><td>الهواء</td><td>المكثف الهوائي</td></tr><tr><td>البلاستيك</td><td>مكثف بلاستيك</td></tr><tr><td>الميكا</td><td>مكثف ميكا</td></tr><tr><td>السيراميك</td><td>المكثف السيراميك</td></tr><tr><td>محلول كيماوي</td><td>المكثف الكيماوي أو الإلكترولتي</td></tr></tbody></table>`,title:'العازل يحدد الاسم'},
     {tip:String.raw`<p>اللوحان <b>موصلان</b> ليتجمع عليهما الشحن، والعازل بينهما يمنع الشحنة من العبور من لوح إلى آخر. لذلك يبقى المكثف مشحوناً ويخزن الطاقة في العازل.</p>`},
-    {add:String.raw`<p>في الشكل <span class="ltr">(1-1)</span> صورة لمكثفات حقيقية: مكثف إلكتروليتي أسطواني كبير، وآخر صغير، ومكثف سيراميكي على شكل قرص. ستجد مثلها داخل شاحن الجوال، وفي لوحات الأجهزة الإلكترونية، وتجد مكثفاً كبيراً بجانب محرك المروحة أو المكيف لمساعدته على البدء.</p>`}
+    {add:String.raw`<p>في الشكل <span class="ltr">(1-1)</span> صورة لمكثفات حقيقية: مكثف إلكتروليتي أسطواني كبير، وآخر صغير، ومكثف سيراميكي على شكل قرص. ستجد مثلها داخل شاحن الجوال، وفي لوحات الأجهزة الإلكترونية، وتجد مكثفاً كبيراً بجانب محرك المروحة أو المكيف لمساعدته على البدء.</p>`},
+    {title:'مختبر مصغّر: سمِّ المكثف من عازله',widget:(el,B)=>DCML.sort(el,B,{intro:'اللوحان موصلان في كل الأنواع. انظر إلى العازل فقط واختر اسم المكثف.',cats:['هوائي','بلاستيك','ميكا','سيراميك','كيماوي (إلكترولتي)'],items:[
+ ['بين اللوحين محلول كيماوي',4,'«إذا استخدم محلول كيماوي كمادة عازلة أطلق على المكثف اسم المكثف الكيماوي أو الإلكترولتي».'],
+ ['بين اللوحين طبقة من الميكا',2,'العازل ميكا، فهو مكثف ميكا.'],
+ ['لا شيء بين اللوحين إلا الهواء',0,'العازل هو الهواء، فهو المكثف الهوائي.'],
+ ['بين اللوحين قرص من السيراميك',3,'العازل سيراميك، فهو المكثف السيراميك.'],
+ ['بين اللوحين شريط بلاستيك',1,'العازل بلاستيك، فهو مكثف بلاستيك.']]})}
    ]},
 
   {st:5,short:'سعة المكثف',title:'سعة المكثف الكهربائي',ref:'ص 9',
@@ -319,7 +518,13 @@ B.lesson({
      <li><b>المستقطب:</b> الرمز نفسه مع علامة <b>+</b> فوق اللوح الموجب (وفي رمزه الثاني لوح مفرغ مقابل لوح مصمت). يوصل طرفه الموجب بالموجب.</li>
      <li><b>المتغير:</b> سهم مائل يخترق الرمز، أي أن سعته يمكن تغييرها.</li></ul>`,title:'كيف تقرأ الرموز؟'},
     {watch:String.raw`<p>المكثف المستقطب (مثل الإلكترولتي) لا يوصل بالعكس: لو وُصل طرفه الموجب بالسالب قد يسخن وينتفخ أو ينفجر. على جسمه عادة شريط يدل على الطرف <b>السالب</b>.</p>`},
-    {add:String.raw`<p>المكثف المتغير تجده في أجهزة المذياع القديمة: عندما تدير مفتاح الموجات فأنت تغير سعة مكثف متغير.</p>`}
+    {add:String.raw`<p>المكثف المتغير تجده في أجهزة المذياع القديمة: عندما تدير مفتاح الموجات فأنت تغير سعة مكثف متغير.</p>`},
+    {title:'مختبر مصغّر: اقرأ الرمز',widget:(el,B)=>{const g=(x)=>`<svg viewBox="0 0 120 44" width="120" height="44" style="display:block;margin-bottom:4px" aria-hidden="true" direction="ltr"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">${x}</g></svg>`;
+ const base='<path d="M6 22H52M68 22H114"/><path d="M52 8V36" stroke-width="3.4"/><path d="M70 8Q62 22 70 36" stroke-width="3.4"/>';
+ return DCML.sort(el,B,{intro:'لكل رمز اختر نوع المكثف، كما في الشكل <span class="ltr">(1-2)</span>.',cats:['مكثف عادي','مكثف مستقطب','مكثف متغير'],items:[
+ [g(base+'<path d="M38 2V12M33 7H43" stroke-width="2"/>')+'رمز فيه علامة صغيرة بجانب أحد اللوحين',1,'علامة <b>+</b> تدل على الطرف الموجب للمكثف المستقطب؛ يوصل طرفه الموجب بالموجب.'],
+ [g(base+'<path d="M40 40L82 4" stroke-width="2"/><path d="M82 4L72 6M82 4L79 13" stroke-width="2"/>')+'رمز يخترقه سهم مائل',2,'السهم المائل يعني أن سعته يمكن تغييرها: مكثف متغير.'],
+ [g(base)+'لوح مستقيم يقابله لوح منحنٍ، بلا علامات',0,'مكثف عادي: لا فرق بين طرفيه، ويوصل في أي اتجاه.']]})}}
    ]},
 
   {st:7,short:'الفاراد وأجزاؤه',title:'الفاراد وأجزاؤه',ref:'ص 10',
@@ -606,7 +811,12 @@ B.lesson({
     {book:String.raw`<p>توصل المكثفات إما على التوالي أو التوازي للحصول على قيمة معينة من السعة كما يلي:</p>`,ref:'ص 11'},
     {tip:String.raw`<ul><li><b>التوالي:</b> المكثفات واحد بعد الآخر في طريق واحد؛ نهاية الأول متصلة ببداية الثاني فقط. هذا موضوع هذا الدرس.</li>
      <li><b>التوازي:</b> كل مكثف في فرع، وكل الفروع بين النقطتين نفسيهما. هذا موضوع الدرس التالي.</li></ul>`,title:'كيف تميز الطريقتين؟'},
-    {add:String.raw`<p>في محلات القطع الإلكترونية تُباع المكثفات بقيم قياسية محددة. إذا احتاج الفني سعة غير موجودة، يجمع مكثفين أو أكثر توالياً أو توازياً ليقترب منها.</p>`}
+    {add:String.raw`<p>في محلات القطع الإلكترونية تُباع المكثفات بقيم قياسية محددة. إذا احتاج الفني سعة غير موجودة، يجمع مكثفين أو أكثر توالياً أو توازياً ليقترب منها.</p>`},
+    {title:'مختبر مصغّر: توالٍ أم توازٍ؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اختر طريقة التوصيل.',cats:['توالي','توازي'],items:[
+ ['المكثفات واحد بعد الآخر في طريق واحد، ونهاية الأول متصلة ببداية الثاني فقط',0,'هذا التوالي: طريق واحد للشحنة.'],
+ ['كل مكثف في فرع، وكل الفروع بين النقطتين نفسيهما',1,'هذا التوازي: كل الفروع على الجهد نفسه.'],
+ ['نريد سعة كلية أقل من أصغر سعة موجودة',0,'«توصل المكثفات على التوالي للحصول على سعة كلية صغيرة أقل من أصغر سعة مكثف» (ص 11).'],
+ ['نريد سعة كلية تساوي مجموع السعات',1,'هذا هدف التوازي، وهو موضوع الدرس التالي (ص 15).']]})}
    ]},
 
   {st:2,short:'التوالي',title:'توصيل المكثفات على التوالي',ref:'ص 11–12',
@@ -658,7 +868,16 @@ B.lesson({
      <p>وبصفة عامة لعدد n من المكثفات الموصلة على التوالي:</p>
      <div class="eq" style="position:relative;overflow-x:auto">$$\frac{1}{C}=\sum_{i=1}^{n}\frac{1}{C_i}$$<span class="eqno">(1-7)</span></div>`,ref:'ص 12'},
     {tip:String.raw`<p>المعادلة (1-6) «حاصل الضرب ÷ المجموع» تصلح <b>لمكثفين فقط</b>. لثلاثة مكثفات أو أكثر استعمل (1-4) أو (1-7)، أو طبّق (1-6) على مكثفين ثم على الناتج مع الثالث.</p>
-     <p>وإذا كانت n مكثفات <b>متساوية</b> سعة كل منها \(C_0\) فإن \(C=C_0/n\)، ويتوزع الجهد عليها بالتساوي.</p>`}
+     <p>وإذا كانت n مكثفات <b>متساوية</b> سعة كل منها \(C_0\) فإن \(C=C_0/n\)، ويتوزع الجهد عليها بالتساوي.</p>`},
+    {title:'مختبر مصغّر: حاصل الضرب ÷ المجموع',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر سعتي المكثفين (أرقام تختارها أنت) وراقب السعة المكافئة \\(C=\\frac{C_1C_2}{C_1+C_2}\\) مقارنة بأصغرهما.',
+ predict:{q:'جعلنا \\(C_2\\) أكبر بكثير من \\(C_1\\). السعة المكافئة تقترب من:',opts:[
+  ['\\(C_1+C_2\\)',false,'هذا قانون التوازي، والسعة في التوالي أقل من أصغر سعة.'],
+  ['\\(C_2\\) (الأكبر)',false,'السعة المكافئة في التوالي لا تتجاوز أصغر سعة أبداً.'],
+  ['\\(C_1\\) (الأصغر) من تحتها',true,'عندما تكبر \\(C_2\\) جداً يصبح \\(1/C_2\\) صغيراً جداً، فيبقى \\(1/C\\approx1/C_1\\)؛ لكن C تبقى أقل من \\(C_1\\) قليلاً.']]},
+ ins:[{k:'a',l:'C<sub>1</sub>',u:'μF',min:1,max:20,step:1,v:4},{k:'b',l:'C<sub>2</sub>',u:'μF',min:1,max:100,step:1,v:12}],
+ calc:(s,P,B)=>{const C=s.a*s.b/(s.a+s.b),m=Math.min(s.a,s.b);return {facts:[['C = C<sub>1</sub>C<sub>2</sub> ÷ (C<sub>1</sub>+C<sub>2</sub>)',DCML.fm(B,B.round(C,3))+' μF','hi'],['أصغر السعتين',DCML.fm(B,B.round(m,0))+' μF'],['السعة المكافئة ÷ أصغرهما',DCML.fm(B,B.round(C/m,3))]],
+  bars:[{l:'C<sub>1</sub>',v:s.a,max:100,u:'μF',col:'--muted'},{l:'C<sub>2</sub>',v:s.b,max:100,u:'μF',col:'--muted'},{l:'السعة المكافئة C',v:C,max:100,u:'μF'}],
+  msg:s.a===s.b?'المكثفان متساويان: \\(C=C_1/2\\) بالضبط.':'السعة المكافئة دائماً أقل من أصغر المكثفين.'}}})}
    ]},
 
   {st:4,short:'مثال (1-1)',title:'مثال <span class="ltr">(1-1)</span>: ثلاثة مكثفات على التوالي',ref:'ص 12–13',
@@ -681,7 +900,17 @@ B.lesson({
     {book:String.raw`<p>للتأكد من الحل، يجب أن يكون مجموع الجهود الثلاثة على المكثفات يساوي جهد المصدر 600 فولت.</p>
      <div class="eq" style="position:relative;overflow-x:auto">$$V=V_1+V_2+V_3=60+300+240=600\ V$$<span class="eqno">(1-2)</span></div>
      <p>نلاحظ أن السعة الكلية هي دائماً أقل من سعة أي من المكثفات المتصلة على التوالي.</p>`,ref:'ص 13'},
-    {tip:String.raw`<p>لاحظ النسب: \(C_1\) أكبر من \(C_2\) خمس مرات، فجهده أصغر خمس مرات (<span class="ltr">60</span> مقابل <span class="ltr">300</span>). في التوالي الجهد يتناسب <b>عكسياً</b> مع السعة. والسعة الكلية <span class="ltr">2 μF</span> أقل من أصغرها <span class="ltr">4 μF</span>.</p>`}
+    {tip:String.raw`<p>لاحظ النسب: \(C_1\) أكبر من \(C_2\) خمس مرات، فجهده أصغر خمس مرات (<span class="ltr">60</span> مقابل <span class="ltr">300</span>). في التوالي الجهد يتناسب <b>عكسياً</b> مع السعة. والسعة الكلية <span class="ltr">2 μF</span> أقل من أصغرها <span class="ltr">4 μF</span>.</p>`},
+    {title:'مختبر مصغّر: غيّر مكثفاً واحداً',widget:(el,B)=>DCML.lab(el,B,{intro:'المصدر <span class="ltr">600 V</span> و\\(C_1=20\\ \\mu F\\) و\\(C_3=5\\ \\mu F\\) من المثال. القيمة <span class="ltr">4 μF</span> لـ \\(C_2\\) من الكتاب، والقيمتان الأخريان أرقام نختارها للمقارنة.',
+ predict:{q:'لو استبدلنا \\(C_2=4\\ \\mu F\\) بمكثف \\(20\\ \\mu F\\)، فإن جهد \\(C_3\\) (الذي لم نغيّره):',opts:[
+  ['يبقى <span class="ltr">240 V</span>',false,'الشحنة المشتركة Q تتغير عندما تتغير السعة المكافئة، فيتغير جهد كل مكثف.'],
+  ['يقل',false,'السعة المكافئة تزيد فتزيد Q، و\\(V_3=Q/C_3\\) يزيد.'],
+  ['يزيد',true,'السعة المكافئة تزيد فتزيد الشحنة Q، و\\(V_3=Q/C_3\\) يزيد إلى <span class="ltr">400 V</span>؛ والمجموع يبقى <span class="ltr">600 V</span>.']]},
+ ins:[{k:'c',l:'سعة C<sub>2</sub>',seg:[[4,'4 μF (الكتاب)'],[10,'10 μF'],[20,'20 μF']],v:4}],
+ calc:(s,P,B)=>{const Cs=[20,s.c,5],C=1/Cs.reduce((a,c)=>a+1/c,0),Q=C*600,V=Cs.map(c=>Q/c);
+  return {facts:[['السعة المكافئة C',DCML.fm(B,B.round(C,3))+' μF','hi'],['الشحنة Q (واحدة)',DCML.fm(B,B.round(Q,1))+' μC','hi'],['V<sub>1</sub> + V<sub>2</sub> + V<sub>3</sub>',DCML.fm(B,B.round(V[0]+V[1]+V[2],1))+' V']],
+   bars:V.map((v,i)=>({l:`V<sub>${i+1}</sub> على ${((x)=>'<bdi class="ltr">'+x+'</bdi>')(Cs[i]+' μF')}`,v,max:600,u:'V',col:i===1?'--live':'--blue'})),
+   msg:'المكثف الأصغر سعة يأخذ الجهد الأكبر، ومجموع الجهود يبقى جهد المصدر (1-2).'}}})}
    ]},
 
   {st:5,short:'مثال (1-2)',title:'مثال <span class="ltr">(1-2)</span>: مكثفان على التوالي',ref:'ص 14',
@@ -701,7 +930,12 @@ B.lesson({
       <div class="kv-row"><small>(ب)</small><span class="kv res ltr">\(Q=3\times10^{-6}\times100=3\times10^{-4}\ C\)</span></div>
       <div class="kv-row"><small>(جـ)</small><span class="kv res ltr">\(V_1=75\ V\)</span><span class="kv res ltr">\(V_2=25\ V\)</span><span class="kv ltr">\(75+25=100\ V\)</span></div></div>
       <div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div></div>`},
-    {watch:String.raw`<p>في حل هذا المثال يقول الكتاب «كما هو موضح بالشكل (1-5)»، والشكل (1-5) هو شكل التوازي العام في الدرس التالي، ولا يوجد شكل خاص بهذا المثال؛ لذلك رسمنا له رسماً توضيحياً. وفي الجزء (جـ) طُبع «فرق الجهد على المكثفات <b>الثلاثة</b>» والمثال فيه مكثفان فقط.</p>`,fix:true}
+    {watch:String.raw`<p>في حل هذا المثال يقول الكتاب «كما هو موضح بالشكل (1-5)»، والشكل (1-5) هو شكل التوازي العام في الدرس التالي، ولا يوجد شكل خاص بهذا المثال؛ لذلك رسمنا له رسماً توضيحياً. وفي الجزء (جـ) طُبع «فرق الجهد على المكثفات <b>الثلاثة</b>» والمثال فيه مكثفان فقط.</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب خطوات الحل',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط خطوات حل المثال <span class="ltr">(1-2)</span> بالترتيب.',steps:[
+ [String.raw`السعة المكافئة: \(C=\frac{4\times12}{4+12}=3\ \mu F\)`,'نبدأ دائماً بالسعة المكافئة، فبها نحسب الشحنة.'],
+ [String.raw`الشحنة: \(Q=CV=3\times10^{-6}\times100=3\times10^{-4}\ C\)`,'نحتاج السعة المكافئة أولاً.'],
+ [String.raw`الشحنة نفسها في المكثفين، فالجهود: \(V_1=Q/C_1=75\ V,\ \ V_2=Q/C_2=25\ V\)`,'جهد كل مكثف يحتاج الشحنة Q أولاً.'],
+ [String.raw`التحقق: \(75+25=100\ V\)`,'التحقق يكون بعد حساب الجهود.']],done:'السعة ← الشحنة ← الجهود ← التحقق: الترتيب نفسه لكل دوائر التوالي.'})}
    ]},
 
   {st:6,short:'تمرينا 1 و 2',title:'تمرينا الوحدة الأولى <span class="ltr">1</span> و <span class="ltr">2</span>',ref:'ص 23',
@@ -719,7 +953,11 @@ B.lesson({
      <li>مكثفان سعتهما <span class="ltr">6μF</span> و <span class="ltr">12μF</span> وصلا على التوالي، فإذا كان فرق الجهد الكلي على المكثفين يساوي <span class="ltr">300V</span>، أحسب: (أ) السعة المكافئة للمكثفين بالفاراد (ب) الشحنة في كل مكثف (ج) فرق الجهد على كل مكثف.</li></ol>`,ref:'ص 23'},
     {tip:String.raw`<p class="sub" style="margin-top:0">الكتاب لا يعطي إجابات. اضغط على التمرين لترى إجابة مقترحة.</p>
      <details class="cx-q"><summary>تمرين 1</summary><div class="cx-ans">\(1/C=0.5+0.25+0.05=0.8\) فتكون \(C=1.25\ \mu F=1.25\times10^{-6}\ F\)؛ الشحنة واحدة \(Q=1.25\times10^{-6}\times200=2.5\times10^{-4}\ C\)؛ الجهود \(V_1=125\ V\) و\(V_2=62.5\ V\) و\(V_3=12.5\ V\)، ومجموعها <span class="ltr">200 V</span>.</div></details>
-     <details class="cx-q"><summary>تمرين 2</summary><div class="cx-ans">\(C=\frac{6\times12}{6+12}=4\ \mu F=4\times10^{-6}\ F\)؛ \(Q=4\times10^{-6}\times300=1.2\times10^{-3}\ C\)؛ \(V_1=200\ V\) على مكثف <span class="ltr">6 μF</span> و\(V_2=100\ V\) على مكثف <span class="ltr">12 μF</span>.</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <details class="cx-q"><summary>تمرين 2</summary><div class="cx-ans">\(C=\frac{6\times12}{6+12}=4\ \mu F=4\times10^{-6}\ F\)؛ \(Q=4\times10^{-6}\times300=1.2\times10^{-3}\ C\)؛ \(V_1=200\ V\) على مكثف <span class="ltr">6 μF</span> و\(V_2=100\ V\) على مكثف <span class="ltr">12 μF</span>.</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: تحقق من حلك',widget:(el,B)=>DCML.cases(el,B,{intro:'بعد أن تحل التمرينين، أجب عن هذه الأسئلة القصيرة دون حساب طويل.',cases:[
+ {q:'تمرين 2: أي المكثفين عليه الجهد الأكبر؟',opts:[['المكثف <span class="ltr">12 μF</span>',false,'الأكبر سعة يأخذ الجهد الأصغر في التوالي.'],['المكثف <span class="ltr">6 μF</span>',true,'الأصغر سعة يأخذ الجهد الأكبر: \\(V=Q/C\\).'],['جهداهما متساويان',false,'الجهد يتساوى في التوازي لا في التوالي.']]},
+ {q:'تمرين 1: الشحنة على المكثف <span class="ltr">20 μF</span> مقارنة بالشحنة على المكثف <span class="ltr">2 μF</span>:',opts:[['أكبر بعشر مرات',false,'هذا كان سيصح لو كانا على التوازي.'],['متساويتان',true,'في التوالي الشحنة واحدة في كل المكثفات (1-5).'],['أصغر بعشر مرات',false,'الشحنة لا تتجزأ في التوالي.']]},
+ {q:'تمرين 1: مجموع جهود المكثفات الثلاثة يجب أن يساوي:',opts:[['<span class="ltr">200 V</span>',true,'جهد المصدر، من المعادلة (1-2).'],['<span class="ltr">600 V</span>',false,'<span class="ltr">600 V</span> جهد مثال (1-1)، لا هذا التمرين.'],['لا يمكن معرفته قبل الحساب',false,'المجموع معروف مسبقاً: جهد المصدر. وهذا تحقق سريع من حلك.']]}]})}
    ]},
 
   {recap:[
@@ -841,7 +1079,17 @@ B.lesson({
      <tr><td>الشحنة</td><td>واحدة في كل المكثفات (1-5)</td><td>تتجزأ: \(Q=\sum Q_i\) (1-8)</td></tr>
      <tr><td>الجهد</td><td>يتجزأ: \(V=\sum V_i\) (1-2)</td><td>واحد على كل المكثفات (1-10)</td></tr>
      <tr><td>يشبه في المقاومات</td><td>التوازي</td><td>التوالي</td></tr></tbody></table></div>`,title:'مقارنة: التوالي والتوازي'},
-    {watch:String.raw`<p>في التوازي نجمع السعات مباشرة (كالمقاومات على <b>التوالي</b>). الخطأ الشائع أن يجمع المتدرب المقلوبات هنا كما في المقاومات على التوازي.</p>`}
+    {watch:String.raw`<p>في التوازي نجمع السعات مباشرة (كالمقاومات على <b>التوالي</b>). الخطأ الشائع أن يجمع المتدرب المقلوبات هنا كما في المقاومات على التوازي.</p>`},
+    {title:'مختبر مصغّر: فروع التوازي',widget:(el,B)=>DCML.lab(el,B,{intro:'ثلاثة مكثفات على التوازي. غيّر السعات والجهد (أرقام تختارها أنت) وراقب شحنة كل فرع.',
+ predict:{q:'رفعنا \\(C_3\\) وبقي \\(C_1\\) والجهد كما هما. شحنة \\(C_1\\):',opts:[
+  ['تقل لأن \\(C_3\\) أخذ شحنة أكثر',false,'كل فرع متصل بالمصدر مباشرة؛ الشحنة الإضافية لـ \\(C_3\\) تأتي من المصدر.'],
+  ['تبقى كما هي',true,'\\(Q_1=C_1V\\)، والجهد في التوازي واحد ولم يتغير؛ الذي يزيد هو \\(Q_3\\) والشحنة الكلية Q.'],
+  ['تزيد',false,'لم يتغير \\(C_1\\) ولا الجهد عليه.']]},
+ ins:[{k:'a',l:'C<sub>1</sub>',u:'μF',min:1,max:20,step:1,v:8},{k:'b',l:'C<sub>2</sub>',u:'μF',min:1,max:20,step:1,v:12},{k:'c',l:'C<sub>3</sub>',u:'μF',min:1,max:20,step:1,v:10},{k:'V',l:'الجهد V',u:'V',min:0,max:300,step:10,v:200}],
+ calc:(s,P,B)=>{const C=s.a+s.b+s.c,Q=[s.a,s.b,s.c].map(c=>c*s.V);
+  return {facts:[['C = C<sub>1</sub>+C<sub>2</sub>+C<sub>3</sub>',DCML.fm(B,B.round(C,0))+' μF','hi'],['الجهد على كل مكثف',DCML.fm(B,B.round(s.V,0))+' V'],['الشحنة الكلية Q',DCML.fm(B,B.round(C*s.V,0))+' μC','hi']],
+   bars:Q.map((q,i)=>({l:`Q<sub>${i+1}</sub> = C<sub>${i+1}</sub> × V`,v:q,max:6000,u:'μC'})),
+   msg:'الجهد واحد، والشحنة تتجزأ: المكثف الأكبر سعة يأخذ الشحنة الأكبر (1-8).'}}})}
    ]},
 
   {st:2,short:'مثال (1-3)',title:'مثال <span class="ltr">(1-3)</span>: ثلاثة مكثفات على التوازي',ref:'ص 16–17',
@@ -864,7 +1112,16 @@ B.lesson({
       <div class="w-row"><button class="btn pri" type="button" onclick="var b=document.querySelector('.ltabs button[data-tab=examples]');if(b)b.click()">افتح الحل خطوة بخطوة في «الأمثلة المحلولة»</button></div></div>`},
     {book:String.raw`<p>حل آخر (الشحنة الكلية تساوي السعة الكلية مضروبة في قيمة فرق الجهد على المكثفات)</p>
      <div class="eq" style="position:relative;overflow-x:auto">$$Q=V\times C=200\times30\times10^{-6}=6\times10^{-3}\ C$$<span></span></div>`,ref:'ص 17'},
-    {tip:String.raw`<p>الحلّان للشحنة الكلية يعطيان الرقم نفسه، وهذا تحقق جيد من حلك: اجمع الشحنات \(Q_1+Q_2+Q_3\)، ثم قارن بـ \(V\times C\).</p>`}
+    {tip:String.raw`<p>الحلّان للشحنة الكلية يعطيان الرقم نفسه، وهذا تحقق جيد من حلك: اجمع الشحنات \(Q_1+Q_2+Q_3\)، ثم قارن بـ \(V\times C\).</p>`},
+    {title:'مختبر مصغّر: غيّر الجهد فقط',widget:(el,B)=>DCML.lab(el,B,{intro:'المكثفات <span class="ltr">8</span> و<span class="ltr">12</span> و<span class="ltr">10 μF</span> من المثال. الجهد <span class="ltr">200 V</span> من الكتاب، والقيمتان الأخريان للمقارنة.',
+ predict:{q:'لو صار الجهد <span class="ltr">100 V</span> بدل <span class="ltr">200 V</span>، فإن السعة المكافئة:',opts:[
+  ['تنقص إلى النصف',false,'الذي ينقص إلى النصف هو الشحنات، لا السعة.'],
+  ['تبقى <span class="ltr">30 μF</span>',true,'السعة المكافئة تعتمد على المكثفات وطريقة توصيلها فقط: \\(C=C_1+C_2+C_3\\).'],
+  ['تتضاعف',false,'الجهد لا يدخل في حساب السعة المكافئة.']]},
+ ins:[{k:'V',l:'جهد المصدر',seg:[[100,'100 V'],[200,'200 V (الكتاب)'],[300,'300 V']],v:200}],
+ calc:(s,P,B)=>{const Q=[8,12,10].map(c=>c*s.V*1e-6);const f=x=>DCML.fm(B,B.round(x*1e3,2))+' × 10⁻³ C';
+  return {facts:[['السعة المكافئة',(30)+' μF'],['Q<sub>1</sub> '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('(8 μF)'),f(Q[0])],['Q<sub>2</sub> '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('(12 μF)'),f(Q[1])],['Q<sub>3</sub> '+((x)=>'<bdi class="ltr">'+x+'</bdi>')('(10 μF)'),f(Q[2])],['الشحنة الكلية',f(Q[0]+Q[1]+Q[2]),'hi'],['V × C',f(30e-6*s.V),'hi']],
+   msg:'الحلّان للشحنة الكلية يتفقان دائماً: \\(Q_1+Q_2+Q_3=V\\times C\\).'}}})}
    ]},
 
   {st:3,short:'مثال (1-4)',title:'مثال <span class="ltr">(1-4)</span>: المكثفان نفساهما توالياً ثم توازياً',ref:'ص 17–19',
@@ -946,7 +1203,13 @@ B.lesson({
     {tip:String.raw`<p class="sub" style="margin-top:0">الكتاب لا يعطي إجابات. اضغط على التمرين لترى إجابة مقترحة.</p>
      <details class="cx-q"><summary>تمرين 3</summary><div class="cx-ans">\(C=15+6+4=25\ \mu F\)؛ الجهد <span class="ltr">250 V</span> على كل مكثف؛ \(Q_1=3.75\times10^{-3}\)، \(Q_2=1.5\times10^{-3}\)، \(Q_3=1\times10^{-3}\ C\) (والكلية \(6.25\times10^{-3}\ C\)).</div></details>
      <details class="cx-q"><summary>تمرين 4</summary><div class="cx-ans">\(C_{23}=16+4=20\ \mu F\)؛ \(C=\frac{5\times20}{5+20}=4\ \mu F\)؛ \(Q=4\times10^{-6}\times120=4.8\times10^{-4}\ C\)؛ \(V_1=96\ V\) و\(V_2=24\ V\) (على \(C_2\) و\(C_3\) معاً)؛ \(Q_1=4.8\times10^{-4}\)، \(Q_2=3.84\times10^{-4}\)، \(Q_3=9.6\times10^{-5}\ C\).</div></details>
-     <details class="cx-q"><summary>تمرين 5</summary><div class="cx-ans">\(C_{345}=10+3+7=20\ \mu F\)؛ \(\frac1C=\frac15+\frac14+\frac1{20}=0.5\) فتكون \(C=2\ \mu F\)؛ \(Q=2\times10^{-6}\times600=1.2\times10^{-3}\ C\)؛ \(V_1=240\ V\)، \(V_2=300\ V\)، \(V_3=60\ V\) (المجموع <span class="ltr">600 V</span>)؛ \(Q_1=Q_2=1.2\times10^{-3}\ C\)، \(Q_3=6\times10^{-4}\)، \(Q_4=1.8\times10^{-4}\)، \(Q_5=4.2\times10^{-4}\ C\).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'}
+     <details class="cx-q"><summary>تمرين 5</summary><div class="cx-ans">\(C_{345}=10+3+7=20\ \mu F\)؛ \(\frac1C=\frac15+\frac14+\frac1{20}=0.5\) فتكون \(C=2\ \mu F\)؛ \(Q=2\times10^{-6}\times600=1.2\times10^{-3}\ C\)؛ \(V_1=240\ V\)، \(V_2=300\ V\)، \(V_3=60\ V\) (المجموع <span class="ltr">600 V</span>)؛ \(Q_1=Q_2=1.2\times10^{-3}\ C\)، \(Q_3=6\times10^{-4}\)، \(Q_4=1.8\times10^{-4}\)، \(Q_5=4.2\times10^{-4}\ C\).</div></details>`,title:'إجابات مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: رتّب حل التمرين 5',widget:(el,B)=>DCML.order(el,B,{intro:'في الشكل <span class="ltr">(1-11)</span> المكثفات \\(C_3\\) و\\(C_4\\) و\\(C_5\\) على التوازي، ومجموعتها على التوالي مع \\(C_1\\) و\\(C_2\\). اضغط خطوات الحل بالترتيب.',steps:[
+ [String.raw`اجمع فروع التوازي: \(C_{345}=C_3+C_4+C_5\)`,'نختزل أولاً المجموعة التي على التوازي حتى تصبح الدائرة كلها توالياً.'],
+ [String.raw`اختزل التوالي: \(\frac1C=\frac1{C_1}+\frac1{C_2}+\frac1{C_{345}}\)`,'لا يمكن قانون التوالي قبل أن تصبح مجموعة التوازي مكثفاً واحداً.'],
+ [String.raw`الشحنة الكلية: \(Q=C\,V\)`,'الشحنة الكلية تحتاج السعة المكافئة للدائرة كلها.'],
+ [String.raw`الشحنة نفسها في عناصر التوالي: \(V_1=Q/C_1,\ V_2=Q/C_2,\ V_3=Q/C_{345}\)`,'الجهود تحتاج الشحنة Q أولاً.'],
+ [String.raw`الجهد \(V_3\) نفسه على فروع التوازي: \(Q_3=C_3V_3,\ Q_4=C_4V_3,\ Q_5=C_5V_3\)`,'شحنات الفروع تحتاج جهد المجموعة \\(V_3\\) أولاً.']],done:'نختزل حتى يبقى مكثف واحد، ثم نرجع إلى الخلف بالشحنة والجهد — كما في مثال <span class="ltr">(1-5)</span>.'})}
    ]},
 
   {recap:[
@@ -1121,7 +1384,16 @@ B.lesson({
      <ul><li>\(E=V/d\): <b>شدة المجال الكهربائي</b> بين اللوحين، بوحدة <span class="ltr">V/m</span>.</li>
      <li>\(D=\varepsilon E\): <b>كثافة الفيض الكهربائي</b>، بوحدة <span class="ltr">C/m²</span>.</li></ul>
      <p>فالطاقة في كل متر مكعب تزيد مع مربع شدة المجال: مجال أقوى (جهد أكبر أو مسافة أصغر) يخزن طاقة أكثر في الحجم نفسه.</p>`,title:'ما E و D؟'},
-    {watch:String.raw`<p>الحرف E هنا هو <b>شدة المجال الكهربائي</b>، وليس القوة الدافعة الكهربائية للبطارية التي ستراها بالحرف نفسه في الوحدة الثانية.</p>`}
+    {watch:String.raw`<p>الحرف E هنا هو <b>شدة المجال الكهربائي</b>، وليس القوة الدافعة الكهربائية للبطارية التي ستراها بالحرف نفسه في الوحدة الثانية.</p>`},
+    {title:'مختبر مصغّر: شدة المجال تصنع الفرق',widget:(el,B)=>DCML.lab(el,B,{intro:'عازل من الهواء (\\(\\varepsilon\\approx\\varepsilon_0\\)) بين لوحين. غيّر الجهد والمسافة (أرقام تختارها أنت). نستعمل القيمة الصحيحة \\(\\varepsilon_0=8.854\\times10^{-12}\\ \\text{F/m}\\) لا القيمة المطبوعة في الكتاب.',
+ predict:{q:'أبقينا الجهد كما هو وقرّبنا اللوحين إلى نصف المسافة. الطاقة في كل متر مكعب من العازل:',opts:[
+  ['تتضاعف',false,'المسافة داخل المربع: \\(\\frac12\\varepsilon(V/d)^2\\).'],
+  ['تصبح أربعة أضعاف',true,'\\(E=V/d\\) يتضاعف، والطاقة في وحدة الحجم تتناسب مع \\(E^2\\) (1-15).'],
+  ['لا تتغير لأن الجهد لم يتغير',false,'الذي يحدد الطاقة في وحدة الحجم هو شدة المجال \\(E=V/d\\)، لا الجهد وحده.']]},
+ ins:[{k:'V',l:'الجهد V',u:'V',min:0,max:1000,step:50,v:500},{k:'d',l:'المسافة d',u:'mm',min:0.5,max:5,step:0.5,v:2}],
+ calc:(s,P,B)=>{const E=s.V/(s.d*1e-3),w=0.5*8.854e-12*E*E;
+  return {facts:[['E = V ÷ d',DCML.fm(B,B.round(E/1e3,1))+' kV/m'],['½ ε E²',DCML.fm(B,B.round(w,4))+' J/m³','hi']],bars:[{l:'الطاقة في وحدة الحجم',v:w,max:0.5*8.854e-12*(1000/0.5e-3)**2,u:'J/m³'}],
+   msg:'جهد أكبر أو مسافة أصغر ← مجال أقوى ← طاقة أكثر في الحجم نفسه.'}}})}
    ]},
 
   {st:3,short:'مثال (1-6)',title:'مثال <span class="ltr">(1-6)</span>: توصيل مكثفين مشحونين',ref:'ص 21–22',
@@ -1166,7 +1438,17 @@ B.lesson({
    body:[
     {book:String.raw`<ol start="6"><li>مكثفان سعة الأول <span class="ltr">25μF</span> وفرق الجهد بين طرفيه <span class="ltr">1100V</span> وسعة الثاني <span class="ltr">15μF</span> وفرق الجهد بين طرفيه <span class="ltr">150V</span>. تم وصل المكثفات على التوازي. احسب الطاقة الكلية قبل التوصيل ومقدار فقدان الطاقة بعد التوصيل. احسب كذلك فرق الجهد الكلي بين طرفي المكثفات بعد التوصيل.</li></ol>`,ref:'ص 24'},
     {tip:String.raw`<p class="sub" style="margin-top:0">الكتاب لا يعطي إجابات. اضغط لترى إجابة مقترحة.</p>
-     <details class="cx-q"><summary>تمرين 6</summary><div class="cx-ans">\(Q_1=0.0275\ C\)، \(Q_2=0.00225\ C\)؛ \(W_1=15.125+0.16875=15.29375\ J\)؛ \(C=40\ \mu F\)، \(Q=0.02975\ C\)؛ \(W_2=\frac12\times0.02975^2/(40\times10^{-6})\approx11.063\ J\)؛ الفقد \(\approx4.23\ J\)؛ الجهد بعد التوصيل \(V=0.02975/(40\times10^{-6})=743.75\ V\).</div></details>`,title:'إجابة مقترحة (ليست من الكتاب)'}
+     <details class="cx-q"><summary>تمرين 6</summary><div class="cx-ans">\(Q_1=0.0275\ C\)، \(Q_2=0.00225\ C\)؛ \(W_1=15.125+0.16875=15.29375\ J\)؛ \(C=40\ \mu F\)، \(Q=0.02975\ C\)؛ \(W_2=\frac12\times0.02975^2/(40\times10^{-6})\approx11.063\ J\)؛ الفقد \(\approx4.23\ J\)؛ الجهد بعد التوصيل \(V=0.02975/(40\times10^{-6})=743.75\ V\).</div></details>`,title:'إجابة مقترحة (ليست من الكتاب)'},
+    {title:'مختبر مصغّر: كم يضيع عند التوصيل؟',widget:(el,B)=>DCML.lab(el,B,{intro:'القيم الأولى هي أرقام التمرين <span class="ltr">6</span>. حلّ التمرين وقارن، ثم حرّك القيم (أرقام تختارها أنت) لترى متى لا تضيع طاقة. نفترض كما في مثال <span class="ltr">(1-6)</span> أن الموجب يوصل بالموجب.',
+ predict:{q:'لو كان جهد المكثف الثاني <span class="ltr">1100 V</span> أيضاً قبل التوصيل، فإن الطاقة المفقودة:',opts:[
+  ['تبقى نفسها',false,'الفقد يأتي من انتقال شحنة بين جهدين مختلفين.'],
+  ['تصبح صفراً',true,'الجهدان متساويان فلا تنتقل شحنة من مكثف إلى الآخر، ولا تضيع طاقة.'],
+  ['تتضاعف',false,'كلما اقترب الجهدان قلّ الفقد.']]},
+ ins:[{k:'c1',l:'C<sub>1</sub>',u:'μF',min:5,max:50,step:5,v:25},{k:'v1',l:'V<sub>1</sub>',u:'V',min:0,max:1500,step:50,v:1100},{k:'c2',l:'C<sub>2</sub>',u:'μF',min:5,max:50,step:5,v:15},{k:'v2',l:'V<sub>2</sub>',u:'V',min:0,max:1500,step:50,v:150}],
+ calc:(s,P,B)=>{const a=s.c1*1e-6,b=s.c2*1e-6,Q=a*s.v1+b*s.v2,C=a+b,V=Q/C,W1=0.5*a*s.v1**2+0.5*b*s.v2**2,W2=0.5*Q*Q/C;
+  return {facts:[['الشحنة الكلية Q',DCML.fm(B,B.round(Q,5))+' C'],['الجهد بعد التوصيل',DCML.fm(B,B.round(V,2))+' V','hi'],['الطاقة قبل',DCML.fm(B,B.round(W1,3))+' J'],['الطاقة بعد',DCML.fm(B,B.round(W2,3))+' J'],['المفقود',DCML.fm(B,B.round(W1-W2,3))+' J',W1-W2>1e-9?'bad':'']],
+   bars:[{l:'الطاقة قبل التوصيل',v:W1,max:Math.max(W1,1e-9),u:'J',col:'--blue'},{l:'الطاقة بعد التوصيل',v:W2,max:Math.max(W1,1e-9),u:'J',col:'--on'}],
+   msg:s.v1===s.v2?'الجهدان متساويان: لا تنتقل شحنة ولا تضيع طاقة.':'الشحنة لا تضيع، لكن جزءاً من الطاقة يضيع حرارة وشرارة لحظة التوصيل.'}}})}
    ]},
 
   {recap:[

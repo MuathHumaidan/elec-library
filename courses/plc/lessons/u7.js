@@ -175,7 +175,228 @@ B.lesson({
  title:'العدادات: أنواعها ومداخلها ومخارجها',
  summary:'العداد التصاعدي S_CU والتنازلي S_CD، ومداخلهما CU و CD و S و PV و R، ومخارجهما Q و CV و CV_BCD، مع منضدة تجارب للشكل (1-7).',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,
+  /*PLCML-BEGIN*/(window.PLCML=window.PLCML||(function(){
+/* «مختبر مصغّر» لشبكة PLC — يكمّل DCML (يستعمل أنماطه نفسها): تبدّل المداخل وتشاهد الشبكة والمخارج.
+   o={intro, prog:[شبكات STL]|()=>[…], run:[أرقام الشبكات التي تُنفَّذ], show:[أرقام الشبكات المرسومة], view:'lad'|'fbd'|'stl', names:{عنوان:رمز},
+      ins:[{a:'I0.1', l:'نص', push:true, en:(P)=>متاح؟} | {a, on:'نص عند 1', off:'نص عند 0', v:0|1}],  (عنوان T يُضبط خرجه مباشرة)
+      words:[{k:'MW20', l, min, max, step, v}], time:[[ثوانٍ, 'نص الزر']], outs:[[عنوان, 'اسم', (P)=>نص اختياري]],
+      predict:{q, opts:[[نص, صحيح؟, السبب]]}, pic:(P,s)=>svg بدل رسم الشبكات, msg:(P,s,t)=>html, note:'html'} */
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const ensure=B=>{if(!document.getElementById('dcml-css'))try{DCML.tf(document.createElement('div'),B,{items:[]})}catch(e){}};
+const bd=x=>String(x).replace(/<span class="ltr">(.*?)<\/span>/g,'<bdi dir="ltr">$1</bdi>');
+const mmss=x=>{x=Math.max(0,Math.round(x));const m=Math.floor(x/60),s=x%60;return m+':'+String(s).padStart(2,'0')};
+function net(el,B,o){ensure(B);el.classList.add('ml');
+ const prog=typeof o.prog==='function'?o.prog():o.prog;const run=o.run||prog.map((_,i)=>i),show=o.show||run,view=o.view||'lad',names=o.names||{};
+ let P,t=0;const s={};
+ const put=(a,v)=>{if(a[0]==='T'){const m=P.timer(a);m.q=v?1:0;m.run=0}else P.set(a,v)};
+ const apply=()=>{o.ins.forEach(i=>{if(!i.push)put(i.a,s[i.a])});(o.words||[]).forEach(w=>{P.words[w.k]=s['w:'+w.k]})};
+ const scan=dt=>{apply();P.dt=dt;run.forEach(i=>P.runNet(i));t+=dt};
+ const reset=()=>{P=B.createPLC(prog);t=0;o.ins.forEach(i=>{s[i.a]=i.push?0:(i.v?1:0)});(o.words||[]).forEach(w=>{s['w:'+w.k]=w.v});if(o.init)o.init(P);scan(0.05);scan(0.05);t=0};
+ let h=o.intro?`<p class="ml-in">${o.intro}</p>`:'';
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}"><div class="ml-lbl">${o.inl||'اضغط لتغيير المداخل:'}</div><div class="ml-row" data-ins>${o.ins.map((i,k)=>`<button type="button" class="ml-b" data-k="${k}"></button>`).join('')}</div>`;
+ h+=(o.words||[]).map(w=>`<label class="ml-sl"><span class="ml-h"><span>${w.l}</span><b data-wv="${w.k}"></b></span><input type="range" data-w="${w.k}" min="${w.min}" max="${w.max}" step="${w.step||1}" value="${w.v}" aria-label="${String(w.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=o.time?`<div class="ml-row">${o.time.map(([d,l],k)=>`<button type="button" class="ml-b" data-t="${k}">${l}</button>`).join('')}</div>`:'';
+ h+=`<div class="ml-facts" data-outs></div><div data-net></div><div class="ml-fb" data-msg></div>${o.note?`<p class="ml-ill">${o.note}</p>`:''}<div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div></div>`;
+ el.innerHTML=h;try{B.math(el)}catch(e){}
+ const draw=()=>{
+  qa(el,'[data-ins] [data-k]').forEach(b=>{const i=o.ins[+b.dataset.k];if(i.push){b.innerHTML=i.l;b.disabled=!!(i.en&&!i.en(P));return}const v=s[i.a];b.setAttribute('aria-pressed',String(!!v));b.innerHTML=(v?i.on:i.off)||`${i.l} = <span class="ltr">${v}</span>`});
+  (o.words||[]).forEach(w=>{q(el,`[data-wv="${w.k}"]`).textContent=s['w:'+w.k]});
+  q(el,'[data-outs]').innerHTML=o.outs.map(([a,l,f])=>{const v=P.get(a),tm=a[0]==='T'&&P.tim[a];const rem=tm&&tm.run?` <small>(باقٍ <span class="ltr">${mmss(tm.tv-tm.el)}</span>)</small>`:'';
+   return `<div class="${!f&&v?'hi':''}"><span>${bd(l+rem)}</span><b>${f?f(P):v}</b></div>`}).join('')+(o.time?`<div><span>الزمن منذ البداية</span><b>${mmss(t)}</b></div>`:'');
+  q(el,'[data-net]').innerHTML=(o.pic?`<div class="svgbox" style="margin-top:10px">${o.pic(P,s)}</div>`:'')+show.map(i=>{const n=P.nets[i];const body=view==='stl'?`<div class="tablebox">${B.stlTable(n,P)}</div>`:`<div class="svgbox fixed">${view==='fbd'?B.fbdNetwork(n,P,names):B.ladNetwork(n,P,names)}</div>`;
+   return `<div class="net" style="margin-top:10px"><header><h3>${n.title}</h3></header>${body}</div>`}).join('');
+  const m=q(el,'[data-msg]');m.innerHTML=o.msg?o.msg(P,s,t)||'':'';try{if(m.innerHTML)B.math(m)}catch(e){}};
+ qa(el,'[data-ins] [data-k]').forEach(b=>b.onclick=()=>{const i=o.ins[+b.dataset.k];
+  if(i.push){put(i.a,1);scan(0.1);scan(0.1);put(i.a,0);scan(0.1);scan(0.1)}else{s[i.a]=s[i.a]?0:1;scan(0.1);scan(0.1)}draw()});
+ qa(el,'input[data-w]').forEach(inp=>inp.oninput=()=>{s['w:'+inp.dataset.w]=+inp.value;scan(0.1);draw()});
+ qa(el,'[data-t]').forEach(b=>b.onclick=()=>{const d=o.time[+b.dataset.t][0];for(let n=Math.round(d/0.1);n>0;n--)scan(0.1);draw()});
+ q(el,'[data-rs]').onclick=()=>{reset();qa(el,'input[data-w]').forEach(inp=>inp.value=s['w:'+inp.dataset.w]);draw()};
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]'),body=q(el,'.ml-body');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;try{B.math(fb)}catch(e){}
+   body.classList.remove('ml-lock');q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ reset();draw();return {P:()=>P,draw}}
+return {net,mmss};
+})())/*PLCML-END*/,{intro:true}),
 
   {st:1,short:'ماذا ستتعلم؟',title:'الوحدة السابعة: تطبيق على محرك الخطوة',ref:'ص 126',
    q:'محرك يتحرك بخطوات صغيرة مع كل نبضة… لماذا تبدأ وحدته بدرس عن العدادات؟',
@@ -197,7 +418,11 @@ B.lesson({
      <p><b>الوسائل المساعدة:</b> مختبر التحكم المنطقي المبرمج – حاسب آلي – جهاز عرض (داتا شو) – سبورة – كراسة الطالب – قلم.</p>
      <p><b>متطلبات الجدارة:</b> اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.</p>`,ref:'ص 126'},
     {tip:String.raw`<p>محرك الخطوة يتحرك زاوية صغيرة ثابتة مع كل نبضة. فإذا أردنا أن يتحرك مقداراً محدداً فعلينا أن <b>نعدّ النبضات</b>، ولهذا تبدأ الوحدة بالعدادات (هذا الدرس)، ثم المحرك نفسه (الدرس الثاني)، ثم التحكم في عدد دوراته بالعداد (الدرس الثالث).</p>`,title:'خريطة الوحدة'},
-    {watch:String.raw`<p>الجزء «ثالثاً» غير موجود في الوحدة: لا برنامج <span class="ltr">LAD</span> ولا <span class="ltr">FBD</span> ولا <span class="ltr">STL</span> ولا جدول دخل وخرج للمحرك. البرامج التي ستراها في الدرسين الثاني والثالث <b>من إعداد المحاكاة وليست من الكتاب</b>.</p>`,fix:true}
+    {watch:String.raw`<p>الجزء «ثالثاً» غير موجود في الوحدة: لا برنامج <span class="ltr">LAD</span> ولا <span class="ltr">FBD</span> ولا <span class="ltr">STL</span> ولا جدول دخل وخرج للمحرك. البرامج التي ستراها في الدرسين الثاني والثالث <b>من إعداد المحاكاة وليست من الكتاب</b>.</p>`,fix:true},
+    {title:'تحقق سريع: ماذا في هذه الوحدة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب صفحة بداية الوحدة (ص 126).',items:[
+ [String.raw`تبدأ الوحدة بالعدادات قبل محرك الخطوة.`,true,String.raw`«أولاً: العدادات» ثم «ثانياً: فكرة عمل محرك الخطوة»، لأن التحكم في المحرك يعني عدّ نبضاته.`],
+ [String.raw`يوجد في الوحدة برنامج <span class="ltr">LAD</span> جاهز للتحكم في محرك الخطوة.`,false,String.raw`الكتاب يعد بـ «ثالثاً: كتابة برنامج … باللغة <span class="ltr">LAD</span>»، لكن هذا الجزء غير موجود؛ البرامج في الدرسين التاليين من إعداد المحاكاة.`],
+ [String.raw`من متطلبات الجدارة اجتياز ورشة التحكم في المحركات الثلاثية الأوجه.`,true,'هكذا جاء في «متطلبات الجدارة» في الصفحة نفسها.']]})}
    ]},
 
   {st:2,short:'مقدمة',title:'أولاً: العدادات — 1- مقدمة عن العدادات',ref:'ص 127',
@@ -213,7 +438,12 @@ B.lesson({
    body:[
     {book:String.raw`<p>تستخدم العدادات في التطبيقات الصناعية على نطاق واسع، لعدة أغراض منها القيام بعدّ منتج معين في أحد خطوط الإنتاج. كما تستخدم في أغراض التحكم في المزمنات وذلك باستخدام التغير الذي يحدث في الخرج من هذه العدادات.</p>`,ref:'ص 127'},
     {tip:String.raw`<p>العداد يحفظ <b>عدد المرات</b> التي وصلت فيها إشارة إلى مدخله. وعندما يتغير خرجه (مثلاً عند الوصول إلى قيمة معينة) نستطيع أن نستخدم هذا التغير لتشغيل مزمن أو إيقافه، أو لتشغيل حمل آخر.</p>`},
-    {add:String.raw`<p>عدّ العلب حتى يمتلئ الكرتون، وعدّ السيارات الداخلة إلى موقف لمعرفة الأماكن الفارغة، وعدّ القطع التي تنتجها آلة في الوردية… كلها تطبيقات للعدادات في المصانع والمباني.</p>`,title:'أين تجده؟'}
+    {add:String.raw`<p>عدّ العلب حتى يمتلئ الكرتون، وعدّ السيارات الداخلة إلى موقف لمعرفة الأماكن الفارغة، وعدّ القطع التي تنتجها آلة في الوردية… كلها تطبيقات للعدادات في المصانع والمباني.</p>`,title:'أين تجده؟'},
+    {title:'مختبر مصغّر: عداد أم مزمن؟',widget:(el,B)=>DCML.sort(el,B,{intro:'العداد يجيب عن «كم مرة؟» والمزمن يجيب عن «كم من الوقت؟». اختر العنصر المناسب لكل مهمة (أمثلة من خارج الكتاب).',cats:['عداد','مزمن'],items:[
+ ['إيقاف سير التعبئة بعد مرور عدد محدد من العلب.',0,'المطلوب عدد مرات مرور العلب أمام الحساس، وهذا عمل العداد كما في الكتاب «عدّ منتج معين في أحد خطوط الإنتاج».'],
+ ['تشغيل مروحة مدة محددة بعد الضغط على زر ثم فصلها.',1,'المطلوب قياس زمن، لا عدد مرات؛ هذا عمل المزمن.'],
+ ['معرفة عدد السيارات الداخلة إلى موقف.',0,'كل سيارة تمر نبضة واحدة، والعداد يجمع هذه النبضات.'],
+ ['تشغيل مزمن بعد أن يكتمل عدد معين من القطع.',0,'هنا العداد هو الذي يعدّ، ثم «التغير الذي يحدث في الخرج» من العداد يشغّل المزمن، كما يقول الكتاب.']]})}
    ]},
 
   {st:3,short:'أنواع العدادات',title:'2- أنواع العدادات',ref:'ص 127',
@@ -232,7 +462,12 @@ B.lesson({
      ['من القيمة المحددة إلى الصفر',true,'الكتاب: «يتم العد بطريقة تنازلية من القيمة المحددة للعداد إلى القيمة الصفر» (ص 127).'],
      ['من الصفر إلى ما لا نهاية',false,'للعد حد أقصى، وسيأتي في المحطة التالية.']]}},
     {book:String.raw`<p>ويشبه تمثيل العداد إلى حد كبير تمثيل المزمن والشكل (1-7) يبين شكل العداد. حيث إنه يوجد له عدد من المداخل. وعدد من المخارج وهي على النحو التالي:</p>`,ref:'ص 127'},
-    {tip:String.raw`<p>مثل صندوق المزمن الذي درسته: صندوق مستطيل، <b>مداخله على اليسار</b> و<b>مخارجه على اليمين</b>، وفوقه اسمه (مثل <span class="ltr">C1</span>). المحطتان التاليتان تشرحان المداخل ثم المخارج.</p>`}
+    {tip:String.raw`<p>مثل صندوق المزمن الذي درسته: صندوق مستطيل، <b>مداخله على اليسار</b> و<b>مخارجه على اليمين</b>، وفوقه اسمه (مثل <span class="ltr">C1</span>). المحطتان التاليتان تشرحان المداخل ثم المخارج.</p>`},
+    {title:'مختبر مصغّر: تصاعدي أم تنازلي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'اختر نوع العداد المناسب لكل وصف بحسب تعريف الكتاب (ص 127).',cats:[String.raw`تصاعدي <span class="ltr">CU</span>`,String.raw`تنازلي <span class="ltr">CD</span>`],items:[
+ ['يبدأ العد من الصفر ويزيد مع كل نبضة.',0,'تعريف الكتاب: «يتم العد بطريقة تصاعدية من القيمة الصفر إلى القيمة المحددة للعداد».'],
+ ['يبدأ من القيمة المحددة وينتهي عند الصفر.',1,'تعريف الكتاب: «يتم العد بطريقة تنازلية من القيمة المحددة للعداد إلى القيمة الصفر».'],
+ ['نريد أن نعرف كم قطعة أنتجت الآلة منذ بداية الوردية.',0,'السؤال «كم مرة حدث؟» يناسبه العد الصاعد من الصفر.'],
+ ['نريد أن نعرف كم خطوة بقيت للمحرك حتى يصل إلى العدد المطلوب.',1,'نضع العدد المطلوب ثم ننقص واحداً مع كل خطوة؛ الصفر يعني «انتهى». هذه فكرة الدرس الثالث.']]})}
    ]},
 
   {st:4,short:'المداخل',title:'المداخل',ref:'ص 127',
@@ -257,7 +492,20 @@ B.lesson({
     {predict:{q:'ما أكبر قيمة يمكن أن يصل إليها العد حسب الكتاب؟',opts:[
      ['999',true,'«حتى الرقم (999) وهو أقصى قيمة للعد» (ص 127).'],
      ['99',false,'العداد يحمل ثلاثة أرقام عشرية، فأقصى قيمة 999.'],
-     ['لا حد للعد',false,'الكتاب يحدد أقصى قيمة للعد بالرقم 999.']]}}
+     ['لا حد للعد',false,'الكتاب يحدد أقصى قيمة للعد بالرقم 999.']]}},
+    {title:'مختبر مصغّر: جرّب مداخل العداد C1',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`عداد تصاعدي <span class="ltr">C1</span> كما في الشكل <span class="ltr">(1-7)</span>: الضاغط على <span class="ltr">CU</span> يعدّ، و<span class="ltr">S</span> يضع القيمة <span class="ltr">PV</span> المخزنة في <span class="ltr">MW20</span>، و<span class="ltr">R</span> يصفّر.`,
+ predict:{q:String.raw`العد الآن <span class="ltr">3</span>، والقيمة في <span class="ltr">MW20</span> هي <span class="ltr">5</span>. ضغطت على <span class="ltr">S</span>. كم يصبح العد؟`,opts:[
+  [String.raw`<span class="ltr">0</span>، لأن الكتاب يقول إن <span class="ltr">S</span> لإعادة التصفير`,false,String.raw`هذا ما يقوله نص الكتاب، لكنه غير دقيق (انظر «انتبه» أعلاه): التصفير عمل الطرف <span class="ltr">R</span>.`],
+  [String.raw`<span class="ltr">8</span>، لأن <span class="ltr">S</span> يضيف <span class="ltr">PV</span> إلى العد`,false,String.raw`<span class="ltr">S</span> لا يجمع؛ هو يكتب القيمة مكان القيمة الموجودة.`],
+  [String.raw`<span class="ltr">5</span>، لأن <span class="ltr">S</span> يضع في العداد القيمة <span class="ltr">PV</span>`,true,String.raw`في عدادات Siemens لحظة تغيّر <span class="ltr">S</span> من 0 إلى 1 تُكتب <span class="ltr">PV</span> في العداد مهما كانت القيمة قبلها.`]]},
+ prog:[PROG_CNT[0]],show:[],
+ ins:[{a:'I0.1',l:String.raw`اضغط <span class="ltr">CU</span> (<span class="ltr">I0.1</span>) واتركه`,push:true},{a:'I0.2',l:String.raw`اضغط <span class="ltr">S</span> (<span class="ltr">I0.2</span>) واتركه`,push:true},{a:'I0.0',l:String.raw`اضغط <span class="ltr">R</span> (<span class="ltr">I0.0</span>) واتركه`,push:true}],
+ words:[{k:'MW20',l:String.raw`القيمة <span class="ltr">PV</span> في <span class="ltr">MW20</span>`,min:0,max:20,v:5}],
+ outs:[['C1','قيمة العد CV',P=>P.cnt.C1?P.cnt.C1.v:0],['Q4.4',String.raw`المخرج <span class="ltr">Q</span> (<span class="ltr">Q4.4</span>)`]],
+ pic:(P)=>counterBoxSVG({type:'S_CU',name:'C1',inp:['I0.1','I0.2','I0.0'],pv:'MW20',q:'Q4.4',live:1,v:{cu:0,s:0,r:0,q:P.get('Q4.4'),cv:P.cnt.C1?P.cnt.C1.v:0,pv:P.words.MW20}}),
+ msg:P=>{const v=P.cnt.C1?P.cnt.C1.v:0;return v===0?String.raw`العد صفر، فالمخرج <span class="ltr">Q4.4 = 0</span>. اضغط <span class="ltr">CU</span> عدة مرات، أو <span class="ltr">S</span> لتحميل <span class="ltr">PV</span>.`:v>(P.words.MW20||0)?String.raw`العد تجاوز <span class="ltr">PV</span> ولم يتوقف: في Siemens يستمر العد الصاعد حتى <span class="ltr">999</span>، و<span class="ltr">PV</span> لا تُستعمل إلا عند الضغط على <span class="ltr">S</span>.`:String.raw`كل ضغطة على <span class="ltr">CU</span> تزيد العد واحداً مهما طال الضغط، و<span class="ltr">Q4.4 = 1</span> ما دام العد أكبر من صفر.`},
+ note:String.raw`<span class="ltr">PV</span> هنا <b>أرقام تختارها أنت</b> (الكتاب لا يحدد قيمة لـ <span class="ltr">MW20</span>). المنزلق حتى <span class="ltr">20</span> للتجربة فقط؛ أقصى قيمة للعد في الكتاب <span class="ltr">999</span>.`})}
    ]},
 
   {st:5,short:'المخارج',title:'المخارج',ref:'ص 128',
@@ -316,7 +564,13 @@ B.lesson({
      ['لم يتغير، لأن I0.1 موصول على R',false,'I0.1 موصول على CU، والموصول على R هو I0.0.'],
      ['نقص ثلاث عدّات',false,'C1 عداد تصاعدي (S_CU)، ومدخل CU يزيد العد ولا ينقصه.'],
      ['زاد ثلاث عدّات',true,'I0.1 موصول على المدخل CU للعداد التصاعدي C1، وكل ضغطة تزيده واحداً.']]}},
-    {tip:String.raw`<p>جرّب العدادين بنفسك في تبويب «المختبر»: غيّر <span class="ltr">PV</span>، واضغط <span class="ltr">CU</span> و<span class="ltr">CD</span> و<span class="ltr">S</span> و<span class="ltr">R</span>، وراقب <span class="ltr">CV</span> و<span class="ltr">CV_BCD</span> والمخرجين <span class="ltr">Q4.4</span> و<span class="ltr">Q5.5</span>.</p>`}
+    {tip:String.raw`<p>جرّب العدادين بنفسك في تبويب «المختبر»: غيّر <span class="ltr">PV</span>، واضغط <span class="ltr">CU</span> و<span class="ltr">CD</span> و<span class="ltr">S</span> و<span class="ltr">R</span>، وراقب <span class="ltr">CV</span> و<span class="ltr">CV_BCD</span> والمخرجين <span class="ltr">Q4.4</span> و<span class="ltr">Q5.5</span>.</p>`},
+    {title:'مختبر مصغّر: لأي عداد هذا العنوان؟',widget:(el,B)=>DCML.sort(el,B,{intro:String.raw`في الشكل <span class="ltr">(1-7)</span> عنوانان لكل طرف. اختر العداد الذي يحمل كل عنوان، ثم اقرأ دوره.`,cats:[String.raw`<span class="ltr">C1</span> التصاعدي`,String.raw`<span class="ltr">C2</span> التنازلي`],items:[
+ [String.raw`<span class="ltr">I1.1</span>`,1,String.raw`<span class="ltr">I1.1</span> على المدخل <span class="ltr">CD</span> للعداد <span class="ltr">C2</span>: كل ضغطة تنقصه واحداً.`],
+ [String.raw`<span class="ltr">MW20</span>`,0,String.raw`<span class="ltr">MW20</span> على المدخل <span class="ltr">PV</span> للعداد <span class="ltr">C1</span>: منها تؤخذ القيمة عند الضغط على <span class="ltr">S</span> (<span class="ltr">I0.2</span>).`],
+ [String.raw`<span class="ltr">Q5.5</span>`,1,String.raw`<span class="ltr">Q5.5</span> على المخرج <span class="ltr">Q</span> للعداد <span class="ltr">C2</span>.`],
+ [String.raw`<span class="ltr">I0.0</span>`,0,String.raw`<span class="ltr">I0.0</span> على الطرف <span class="ltr">R</span> للعداد <span class="ltr">C1</span>: يصفّره. أما <span class="ltr">R</span> للعداد <span class="ltr">C2</span> فهو <span class="ltr">I1.0</span>.`],
+ [String.raw`<span class="ltr">MW30</span>`,1,String.raw`<span class="ltr">MW30</span> هي <span class="ltr">PV</span> للعداد <span class="ltr">C2</span>.`]]})}
    ]},
 
   {recap:[
@@ -549,7 +803,19 @@ B.lesson({
      ['نزيد عدد النبضات',false,'عدد النبضات يحدد مقدار الحركة، لا اتجاهها.']]}},
     {tip:String.raw`<p>في رسم الكتاب المبسط يدور المغناطيس ثُمن دورة (<span class="ltr">45°</span>) بين كل رسم والذي يليه، أما المحرك الحقيقي المستخدم فيتحرك عموده <span class="ltr">7.5°</span> فقط مع كل نبضة، لأن عضوه الدائر فيه أقطاب (أسنان) كثيرة. الرسم يشرح <b>الفكرة</b>، وليس الزاوية الحقيقية.</p>`,title:'الرسم مبسّط'},
     {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> رموز الإشارات (<span class="ltr">+</span> و<span class="ltr">−</span> و<span class="ltr">0</span>) تحت الرسوم لا تتفق دائماً مع مستويات <span class="ltr">A</span> و<span class="ltr">B</span> و<span class="ltr">C</span> و<span class="ltr">D</span> في المخطط الزمني: في الخطوة 1 مثلاً <span class="ltr">A = 0</span> لكنه مرسوم <span class="ltr">A−</span>، وفي الخطوة 2 <span class="ltr">A = 0</span> مرسوم <span class="ltr">A0</span>. كما أن رسم التركيبة (ص 129) يجعل <span class="ltr">A</span> و<span class="ltr">C</span> طرفي ملف واحد، بينما الرموز تعطي <span class="ltr">A</span> و<span class="ltr">C</span> إشارتين مستقلتين (<span class="ltr">A−</span> مع <span class="ltr">C−</span> في الخطوة 1). الكتاب لا يشرح العلاقة بين الإشارة المنطقية والقطبية، فنقلناهما كما هما.</p>`,fix:true},
-    {tip:String.raw`<p>نفّذ الخطوات الثماني بيدك، نبضة نبضة، وشاهد العمود يتحرك <span class="ltr">7.5°</span> مع كل نبضة، في تبويب «المختبر».</p>`}
+    {tip:String.raw`<p>نفّذ الخطوات الثماني بيدك، نبضة نبضة، وشاهد العمود يتحرك <span class="ltr">7.5°</span> مع كل نبضة، في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: كوّن الخطوة بنفسك',widget:(el,B)=>DCML.lab(el,B,{
+ intro:String.raw`اضغط الأطراف لتضع عليها جهداً (1) أو تزيله (0)، وشاهد وضع العضو الدائر في الرسم المبسط كما في ص 130. نبدأ من الخطوة <span class="ltr">4</span>.`,
+ predict:{q:String.raw`في الخطوة <span class="ltr">4</span> الجهد على <span class="ltr">A</span> وحده. للانتقال إلى الخطوة <span class="ltr">5</span> أي طرف نضيف؟`,opts:[
+  [String.raw`<span class="ltr">B</span>`,false,String.raw`<span class="ltr">A</span> مع <span class="ltr">B</span> نمط لا يوجد في جدول الخطوات.`],
+  [String.raw`<span class="ltr">D</span>`,false,String.raw`<span class="ltr">A</span> مع <span class="ltr">D</span> هي الخطوة <span class="ltr">3</span>، أي رجوع خطوة للخلف.`],
+  [String.raw`<span class="ltr">C</span>`,true,String.raw`في الجدول تكون الخطوة <span class="ltr">5</span> بجهد على <span class="ltr">A</span> و<span class="ltr">C</span>. خطوة فيها طرف واحد، ثم خطوة فيها طرفان، بالتناوب.`]]},
+ ins:['A','B','C','D'].map((l,i)=>({k:l,l,sw:true,v:i===0?1:0,on:String.raw`<span class="ltr">${l} = 1</span>`,off:String.raw`<span class="ltr">${l} = 0</span>`})),
+ calc:(s)=>{const bits=[s.A,s.B,s.C,s.D].map(x=>x?1:0),k=kOf(bits);const on=b=>['A','B','C','D'].filter((l,i)=>b[i]).map(l=>`<span class="ltr">${l}</span>`).join(' و')||'لا شيء';
+  if(!k)return {facts:[['رقم الخطوة','—','bad']],cls:'warn',msg:String.raw`هذا النمط (${on(bits)}) ليس من الخطوات الثماني في جدول ص 130، فلا نعرف من الكتاب أين يقف العضو الدائر. ارجع إلى نمط من الجدول.`};
+  const nx=k%8+1,pv=(k+6)%8+1;
+  return {pic:`<div style="max-width:170px;margin-inline:auto">${rotorMini(k)}</div>`,facts:[['رقم الخطوة',String(k),'hi'],['أطراف عليها جهد',String(bits.filter(Boolean).length)]],
+   msg:String.raw`الخطوة <span class="ltr">${k}</span>: الجهد على ${on(bits)}. الخطوة التالية (<span class="ltr">${nx}</span>) جهدها على ${on(SEQ[nx-1])}، والسابقة (<span class="ltr">${pv}</span>) جهدها على ${on(SEQ[pv-1])}. إذا غيّرت الأطراف إلى التالية يتحرك المحرك خطوة للأمام، وإلى السابقة خطوة للخلف.`}}})}
    ]},
 
   {st:3,short:'المطلوب',title:'المطلوب',ref:'ص 130',
@@ -565,7 +831,11 @@ B.lesson({
      ['النبضات التي تصل إلى المحرك',true,'كل نبضة تحرّك المحرك 7.5°، فعدد النبضات يحدد الزاوية وعدد الدورات.'],
      ['عدد ملفات المحرك',false,'للمحرك ملفان فقط، وعددهما لا يتغير.']]}},
     {watch:String.raw`<p><b>ملاحظة على الكتاب:</b> في ص 126 يعد الكتاب بـ «ثالثاً: كتابة برنامج للتحكم بمحرك الخطوة باستخدام (<span class="ltr">PLC</span>) باللغة (<span class="ltr">LAD</span>)»، لكن هذا الجزء <b>غير موجود</b>. لذلك في المختبر طريقتان: «تسلسل الكتاب يدوياً»، و«برنامج <span class="ltr">PLC</span>» كتبناه نحن ومعلَّم بوضوح أنه <b>ليس من الكتاب</b>: فيه عداد <span class="ltr">C1</span> رقمه رقم الخطوة، ومزمن <span class="ltr">T1</span> يولّد النبضات، ومفتاح <span class="ltr">S2</span> للاتجاه.</p>`,fix:true},
-    {tip:String.raw`<p>هذا المطلوب نطبّقه في الدرس التالي: تكتب عدد الخطوات المطلوب، فيعدّها العداد ويوقف المحرك عند الوصول إليها.</p>`}
+    {tip:String.raw`<p>هذا المطلوب نطبّقه في الدرس التالي: تكتب عدد الخطوات المطلوب، فيعدّها العداد ويوقف المحرك عند الوصول إليها.</p>`},
+    {title:'تحقق سريع: ماذا يطلب الكتاب؟',widget:(el,B)=>DCML.tf(el,B,{intro:'احكم على كل عبارة بحسب فقرة «المطلوب» (ص 130).',items:[
+ [String.raw`العداد في هذا المطلوب يعدّ نبضات (خطوات) المحرك، ومنها نعرف عدد الدورات.`,true,String.raw`المحرك يتحرك خطوة مع كل نبضة، فعدد الدورات يُعرف من عدد النبضات (<span class="ltr">7.5°</span> لكل نبضة، ص 129).`],
+ [String.raw`يطلب الكتاب أن يكون العد تصاعدياً فقط.`,false,'نص المطلوب: «من خلال العداد تصاعدياً أو تنازلياً».'],
+ [String.raw`يقدّم الكتاب بعد المطلوب برنامجاً جاهزاً بلغة <span class="ltr">LAD</span>.`,false,'الكتاب يكتفي بنص المطلوب؛ الحل في الدرس التالي من إعداد المحاكاة.']]})}
    ]},
 
   {recap:[
@@ -677,7 +947,21 @@ B.lesson({
      ['القيمة PV كاملة',false,'C2 نقص مع كل خطوة نُفّذت قبل الإيقاف.'],
      ['عدد الخطوات التي لم تُنفَّذ',true,'C2 يعدّ تنازلياً المتبقي، فيحفظ ما بقي لحظة الإيقاف.']]}},
     {tip:String.raw`<p>العداد يعدّ مرة واحدة عند تغيّر مدخله من <span class="ltr">0</span> إلى <span class="ltr">1</span> (المحطة الرابعة في الدرس الأول)، لذلك صُمم المزمن <span class="ltr">T1</span> ليعطي نبضة قصيرة متكررة: يعدّ حتى ينتهي زمنه، فيصبح <span class="ltr">1</span>، فيقطع نفسه بالتلامس <span class="ltr mono">AN T 1</span> ويبدأ من جديد.</p>`,title:'لماذا نبضة قصيرة؟'},
-    {tip:String.raw`<p>جرّب الحل في تبويب «المختبر»: اكتب عدد الخطوات، واضغط <span class="ltr">S1</span>، وراقب <span class="ltr">C2</span> ينقص و<span class="ltr">C3</span> يزيد حتى يقف المحرك وحده. والبرنامج كاملاً بلغات <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span> في تبويب «برنامج الـ <span class="ltr">PLC</span>».</p>`}
+    {tip:String.raw`<p>جرّب الحل في تبويب «المختبر»: اكتب عدد الخطوات، واضغط <span class="ltr">S1</span>، وراقب <span class="ltr">C2</span> ينقص و<span class="ltr">C3</span> يزيد حتى يقف المحرك وحده. والبرنامج كاملاً بلغات <span class="ltr">LAD</span> و<span class="ltr">FBD</span> و<span class="ltr">STL</span> في تبويب «برنامج الـ <span class="ltr">PLC</span>».</p>`},
+    {title:'مختبر مصغّر: من يوقف المحرك؟',widget:(el,B)=>PLCML.net(el,B,{
+ intro:String.raw`ثلاث شبكات من الحل المقترح (ليست من الكتاب): تحميل <span class="ltr">C2</span> وتصفير <span class="ltr">C3</span>، والتشغيل والإيقاف التلقائي <span class="ltr">M0.0</span>، وعدّ الخطوات. كل ضغطة على زر النبضة تمثّل نبضة واحدة من <span class="ltr">T1</span> = خطوة واحدة للمحرك.`,
+ predict:{q:String.raw`في <span class="ltr">MW10</span> القيمة <span class="ltr">3</span>. ضغطت <span class="ltr">S1</span> ثم جاءت ثلاث نبضات من <span class="ltr">T1</span>. ماذا يحدث؟`,opts:[
+  [String.raw`يستمر المحرك، ويصبح <span class="ltr">C2</span> سالباً`,false,String.raw`العداد لا ينزل تحت الصفر، والشبكة الثانية تراقب الصفر.`],
+  [String.raw`يقف المحرك وحده: <span class="ltr">C2 = 0</span> فيُلغى <span class="ltr">M0.0</span>`,true,String.raw`السطران <span class="ltr mono">A M 0.0</span> و<span class="ltr mono">AN C 2</span> يلغيان التشغيل عندما يصل المتبقي إلى الصفر.`],
+  [String.raw`يعود <span class="ltr">C3</span> إلى الصفر ويبدأ العد من جديد`,false,String.raw`<span class="ltr">C3</span> لا يُصفَّر إلا بالضغط على <span class="ltr">S1</span>؛ يبقى فيه عدد الخطوات المنفّذة.`]]},
+ prog:PROG_COUNT.filter(n=>/تحميل عدد|التشغيل والإيقاف التلقائي|عدّ الخطوات/.test(n.title)),
+ ins:[{a:'I0.1',l:String.raw`اضغط <span class="ltr">S1</span> (تشغيل)`,push:true},{a:'I0.0',l:String.raw`اضغط <span class="ltr">S0</span> (إيقاف)`,push:true},
+  {a:'T1',l:String.raw`نبضة من <span class="ltr">T1</span> (خطوة)`,push:true,en:P=>!!P.get('M0.0')}],
+ words:[{k:'MW10',l:String.raw`عدد الخطوات المطلوب في <span class="ltr">MW10</span>`,min:1,max:12,v:3}],
+ outs:[['M0.0',String.raw`التشغيل <span class="ltr">M0.0</span>`],['C2',String.raw`المتبقي <span class="ltr">C2</span>`,P=>P.cnt.C2?P.cnt.C2.v:0],['C3',String.raw`المنفّذ <span class="ltr">C3</span>`,P=>P.cnt.C3?P.cnt.C3.v:0]],
+ msg:(P)=>{const c2=P.cnt.C2?P.cnt.C2.v:0,c3=P.cnt.C3?P.cnt.C3.v:0;if(P.get('M0.0'))return String.raw`المحرك يعمل. أعطِ نبضات وراقب: <span class="ltr">C2 + C3 = ${c2+c3}</span> ثابت ويساوي <span class="ltr">PV</span>.`;
+  return c3?String.raw`المحرك متوقف بعد <span class="ltr">${c3}</span> خطوة. زر النبضة معطّل لأن <span class="ltr">T1</span> في الحل الكامل لا يعطي نبضات إلا أثناء التشغيل.`:String.raw`المحرك متوقف. اختر عدد الخطوات ثم اضغط <span class="ltr">S1</span>.`},
+ note:String.raw`عدد الخطوات هنا <b>أرقام تختارها أنت</b> (حتى <span class="ltr">12</span> للتجربة؛ الدورة الكاملة <span class="ltr">48</span> خطوة).`})}
    ]},
 
   {recap:[
