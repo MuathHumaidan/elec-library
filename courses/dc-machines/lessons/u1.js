@@ -250,7 +250,183 @@ B.lesson({
  title:'تمهيد: السلامة في المختبر، وكتابة التقرير، ورسم المنحنيات',
  summary:'قبل التجارب: لماذا نختبر الآلات (الاختبارات التقليدية واختبارات القبول)، وإرشادات الوقاية في المختبر، وقواعد توصيل الدائرة، وكيف تكتب تقرير التجربة وترسم «أقرب منحنى» بين النقاط كما في الشكل (أ)، ثم أهداف الوحدة الأولى.',
  stations:[
-  {intro:true},
+  (/*DCML-BEGIN*/(window.DCML=window.DCML||(function(){
+/* «مختبر مصغّر» — أدوات صغيرة مشتركة لمحطات الأسلوب التفاعلي في مقرر آلات التيار المستمر والمحولات.
+   تُعرَّف مرة واحدة (أول درس في كل ملف وحدة يحمل نسخة مطابقة، والأولى التي تُحمَّل هي المستعملة). */
+const css=`
+.ml{--mlh:42px}
+.ml .ml-in{margin:0 0 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.ml .ml-b{font:inherit;font-size:14px;min-height:var(--mlh);padding:7px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.5;text-align:start}
+.ml .ml-b:hover:not(:disabled){border-color:var(--blue)}
+.ml .ml-b:disabled{cursor:default}
+.ml .ml-b[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ml .ml-b.ok{border-color:var(--on);background:var(--on-soft);color:var(--fg)}
+.ml .ml-b.no{border-color:var(--stop);background:var(--stop-soft);color:var(--fg)}
+.ml .ml-b.dim{opacity:.55}
+.ml .ml-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ml .ml-fb{margin-top:10px;font-size:14.5px;line-height:1.8;border-inline-start:3px solid var(--blue);background:var(--blue-soft);padding:8px 12px;border-radius:8px}
+.ml .ml-fb.bad{border-inline-start-color:var(--stop);background:var(--stop-soft)}
+.ml .ml-fb.warn{border-inline-start-color:var(--live);background:var(--live-soft)}
+.ml .ml-fb:empty,.ml [hidden]{display:none}
+.ml .ml-it{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:var(--surface)}
+.ml .ml-it p{margin:0 0 8px;line-height:1.75}
+.ml .ml-it .ml-row{margin-top:0}
+.ml .ml-why{margin-top:8px;font-size:14px;line-height:1.75}
+.ml .ml-score{margin-top:10px;font-weight:700}
+.ml .ml-ord{margin:10px 0 0;padding-inline-start:22px}
+.ml .ml-ord li{margin:6px 0;padding:6px 10px;border-radius:10px;background:var(--on-soft);border:1px solid var(--on);line-height:1.6}
+.ml .ml-pool{display:grid;gap:8px;margin-top:10px}
+.ml .ml-sl{display:block;margin-top:12px;font-size:14px}
+.ml .ml-sl .ml-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ml .ml-sl b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--blue-ink);font-size:15px;white-space:nowrap}
+.ml .ml-sl input{width:100%;accent-color:var(--blue);direction:ltr;margin:6px 0 0;height:28px}
+.ml .ml-seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ml .ml-seg .ml-b{padding:6px 12px;min-height:40px}
+.ml .ml-lbl{font-size:14px;margin-top:12px}
+.ml .ml-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-top:12px}
+.ml .ml-facts div{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.ml .ml-facts span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.ml .ml-facts b{display:block;font-family:var(--mono);font-size:17px;direction:ltr;text-align:end;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ml-facts div.hi{background:var(--blue-soft)}
+.ml .ml-facts div.bad{background:var(--stop-soft)}
+.ml .ml-bar{margin-top:10px}
+.ml .ml-bar .ml-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.ml .ml-bar .ml-h b{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;color:var(--fg)}
+.ml .ml-bar .ml-t{height:14px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px;direction:ltr}
+.ml .ml-bar .ml-t i{display:block;height:100%;border-radius:99px;transition:width .2s}
+.ml .ml-plot{margin-top:12px;max-width:440px;margin-inline:auto}
+.ml .ml-plot svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.ml .ml-pic{margin-top:10px;max-width:520px;margin-inline:auto}
+.ml .ml-pic svg{width:100%;height:auto;display:block}
+.ml .ml-lock{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.ml .ml-pd{border:1.5px dashed var(--blue);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.ml .ml-pd .ml-q{font-weight:600;margin-bottom:8px;line-height:1.7}
+.ml .ml-pd .ml-pool{margin-top:0}
+.ml .ml-tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--live-soft);color:var(--live);margin-inline-end:6px}
+.ml .ml-ill{font-size:12.5px;color:var(--muted);margin-top:8px}
+.ml .ltr{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+`;
+const addCss=()=>{if(document.getElementById('dcml-css'))return;const s=document.createElement('style');s.id='dcml-css';s.textContent=css;document.head.appendChild(s)};
+const lt=s=>`<span class="ltr">${s}</span>`;
+const fm=(B,x,d)=>{const s=B.fmtN(x,d);return /^-0(\.0+)?$/.test(s)?s.slice(1):String(s).replace(/^-/,'−')};
+const q=(el,s)=>el.querySelector(s),qa=(el,s)=>[...el.querySelectorAll(s)];
+const start=(el,B,intro)=>{addCss();el.classList.add('ml');return intro?`<p class="ml-in">${intro}</p>`:''};
+const RX=/(\(\d+-\d+\)|\d[\d.,]*\s?(?:rpm|kHz|Hz|kV|V|mA|A|kW|W|Ω|%|N\.m|VA)(?![A-Za-z]))/g;
+/* يثبّت اتجاه «رقم + وحدة» داخل النص العربي (مثل 0.3 A و 1000 rpm) حتى لا ينقلب */
+function bidi(root){if(!root)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;if(!p||p.closest('svg,.katex,.ltr,.ml-facts b,.ml-sl b,.ml-bar b'))return 3;RX.lastIndex=0;return RX.test(n.data)?1:3}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+ L.forEach(n=>{RX.lastIndex=0;const parts=n.data.split(RX);if(parts.length<2)return;const f=document.createDocumentFragment();parts.forEach((p,i)=>{if(!p)return;if(i%2){const sp=document.createElement('span');sp.className='ltr';sp.textContent=p;f.appendChild(sp)}else f.appendChild(document.createTextNode(p))});n.replaceWith(f)})}
+const fin=(el,B)=>{try{B.math(el)}catch(e){}bidi(el)};
+/* ترتيب ثابت «مخلوط» للعناصر (لا عشوائي حتى تبقى الصفحة نفسها في كل مرة)، ولا يساوي الترتيب الصحيح */
+const mix=n=>{const a=[...Array(n).keys()];let s=n*7+3;for(let i=n-1;i>0;i--){s=(s*48271)%2147483647;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]]}
+ if(a.every((v,i)=>v===i)&&n>1)a.push(a.shift());return a};
+
+/* ---- صح أم خطأ: items [[العبارة, true|false, السبب], …] ---- */
+function tf(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row"><button type="button" class="ml-b" data-a="1">صح</button><button type="button" class="ml-b" data-a="0">خطأ</button></div><div class="ml-why" hidden></div></div>`).join('');
+ h+=`<div class="ml-score" hidden></div>`;el.innerHTML=h;fin(el,B);
+ const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-a]').forEach(b=>b.onclick=()=>{const ans=b.dataset.a==='1',ok=ans===!!it[1];
+   qa(box,'[data-a]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');if((x.dataset.a==='1')===!!it[1])x.classList.add('ok');else x.classList.add(x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> العبارة ${it[1]?'صحيحة':'خاطئة'}: ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   const n=Object.keys(done).length;if(n===o.items.length){const s=q(el,'.ml-score');const k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+n)}. ${k===n?'ممتاز.':''} <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;
+    q(s,'[data-rs]').onclick=()=>tf(el,B,o)}})})}
+
+/* ---- رتّب الخطوات: steps [نص | [نص, لماذا ليست الآن]] بالترتيب الصحيح ---- */
+function order(el,B,o){const S=o.steps.map(s=>Array.isArray(s)?s:[s,'']);const m=mix(S.length);let nx=0;
+ el.innerHTML=start(el,B,o.intro||'اضغط الخطوات بالترتيب الذي تنفذها به.')+`<ol class="ml-ord"></ol><div class="ml-pool">${m.map(i=>`<button type="button" class="ml-b" data-i="${i}">${S[i][0]}</button>`).join('')}</div><div class="ml-fb"></div><div class="ml-row"><button type="button" class="ml-b" data-rs>ابدأ من جديد</button></div>`;
+ fin(el,B);const ol=q(el,'.ml-ord'),fb=q(el,'.ml-fb');
+ qa(el,'.ml-pool [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===nx){const li=document.createElement('li');li.innerHTML=S[i][0];ol.appendChild(li);fin(li,B);b.hidden=true;nx++;fb.className='ml-fb';
+   fb.innerHTML=nx===S.length?`<b>أحسنت، الترتيب كامل.</b> ${o.done||''}`:(o.after&&o.after[i]?o.after[i]:'');fin(fb,B)}
+  else{fb.className='ml-fb bad';fb.innerHTML=`<b>ليست هذه الخطوة التالية.</b> ${S[i][1]||''}${o.hint?' '+o.hint(nx):''}`;fin(fb,B)}});
+ q(el,'[data-rs]').onclick=()=>order(el,B,o)}
+
+/* ---- صنّف: cats [اسم, …]; items [[نص, رقم الصنف, السبب], …] ---- */
+function sort(el,B,o){let h=start(el,B,o.intro);
+ h+=o.items.map((it,i)=>`<div class="ml-it" data-i="${i}"><p>${it[0]}</p><div class="ml-row">${o.cats.map((c,j)=>`<button type="button" class="ml-b" data-c="${j}">${c}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('')+`<div class="ml-score" hidden></div>`;
+ el.innerHTML=h;fin(el,B);const done={};
+ qa(el,'.ml-it').forEach(box=>{const i=+box.dataset.i,it=o.items[i],w=q(box,'.ml-why');
+  qa(box,'[data-c]').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it[1];
+   qa(box,'[data-c]').forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(+x.dataset.c===it[1]?'ok':x===b?'no':'dim')});
+   w.innerHTML=`<b>${ok?'صحيح.':'ليس كذلك.'}</b> ${it[2]||''}`;w.hidden=false;fin(w,B);done[i]=ok;
+   if(Object.keys(done).length===o.items.length){const s=q(el,'.ml-score'),k=Object.values(done).filter(Boolean).length;
+    s.innerHTML=`أصبت ${lt(k+' / '+o.items.length)}. <button type="button" class="ml-b" data-rs>أعد المحاولة</button>`;s.hidden=false;q(s,'[data-rs]').onclick=()=>sort(el,B,o)}})})}
+
+/* ---- مواقف قصيرة: cases [{q, opts:[[نص, صحيح؟, السبب]]}] ---- */
+function cases(el,B,o){let h=start(el,B,o.intro);
+ h+=o.cases.map((c,i)=>`<div class="ml-it" data-i="${i}"><p><b>${o.cases.length>1?(i+1)+'. ':''}</b>${c.q}</p><div class="ml-pool">${c.opts.map((x,j)=>`<button type="button" class="ml-b" data-j="${j}">${x[0]}</button>`).join('')}</div><div class="ml-why" hidden></div></div>`).join('');
+ el.innerHTML=h;fin(el,B);
+ qa(el,'.ml-it').forEach(box=>{const c=o.cases[+box.dataset.i],w=q(box,'.ml-why'),bs=qa(box,'[data-j]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=!!c.opts[j][1];
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(c.opts[+x.dataset.j][1]?'ok':x===b?'no':'dim')});
+   const right=c.opts.find(x=>x[1]);w.innerHTML=`<b>${ok?'صحيح.':'ليس هذا.'}</b> ${c.opts[j][2]||''}${!ok&&right&&right[2]?'<br>'+right[2]:''} <button type="button" class="ml-b" data-r style="min-height:34px;padding:3px 10px">حاول مرة أخرى</button>`;w.hidden=false;fin(w,B);
+   q(w,'[data-r]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});w.hidden=true}})})}
+
+/* ---- رسم بياني صغير: {xr:[a,b], yr:[a,b], xl, yl, curves:[{f|pts, col, dash, w}], dots:[[x,y,col]], cur:[x,y], xt:[...], yt:[...], fx, fy} ---- */
+function plot(B,o){const W=o.w||340,H=o.h||210,L=46,R=12,T=26,Bm=34,[x0,x1]=o.xr,[y0,y1]=o.yr;
+ const X=x=>L+(x-x0)/((x1-x0)||1)*(W-L-R),Y=y=>H-Bm-(y-y0)/((y1-y0)||1)*(H-T-Bm);const f1=v=>(+v).toFixed(1);
+ const tk=(a,b)=>{const sp=(b-a)||1,e=Math.pow(10,Math.floor(Math.log10(sp/4))),st=[1,2,2.5,5,10].map(k=>k*e).find(k=>sp/k<=5.01);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(10));return r};
+ const xt=o.xt||tk(x0,x1),yt=o.yt||tk(y0,y1),fx=o.fx||(v=>fm(B,v)),fy=o.fy||(v=>fm(B,v));
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'رسم بياني'}" style="font-family:var(--font)" direction="ltr">`;
+ s+=yt.map(v=>`<line x1="${L}" x2="${W-R}" y1="${f1(Y(v))}" y2="${f1(Y(v))}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${f1(Y(v)+4)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noYt?'':fy(v)}</text>`).join('');
+ s+=xt.map(v=>`<text x="${f1(X(v))}" y="${H-Bm+15}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--mono)">${o.noXt?'':fx(v)}</text>`).join('');
+ s+=`<path d="M${L} ${T-4}V${H-Bm}H${W-R+4}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>`;
+ (o.curves||[]).forEach(c=>{let p=c.pts;if(!p){p=[];const n=c.n||80;for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=c.f(x);if(isFinite(y))p.push([x,y])}}
+  const cl=v=>Math.max(y0-(y1-y0)*0.04,Math.min(y1+(y1-y0)*0.04,v));
+  s+=`<path d="${p.map((q,i)=>(i?'L':'M')+f1(X(q[0]))+' '+f1(Y(cl(q[1])))).join('')}" fill="none" stroke="var(${c.col||'--blue'})" stroke-width="${c.w||2.6}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(c.lab){const q=p[p.length-1];s+=`<text x="${f1(X(q[0])-4)}" y="${f1(Y(cl(q[1]))-7)}" text-anchor="end" font-size="11.5" fill="var(${c.col||'--blue'})" font-weight="700" ${/[؀-ۿ]/.test(c.lab)?'direction="rtl"':''}>${c.lab}</text>`}});
+ (o.dots||[]).forEach(d=>{s+=`<circle cx="${f1(X(d[0]))}" cy="${f1(Y(d[1]))}" r="3.6" fill="var(${d[2]||'--fg'})"/>`});
+ if(o.cur){const [cx,cy]=o.cur;if(isFinite(cx)&&isFinite(cy)){const yy=Math.max(y0,Math.min(y1,cy));s+=`<path d="M${f1(X(cx))} ${H-Bm}V${f1(Y(yy))}H${L}" fill="none" stroke="var(--live)" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="${f1(X(cx))}" cy="${f1(Y(yy))}" r="6.5" fill="var(--live)" stroke="var(--surface)" stroke-width="2"/>`}}
+ const ar=t=>/[\u0600-\u06FF]/.test(t||'');s+=`<text x="${W-R}" y="${H-4}" text-anchor="${ar(o.xl)?'start':'end'}" ${ar(o.xl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.xl||''}</text>`;
+ s+=`<text x="${L-40}" y="13" text-anchor="${ar(o.yl)?'end':'start'}" ${ar(o.yl)?'direction="rtl"':''} font-size="12" fill="var(--fg)" font-weight="600">${o.yl||''}</text>`;
+ return s+'</svg>'}
+
+/* ---- المختبر المصغّر: منزلقات/أزرار + نتيجة حية + «توقّع أولاً» ----
+ o={intro, predict:{q,opts:[[t,ok,why]]}, ins:[{k,l,u,min,max,step,v,dp} | {k,l,seg:[[v,label]],v} | {k,l,sw:true,v,on,off}],
+    tp:{id,defs} (قيم توضيحية من تبويب المختبر), ill:true (ينبّه أن القيم توضيحية), calc:(s,P,B)=>({facts:[[label,html,cls]], bars:[{l,v,max,u,dp,col}], plot:{…}, pic:svg, msg:html, cls:'bad'|'warn'})} */
+function lab(el,B,o){let h=start(el,B,o.intro);let P={v:{},trainer:false};
+ if(o.tp){const hid=document.createElement('div');const dfl=()=>({v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false});try{P=(B.chOn&&B.chOn())?dfl():B.params(hid,o.tp.id,o.tp.defs)}catch(e){P={v:Object.fromEntries(o.tp.defs.map(d=>[d.k,d.value])),trainer:false}}}
+ const s={};o.ins.forEach(i=>s[i.k]=i.v);
+ if(o.predict)h+=`<div class="ml-pd"><div class="ml-q"><span class="ml-tag">توقّع أولاً</span>${o.predict.q}</div><div class="ml-pool">${o.predict.opts.map((x,j)=>`<button type="button" class="ml-b" data-pj="${j}">${x[0]}</button>`).join('')}</div><div class="ml-fb" data-pfb hidden></div></div>`;
+ h+=`<div class="ml-body${o.predict?' ml-lock':''}">`;
+ h+=o.ins.map(i=>i.seg?`<div class="ml-lbl">${i.l}</div><div class="ml-seg" data-k="${i.k}">${i.seg.map(([v,l])=>`<button type="button" class="ml-b" data-v="${v}">${l}</button>`).join('')}</div>`
+   :i.sw?`<div class="ml-row"><button type="button" class="ml-b" data-sw="${i.k}">${i.l}</button></div>`
+   :`<label class="ml-sl"><span class="ml-h"><span>${i.l}</span><b data-ov="${i.k}"></b></span><input type="range" data-k="${i.k}" min="${i.min}" max="${i.max}" step="${i.step||'any'}" value="${i.v}" aria-label="${String(i.l).replace(/<[^>]+>/g,'')}"></label>`).join('');
+ h+=`<div data-pic></div><div class="ml-facts" data-facts></div><div data-bars></div><div class="ml-plot" data-plot></div><div class="ml-fb" data-msg></div>`;
+ h+=(o.tp||o.ill)?`<p class="ml-ill">${P.trainer?'الأرقام هنا <b>قيم المدرب</b> (من تبويب «المختبر»).':'الأرقام هنا <b>قيم توضيحية</b> ليست من الكتاب'+(o.tp?'، ويستطيع المدرب تغييرها من «قيم المدرب» في تبويب «المختبر».':'.')}</p>`:'';
+ h+=`</div>`;el.innerHTML=h;fin(el,B);
+ const body=q(el,'.ml-body');
+ const draw=()=>{o.ins.forEach(i=>{if(i.seg)qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.setAttribute('aria-pressed',String(String(b.dataset.v)===String(s[i.k]))));
+   else if(i.sw){const b=q(el,`[data-sw="${i.k}"]`);b.setAttribute('aria-pressed',String(!!s[i.k]));if(i.on){b.innerHTML=s[i.k]?i.on:i.off;bidi(b)}}
+   else{const ov=q(el,`[data-ov="${i.k}"]`);ov.textContent=(i.fmt?i.fmt(s[i.k]):fm(B,+s[i.k],i.dp))+(i.u?' '+i.u:'')}});
+  let r={};try{r=o.calc(s,P.v,B)||{}}catch(e){console.error(e);r={msg:''}}
+  q(el,'[data-pic]').innerHTML=r.pic?`<div class="ml-pic">${r.pic}</div>`:'';
+  q(el,'[data-facts]').innerHTML=(r.facts||[]).map(f=>`<div class="${f[2]||''}"><span>${f[0]}</span><b>${f[1]}</b></div>`).join('');
+  q(el,'[data-bars]').innerHTML=(r.bars||[]).map(b=>{const k=Math.max(0,Math.min(1,b.v/(b.max||1)));return `<div class="ml-bar"><div class="ml-h"><span>${b.l}</span><b>${b.txt!=null?b.txt:fm(B,b.v,b.dp)+(b.u?' '+b.u:'')}</b></div><div class="ml-t"><i style="width:${(k*100).toFixed(1)}%;background:var(${b.col||'--blue'})"></i></div></div>`}).join('');
+  q(el,'[data-plot]').innerHTML=r.plot?plot(B,r.plot):'';
+  const m=q(el,'[data-msg]');m.className='ml-fb'+(r.cls?' '+r.cls:'');m.innerHTML=r.msg||'';if(r.msg)fin(m,B);bidi(q(el,'[data-facts]'));bidi(q(el,'[data-bars]'))};
+ qa(el,'input[data-k]').forEach(inp=>inp.oninput=()=>{s[inp.dataset.k]=+inp.value;draw()});
+ o.ins.filter(i=>i.seg).forEach(i=>qa(el,`[data-k="${i.k}"] .ml-b`).forEach(b=>b.onclick=()=>{const v=b.dataset.v;s[i.k]=isNaN(+v)?v:+v;draw()}));
+ qa(el,'[data-sw]').forEach(b=>b.onclick=()=>{const k=b.dataset.sw;s[k]=s[k]?0:1;draw()});
+ if(o.predict){const bs=qa(el,'[data-pj]'),fb=q(el,'[data-pfb]');
+  bs.forEach(b=>b.onclick=()=>{const j=+b.dataset.pj,op=o.predict.opts[j],ok=!!op[1],right=o.predict.opts.find(x=>x[1]);
+   bs.forEach(x=>{x.disabled=true;x.classList.remove('ok','no','dim');x.classList.add(o.predict.opts[+x.dataset.pj][1]?'ok':x===b?'no':'dim')});
+   fb.className='ml-fb'+(ok?'':' warn');fb.innerHTML=`<b>${ok?'توقّعك صحيح.':'ليس هذا.'}</b> ${op[2]||''}${!ok&&right[2]?'<br>'+right[2]:''}<br><b>الآن جرّب بنفسك في الأسفل وتأكد.</b> <button type="button" class="ml-b" data-pr style="min-height:34px;padding:3px 10px">غيّر توقّعك</button>`;fb.hidden=false;fin(fb,B);
+   body.classList.remove('ml-lock');
+   q(fb,'[data-pr]').onclick=()=>{bs.forEach(x=>{x.disabled=false;x.classList.remove('ok','no','dim')});fb.hidden=true}})}
+ draw();return {s,draw,P}}
+
+/* ---- جهاز قياس بمؤشر: {v, max, lab:'V', txt, zero:'c' (صفر في المنتصف للقطبية)} ---- */
+function gauge(B,o){const cx=110,cy=104,r=82,c=o.zero==='c';const k=Math.max(c?-1.06:-0.03,Math.min(1.06,(o.v||0)/(o.max||1)));
+ const a=c?(-90+k*60)*Math.PI/180:(-150+k*120)*Math.PI/180,a0=c?-150:-150,a1=-30;const P=(ang,R)=>[cx+R*Math.cos(ang*Math.PI/180),cy+R*Math.sin(ang*Math.PI/180)];
+ const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);let t='';for(let i=0;i<=8;i++){const g=a0+(a1-a0)*i/8,[p,q]=P(g,r),[u,w]=P(g,r-(i%4?7:12));t+=`<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="var(--fg)" stroke-width="1.4"/>`}
+ const nx=cx+(r-10)*Math.cos(a),ny=cy+(r-10)*Math.sin(a);
+ return `<svg viewBox="0 0 220 132" role="img" aria-label="جهاز قياس" style="font-family:var(--font);max-width:240px;display:block;margin-inline:auto" direction="ltr"><path d="M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="var(--fg)" stroke-width="2"/>${t}${c?`<text x="${cx}" y="${cy-r-6}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--mono)">0</text><text x="${(x0+8).toFixed(1)}" y="${(y0+16).toFixed(1)}" font-size="14" fill="var(--stop)" font-family="var(--mono)">−</text><text x="${(x1-16).toFixed(1)}" y="${(y1+16).toFixed(1)}" font-size="14" fill="var(--on)" font-family="var(--mono)">+</text>`:''}<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--live)" stroke-width="3.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--fg)"/><text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)" font-family="var(--mono)">${o.lab||''}</text>${o.txt!=null?`<text x="${cx}" y="${cy-28}" text-anchor="middle" font-size="14" fill="var(--blue-ink)" font-family="var(--mono)" font-weight="700">${o.txt}</text>`:''}</svg>`}
+
+return {tf,order,sort,cases,lab,plot,gauge,lt,fm,mix};
+})())/*DCML-END*/,{intro:true}),
 
   {st:1,short:'لماذا نختبر الآلة؟',title:'تمهيد: لماذا نختبر الآلة الكهربائية؟',ref:'ص 3',
    q:'المصنع اختبر الآلة قبل أن تخرج منه… فلماذا يختبرها المشتري مرة أخرى؟',
@@ -266,7 +442,12 @@ B.lesson({
     {book:String.raw`<p>يعتبر اختبار الآلة الكهربائية مرحلة هامة من مراحل تصنيعها حيث يتم الاطمئنان على أداء الآلة وفقاً للخطة التي اتبعت في تنفيذ تصميمها. ويتم إجراء مثل هذه الاختبارات على الآلة في معامل خاصة قبل أن تخرج من المصنع في شكلها النهائي وهذه الاختبارات تسمى عادة بالاختبارات التقليدية <span class="ltr">(Routine tests)</span>.</p>
      <p>هذا وبالإضافة إلى هذه الاختبارات التقليدية والتي تجرى على جميع الآلات بدون استثناء أو على بعض العينات من خط الإنتاج لزيادة الاطمئنان، تمر الآلة الكهربائية باختبارات أخرى على يد المستخدم الذي يريد التأكد من حسن الأداء وصحة المعلومات المرفقة مع الآلة وهذه الاختبارات تسمى <b>اختبارات القبول</b>، وقد تحتاج بعض هذه الاختبارات لمعلومات اختبارية يتم مقارنتها بالمعلومات المتوفرة من مرحلة التصميم وذلك لاقتناع المستخدم أن هذه الآلة سوف تؤدي الغرض والوظيفة التي صممت واشتراها من أجله.</p>
      <p>والحقيقة أن هذه الحقيبة عن التجارب المعملية لآلات التيار المستمر تتيح للمتدرب فرصة التدرب على إجراء التجارب المختلفة على الآلات المتنوعة لكي يصبح في النهاية قادراً على القيام بدوره في حياته العملية المستقبلية.</p>`,ref:'ص 3'},
-    {tip:String.raw`<p><b>الاختبار التقليدي</b> يجريه المصنع على كل آلة (أو على عينات منها) قبل خروجها. <b>اختبار القبول</b> يجريه المشتري ليتأكد أن الآلة تعمل كما كُتب على لوحة بياناتها. تجارب هذه الحقيبة من النوع الثاني: تقيس خواص الآلة بنفسك وتقارنها بما تتوقعه.</p>`,title:'الفرق في سطرين'}
+    {tip:String.raw`<p><b>الاختبار التقليدي</b> يجريه المصنع على كل آلة (أو على عينات منها) قبل خروجها. <b>اختبار القبول</b> يجريه المشتري ليتأكد أن الآلة تعمل كما كُتب على لوحة بياناتها. تجارب هذه الحقيبة من النوع الثاني: تقيس خواص الآلة بنفسك وتقارنها بما تتوقعه.</p>`,title:'الفرق في سطرين'},
+    {title:'مختبر مصغّر: من يجري هذا الاختبار؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل موقف اضغط نوع الاختبار المناسب، ثم اقرأ السبب.',cats:['اختبار تقليدي','اختبار قبول'],items:[
+ ['فنيو المصنع يختبرون كل محرك يخرج من خط الإنتاج قبل تغليفه.',0,'يجري في المصنع قبل خروج الآلة في شكلها النهائي، فهو تقليدي <span class="ltr">(Routine test)</span> (ص 3).'],
+ ['ورشة اشترت مولداً، فقاست جهده لتتأكد أنه مطابق للمعلومات المرفقة معه.',1,'المستخدم يتأكد من حسن الأداء وصحة المعلومات المرفقة، فهو اختبار قبول (ص 3).'],
+ ['المصنع يختار عينات من خط الإنتاج ويختبرها لزيادة الاطمئنان.',0,'الكتاب: الاختبارات التقليدية تجرى على جميع الآلات «أو على بعض العينات من خط الإنتاج لزيادة الاطمئنان».'],
+ ['المشتري يقارن نتائج اختباره بمعلومات مرحلة التصميم ليقتنع أن الآلة ستؤدي الغرض الذي اشتراها من أجله.',1,'هذا وصف الكتاب لبعض اختبارات القبول (ص 3).']]})}
    ]},
 
   {st:2,short:'الوقاية في المختبر',title:'إرشادات الوقاية خلال التواجد بالمختبر وأثناء إجراء التجارب',ref:'ص 3–4',
@@ -301,7 +482,12 @@ B.lesson({
      ['مصهراً بالقيمة المقننة للجهاز',true,'«لا يجوز تركيب مصهرات بالأجهزة ذات قيمة أعلى من القيمة المقننة» (ص 3).'],
      ['مصهراً أكبر حتى لا يحترق مرة أخرى',false,'المصهر الأكبر يترك التيار الزائد يمر فيتلف الجهاز، والكتاب يمنعه صراحة.'],
      ['سلكاً مكان المصهر مؤقتاً',false,'هذا يلغي الحماية تماماً، وهو أسوأ من المصهر الأكبر.']]}},
-    {watch:String.raw`<p>المكثف قد يبقى مشحوناً بعد فصل الجهد؛ لذلك يطلب الكتاب تفريغ المكثفات قبل تغيير التوصيلات، لا مجرد فصل المصدر.</p>`}
+    {watch:String.raw`<p>المكثف قد يبقى مشحوناً بعد فصل الجهد؛ لذلك يطلب الكتاب تفريغ المكثفات قبل تغيير التوصيلات، لا مجرد فصل المصدر.</p>`},
+    {title:'تحقق سريع: قواعد الوقاية',widget:(el,B)=>DCML.tf(el,B,{intro:'هذه المحطة قواعد للحفظ والتطبيق. احكم على كل عبارة بحسب نص الكتاب.',items:[
+ ['يجوز للمتدرب أن يوصل مفتاح التغذية الرئيس إذا تأخر المدرب.',false,'«المدرب فقط هو المسؤول عن توصيل وفصل مفتاح التغذية بالتيار الرئيس (إلا في حالات التعرض للخطر)».'],
+ ['إذا غادرت الطاولة دقيقة واحدة فصلت الجهد عن التجربة.',true,'«يجب فصل الجهد الموصل للتجربة في حالة مغادرة الطاولة ولو لوقت قصير».'],
+ ['الأجهزة التي لا تستعملها في التجربة تبقيها قريبة على الطاولة احتياطاً.',false,'«يجب إبعاد كل الأجهزة التي لا تستخدم في التجربة… حتى يمكن التوصيل على الوجه الصحيح».'],
+ ['عند حدوث حريق: افصل طرفي الجهد عن التجربة فوراً، وافصل المفتاح الرئيس، وبلّغ الطوارئ.',true,'هذا نص آخر قاعدة في القائمة (ص 4).']]})}
    ]},
 
   {st:3,short:'التجربة الآمنة',title:'إرشادات لإجراء التجارب بطريقة آمنة',ref:'ص 4',
@@ -321,7 +507,15 @@ B.lesson({
      <li>يجب على المتدربين تحضير التجربة لكي يتحقق المطلوب من إجرائها بنجاح ويتم ذلك عن طريق دراسة الأساسيات والإرشادات الخاصة بالتجارب وكذلك ما تم دراسته ويتعلق بالتجربة.</li>
      <li>كل تجربة لها مكان ثابت وأجهزة خاصة بها ويجب التأكد قبل بدء التجربة من تمام كل الأجهزة ومدى ملاءمتها للتجربة موضع التنفيذ.</li>
      <li>وسنتناول الآن بعض المعلومات الأساسية والتي ستعين المتدرب على فهم وإجراء هذه التجارب المعملية بطريقة سهلة بجانب المعلومات النظرية عن كل آلة والتي يستقيها من دراسته النظرية لها.</li></ul>`,ref:'ص 4'},
-    {tip:String.raw`<p>«تحضير التجربة» عملياً: اقرأ محطات الدرس، وانظر إلى مخطط التوصيل حتى تعرف مكان كل جهاز، وجرّب المنضدة الافتراضية في تبويب «المختبر» قبل أن تقف أمام الآلة الحقيقية.</p>`,title:'كيف تحضّر التجربة؟'}
+    {tip:String.raw`<p>«تحضير التجربة» عملياً: اقرأ محطات الدرس، وانظر إلى مخطط التوصيل حتى تعرف مكان كل جهاز، وجرّب المنضدة الافتراضية في تبويب «المختبر» قبل أن تقف أمام الآلة الحقيقية.</p>`,title:'كيف تحضّر التجربة؟'},
+    {title:'مختبر مصغّر: ماذا تفعل الآن؟',widget:(el,B)=>DCML.cases(el,B,{intro:'موقفان قصيران من أول يوم في المختبر.',cases:[
+ {q:'وصلت إلى طاولتك فوجدت مقياس السرعة الخاص بتجربتك غير موجود، وفي الطاولة المجاورة مقياس مختلف. ماذا تفعل؟',opts:[
+  ['آخذ المقياس المجاور وأبدأ',false,'كل تجربة لها أجهزة خاصة بها؛ والمطلوب التأكد من ملاءمة الجهاز للتجربة لا أخذ أي جهاز.'],
+  ['أتأكد قبل البدء من تمام أجهزة تجربتي وملاءمتها، وأبلغ المدرب بالناقص',true,'«كل تجربة لها مكان ثابت وأجهزة خاصة بها ويجب التأكد قبل بدء التجربة من تمام كل الأجهزة ومدى ملاءمتها» (ص 4).'],
+  ['أبدأ التجربة دون قياس السرعة',false,'التجربة لن يتحقق المطلوب منها، والكتاب يطلب التأكد من تمام الأجهزة قبل البدء.']]},
+ {q:'المدرب حاضر، لكنك لم تقرأ التجربة قبل الحصة. ما الذي يطلبه الكتاب منك قبل الحصة؟',opts:[
+  ['لا شيء، فالمدرب سيشرح كل شيء',false,'الكتاب يضع التحضير على المتدرب نفسه.'],
+  ['تحضير التجربة: دراسة الأساسيات والإرشادات الخاصة بها وما درسته ويتعلق بها',true,'«يجب على المتدربين تحضير التجربة لكي يتحقق المطلوب من إجرائها بنجاح» (ص 4).']]}]})}
    ]},
 
   {st:4,short:'قواعد التوصيل',title:'قواعد عامة في توصيل الدائرة الكهربائية',ref:'ص 4–5',
@@ -376,7 +570,15 @@ B.lesson({
      ['لأنهما يشتركان في المتغير الأصلي (تيار الحمل)، فتسهل المقارنة بينهما',true,'«ويستحسن رسم المنحنيات التي تشترك في المتغير الأصلي في نفس اللوحة حيث يمكن المقارنة بين المتغيرات بسهولة» (ص 5–6).'],
      ['لأن لهما الوحدة نفسها',false,'السرعة والعزم كميتان مختلفتان ووحدتاهما مختلفتان؛ لذلك لكل منهما محور رأسي في الشكل (أ).'],
      ['لتوفير ورق الرسم فقط',false,'السبب في الكتاب هو سهولة المقارنة، لا توفير الورق.']]}},
-    {watch:String.raw`<p>«أقرب منحنى» منحنى أملس واحد تتوزع النقاط فوقه وتحته؛ وليس خطاً متعرجاً يمر بكل نقطة. التوصيل نقطة بنقطة ينقل أخطاء القراءة إلى المنحنى. جرّب الفرق بنفسك في تبويب «المختبر» (اسحب المقابض حتى يمر المنحنى بين النقاط).</p>`}
+    {watch:String.raw`<p>«أقرب منحنى» منحنى أملس واحد تتوزع النقاط فوقه وتحته؛ وليس خطاً متعرجاً يمر بكل نقطة. التوصيل نقطة بنقطة ينقل أخطاء القراءة إلى المنحنى. جرّب الفرق بنفسك في تبويب «المختبر» (اسحب المقابض حتى يمر المنحنى بين النقاط).</p>`},
+    {title:'مختبر مصغّر: رتّب أجزاء التقرير',widget:(el,B)=>DCML.order(el,B,{intro:'اضغط أجزاء التقرير بالترتيب الذي يذكره الكتاب (ص 5–6).',steps:[
+ ['اسم التجربة والغرض منها','كل تقرير يبدأ باسم التجربة ثم غرضها في عبارات موجزة.'],
+ ['مخطط التوصيلات وعليه الأجهزة','الكتاب يذكر المخطط مع الغرض في البداية.'],
+ ['بيان الأجهزة، ومعلومات لوحة التسمية لكل آلة','قائمة الأجهزة تأتي بعد المخطط.'],
+ ['طريقة إجراء التجربة ثم النظرية باختصار','الطريقة والنظرية بعد قائمة الأجهزة.'],
+ ['جداول النتائج بوحداتها وكيف حُسبت','الجداول بعد الطريقة والنظرية.'],
+ ['المنحنيات مسماة','المنحنيات تُرسم من الجداول، فتأتي بعدها.'],
+ ['مناقشة النتائج ومقارنتها بالمتوقع','المناقشة «تأتي في نهاية التقرير».']],done:'وتذكر: درجتك في التقرير «تتوقف على دقة مناقشته للتجربة».'})}
    ]},
 
   {st:6,short:'أهداف الوحدة',title:'الوحدة الأولى: تجارب مولدات التيار المستمر',ref:'ص 7–8',
@@ -392,7 +594,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>الأهداف التفصيلية:</b></p><ol><li>أن يتمكن المتدرب من تعيين منحنيات الخواص للمولد منفصل التغذية وحساب معامل التنظيم.</li><li>أن يتمكن المتدرب من تعيين منحنيات الخواص لمولد التوازي، وكذلك حساب معامل التنظيم.</li><li>أن يتمكن المتدرب من تعيين منحنيات الخواص للمولد المركب بنوعيه في حالة الحمل وحساب معامل التنظيم.</li></ol>`,ref:'ص 8'},
-    {tip:String.raw`<p><b>منحنى الخواص</b> رسم يبين كيف تتغير كمية في الآلة عندما نغيّر كمية أخرى، مثل جهد المولد مع تيار الحمل. و<b>معامل التنظيم</b> رقم يقول: كم يهبط جهد المولد من حالة اللاحمل إلى الحمل الكامل؛ كلما صغر كان المولد أفضل في المحافظة على جهده. الكتاب لا يعطي قانونه، فأضفناه في التجربة الثانية مع تمييزه أنه من خارج الكتاب.</p>`,title:'مصطلحان ستقابلهما كثيراً'}
+    {tip:String.raw`<p><b>منحنى الخواص</b> رسم يبين كيف تتغير كمية في الآلة عندما نغيّر كمية أخرى، مثل جهد المولد مع تيار الحمل. و<b>معامل التنظيم</b> رقم يقول: كم يهبط جهد المولد من حالة اللاحمل إلى الحمل الكامل؛ كلما صغر كان المولد أفضل في المحافظة على جهده. الكتاب لا يعطي قانونه، فأضفناه في التجربة الثانية مع تمييزه أنه من خارج الكتاب.</p>`,title:'مصطلحان ستقابلهما كثيراً'},
+    {title:'مختبر مصغّر: صِل كل وصف بمولده',widget:(el,B)=>DCML.sort(el,B,{intro:'الفرق بين مولدات الوحدة في طريقة تغذية المجال. اختر المولد المناسب لكل وصف.',cats:['منفصل التغذية','التوازي','المركب'],items:[
+ ['ملف المجال يُغذى من مصدر مستقل عن أطراف المولد.',0,'هذا معنى «منفصل التغذية» (التجربتان الأولى والثانية).'],
+ ['ملف المجال موصل على أطراف المولد نفسه، فيأخذ تياره من جهد المولد.',1,'هذا مولد التوازي (التجربة الثالثة).'],
+ ['له ملف توازي وملف توالي يمر فيه تيار الحمل، وله نوعان.',2,'المولد المركب «بنوعيه» (التجربة الرابعة).']]})}
    ]},
 
   {st:7,short:'التجارب الأربع',title:'الجزء الأول: التجارب الخاصة بآلات التيار المستمر',ref:'ص 9',
@@ -409,7 +615,11 @@ B.lesson({
     {book:String.raw`<p>نعرض في هذا الجزء بعض التجارب والاختبارات المهمة الخاصة بآلات التيار المستمر والتي تعتبر الأساس في اختبارات القبول للآلة الكهربائية، التي يتعين على المهندس القيام بها عند شراء الأنواع المختلفة من الآلات الكهربائية، وسوف نقوم بتقسيم التجارب إلى قسمين رئيسين أحدهما خاص بالمولد، والآخر خاص بالمحرك.</p>
      <p>سوف نركز على عدد معين من التجارب تعتبر من ناحية المهمة التعليمية أساساً لكي يستطيع المتدرب بعد ذلك تنفيذ ما يطلب منه إجراؤه بعد ذلك في حياته العملية من تجارب دون صعوبة تذكر. وتعطي نتائج هذه التجارب في الواقع خواص الآلة الأساسية المتعارف عليها، وهي إلى جانب ما ذكر تعتبر بالنسبة للمتدرب تطبيقاً للعلم الذي درسه على العمل، كما أنها تساعد المتدرب على تفهم هذه الخواص واستيعابها والاقتناع بمبرراتها. وتعتبر بعض التجارب نمطية تشترك فيها كل أنواع الآلات الكهربائية، مثل تجارب اللاحمل وتجارب القصر والحمل.</p>`,ref:'ص 9'},
     {tip:String.raw`<p>تجارب هذه الحقيبة هي «اختبارات القبول» التي عرفتها في المحطة الأولى: ستقيس بنفسك خواص كل مولد. لاحظ أن الأشكال (1) و(2) و(3) فيها المنضدة نفسها تقريباً — محرك يدير المولد — ويتغير فقط طريقة توصيل مجال المولد وحمله.</p>`},
-    {watch:String.raw`<p>الحقيبة لا تعطي قيماً مقننة للآلات (لا لوحات بيانات). لذلك القراءات في المختبرات الافتراضية لهذه الوحدة <b>أرقام توضيحية</b> لآلة صغيرة نموذجية، ويستطيع المدرب أن يضع أرقام آلات مختبره من «قيم المدرب».</p>`}
+    {watch:String.raw`<p>الحقيبة لا تعطي قيماً مقننة للآلات (لا لوحات بيانات). لذلك القراءات في المختبرات الافتراضية لهذه الوحدة <b>أرقام توضيحية</b> لآلة صغيرة نموذجية، ويستطيع المدرب أن يضع أرقام آلات مختبره من «قيم المدرب».</p>`},
+    {title:'تحقق سريع: تجارب هذا الجزء',widget:(el,B)=>DCML.tf(el,B,{items:[
+ ['تجارب هذا الجزء هي الأساس في اختبارات القبول للآلة الكهربائية.',true,'«والتي تعتبر الأساس في اختبارات القبول للآلة الكهربائية» (ص 9).'],
+ ['يقسم الكتاب التجارب إلى قسمين: قسم للمولد وقسم للمحرك.',true,'«سوف نقوم بتقسيم التجارب إلى قسمين رئيسين أحدهما خاص بالمولد، والآخر خاص بالمحرك».'],
+ ['تجربة اللاحمل خاصة بمولدات التيار المستمر ولا تُجرى على غيرها.',false,'الكتاب يعدّ تجارب اللاحمل والقصر والحمل «نمطية تشترك فيها كل أنواع الآلات الكهربائية».']]})}
    ]},
 
   {recap:[
@@ -662,7 +872,19 @@ B.lesson({
     {book:String.raw`<p class="ltr" style="display:block;text-align:left">No-load test of a separately-excited DC generator</p><p><b>أهداف التجربة:</b></p><ol>
      <li>معرفة العوامل المؤثرة على القوة الدافعة الكهربائية المتولدة بالمولد \(E_0\).</li><li>دراسة خواص القوة الدافعة الكهربائية المتولدة عند تيار مجال متغير وسرعة ثابتة.</li><li>دراسة خواص القوة الدافعة الكهربائية المتولدة عند سرعة متغيرة وتيار مجال ثابت.</li><li>رسم العلاقة بين القوة الدافعة المتولدة \(E_0\) وتيار المجال \(I_f\) عندما تكون سرعة الدوران ثابتة.</li></ol>`,ref:'ص 10'},
     {tip:String.raw`<p>القوة الدافعة المتولدة في المولد تتناسب مع <b>الفيض المغناطيسي</b> \(\Phi\) ومع <b>السرعة</b> \(n\):</p><div class="eq">$$E_0=K\,\Phi\,n$$</div><p>والفيض يصنعه تيار المجال \(I_f\). لذلك تغيّر التجربة كل عامل وحده وتثبّت الآخر، لترى أثر كل واحد منفصلاً. (هذه العلاقة من دراستك النظرية، وليست في الحقيبة.)</p>`,title:'لماذا هذان العاملان؟'},
-    {tip:String.raw`<p>«<b>لاحمل</b>» يعني أن أطراف المولد لا يتصل بها إلا الفولتميتر (تياره صغير جداً)، فلا هبوط جهد داخل المولد، ويقرأ الفولتميتر \(E_0\) نفسها.</p>`,title:'معنى «اللاحمل»'}
+    {tip:String.raw`<p>«<b>لاحمل</b>» يعني أن أطراف المولد لا يتصل بها إلا الفولتميتر (تياره صغير جداً)، فلا هبوط جهد داخل المولد، ويقرأ الفولتميتر \(E_0\) نفسها.</p>`,title:'معنى «اللاحمل»'},
+    {title:'مختبر مصغّر: مقبضا المولد',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك مقبضي المولد بقيم الجدولين (1-1) و(1-2)، وراقب القوة الدافعة المتولدة \\(E_0\\).',
+ predict:{q:'أي المقبضين يغيّر \\(E_0\\)؟',opts:[
+  ['تيار المجال فقط',false,'السرعة أيضاً تغيّرها: الموصلات تقطع الفيض أسرع فيكبر الجهد (المرحلة الثانية).'],
+  ['الاثنان معاً: تيار المجال والسرعة',true,'لهذا تدرس التجربة كل عامل وحده وتثبّت الآخر (الهدفان 2 و3، ص 10).'],
+  ['السرعة فقط',false,'تيار المجال يصنع الفيض، والفيض الأكبر يعطي جهداً أكبر (المرحلة الأولى).']]},
+ ins:[{k:'If',l:'تيار المجال I<sub>f</sub>',seg:[[0,'0'],[0.1,'0.1'],[0.15,'0.15'],[0.2,'0.2'],[0.25,'0.25'],[0.3,'0.3 A']],v:0.2},
+      {k:'n',l:'السرعة n',seg:[[300,'300'],[600,'600'],[900,'900'],[1000,'1000'],[1200,'1200'],[1600,'1600 rpm']],v:1000}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk'])},
+ calc:(s,v,B)=>{const M=mach(v),E=M.E(s.If,s.n),Emax=M.E(0.3,1600);
+  return {pic:DCML.gauge(B,{v:E,max:Emax*1.05,lab:'V',txt:DCML.fm(B,E,1)+' V'}),
+   facts:[['I<sub>f</sub>',DCML.fm(B,s.If,2)+' A'],['n',s.n+' rpm'],['E<sub>0</sub>',DCML.fm(B,E,1)+' V','hi']],
+   msg:s.If===0?'تيار المجال صفر ومع ذلك يقرأ الفولتميتر جهداً صغيراً: هذا من المغنطة المتبقية (المحطة 5).':''}}})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة المستخدمة',ref:'ص 10',
@@ -677,7 +899,13 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<ol><li>مصدر جهد مستمر متحكم فيه.</li><li>مصدر تيار مستمر متحكم فيه.</li><li>آلتا تيار مستمر توازي.</li><li>جهاز فولتميتر (voltmeter).</li><li>جهاز قياس السرعة (Tachometer).</li><li>جهاز أميتر (Ammeter).</li></ol>`,ref:'ص 10'},
-    {tip:String.raw`<p>لاحظ أن عندنا <b>مصدرين</b>: مصدر جهد للمحرك (يتحكم في السرعة)، ومصدر تيار لمجال المولد (يتحكم في الفيض). وجود مصدر مستقل للمجال هو معنى «منفصل التغذية».</p>`,title:'مصدران لا مصدر واحد'}
+    {tip:String.raw`<p>لاحظ أن عندنا <b>مصدرين</b>: مصدر جهد للمحرك (يتحكم في السرعة)، ومصدر تيار لمجال المولد (يتحكم في الفيض). وجود مصدر مستقل للمجال هو معنى «منفصل التغذية».</p>`,title:'مصدران لا مصدر واحد'},
+    {title:'مختبر مصغّر: أي جهاز يقوم بهذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل مهمة اضغط الجهاز الذي يقوم بها في الشكل (1).',cats:['مصدر الجهد','مصدر التيار','الفولتميتر','مقياس السرعة','الأميتر'],items:[
+ ['يغذي المحرك المدير فيدير المولد، وبه نضبط السرعة.',0,'مصدر الجهد المستمر المتحكم فيه: «ارفع في جهد مصدر التيار المستمر حتى تصل السرعة عند 1000 rpm».'],
+ ['يغذي ملف مجال المولد، وبه نغيّر \\(I_f\\).',1,'مصدر التيار المتحكم فيه: «غير قيم تيار المجال للمولد عن طريق مصدر التيار المستمر المتحكم فيه».'],
+ ['يقرأ القوة الدافعة المتولدة \\(E_0\\).',2,'«قيمة القوة الدافعة الكهربائية المتولدة \\(E_0\\) الظاهرة على جهاز الفولتميتر» (ص 11).'],
+ ['نتأكد به أن السرعة بقيت <span class="ltr">1000 rpm</span>.',3,'مقياس السرعة (Tachometer) على عمود الآلتين.'],
+ ['يقرأ تيار مجال المولد.',4,'الأميتر <span class="ltr">A1</span> في دائرة مجال المولد.']]})}
    ]},
 
   {st:3,short:'دائرة التوصيل',title:'مخطط التوصيل — الشكل <span class="ltr">(1)</span>',ref:'ص 10',
@@ -693,7 +921,19 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>مخطط التوصيل — الشكل <span class="ltr">(1)</span></b></p>`+box(benchSVG({kind:'nl',rd:false}),900,1),ref:'ص 10'},
     {tip:String.raw`<p>يسار المخطط: المحرك المُدير <span class="ltr">M</span> (توازي)، ملف مجاله <span class="ltr">E1–E2</span> ومنتجه <span class="ltr">1B1–2B2</span> كلاهما على المصدر <span class="ltr">0-250 V DC</span>. على العمود مقياس السرعة ثم القارنة إلى المولد <span class="ltr">G</span>. يمين المخطط: مجال المولد يُغذى من مصدر <span class="ltr">0-240 V / 0-6 A</span> عبر الأميتر <span class="ltr">A1</span>، والفولتميتر <span class="ltr">V</span> على أطراف المنتج يقرأ \(E_0\).</p>`,title:'اقرأ المخطط من اليسار إلى اليمين'},
-    {watch:String.raw`<p>لا يتصل مصدر المحرك بمجال المولد في هذا الشكل. لو وصلت مجال المولد على أطرافه لصار «مولد توازي» وهذا موضوع التجربة الثالثة.</p>`}
+    {watch:String.raw`<p>لا يتصل مصدر المحرك بمجال المولد في هذا الشكل. لو وصلت مجال المولد على أطرافه لصار «مولد توازي» وهذا موضوع التجربة الثالثة.</p>`},
+    {title:'مختبر مصغّر: شغّل المصدرين واحداً واحداً',widget:(el,B)=>DCML.lab(el,B,{intro:'في الشكل (1) دائرتان منفصلتان: دائرة المحرك المدير ودائرة مجال المولد. شغّل كل واحدة وحدها ثم معاً، وراقب القراءات.',
+ predict:{q:'شغّلت مصدر مجال المولد فقط، والمحرك المدير واقف. ماذا يقرأ الفولتميتر على أطراف المولد؟',opts:[
+  ['جهداً كبيراً لأن تيار المجال موجود',false,'تيار المجال يصنع الفيض فقط؛ الجهد يتولد عندما تقطع موصلات المنتج هذا الفيض، أي عندما يدور.'],
+  ['صفراً، لأن المولد لا يدور',true,'لا دوران فلا قطع للفيض فلا جهد متولد؛ الحركة تأتي من المحرك المدير عبر العمود والقارنة.'],
+  ['يقرأ جهد مصدر المجال نفسه',false,'الفولتميتر على أطراف المنتج، ولا يوجد سلك بين مصدر المجال وأطراف المنتج.']]},
+ ins:[{k:'m',l:'مصدر المحرك المدير',seg:[[0,'مفصول'],[1,'يعمل حتى <span class="ltr">n = 1000 rpm</span>']],v:0},
+      {k:'f',l:'مصدر مجال المولد',seg:[[0,'مفصول (<span class="ltr">I<sub>f</sub> = 0</span>)'],[1,'يعمل (<span class="ltr">I<sub>f</sub> = 0.3 A</span>)']],v:1}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk'])},
+ calc:(s,v,B)=>{const n=s.m?1000:0,If=s.f?0.3:0,E=mach(v).E(If,n),Emax=mach(v).E(0.3,1000);
+  return {pic:DCML.gauge(B,{v:E,max:Emax*1.1,lab:'V',txt:DCML.fm(B,E,1)+' V'}),
+   facts:[['مقياس السرعة',n+' rpm'],['الأميتر A1',DCML.fm(B,If,2)+' A'],['الفولتميتر E<sub>0</sub>',DCML.fm(B,E,1)+' V','hi']],
+   msg:!s.m?'المولد واقف: لا جهد مهما كان تيار المجال.':!s.f?'المولد يدور بلا تيار مجال: جهد صغير من المغنطة المتبقية فقط.':'المولد يدور وله فيض: هذه هي القراءة الكاملة. لاحظ أن مصدر المحرك لم يصل بأطراف المولد بأي سلك.'}}})}
    ]},
 
   {st:4,short:'المرحلة الأولى',title:'خطوات إجراء التجربة — المرحلة الأولى وجدول <span class="ltr">(1-1)</span>',ref:'ص 11',
@@ -710,7 +950,14 @@ B.lesson({
     {book:String.raw`<ol><li>قم بتوصيل التجربة كما في الشكل (1).</li><li>تأكد أن مصدر التيار المستمر مضبوط على الصفر ثم شغل المصدر.</li><li>ارفع في جهد مصدر التيار المستمر حتى تصل السرعة عند <span class="ltr">1000 rpm</span>.</li><li>غير قيم تيار المجال للمولد \(I_f\) عن طريق مصدر التيار المستمر المتحكم فيه حسب الجدول (1-1) الموضح بالأسفل، ثم قم بتسجيل قيمة القوة الدافعة الكهربائية المتولدة \(E_0\) الظاهرة على جهاز الفولتميتر.</li><li>بعد الانتهاء أعد جهد المصدر إلى الصفر حتى يتوقف المحرك.</li><li>ارسم العلاقة بين تيار المجال \(I_f\) والقوة الدافعة الكهربائية المتولدة \(E_0\) وذلك عند ثبات السرعة \(n\).</li></ol>
      <p><b>جدول (1-1)</b> — <span class="ltr">n = 1000 r.p.m</span></p>`+emptyTbl('I<sub>f</sub> (A)',T11COLS.map(c=>fm(c)),['E<sub>0</sub> (v)']),ref:'ص 11'},
     {tip:String.raw`<p>المصدران لهما دوران مختلفان: <b>مصدر المحرك</b> ترفعه مرة واحدة حتى تصل السرعة إلى <span class="ltr">1000 rpm</span> ثم تتركه، و<b>مصدر المجال</b> هو الذي تحرّكه من قيمة إلى قيمة في الجدول. انظر إلى مقياس السرعة قبل كل قراءة لتتأكد أنها ما زالت <span class="ltr">1000 rpm</span>.</p>`,title:'أي مصدر تحرّك؟'},
-    {watch:String.raw`<p>أول عمود في الجدول \(I_f=0\): لا تتوقع أن يقرأ الفولتميتر صفراً تماماً. سجّل ما تقرؤه فعلاً — ستعرف السبب في المحطة التالية.</p>`}
+    {watch:String.raw`<p>أول عمود في الجدول \(I_f=0\): لا تتوقع أن يقرأ الفولتميتر صفراً تماماً. سجّل ما تقرؤه فعلاً — ستعرف السبب في المحطة التالية.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات المرحلة الأولى',widget:(el,B)=>DCML.order(el,B,{steps:[
+ ['وصّل التجربة كما في الشكل (1)','لا تشغيل قبل أن تكتمل التوصيلات.'],
+ ['تأكد أن مصدر المحرك على الصفر، ثم شغّله','المصدر يجب أن يبدأ من الصفر قبل أي رفع.'],
+ ['ارفع جهد المصدر حتى تصل السرعة إلى <span class="ltr">1000 rpm</span>','القراءات كلها عند <span class="ltr">1000 rpm</span>، فاضبط السرعة قبل أخذها.'],
+ ['غيّر \\(I_f\\) بقيم الجدول (1-1) وسجّل \\(E_0\\) لكل قيمة','التسجيل يأتي بعد ضبط السرعة وقبل الإيقاف.'],
+ ['أعد جهد المصدر إلى الصفر حتى يتوقف المحرك','الإيقاف بعد انتهاء القراءات.'],
+ ['ارسم العلاقة بين \\(I_f\\) و\\(E_0\\)','الرسم من الجدول بعد أن يكتمل.']],done:'هذا ترتيب الكتاب في ص 11.'})}
    ]},
 
   {st:5,short:'منحنى E₀ مع If',title:'منحنى العلاقة بين \\(E_0\\) وتيار المجال \\(I_f\\)',ref:'ص 11',
@@ -726,7 +973,18 @@ B.lesson({
    body:[
     {tip:String.raw`<p>هذا المنحنى يسمى <b>منحنى المغنطة</b> أو منحنى اللاحمل، وله ثلاثة أجزاء:</p><ul><li><b>البداية:</b> لا يبدأ من الصفر، بل من جهد صغير سببه <b>المغنطة المتبقية</b>.</li><li><b>جزء شبه مستقيم:</b> الفيض يزيد تقريباً بنسبة زيادة \(I_f\).</li><li><b>الركبة ثم التشبع:</b> يتشبع الحديد فيقل أثر زيادة \(I_f\) ويقل ميل المنحنى.</li></ul>`,title:'ماذا تتوقع أن ترسم؟'},
     {watch:String.raw`<p>المحور الأفقي لـ \(I_f\) لأنه المتغير الأصلي الذي غيّرته، والرأسي لـ \(E_0\) لأنها التابعة (قاعدة التقرير ص 5–6). وارسم أقرب منحنى أملس بين نقاطك، لا خطاً متعرجاً.</p>`},
-    {add:String.raw`<p>عند أخذ قراءات منحنى المغنطة في المختبرات يُرفع تيار المجال في اتجاه واحد فقط (من الصغير إلى الكبير)؛ لأن الرجوع إلى قيمة أصغر ثم الصعود مرة أخرى يعطي قراءة مختلفة قليلاً بسبب مغنطة الحديد.</p>`,title:'عادة في المختبرات'}
+    {add:String.raw`<p>عند أخذ قراءات منحنى المغنطة في المختبرات يُرفع تيار المجال في اتجاه واحد فقط (من الصغير إلى الكبير)؛ لأن الرجوع إلى قيمة أصغر ثم الصعود مرة أخرى يعطي قراءة مختلفة قليلاً بسبب مغنطة الحديد.</p>`,title:'عادة في المختبرات'},
+    {title:'مختبر مصغّر: تحرّك على منحنى المغنطة',widget:(el,B)=>DCML.lab(el,B,{intro:'السرعة ثابتة <span class="ltr">1000 rpm</span>. حرّك تيار المجال على قيم الجدول (1-1) واقرأ النقطة على المنحنى.',
+ predict:{q:'زيادة \\(I_f\\) من <span class="ltr">0.1</span> إلى <span class="ltr">0.2 A</span>، ثم من <span class="ltr">0.2</span> إلى <span class="ltr">0.3 A</span>: أي الزيادتين ترفع \\(E_0\\) أكثر؟',opts:[
+  ['الزيادتان متساويتان، لأن المنحنى خط مستقيم',false,'المنحنى ينحني كلما اقترب الحديد من التشبع، فلا يبقى الميل ثابتاً.'],
+  ['الثانية (من 0.2 إلى 0.3 A)',false,'العكس: مع التشبع يقل أثر كل زيادة في \\(I_f\\).'],
+  ['الأولى (من 0.1 إلى 0.2 A)',true,'كلما اقترب الحديد من التشبع قلّ ما تضيفه الزيادة نفسها في \\(I_f\\)، فيقل ميل المنحنى.']]},
+ ins:[{k:'If',l:'تيار المجال I<sub>f</sub>',min:0,max:0.3,step:0.05,v:0.1,dp:2,u:'A'}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk'])},
+ calc:(s,v,B)=>{const M=mach(v),E=I=>M.E(I,1000),e=E(s.If),dE=s.If<=0.25?E(s.If+0.05)-e:null,top=E(0.3);
+  return {facts:[['E<sub>0</sub> عند هذه النقطة',DCML.fm(B,e,1)+' V','hi'],['زيادة E<sub>0</sub> لو زدت I<sub>f</sub> بـ 0.05 A',dE==null?'—':'+'+DCML.fm(B,dE,1)+' V']],
+   plot:{xr:[0,0.3],yr:[0,Math.ceil(top*1.1/10)*10],xl:'I<tspan font-size="9" dy="3">f</tspan><tspan dy="-3"> (A)</tspan>',yl:'E₀ (V)',xt:[0,0.1,0.15,0.2,0.25,0.3],curves:[{f:E}],dots:[0,0.1,0.15,0.2,0.25,0.3].map(x=>[x,E(x),'--muted']),cur:[s.If,e]},
+   msg:s.If===0?'عند \\(I_f=0\\) لا تبدأ النقطة من الصفر: هذا الجهد المتبقي.':s.If>=0.25?'لاحظ أن الزيادة نفسها صارت تعطي ارتفاعاً أقل: المنحنى بدأ ينحني نحو التشبع.':''}}})}
    ]},
 
   {st:6,short:'المرحلة الثانية',title:'المرحلة الثانية وجدول <span class="ltr">(1-2)</span>',ref:'ص 12',
@@ -743,7 +1001,15 @@ B.lesson({
     {book:String.raw`<ol><li>ارفع مصدر التيار المستمر حتى يصل تيار المجال إلى <span class="ltr">0.3 A</span> ثم توقف.</li><li>قم بتغيير مصدر الجهد المستمر حتى تصل سرعة المحرك للسرعات المطلوبة في الجدول (1-2) ثم سجل قيم القوة الدافعة الكهربائية المتولدة \(E_0\) عند كل قراءة.</li><li>ارسم العلاقة بين السرعة \(n\) والقوة الدافعة الكهربائية \(E_0\) وذلك عند ثبات تيار المجال \(I_f\).</li></ol>
      <p><b>جدول (1-2)</b> — <span class="ltr">I<sub>f</sub> = 0.3 A</span></p>`+emptyTbl('n (r.p.m)',T12COLS.map(c=>c),['E<sub>0</sub> (v)']),ref:'ص 12'},
     {tip:String.raw`<p>انظر إلى الأميتر <span class="ltr">A1</span> مع كل سرعة جديدة: يجب أن يبقى \(I_f\) عند <span class="ltr">0.3 A</span>، وإلا فلن تكون القراءات لتيار مجال ثابت.</p>`},
-    {watch:String.raw`<p>آخر سرعة في جدول (1-2) مطبوعة بالأرقام الهندية «١٦٠٠» بين أرقام لاتينية؛ اعتمدنا <span class="ltr">1600 rpm</span> كما طُبعت، مع أن تدرج الجدول (300، 600، 900، 1200) يوحي بأن المقصود ربما 1500.</p>`,fix:true}
+    {watch:String.raw`<p>آخر سرعة في جدول (1-2) مطبوعة بالأرقام الهندية «١٦٠٠» بين أرقام لاتينية؛ اعتمدنا <span class="ltr">1600 rpm</span> كما طُبعت، مع أن تدرج الجدول (300، 600، 900، 1200) يوحي بأن المقصود ربما 1500.</p>`,fix:true},
+    {title:'مختبر مصغّر: ماذا لو…؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+ {q:'رفعت السرعة من <span class="ltr">600</span> إلى <span class="ltr">900 rpm</span>، فلاحظت أن الأميتر <span class="ltr">A1</span> صار يقرأ <span class="ltr">0.28 A</span>. ماذا تفعل قبل تسجيل \\(E_0\\)؟',opts:[
+  ['أسجّل القراءة كما هي',false,'الجدول (1-2) كله عند <span class="ltr">I<sub>f</sub> = 0.3 A</span>؛ قراءة بتيار مجال آخر تخلط أثر السرعة بأثر المجال.'],
+  ['أعيد ضبط مصدر المجال حتى يرجع <span class="ltr">I<sub>f</sub></span> إلى <span class="ltr">0.3 A</span> ثم أسجّل',true,'المرحلة الثانية تدرس أثر السرعة وحدها، فيجب أن يبقى تيار المجال ثابتاً عند <span class="ltr">0.3 A</span>.'],
+  ['أغيّر السرعة حتى يرجع التيار',false,'السرعة هي المتغير الذي تأخذ قيمه من الجدول؛ تيار المجال يُضبط بمصدره.']]},
+ {q:'تخطّيت الخطوة 1 (لم تضبط تيار المجال) وبدأت تغيّر السرعة مباشرة. ما المشكلة؟',opts:[
+  ['لا مشكلة، فالسرعة هي ما ندرسه',false,'المنحنى المطلوب «عند ثبات تيار المجال»؛ دون ضبطه لا تعرف عند أي فيض أخذت القراءات.'],
+  ['القراءات لن تكون عند تيار المجال الثابت <span class="ltr">0.3 A</span> الذي يطلبه الجدول',true,'الخطوة 1: «ارفع مصدر التيار المستمر حتى يصل تيار المجال إلى 0.3 A ثم توقف» — قبل تغيير السرعة.']]}]})}
    ]},
 
   {st:7,short:'منحنى E₀ مع n',title:'منحنى العلاقة بين \\(E_0\\) والسرعة \\(n\\)',ref:'ص 12',
@@ -791,7 +1057,15 @@ B.lesson({
      ['بخطأ في الفولتميتر',false,'الجهد حقيقي ويتكرر في كل مولد، وليس خطأ قراءة.'],
      ['بأن مصدر المحرك يغذي المولد',false,'لا يوجد أي سلك بين مصدر المحرك وأطراف المولد في الشكل (1).'],
      ['بالمغنطة المتبقية في حديد الأقطاب',true,'بعد إيقاف تيار المجال يبقى فيض صغير في الأقطاب، فتقطعه موصلات المنتج عند الدوران فيتولد جهد صغير.']]}},
-    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس: غيّر «أسلوب الشرح» في الأعلى إلى «رسمي». وجرّب عكس أطراف المجال بنفسك في تبويب «المختبر».</p>`}
+    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس: غيّر «أسلوب الشرح» في الأعلى إلى «رسمي». وجرّب عكس أطراف المجال بنفسك في تبويب «المختبر».</p>`},
+    {title:'مختبر مصغّر: اعكس واقرأ القطبية',widget:(el,B)=>DCML.lab(el,B,{intro:'جهاز القياس هنا صفره في المنتصف حتى ترى إشارة الجهد. اعكس طرفي المجال أو اتجاه الدوران أو الاثنين.',
+ predict:{q:'عكست طرفي ملف المجال <b>وعكست</b> اتجاه الدوران معاً. ماذا يحدث لقطبية الجهد؟',opts:[
+  ['تنعكس مرتين، فتبقى كما كانت',true,'كل عكس يقلب الإشارة مرة؛ عكسان متتاليان يرجعانها كما كانت.'],
+  ['تنعكس',false,'لو عكست واحداً فقط لانعكست؛ أما الاثنان معاً فيلغي أحدهما أثر الآخر.'],
+  ['يصبح الجهد صفراً',false,'المقدار لا يتغير بالعكس، تتغير الإشارة فقط.']]},
+ ins:[{k:'f',l:'طرفا ملف المجال',seg:[[1,'E1 موجب (كما في الشكل)'],[-1,'معكوسان']],v:1},{k:'r',l:'اتجاه الدوران',seg:[[1,'الاتجاه الأصلي'],[-1,'معكوس']],v:1}],
+ calc:(s,v,B)=>{const g=s.f*s.r;return {pic:DCML.gauge(B,{v:g*0.8,max:1,zero:'c',lab:'V'}),facts:[[g>0?'قطبية الجهد: الأصلية':'قطبية الجهد: معكوسة',g>0?'+':'−',g>0?'hi':'bad']],
+  msg:s.f<0&&s.r<0?'عكست الاثنين: القطبية رجعت كما كانت.':g<0?'عكس واحد يكفي لقلب القطبية (السؤال 4).':''}}})}
    ]},
 
   {recap:[
@@ -947,7 +1221,16 @@ B.lesson({
    body:[
     {book:String.raw`<p class="ltr" style="display:block;text-align:left">Load characteristics of a separately excited DC generator</p><p><b>أهداف التجربة:</b> التعرف على العلاقة بين تيار الحمل وجهد الحمل عندما تكون سرعة الدوران ثابتة، وكذلك حساب معامل تنظيم الجهد ثم رسم منحنى الخواص الخارجية للمولد منفصل التغذية.</p>`,ref:'ص 14'},
     {add:String.raw`<p>الهدف يطلب «حساب معامل تنظيم الجهد» لكن الحقيبة لا تعطي قانونه. القانون المعتاد:</p><div class="eq">$$VR\%=\frac{V_{NL}-V_{FL}}{V_{FL}}\times 100$$</div><p>\(V_{NL}\): الجهد على أطراف المولد بلا حمل، و\(V_{FL}\): الجهد عند الحمل الكامل (التيار المقنن)، والسرعة وضبط المجال ثابتان. كلما صغر \(VR\) كان المولد أفضل في المحافظة على جهده.</p>`,title:'معامل تنظيم الجهد'},
-    {tip:String.raw`<p>«<b>الخواص الخارجية</b>» تعني ما يراه الحمل من الخارج: الجهد على أطراف المولد مع تيار الحمل. أما في التجربة الأولى فكنا نقيس ما يتولد داخل المولد بلا حمل \(E_0\).</p>`}
+    {tip:String.raw`<p>«<b>الخواص الخارجية</b>» تعني ما يراه الحمل من الخارج: الجهد على أطراف المولد مع تيار الحمل. أما في التجربة الأولى فكنا نقيس ما يتولد داخل المولد بلا حمل \(E_0\).</p>`},
+    {title:'مختبر مصغّر: احسب معامل تنظيم الجهد',widget:(el,B)=>DCML.lab(el,B,{intro:'حرّك جهد اللاحمل \\(V_{NL}\\) وجهد الحمل الكامل \\(V_{FL}\\) (أرقام تختارها أنت) وشاهد \\(VR\\%\\) بالقانون المضاف أعلاه.',
+ predict:{q:'مولدان لهما جهد اللاحمل نفسه؛ الأول يهبط جهده عند الحمل الكامل قليلاً، والثاني يهبط كثيراً. أيهما معامل تنظيمه أصغر (أفضل)؟',opts:[
+  ['الثاني، لأن الهبوط الكبير يعني تنظيماً أكبر وأفضل',false,'\\(VR\\) يكبر مع الهبوط، والأفضل هو الأصغر.'],
+  ['الأول، لأن الفرق \\(V_{NL}-V_{FL}\\) أصغر',true,'البسط \\(V_{NL}-V_{FL}\\) أصغر، فيخرج \\(VR\\%\\) أصغر: المولد يحافظ على جهده أكثر.'],
+  ['متساويان لأن جهد اللاحمل واحد',false,'المعامل يعتمد على الفرق بين الجهدين، لا على جهد اللاحمل وحده.']]},
+ ins:[{k:'nl',l:'جهد اللاحمل V<sub>NL</sub>',min:100,max:250,step:1,v:230,dp:0,u:'V'},{k:'fl',l:'جهد الحمل الكامل V<sub>FL</sub>',min:100,max:250,step:1,v:220,dp:0,u:'V'}],
+ calc:(s,v,B)=>{if(s.fl>s.nl)return {msg:'جهد الحمل الكامل لا يكون أكبر من جهد اللاحمل في هذا المولد؛ صغّر \\(V_{FL}\\).',cls:'warn'};
+  const vr=(s.nl-s.fl)/s.fl*100;return {facts:[['الفرق <span class="ltr">V<sub>NL</sub> − V<sub>FL</sub></span>',DCML.fm(B,s.nl-s.fl,0)+' V'],['VR%',DCML.fm(B,vr,1)+' %','hi']],bars:[{l:'معامل التنظيم',v:vr,max:30,txt:DCML.fm(B,vr,1)+' %',col:vr<8?'--on':'--live'}],
+   msg:vr<0.05?'لا هبوط: تنظيم مثالي (صفر).':''}}})}
    ]},
 
   {st:2,short:'الأجهزة',title:'الأجهزة المستخدمة',ref:'ص 14',
@@ -962,7 +1245,12 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<ol><li>مصدر تيار مستمر متحكم فيه.</li><li>محرك تيار مستمر توازي.</li><li>مولد تيار مستمر توازي.</li><li>مصدر تيار مستمر لتغذية ملفات المجال.</li><li>جهازا أميتر.</li><li>جهاز فولتميتر.</li><li>حمل (مقاومة مادية متغيرة).</li><li>جهاز قياس السرعة.</li></ol>`,ref:'ص 14'},
-    {tip:String.raw`<p>المولد «آلة توازي» من حيث صنعها، لكنه يُستعمل هنا «منفصل التغذية» لأن ملف مجاله يُغذى من مصدر مستقل (البند 4)، لا من أطرافه.</p>`}
+    {tip:String.raw`<p>المولد «آلة توازي» من حيث صنعها، لكنه يُستعمل هنا «منفصل التغذية» لأن ملف مجاله يُغذى من مصدر مستقل (البند 4)، لا من أطرافه.</p>`},
+    {title:'مختبر مصغّر: من يقرأ ماذا؟',widget:(el,B)=>DCML.sort(el,B,{intro:'في الشكل (2) صار عندنا أميتران. اضغط الجهاز المناسب لكل مهمة.',cats:['الأميتر A1','الأميتر A2','الفولتميتر V','مقاومة الحمل R<sub>L</sub>'],items:[
+ ['يقرأ تيار مجال المولد، ونتأكد به أنه بقي <span class="ltr">0.3 A</span>.',0,'A1 في دائرة المجال كما في التجربة الأولى.'],
+ ['يقرأ تيار الحمل \\(I_L\\).',1,'الخطوة 4: «سجل قيمة تيار الحمل \\(I_L\\) عن طريق جهاز الأميتر A2».'],
+ ['يقرأ جهد الحمل \\(V_L\\) على أطراف المولد.',2,'«وجهد الحمل \\(V_L\\) عن طريق جهاز الفولتميتر V».'],
+ ['نغيّرها لنغيّر قيمة الحمل.',3,'«قم بتغيير قيمة الحمل \\(R_L\\)» — مقاومة مادية متغيرة (البند 7).']]})}
    ]},
 
   {st:3,short:'القوانين',title:'القوانين المستنتجة من الدائرة',ref:'ص 14',
@@ -978,7 +1266,14 @@ B.lesson({
      ['ينقص إلى النصف',false,'المقاومة في المقام: \\(I_L=V_L\\div R_L\\)، فنقصها يزيد التيار.'],
      ['يتضاعف تقريباً',true,'\\(I_L=V_L\\div R_L\\): الجهد شبه ثابت والمقاومة نصف ما كانت، فالتيار ضعف ما كان تقريباً.'],
      ['لا يتغير',false,'التيار يعتمد على المقاومة، وقد تغيرت.']]}},
-    {watch:String.raw`<p>\(R_L\) الصغيرة تعني حملاً <b>كبيراً</b> (تياراً أكبر). فالسير في الجدول من <span class="ltr">100%</span> إلى <span class="ltr">20%</span> هو زيادة في الحمل، لا نقص.</p>`}
+    {watch:String.raw`<p>\(R_L\) الصغيرة تعني حملاً <b>كبيراً</b> (تياراً أكبر). فالسير في الجدول من <span class="ltr">100%</span> إلى <span class="ltr">20%</span> هو زيادة في الحمل، لا نقص.</p>`},
+    {title:'مختبر مصغّر: قانون أوم على الحمل',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر قراءتي الفولتميتر والأميتر (أرقام تختارها أنت)، وشاهد قيمة \\(R_L\\) بالأوم. ثم تأكد أن \\(I_L=V_L\\div R_L\\) يرجعك إلى قراءة الأميتر.',
+ predict:{q:'قرأ الفولتميتر <span class="ltr">V<sub>L</sub> = 200 V</span> والأميتر <span class="ltr">I<sub>L</sub> = 2 A</span>. كم مقاومة الحمل؟',opts:[
+  ['400 Ω',false,'هذا حاصل الضرب \\(V_L\\times I_L\\)، وهو قدرة بالواط لا مقاومة.'],
+  ['100 Ω',true,'\\(R_L=V_L\\div I_L=200\\div 2=100\\ \\Omega\\)، ويتحقق \\(V_L=I_L\\times R_L=2\\times100=200\\ \\text{V}\\).'],
+  ['0.01 Ω',false,'هذا \\(I_L\\div V_L\\) مقلوباً؛ المقاومة = الجهد ÷ التيار.']]},
+ ins:[{k:'V',l:'قراءة الفولتميتر V<sub>L</sub>',min:20,max:250,step:5,v:200,dp:0,u:'V'},{k:'I',l:'قراءة الأميتر I<sub>L</sub>',min:0.5,max:6,step:0.1,v:2,dp:1,u:'A'}],
+ calc:(s,v,B)=>{const R=s.V/s.I;return {facts:[['R<sub>L</sub> = V<sub>L</sub> ÷ I<sub>L</sub>',DCML.fm(B,R,1)+' Ω','hi'],['تحقق: <span class="ltr">I<sub>L</sub> = V<sub>L</sub> ÷ R<sub>L</sub></span>',DCML.fm(B,s.V/R,1)+' A'],['تحقق: <span class="ltr">V<sub>L</sub> = I<sub>L</sub> × R<sub>L</sub></span>',DCML.fm(B,s.I*R,0)+' V']]}}})}
    ]},
 
   {st:4,short:'دائرة التوصيل',title:'مخطط التوصيل — الشكل <span class="ltr">(2)</span>',ref:'ص 14',
@@ -994,7 +1289,17 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>مخطط التوصيل — الشكل <span class="ltr">(2)</span></b></p>`+box(benchSVG({kind:'sep',rd:false,RLp:100}),900,1),ref:'ص 14'},
     {tip:String.raw`<p>جهة المحرك مطابقة للشكل <span class="ltr">(1)</span>. مجال المولد <span class="ltr">E1–E2</span> يُغذى منفصلاً عبر الأميتر <span class="ltr">A1</span>. على أطراف المولد الفولتميتر <span class="ltr">V</span> \((V_L)\)، ثم الأميتر <span class="ltr">A2</span> على التوالي \((I_L)\)، ثم مقاومة الحمل المتغيرة \(R_L\).</p>`,title:'ما الذي أُضيف على الشكل (1)؟'},
-    {tip:String.raw`<p>في المولد منفصل التغذية تيار المنتج \(I_a\) هو نفسه تيار الحمل \(I_L\)، لأن المجال يأخذ تياره من مصدره المستقل لا من المنتج.</p>`}
+    {tip:String.raw`<p>في المولد منفصل التغذية تيار المنتج \(I_a\) هو نفسه تيار الحمل \(I_L\)، لأن المجال يأخذ تياره من مصدره المستقل لا من المنتج.</p>`},
+    {title:'مختبر مصغّر: ضع الأميتر والفولتميتر',widget:(el,B)=>DCML.lab(el,B,{intro:'جرّب مكان كل جهاز وشاهد ما تقرؤه الأجهزة. الحمل عند <span class="ltr">50%</span>، والسرعة وتيار المجال ثابتان.',
+ predict:{q:'لو وصلت الأميتر A2 على التوازي مباشرة بين طرفي المولد (مثل الفولتميتر)، ماذا يحدث؟',opts:[
+  ['يقرأ تيار الحمل بشكل عادي',false,'مقاومة الأميتر صغيرة جداً، فهو على التوازي يصير طريقاً قصيراً للتيار.'],
+  ['يصير قصراً على أطراف المولد فيمر فيه تيار كبير جداً',true,'الأميتر مقاومته شبه صفر؛ يوضع على التوالي في مسار التيار (قاعدة التوصيل ص 4–5)، وعلى التوازي يقصر الدائرة.'],
+  ['لا يقرأ شيئاً',false,'بل يمر فيه تيار كبير جداً، وهذا خطر على الجهاز والمولد.']]},
+ ins:[{k:'a',l:'مكان الأميتر A2',seg:[['s','على التوالي مع R<sub>L</sub>'],['p','على التوازي بين الطرفين']],v:'s'},{k:'w',l:'مكان الفولتميتر V',seg:[['p','على التوازي بين الطرفين'],['s','على التوالي مع R<sub>L</sub>']],v:'p'}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','RLmax'])},
+ calc:(s,v,B)=>{if(s.a==='p')return {facts:[['الأميتر A2','كبير جداً','bad'],['الفولتميتر','≈ 0 V','bad']],msg:'<b>قصر!</b> الأميتر على التوازي يربط الطرفين بمقاومة شبه صفرية، فيمر تيار كبير جداً قد يتلف الأميتر ويحرق المصهر. الأميتر مكانه على التوالي.',cls:'bad'};
+  if(s.w==='s'){const r=armSolve(v,{n:EXP2_N,Isep:0.3,RL:Infinity});return {facts:[['الأميتر A2 (I<sub>L</sub>)','≈ 0 A','bad'],['الفولتميتر','≈ '+DCML.fm(B,r.Va,0)+' V','bad']],msg:'الفولتميتر مقاومته كبيرة جداً؛ على التوالي يمنع التيار عن الحمل تقريباً، فلا يعمل الحمل، ويقرأ جهد الأطراف بلا حمل. الفولتميتر مكانه على التوازي.',cls:'warn'}}
+  const r=armSolve(v,{n:EXP2_N,Isep:0.3,RL:0.5*v.RLmax});return {facts:[['الأميتر A2 (I<sub>L</sub>)',DCML.fm(B,r.IL,2)+' A','hi'],['الفولتميتر (V<sub>L</sub>)',DCML.fm(B,r.VL,1)+' V','hi']],msg:'هذا توصيل الشكل (2): الأميتر في مسار تيار الحمل، والفولتميتر بين الطرفين.'}}})}
    ]},
 
   {st:5,short:'الخطوات والجدول',title:'خطوات إجراء التجربة وجدول <span class="ltr">(2-1)</span>',ref:'ص 15',
@@ -1011,7 +1316,13 @@ B.lesson({
     {book:String.raw`<ol><li>قم بتوصيل التجربة كما في الشكل (2).</li><li>تأكد أن مصدر التيار المستمر مضبوط على الصفر ثم شغل المصدر.</li><li>ثبت السرعة \(n\) عند <span class="ltr">${EXP2_N}</span> لفة في الدقيقة وكذلك قم بتثبيت تيار المجال \(I_f\) عند <span class="ltr">0.3 A</span>.</li><li>قم بتغيير قيمة الحمل \(R_L\) ومن ثم سجل قيمة تيار الحمل \(I_L\) عن طريق جهاز الأميتر A2 وجهد الحمل \(V_L\) عن طريق جهاز الفولتميتر V في الجدول (2-1).</li><li>قم برسم العلاقة بين تيار الحمل \(I_L\) وجهد الحمل \(V_L\).</li></ol>
      <p><b>جدول (2-1)</b> — <span class="ltr">n = ${EXP2_N} r.p.m &nbsp; I<sub>f</sub> = 0.3 A</span></p>`+emptyTbl('R<sub>L</sub>',['100%','80%','60%','50%','40%','20%'],['I<sub>L</sub> (A)','V<sub>L</sub> (v)']),ref:'ص 15'},
     {tip:String.raw`<p>عند تحميل المولد تهبط سرعة المحرك المدير قليلاً (المولد المحمّل يحتاج عزماً أكبر). لذلك انظر إلى مقياس السرعة قبل كل قراءة، وأعدها إلى <span class="ltr">${EXP2_N} rpm</span> بجهد مصدر المحرك، وتأكد أن \(I_f\) ما زال <span class="ltr">0.3 A</span>.</p>`,title:'قبل كل قراءة'},
-    {watch:String.raw`<p><b>سرعة التجربة:</b> الخطوة الثالثة (المطبوعة برقم 2) تقول «ثبت السرعة n عند <span class="ltr">1500</span> لفة في الدقيقة»، بينما رأس جدول (2-1) يقول <span class="ltr">n = 1400 r.p.m</span>. اعتمدنا هنا <span class="ltr">${EXP2_N} rpm</span> (${N2TXT}).</p>`,fix:true}
+    {watch:String.raw`<p><b>سرعة التجربة:</b> الخطوة الثالثة (المطبوعة برقم 2) تقول «ثبت السرعة n عند <span class="ltr">1500</span> لفة في الدقيقة»، بينما رأس جدول (2-1) يقول <span class="ltr">n = 1400 r.p.m</span>. اعتمدنا هنا <span class="ltr">${EXP2_N} rpm</span> (${N2TXT}).</p>`,fix:true},
+    {title:'مختبر مصغّر: رتّب خطوات التجربة',widget:(el,B)=>DCML.order(el,B,{steps:[
+ ['وصّل التجربة كما في الشكل (2)','التوصيل أولاً والجهد مفصول.'],
+ ['تأكد أن مصدر المحرك على الصفر، ثم شغّله','المصدر يبدأ من الصفر قبل أي ضبط.'],
+ ['ثبّت السرعة وثبّت \\(I_f\\) عند <span class="ltr">0.3 A</span>','القراءات كلها عند سرعة وتيار مجال ثابتين، فاضبطهما قبل تغيير الحمل.'],
+ ['غيّر \\(R_L\\) بقيم الجدول (2-1) وسجّل \\(I_L\\) و\\(V_L\\)','التسجيل بعد تثبيت السرعة وتيار المجال.'],
+ ['ارسم العلاقة بين \\(I_L\\) و\\(V_L\\)','الرسم بعد اكتمال الجدول.']],done:'وقبل كل قراءة: أعد السرعة إلى قيمتها وتأكد من <span class="ltr">I<sub>f</sub> = 0.3 A</span>.'})}
    ]},
 
   {st:6,short:'المنحنى',title:'منحنى العلاقة بين تيار الحمل وجهد الحمل',ref:'ص 15',
@@ -1034,7 +1345,18 @@ B.lesson({
       el.querySelector('[data-rs]').onclick=rs;
     }},
     {tip:String.raw`<p>عند توصيل حمل يمر في المنتج تيار \(I_a\)، فيهبط الجهد على الأطراف عن \(E\) لثلاثة أسباب:</p><div class="eq">$$V_L=E-I_aR_a-V_{brush}$$</div><ol><li><b>مقاومة المنتج \(R_a\)</b>: هبوط \(I_aR_a\) يكبر مع التيار.</li><li><b>هبوط الفرش</b>: نحو فولت أو فولتين تقريباً.</li><li><b>رد فعل المنتج</b>: مجال تيار المنتج يُضعف فيض الأقطاب قليلاً، فتنقص \(E\) نفسها مع زيادة الحمل.</li></ol><p>(هذه العلاقة من دراستك النظرية، وليست في الحقيبة.)</p>`,title:'لماذا يهبط الجهد؟'},
-    {tip:String.raw`<p>بما أن مجال المولد يُغذى من مصدر مستقل، لا يتأثر تيار المجال بهبوط جهد الأطراف، فيكون الهبوط صغيراً. ارسم أقرب خط أملس بين نقاطك.</p>`}
+    {tip:String.raw`<p>بما أن مجال المولد يُغذى من مصدر مستقل، لا يتأثر تيار المجال بهبوط جهد الأطراف، فيكون الهبوط صغيراً. ارسم أقرب خط أملس بين نقاطك.</p>`},
+    {title:'مختبر مصغّر: حرّك الحمل واقرأ النقطة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر قيمة \\(R_L\\) من الجدول (2-1) وشاهد النقطة تتحرك على منحنى الخواص الخارجية.',
+ predict:{q:'من <span class="ltr">R<sub>L</sub> = 100%</span> إلى <span class="ltr">20%</span>: النقطة على المنحنى تتحرك…',opts:[
+  ['إلى اليمين (تيار أكبر) وتنزل قليلاً (جهد أقل)',true,'تصغير \\(R_L\\) يزيد \\(I_L\\)، ومع زيادة التيار يزيد الهبوط داخل المولد فينزل \\(V_L\\) قليلاً.'],
+  ['إلى اليسار وتصعد',false,'تصغير المقاومة يزيد التيار، فالنقطة تتجه يميناً لا يساراً.'],
+  ['إلى اليمين وتصعد',false,'التيار يزيد فعلاً، لكن الجهد يهبط ولا يرتفع.']]},
+ ins:[{k:'p',l:'مقاومة الحمل R<sub>L</sub> (من قيمتها الكاملة)',seg:[[100,'100%'],[80,'80%'],[60,'60%'],[50,'50%'],[40,'40%'],[20,'20%']],v:100}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','RLmax'])},
+ calc:(s,v,B)=>{const pt=p=>armSolve(v,{n:EXP2_N,Isep:0.3,RL:p/100*v.RLmax}),r=pt(s.p),r0=armSolve(v,{n:EXP2_N,Isep:0.3,RL:Infinity}),P=[100,80,60,50,40,20].map(p=>{const q=pt(p);return [q.IL,q.VL]});
+  const xm=Math.max(...P.map(x=>x[0]))*1.15,ym=r0.Va*1.1;
+  return {facts:[['I<sub>L</sub>',DCML.fm(B,r.IL,2)+' A'],['V<sub>L</sub>',DCML.fm(B,r.VL,1)+' V','hi'],['الهبوط عن اللاحمل',DCML.fm(B,r0.Va-r.VL,1)+' V']],
+   plot:{xr:[0,xm],yr:[0,ym],xl:'I<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (A)</tspan>',yl:'V<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (V)</tspan>',curves:[{pts:[[0,r0.Va]].concat(P)}],dots:P.map(x=>[x[0],x[1],'--muted']),cur:[r.IL,r.VL]}}}})}
    ]},
 
   {st:7,short:'الأسئلة',title:'الأسئلة',ref:'ص 16',
@@ -1057,7 +1379,17 @@ B.lesson({
      ['نعم، صغير نسبياً، لأن تيار مجاله لا يعتمد على جهد الأطراف',true,'المجال من مصدر مستقل، فالهبوط سببه فقط \\(I_aR_a\\) والفرش ورد فعل المنتج. قارن نتيجتك بمولد التوازي في التجربة الثالثة.'],
      ['لا، لأن جهده ينهار مع أي حمل',false,'الانهيار مع الحمل صفة مولدات أخرى (مثل المركب التفاضلي)، لا منفصل التغذية.'],
      ['لا يمكن معرفته إلا بالحساب الدقيق',false,'يمكن الحكم من شكل المنحنى: الهبوط صغير لأن تيار المجال لا يتأثر بالحمل.']]}},
-    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» تستطيع إيقاف «رد فعل المنتج» لترى أثره وحده، ويحسب لك معامل تنظيم الجهد من قراءاتك.</p>`}
+    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» تستطيع إيقاف «رد فعل المنتج» لترى أثره وحده، ويحسب لك معامل تنظيم الجهد من قراءاتك.</p>`},
+    {title:'مختبر مصغّر: أين يذهب الفرق بين E و V<sub>L</sub>؟',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر الحمل وشاهد كيف يتوزع الجهد المتولد \\(E\\) بين الهبوط داخل المولد وجهد الأطراف \\(V_L\\) (السؤال ج).',
+ predict:{q:'الحمل مفصول (لا تيار). كم الفرق بين \\(E\\) و\\(V_L\\)؟',opts:[
+  ['صفر تقريباً',true,'بلا تيار لا هبوط على \\(R_a\\) ولا على الفرش، فيقرأ الفولتميتر \\(E\\) نفسها.'],
+  ['أكبر ما يمكن',false,'الهبوط يكبر مع التيار، وبلا حمل لا تيار.'],
+  ['نصف \\(E\\)',false,'لا علاقة للنصف هنا؛ الهبوط يعتمد على التيار.']]},
+ ins:[{k:'p',l:'الحمل R<sub>L</sub>',seg:[[0,'مفصول'],[100,'100%'],[60,'60%'],[40,'40%'],[20,'20%']],v:60}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','RLmax'])},
+ calc:(s,v,B)=>{const r=armSolve(v,{n:EXP2_N,Isep:0.3,RL:s.p?s.p/100*v.RLmax:Infinity}),Er=r.Ia*v.Ra,E0=mach(v).E(0.3,EXP2_N),mx=E0*1.02;
+  return {bars:[{l:'E بلا حمل (مرجع)',v:E0,max:mx,u:'V',dp:1,col:'--muted'},{l:'E المتولدة الآن (ينقصها رد فعل المنتج)',v:r.E,max:mx,u:'V',dp:1,col:'--blue'},{l:'هبوط مقاومة المنتج I<sub>a</sub>R<sub>a</sub>',v:Er,max:mx,u:'V',dp:1,col:'--live'},{l:'هبوط الفرش',v:r.vb,max:mx,u:'V',dp:1,col:'--live'},{l:'جهد الأطراف V<sub>L</sub>',v:r.VL,max:mx,u:'V',dp:1,col:'--on'}],
+   facts:[['I<sub>a</sub> = I<sub>L</sub>',DCML.fm(B,r.IL,2)+' A'],['E − V<sub>L</sub>',DCML.fm(B,r.E-r.VL,1)+' V','hi']]}}})}
    ]},
 
   {recap:[
@@ -1212,7 +1544,11 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<ol><li>مصدر قدرة.</li><li>مولد تيار مستمر توازي.</li><li>جهاز فولتميتر.</li><li>جهاز قياس السرعة.</li><li>موحد تيار مستمر متحكم فيه.</li><li>جهاز أميتر.</li><li>حمل (مقاومة مادية متغيرة).</li></ol>`,ref:'ص 17'},
-    {watch:String.raw`<p>البند 2 مطبوع في الكتاب «مولد تيار مستمر <b>توالي</b>» والصحيح «توازي»: التجربة لمولد التوازي والمخطط يبين مجال توازي <span class="ltr">E1–E2</span>. والمحرك المُدير غير مذكور في القائمة مع أنه في المخطط.</p>`,fix:true}
+    {watch:String.raw`<p>البند 2 مطبوع في الكتاب «مولد تيار مستمر <b>توالي</b>» والصحيح «توازي»: التجربة لمولد التوازي والمخطط يبين مجال توازي <span class="ltr">E1–E2</span>. والمحرك المُدير غير مذكور في القائمة مع أنه في المخطط.</p>`,fix:true},
+    {title:'تحقق سريع: ما الذي تغيّر في الأجهزة؟',widget:(el,B)=>DCML.tf(el,B,{intro:'قارن قائمة هذه التجربة ومخططها بالتجربة الثانية.',items:[
+ ['في الشكل (3) مصدر مستقل يغذي ملف مجال المولد.',false,'لا مصدر للمجال هنا: ملف المجال على أطراف المولد نفسه (تغذية ذاتية توازي).'],
+ ['في المخطط أميتر واحد، وهو لتيار الحمل \\(I_L\\).',true,'لا يوجد أميتر مجال في الشكل (3)؛ الأميتر الوحيد على التوالي مع الحمل.'],
+ ['البند 2 في القائمة «مولد تيار مستمر توالي» صحيح كما طُبع.',false,'التجربة لمولد التوازي والمخطط يبين مجال توازي <span class="ltr">E1–E2</span>، فالصحيح «توازي».']]})}
    ]},
 
   {st:3,short:'دائرة التوصيل',title:'مخطط التوصيل — الشكل <span class="ltr">(3)</span>',ref:'ص 17',
@@ -1227,7 +1563,19 @@ B.lesson({
    ],
    body:[
     {book:String.raw`<p><b>مخطط التوصيل — الشكل <span class="ltr">(3)</span></b></p>`+box(benchSVG({kind:'shunt',rd:false,RLp:100}),900,1),ref:'ص 17'},
-    {tip:String.raw`<p>جهة المحرك مطابقة للشكلين <span class="ltr">(1)</span> و<span class="ltr">(2)</span>. جهة المولد تغذية ذاتية توازي: ملف المجال <span class="ltr">E1–E2</span> على أطراف المنتج مباشرة، ثم الفولتميتر <span class="ltr">V</span> \((V_L)\)، ثم الأميتر <span class="ltr">A</span> على التوالي \((I_L)\) ومقاومة الحمل المتغيرة \(R_L\).</p>`,title:'اقرأ المخطط'}
+    {tip:String.raw`<p>جهة المحرك مطابقة للشكلين <span class="ltr">(1)</span> و<span class="ltr">(2)</span>. جهة المولد تغذية ذاتية توازي: ملف المجال <span class="ltr">E1–E2</span> على أطراف المنتج مباشرة، ثم الفولتميتر <span class="ltr">V</span> \((V_L)\)، ثم الأميتر <span class="ltr">A</span> على التوالي \((I_L)\) ومقاومة الحمل المتغيرة \(R_L\).</p>`,title:'اقرأ المخطط'},
+    {title:'مختبر مصغّر: كيف وصّلت ملف المجال؟',widget:(el,B)=>DCML.lab(el,B,{intro:'المولد يدور بسرعة ثابتة والحمل عند <span class="ltr">100%</span>. غيّر توصيل ملف المجال <span class="ltr">E1–E2</span> على أطراف المولد وشاهد القراءات.',
+ predict:{q:'عكست طرفي ملف المجال على أطراف المولد. ماذا تتوقع؟',opts:[
+  ['يبني المولد جهده كالمعتاد بقطبية معكوسة',false,'التيار في الملف المعكوس يصنع فيضاً يعاكس المغنطة المتبقية فيضعفها بدل أن يقويها.'],
+  ['لا يبني المولد جهده، ويبقى جهد صغير جداً',true,'شرط البناء أن يقوي تيار المجال المغنطة المتبقية؛ بالعكس يلغيها فلا يبنى الجهد (السؤال iv).'],
+  ['يتضاعف الجهد',false,'العكس يضعف الفيض ولا يقويه.']]},
+ ins:[{k:'c',l:'توصيل ملف المجال',seg:[['ok','على الأطراف (كما في الشكل)'],['rev','معكوس الطرفين'],['open','دائرة المجال مفتوحة']],v:'ok'}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','RLmax'])},
+ calc:(s,v,B)=>{let Ish=0,G;for(let k=0;k<400;k++){G=armSolve(v,{n:1500,Ish,sig:s.c==='rev'?-1:1,RL:v.RLmax});const t=s.c==='open'?0:G.Va/Math.max(v.Rsh,1);Ish+=(t-Ish)*0.5}
+  const built=G.Va>3*Math.max(v.Er,0.5);
+  return {pic:DCML.gauge(B,{v:G.VL,max:mach(v).E(0.3,1500)*1.1,lab:'V',txt:DCML.fm(B,G.VL,1)+' V'}),
+   facts:[['V<sub>L</sub>',DCML.fm(B,G.VL,1)+' V','hi'],['I<sub>f</sub> (في ملف المجال)',DCML.fm(B,Ish,3)+' A'],['I<sub>L</sub> (الأميتر)',DCML.fm(B,G.IL,2)+' A'],['I<sub>a</sub> = I<sub>L</sub> + I<sub>f</sub>',DCML.fm(B,G.Ia,2)+' A']],
+   msg:s.c==='open'?'دائرة المجال مفتوحة: لا تيار مجال، فلا يبقى إلا جهد المغنطة المتبقية (السؤال i).':built?'بنى المولد جهده: تيار المنتج يتفرع إلى ملف المجال والحمل.':'لم يبنِ المولد جهده: تيار الملف المعكوس يضعف المغنطة المتبقية.',cls:built?'':'warn'}}})}
    ]},
 
   {st:4,short:'المعادلات',title:'المعادلات الخاصة بالتجربة',ref:'ص 18',
@@ -1243,7 +1591,18 @@ B.lesson({
      ['يبقى ثابتاً',false,'هذا في المولد منفصل التغذية فقط؛ هنا \\(I_f\\) مربوط بجهد الأطراف.'],
      ['ينقص، لأن \\(I_f=V_L\\div R_f\\)',true,'\\(V_L=I_f\\times R_f\\) و\\(R_f\\) ثابتة، فنقص \\(V_L\\) يعني نقص \\(I_f\\) — ولهذا يهبط جهد مولد التوازي أكثر (السؤال v).'],
      ['يزيد ليعوض الهبوط',false,'لا يوجد في الدائرة ما يزيده؛ المعادلة تربطه بالجهد طردياً.']]}},
-    {watch:String.raw`<p>المعادلة الأولى تعطي \(E\) أكبر من \(V_L\) دائماً عند التحميل: الفرق \(I_aR_a\) يضيع داخل المنتج. لا تخلط بين \(I_a\) (تيار المنتج) و\(I_L\) (قراءة الأميتر).</p>`}
+    {watch:String.raw`<p>المعادلة الأولى تعطي \(E\) أكبر من \(V_L\) دائماً عند التحميل: الفرق \(I_aR_a\) يضيع داخل المنتج. لا تخلط بين \(I_a\) (تيار المنتج) و\(I_L\) (قراءة الأميتر).</p>`},
+    {title:'مختبر مصغّر: أسماء الجهد الواحد',widget:(el,B)=>DCML.lab(el,B,{intro:'غيّر الحمل وشاهد أن \\(V_f\\) و\\(V_L\\) و\\(I_f\\times R_f\\) و\\(I_L\\times R_L\\) رقم واحد، وأن \\(E\\) أكبر منه بمقدار \\(I_a\\times R_a\\).',
+ predict:{q:'والمولد محمّل، أيهما أكبر: \\(E\\) أم \\(V_L\\)؟',opts:[
+  ['\\(V_L\\)',false,'\\(E=V_L+I_a\\times R_a\\)، فالجهد المتولد أكبر من جهد الأطراف.'],
+  ['متساويان دائماً',false,'يتساويان فقط عندما لا يمر تيار في المنتج.'],
+  ['\\(E\\)، بمقدار \\(I_a\\times R_a\\)',true,'المعادلة الأولى (ص 18): جزء من الجهد المتولد يضيع على مقاومة المنتج.']]},
+ ins:[{k:'p',l:'الحمل R<sub>L</sub>',seg:[[100,'100%'],[80,'80%'],[60,'60%'],[40,'40%']],v:80}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','RLmax'])},
+ calc:(s,v,B)=>{const RL=s.p/100*v.RLmax;let Ish=0,G;for(let k=0;k<400;k++){G=armSolve(v,{n:1500,Ish,RL,noVb:1});Ish+=(G.Va/Math.max(v.Rsh,1)-Ish)*0.5}
+  const f=x=>DCML.fm(B,x,1)+' V';
+  return {facts:[['V<sub>L</sub> (الفولتميتر)',f(G.VL),'hi'],['V<sub>f</sub> = I<sub>f</sub> × R<sub>f</sub>',f(Ish*v.Rsh)],['I<sub>L</sub> × R<sub>L</sub>',f(G.IL*RL)],['I<sub>a</sub> = I<sub>L</sub> + I<sub>f</sub>',DCML.fm(B,G.Ia,2)+' A'],['E = V<sub>L</sub> + I<sub>a</sub>R<sub>a</sub>',f(G.VL+G.Ia*v.Ra),'hi']],
+   msg:'الرقم نفسه بثلاثة أسماء لأن ملف المجال والحمل والفولتميتر كلها على الطرفين نفسيهما. (هبوط الفرش مهمل هنا كما في المعادلة الأولى.)'}}})}
    ]},
 
   {st:5,short:'أولاً: 1200 rpm',title:'خطوات التجربة — أولاً، وجدول <span class="ltr">(3-1)</span>',ref:'ص 18',
@@ -1259,7 +1618,15 @@ B.lesson({
    body:[
     {book:String.raw`<p>صل التجربة كما هو مبين في مخطط التوصيل شكل (3).</p><p><b>أولاً:</b></p><ol><li>ثبت السرعة \(n\) عند القيمة المطلوبة في أعلى الجدول (3-1).</li><li>قم بتغيير قيمة الحمل \(R_L\) ومن ثم قم بتسجيل قيم جهد الحمل \(V_L\) عن طريق جهاز الفولتميتر وتيار الحمل \(I_L\) عن طريق جهاز الأميتر وذلك حسب الجدول (3-1):</li></ol>
      <p><b>جدول (3-1)</b> — <span class="ltr">n = 1200 r.p.m</span></p>`+emptyTbl('R<sub>L</sub>%',['100%','80%','60%','40%'],['I<sub>L</sub> (A)','V<sub>L</sub> (v)']),ref:'ص 18'},
-    {tip:String.raw`<p>المولد يبني جهده بنفسه بعد أن يدور، فانتظر حتى يستقر الفولتميتر قبل أول قراءة. إذا بقي الجهد صغيراً جداً فالمولد «لم يبنِ» — راجع شروط البناء في المحطة الأولى، وأخبر المدرب.</p>`,title:'قبل أول قراءة'}
+    {tip:String.raw`<p>المولد يبني جهده بنفسه بعد أن يدور، فانتظر حتى يستقر الفولتميتر قبل أول قراءة. إذا بقي الجهد صغيراً جداً فالمولد «لم يبنِ» — راجع شروط البناء في المحطة الأولى، وأخبر المدرب.</p>`,title:'قبل أول قراءة'},
+    {title:'مختبر مصغّر: ماذا تفعل الآن؟',widget:(el,B)=>DCML.cases(el,B,{cases:[
+ {q:'شغّلت المحرك المدير حتى <span class="ltr">1200 rpm</span>، لكن الفولتميتر بقي يقرأ بضعة فولتات فقط ولا يرتفع.',opts:[
+  ['أبدأ أخذ قراءات الجدول',false,'المولد «لم يبنِ» جهده، والقراءات لن تكون لمولد توازي عامل.'],
+  ['أوقف وأراجع شروط البناء (اتجاه توصيل المجال، دائرة المجال، المغنطة المتبقية) وأخبر المدرب',true,'جهد صغير لا يرتفع يعني أن البناء لم يحدث؛ راجع شروطه في المحطة الأولى.'],
+  ['أصغّر مقاومة الحمل حتى يرتفع الجهد',false,'زيادة الحمل تخفض الجهد ولا تساعد على البناء.']]},
+ {q:'أخذت قراءة <span class="ltr">R<sub>L</sub> = 80%</span> ثم انتقلت إلى <span class="ltr">60%</span> مباشرة دون النظر إلى مقياس السرعة. ما الخطأ؟',opts:[
+  ['لا خطأ، فالحمل هو المتغير',false,'الخطوة 1 تطلب تثبيت السرعة عند قيمة رأس الجدول؛ الحمل الأكبر يبطئ المحرك المدير.'],
+  ['يجب إعادة السرعة إلى <span class="ltr">1200 rpm</span> قبل كل قراءة',true,'جهد مولد التوازي حساس للسرعة، فقراءة بسرعة أقل تخلط أثرها بأثر الحمل.']]}]})}
    ]},
 
   {st:6,short:'ثانياً: 1500 rpm',title:'خطوات التجربة — ثانياً، وجدول <span class="ltr">(3-2)</span>',ref:'ص 18',
@@ -1275,7 +1642,18 @@ B.lesson({
    body:[
     {book:String.raw`<p><b>ثانياً:</b></p><ol><li>ثبت السرعة \(N\) عند القيمة المطلوبة في أعلى الجدول (3-2).</li><li>قم بتغيير قيمة الحمل \(R_L\) ومن ثم قم بتسجيل قيم جهد الحمل \(V_L\) عن طريق جهاز الفولتميتر وتيار الحمل \(I_L\) عن طريق جهاز الأميتر وذلك حسب الجدول (3-2):</li></ol>
      <p><b>جدول (3-2)</b> — <span class="ltr">n = 1500 r.p.m</span></p>`+emptyTbl('R<sub>L</sub>%',['100%','80%','60%','40%'],['I<sub>L</sub> (A)','V<sub>L</sub> (v)']),ref:'ص 18'},
-    {tip:String.raw`<p>الكتاب يكتب السرعة هنا \(N\) وفي «أولاً» \(n\)؛ المقصود الشيء نفسه: سرعة دوران المولد.</p>`}
+    {tip:String.raw`<p>الكتاب يكتب السرعة هنا \(N\) وفي «أولاً» \(n\)؛ المقصود الشيء نفسه: سرعة دوران المولد.</p>`},
+    {title:'مختبر مصغّر: من 1200 إلى 1500 rpm',widget:(el,B)=>DCML.lab(el,B,{intro:'الحمل نفسه، والسرعة تتغير بين قيمتي الجدولين. قارن نسبة السرعتين بنسبة الجهدين.',
+ predict:{q:'عند <span class="ltr">1500 rpm</span> يكون تيار المجال \\(I_f\\) مقارنة بـ <span class="ltr">1200 rpm</span>…',opts:[
+  ['أكبر، لأن الجهد أكبر و\\(I_f=V_L\\div R_f\\)',true,'السرعة ترفع الجهد، والجهد الأعلى يدفع تياراً أكبر في ملف المجال فيقوى الفيض.'],
+  ['هو نفسه، لأننا لم نغيّر شيئاً في المجال',false,'في مولد التوازي لا يُضبط المجال من مصدر؛ تياره يتبع جهد الأطراف.'],
+  ['أصغر، لأن الحمل يأخذ تياراً أكبر',false,'تيار المجال يحدده جهد الأطراف ومقاومة الملف، لا تيار الحمل مباشرة.']]},
+ ins:[{k:'p',l:'الحمل R<sub>L</sub>',seg:[[100,'100%'],[80,'80%'],[60,'60%'],[40,'40%']],v:100}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','RLmax'])},
+ calc:(s,v,B)=>{const ss=n=>{let Ish=0,G;for(let k=0;k<400;k++){G=armSolve(v,{n,Ish,RL:s.p/100*v.RLmax});Ish+=(G.Va/Math.max(v.Rsh,1)-Ish)*0.5}return {G,Ish}};
+  const a=ss(1200),b=ss(1500),r=b.G.VL/Math.max(a.G.VL,1e-6);
+  return {facts:[['V<sub>L</sub> عند 1200 rpm',DCML.fm(B,a.G.VL,1)+' V'],['V<sub>L</sub> عند 1500 rpm',DCML.fm(B,b.G.VL,1)+' V'],['I<sub>f</sub> عند 1200 rpm',DCML.fm(B,a.Ish,3)+' A'],['I<sub>f</sub> عند 1500 rpm',DCML.fm(B,b.Ish,3)+' A'],['نسبة السرعتين','× 1.25'],['نسبة الجهدين','× '+DCML.fm(B,r,2),'hi']],
+   msg:r>1.25?'نسبة الجهدين أكبر من نسبة السرعتين: السرعة رفعت الجهد، والجهد رفع تيار المجال فقوي الفيض.':''}}})}
    ]},
 
   {st:7,short:'المنحنى',title:'منحنى العلاقة بين جهد الحمل وتيار الحمل',ref:'ص 19',
@@ -1297,7 +1675,17 @@ B.lesson({
       el.querySelector('[data-go]').onclick=()=>{rs();ks.forEach((k,i)=>tm.push(setTimeout(()=>k.classList.add('on'),i*550)))};
       el.querySelector('[data-rs]').onclick=rs;
     }},
-    {tip:String.raw`<p>المنحنى: المحور الرأسي \(V_L\) والأفقي \(I_L\) — شبكة واحدة في الكتاب، فارسم منحنيي السرعتين عليها للمقارنة (قاعدة التقرير: المنحنيات التي تشترك في المتغير الأصلي على اللوحة نفسها). ولو زاد الحمل كثيراً لانهار جهد مولد التوازي.</p>`}
+    {tip:String.raw`<p>المنحنى: المحور الرأسي \(V_L\) والأفقي \(I_L\) — شبكة واحدة في الكتاب، فارسم منحنيي السرعتين عليها للمقارنة (قاعدة التقرير: المنحنيات التي تشترك في المتغير الأصلي على اللوحة نفسها). ولو زاد الحمل كثيراً لانهار جهد مولد التوازي.</p>`},
+    {title:'مختبر مصغّر: المنحنيان على شبكة واحدة',widget:(el,B)=>DCML.lab(el,B,{intro:'اختر السرعة وقيمة الحمل، واقرأ النقطة. الخط المتقطع للمقارنة: المولد نفسه لو غُذي مجاله منفصلاً بتيار المجال نفسه عند اللاحمل.',
+ ins:[{k:'n',l:'السرعة',seg:[[1200,'1200 rpm (جدول 3-1)'],[1500,'1500 rpm (جدول 3-2)']],v:1500},{k:'p',l:'الحمل R<sub>L</sub>',seg:[[100,'100%'],[80,'80%'],[60,'60%'],[40,'40%']],v:60}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','RLmax'])},
+ calc:(s,v,B)=>{const ss=(n,RL)=>{let Ish=0,G;for(let k=0;k<400;k++){G=armSolve(v,{n,Ish,RL});Ish+=(G.Va/Math.max(v.Rsh,1)-Ish)*0.5}return {G,Ish}};
+  const P=[100,80,60,40],cv=n=>{const z=ss(n,Infinity);return {z,pts:[[0,z.G.VL]].concat(P.map(p=>{const q=ss(n,p/100*v.RLmax).G;return [q.IL,q.VL]}))}};
+  const c12=cv(1200),c15=cv(1500),cur=ss(s.n,s.p/100*v.RLmax).G,z=s.n===1500?c15.z:c12.z;
+  const sep=[[0,z.G.VL]].concat(P.map(p=>{const q=armSolve(v,{n:s.n,Isep:z.Ish,RL:p/100*v.RLmax});return [q.IL,q.VL]}));
+  const xm=Math.max(...c15.pts.map(x=>x[0]),...sep.map(x=>x[0]))*1.12,ym=c15.pts[0][1]*1.12;
+  return {facts:[['I<sub>L</sub>',DCML.fm(B,cur.IL,2)+' A'],['V<sub>L</sub>',DCML.fm(B,cur.VL,1)+' V','hi']],
+   plot:{xr:[0,xm],yr:[0,ym],xl:'I<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (A)</tspan>',yl:'V<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (V)</tspan>',curves:[{pts:c15.pts,col:'--blue',lab:'1500'},{pts:c12.pts,col:'--on',lab:'1200'},{pts:sep,col:'--muted',dash:'5 4'}],cur:[cur.IL,cur.VL]}}}})}
    ]},
 
   {st:8,short:'المطلوب',title:'المطلوب',ref:'ص 19',
@@ -1313,7 +1701,14 @@ B.lesson({
    body:[
     {book:String.raw`<ol><li>ارسم النتائج التي حصلت عليها (الجهد المتولد مع تيار المجال).</li><li>احسب تيار المجال اللازم لتوليد الجهد المقنن على أطراف المولد.</li><li>ناقش المنحنيات التي حصلت عليها.</li></ol>`,ref:'ص 19'},
     {watch:String.raw`<p>(1) المطلوب الأول يذكر منحنى «الجهد المتولد مع تيار المجال»، والجدولان لا يحتويان قراءات لتيار المجال؛ المرسوم فعلاً منحنى \(V_L\) مع \(I_L\). يمكن حساب \(I_f=V_L\div R_f\) و\(E=V_L+I_aR_a\) من المعادلات — يحسبهما المختبر لك تحت العدادات. (2) الكتاب لا يعطي الجهد المقنن ولا \(R_f\)؛ في المختبر قيم توضيحية يستطيع المدرب تغييرها.</p>`,fix:true},
-    {tip:String.raw`<p>في المطلوب 3 قارن المنحنيين: عند <span class="ltr">1500 rpm</span> يكون الجهد أعلى بكثير منه عند <span class="ltr">1200 rpm</span>، وفي الحالتين يهبط مع الحمل أسرع من المولد منفصل التغذية في التجربة الثانية.</p>`}
+    {tip:String.raw`<p>في المطلوب 3 قارن المنحنيين: عند <span class="ltr">1500 rpm</span> يكون الجهد أعلى بكثير منه عند <span class="ltr">1200 rpm</span>، وفي الحالتين يهبط مع الحمل أسرع من المولد منفصل التغذية في التجربة الثانية.</p>`},
+    {title:'مختبر مصغّر: تيار المجال اللازم للجهد المقنن',widget:(el,B)=>DCML.lab(el,B,{intro:'من \\(V_f=V_L=I_f\\times R_f\\): اختر الجهد المقنن ومقاومة ملف المجال (الكتاب لا يعطيهما؛ اكتب أرقام آلتك أو جرّب) واقرأ \\(I_f\\).',
+ predict:{q:'لو كانت مقاومة ملف المجال ضعف ما هي عليه، والجهد المقنن نفسه، فإن تيار المجال اللازم…',opts:[
+  ['يتضاعف',false,'\\(I_f=V\\div R_f\\): المقاومة في المقام.'],
+  ['ينقص إلى النصف',true,'\\(I_f=V\\div R_f\\): مضاعفة المقام تنصّف الناتج.'],
+  ['لا يتغير',false,'الناتج يعتمد على \\(R_f\\) مباشرة.']]},
+ ins:[{k:'V',l:'الجهد المقنن على الأطراف',min:50,max:250,step:5,v:220,dp:0,u:'V'},{k:'R',l:'مقاومة ملف المجال R<sub>f</sub>',min:100,max:1500,step:10,v:650,dp:0,u:'Ω'}],
+ calc:(s,v,B)=>({facts:[['I<sub>f</sub> = V ÷ R<sub>f</sub>',DCML.fm(B,s.V/s.R,3)+' A','hi']]})})}
    ]},
 
   {st:9,short:'الأسئلة',title:'الأسئلة',ref:'ص 19',
@@ -1337,7 +1732,21 @@ B.lesson({
      ['لأن تغذية المجال من مصدر خارجي تمغنط الأقطاب وتترك فيها مغنطة متبقية في الاتجاه الصحيح',true,'المولد الجديد قد لا تكون فيه مغنطة متبقية كافية (أو تكون في الاتجاه غير المناسب)، فلا يبني جهده وحده.'],
      ['لأن المولد الجديد لا يتحمل التغذية الذاتية',false,'المولد مصمم للعمل توازي؛ المشكلة في المغنطة المتبقية لا في التحمل.'],
      ['لتوفير الطاقة في التشغيل الأول',false,'السبب مغناطيسي لا اقتصادي.']]}},
-    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» زران لفتح دائرة المجال وعكس توصيل ملفه، لترى بنفسك متى لا يبني الجهد.</p>`}
+    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» زران لفتح دائرة المجال وعكس توصيل ملفه، لترى بنفسك متى لا يبني الجهد.</p>`},
+    {title:'مختبر مصغّر: متى لا يبني المولد جهده؟',widget:(el,B)=>DCML.lab(el,B,{intro:'جرّب أسباب السؤال iv واحداً واحداً. المولد بلا حمل، وتشاهد الجهد الذي يستقر عنده.',
+ predict:{q:'خفّضت سرعة الدوران كثيراً (إلى <span class="ltr">600 rpm</span>) والتوصيل صحيح. ماذا تتوقع؟',opts:[
+  ['يبني جهده لكن بقيمة أقل بنسبة السرعة فقط',false,'تحت سرعة معينة (السرعة الحرجة) لا يكفي الجهد المتولد ليدفع تياراً يقوي الفيض، فلا يحدث البناء أصلاً.'],
+  ['قد لا يبني جهده أبداً ويبقى جهد صغير',true,'من أسباب عدم البناء نقص السرعة عن السرعة الحرجة. (القيمة الحرجة في المحاكاة من القيم التوضيحية.)'],
+  ['يبني جهداً أعلى لأن الحمل غير موصل',false,'الحمل غير موصل في الحالتين؛ السرعة هي التي تغيّرت.']]},
+ ins:[{k:'n',l:'السرعة',seg:[[1500,'1500 rpm'],[1200,'1200 rpm'],[600,'600 rpm'],[300,'300 rpm']],v:1500},
+      {k:'rm',l:'المغنطة المتبقية',seg:[[1,'موجودة'],[0,'غير موجودة (آلة جديدة)']],v:1},
+      {k:'c',l:'توصيل ملف المجال',seg:[['ok','صحيح'],['rev','معكوس'],['open','دائرة مفتوحة']],v:'ok'}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh'])},
+ calc:(s,v,B)=>{const w=Object.assign({},v,{Er:s.rm?v.Er:0});let Ish=0,G={Va:0};if(s.rm)for(let k=0;k<600;k++){G=armSolve(w,{n:s.n,Ish,sig:s.c==='rev'?-1:1,RL:Infinity});const t=s.c==='open'?0:G.Va/Math.max(w.Rsh,1);Ish+=(t-Ish)*0.5}
+  const built=s.rm&&s.c==='ok'&&s.n>nCrit(w,w.Rsh);
+  const why=!s.rm?'لا مغنطة متبقية: لا جهد يبدأ منه البناء (لهذا يُشغَّل المولد الجديد أول مرة بتغذية منفصلة — السؤال ii).':s.c==='open'?'دائرة المجال مفتوحة: لا تيار مجال.':s.c==='rev'?'الملف معكوس: تياره يضعف المغنطة المتبقية.':!built?'السرعة أقل من السرعة الحرجة: الجهد الصغير لا يدفع تياراً يكفي لتقوية الفيض.':'';
+  return {pic:DCML.gauge(B,{v:G.Va,max:mach(v).E(0.3,1500)*1.1,lab:'V',txt:DCML.fm(B,G.Va,1)+' V'}),facts:[['الجهد الذي استقر عنده',DCML.fm(B,G.Va,1)+' V',built?'hi':'bad'],['تيار المجال',DCML.fm(B,Ish,3)+' A']],
+   msg:built?'بنى المولد جهده.':'<b>لم يبنِ.</b> '+why,cls:built?'':'warn'}}})}
    ]},
 
   {recap:[
@@ -1489,7 +1898,12 @@ B.lesson({
    body:[
     {book:String.raw`<p class="ltr" style="display:block;text-align:left">Load characteristics of compound generator</p><p><b>الغرض من التجربة:</b> رسم منحنى الخواص الخارجية للمولد المركب بأنواعه وهو العلاقة بين تيار الحمل وجهد الحمل عند ثبات سرعة الدوران، وكذلك حساب معامل تنظيم الجهد.</p>`,ref:'ص 20'},
     {tip:String.raw`<ul><li>إذا كان فيض ملف التوالي <b>يساعد</b> فيض التوازي: <b>مركب تراكمي</b> — زيادة الحمل تزيد الفيض فتعوض الهبوط، فيبقى الجهد شبه ثابت (أو يرتفع قليلاً إذا كان التعويض زائداً).</li><li>إذا كان فيضه <b>يعاكس</b> فيض التوازي: <b>مركب تفاضلي</b> — زيادة الحمل تُضعف الفيض فيهبط الجهد بسرعة.</li></ul><p>الكتاب لا يسمي النوعين؛ هذان اسماهما في دراستك النظرية.</p>`,title:'نوعا المولد المركب'},
-    {add:String.raw`<p>القانون المعتاد لمعامل تنظيم الجهد (لا تعطيه الحقيبة):</p><div class="eq">$$VR\%=\frac{V_{NL}-V_{FL}}{V_{FL}}\times 100$$</div><p>\(V_{NL}\) الجهد بلا حمل (المفتاح S مفتوح)، و\(V_{FL}\) الجهد عند تيار الحمل المقنن.</p>`,title:'معامل تنظيم الجهد'}
+    {add:String.raw`<p>القانون المعتاد لمعامل تنظيم الجهد (لا تعطيه الحقيبة):</p><div class="eq">$$VR\%=\frac{V_{NL}-V_{FL}}{V_{FL}}\times 100$$</div><p>\(V_{NL}\) الجهد بلا حمل (المفتاح S مفتوح)، و\(V_{FL}\) الجهد عند تيار الحمل المقنن.</p>`,title:'معامل تنظيم الجهد'},
+    {title:'مختبر مصغّر: تراكمي أم تفاضلي؟',widget:(el,B)=>DCML.sort(el,B,{intro:'لكل وصف اضغط نوع المولد المركب الذي يناسبه.',cats:['مركب تراكمي','مركب تفاضلي'],items:[
+ ['فيض ملف التوالي يساعد فيض ملف التوازي.',0,'الفيضان يُجمعان، فهذا التراكمي.'],
+ ['كلما زاد الحمل ضعف الفيض الكلي.',1,'فيض التوالي يكبر مع الحمل ويُطرح من فيض التوازي.'],
+ ['منحنى الخواص الخارجية شبه أفقي.',0,'زيادة فيض التوالي مع الحمل تعوض الهبوط، فيبقى الجهد شبه ثابت.'],
+ ['معامل تنظيم الجهد كبير لأن الجهد يهبط بسرعة مع الحمل.',1,'الهبوط السريع يعني فرقاً كبيراً بين \\(V_{NL}\\) و\\(V_{FL}\\)، أي \\(VR\\%\\) كبيراً.']]})}
    ]},
 
   {st:2,short:'دائرة التوصيل',title:'مخطط التوصيل — الشكل <span class="ltr">(4)</span>',ref:'ص 20',
@@ -1506,7 +1920,18 @@ B.lesson({
     {book:String.raw`<p><b>مخطط التوصيل — الشكل <span class="ltr">(4)</span></b></p>`+box(fig4SVG({rd:false,RstIn:true,lamps:9}),980,1),ref:'ص 20'},
     {watch:String.raw`<p>قائمة الأجهزة من مخطط التوصيل: مصدر تيار مستمر (خطان + و −)، مفتاح ثنائي القطب، محرك توازي <span class="ltr">M</span> مع مقاومة بدء <span class="ltr">R<sub>st</sub></span> ومقاومة تنظيم مجال <span class="ltr">R<sub>fm</sub></span>، أميترا <span class="ltr">I<sub>fm</sub></span> و<span class="ltr">I<sub>am</sub></span>، مقياس سرعة، مولد مركب <span class="ltr">G</span> مع مقاومة مجال <span class="ltr">R<sub>fg</sub></span> وأميتر <span class="ltr">I<sub>fg</sub></span>، فولتميتر <span class="ltr">V<sub>L</sub></span>، مفتاح <span class="ltr">S</span>، حمل من مصابيح على التوازي، أميتر <span class="ltr">I<sub>L</sub></span>.</p>`},
     {watch:String.raw`<p>لم تذكر الحقيبة قائمة أجهزة لهذه التجربة؛ القائمة أعلاه استخرجناها من مخطط التوصيل. والكتاب يرسم ثلاثة مصابيح؛ في الرسم المعاد تسعة لأن الجدول فيه تسع قراءات بعد قراءة الصفر.</p>`,fix:true},
-    {tip:String.raw`<p>مقاومة البدء \(R_{st}\) تكون «داخلة» عند تشغيل المحرك لتحد من تيار البدء (المحرك الواقف لا يولد قوة دافعة عكسية)، ثم تُخرج تدريجياً بعد أن يدور. وزيادة \(R_{fm}\) تُضعف مجال المحرك فتزيد سرعته. وزيادة \(R_{fg}\) تُنقص تيار مجال المولد فينقص جهده. توصيل ملف التوازي على المنتج مباشرة قبل ملف التوالي يسمى <b>مركب قصير التوازي</b>.</p>`,title:'ثلاث مقاومات ضبط'}
+    {tip:String.raw`<p>مقاومة البدء \(R_{st}\) تكون «داخلة» عند تشغيل المحرك لتحد من تيار البدء (المحرك الواقف لا يولد قوة دافعة عكسية)، ثم تُخرج تدريجياً بعد أن يدور. وزيادة \(R_{fm}\) تُضعف مجال المحرك فتزيد سرعته. وزيادة \(R_{fg}\) تُنقص تيار مجال المولد فينقص جهده. توصيل ملف التوازي على المنتج مباشرة قبل ملف التوالي يسمى <b>مركب قصير التوازي</b>.</p>`,title:'ثلاث مقاومات ضبط'},
+    {title:'مختبر مصغّر: أي تيار يمر في ملف التوالي؟',widget:(el,B)=>DCML.lab(el,B,{intro:'أغلق المفتاح <span class="ltr">S</span> وأدخل المصابيح، وتابع التيارات الثلاثة في جهة المولد من الشكل (4).',
+ predict:{q:'المفتاح <span class="ltr">S</span> مفتوح والمولد يدور بجهده المقنن. كم تيار ملف التوالي <span class="ltr">D1–D2</span>؟',opts:[
+  ['يساوي تيار ملف التوازي',false,'ملف التوازي فرع مستقل على المنتج؛ ملف التوالي على خط الحمل.'],
+  ['صفر، لأنه لا حمل',true,'ملف التوالي يحمل تيار الحمل، والمفتاح المفتوح يعني أن تيار الحمل صفر.'],
+  ['أكبر ما يمكن',false,'يكبر تيار ملف التوالي مع زيادة الحمل، لا بدونه.']]},
+ ins:[{k:'S',l:'المفتاح S',seg:[[0,'مفتوح'],[1,'مغلق']],v:0},{k:'n',l:'عدد المصابيح المُدخلة',min:0,max:9,step:1,v:3,dp:0}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','Rse','kse','Rfgmax','Rlamp','Vrat','nrat'])},
+ calc:(s,v,B)=>{const cs=(Rfg,lamps)=>{let Ish=0,G;const RL=lamps>0?v.Rlamp/lamps:Infinity;for(let k=0;k<300;k++){G=armSolve(v,{n:v.nrat,Ish,sig:1,RL,Rse:v.Rse,s:1});Ish+=(G.Va/Math.max(v.Rsh+Rfg,1)-Ish)*0.5}G.Ish=Ish;return G};
+  let lo=0,hi=v.Rfgmax;for(let k=0;k<30;k++){const m=(lo+hi)/2;if(cs(m,0).VL>v.Vrat)lo=m;else hi=m}const Rfg=(lo+hi)/2,G=cs(Rfg,s.S?s.n:0);
+  return {facts:[['تيار ملف التوازي F1–F2',DCML.fm(B,G.Ish,3)+' A'],['تيار ملف التوالي D1–D2 (هو <span class="ltr">I<sub>L</sub></span>)',DCML.fm(B,G.IL,2)+' A','hi'],['تيار المنتج I<sub>a</sub>',DCML.fm(B,G.Ia,2)+' A'],['V<sub>L</sub>',DCML.fm(B,G.VL,1)+' V']],
+   msg:!s.S?'المفتاح مفتوح: لا تيار حمل، فلا تيار في ملف التوالي ولا فيض منه.':s.n===0?'المفتاح مغلق لكن لا مصابيح: الحمل ما زال صفراً.':'تيار ملف التوالي هو تيار المصابيح نفسه، فيكبر فيضه كلما أدخلت مصباحاً.'}}})}
    ]},
 
   {st:3,short:'الخطوات وجدول (4-1)',title:'خطوات التجربة وجدول <span class="ltr">(4-1)</span>',ref:'ص 20–21',
@@ -1527,7 +1952,14 @@ B.lesson({
      <p>يسجل تيار الحمل وكذلك جهده عند كل تغيير في الحمل وتسجل النتائج في جدول (4-1) إلى أن نحصل على تيار حمل أعلى بما يساوي 25% تقريباً من تيار الحمل المقنن للمولد.</p>
      <p>ارسم منحنى الخواص الخارجي للمولد من القراءات التي حصلت عليها وناقش النتائج.</p><p>احسب معامل تنظيم الجهد للمولد في هذه التجربة.</p>`+emptyT4(1),ref:'ص 20–21'},
     {tip:String.raw`<p>«أعلى بما يساوي <span class="ltr">25%</span>» يعني أن آخر قراءة يكون تيار الحمل فيها نحو <span class="ltr">125%</span> من التيار المقنن. لكل لمبة تُدخلها عمود جديد في الجدول؛ وأول عمود (<span class="ltr">I<sub>L</sub> = 0</span>) مطبوع في الكتاب.</p>`,title:'إلى متى نحمّل؟'},
-    {watch:String.raw`<p>السرعة المقننة والجهد المقنن وتيار الحمل المقنن غير مذكورة رقمياً في الكتاب، وتؤخذ من لوحة بيانات المولد في مختبرك. في المختبر الافتراضي أرقام توضيحية يستطيع المدرب تغييرها.</p>`}
+    {watch:String.raw`<p>السرعة المقننة والجهد المقنن وتيار الحمل المقنن غير مذكورة رقمياً في الكتاب، وتؤخذ من لوحة بيانات المولد في مختبرك. في المختبر الافتراضي أرقام توضيحية يستطيع المدرب تغييرها.</p>`},
+    {title:'مختبر مصغّر: رتّب خطوات التجربة',widget:(el,B)=>DCML.order(el,B,{steps:[
+ ['وصّل التجربة كما في الشكل (4)','التوصيل أولاً.'],
+ ['أدِر المحرك حتى السرعة المقننة للمولد، واضبطها بـ \\(R_{fm}\\) والمفتاح S مفتوح','السرعة تُضبط قبل الجهد، لأن جهد المولد يعتمد عليها.'],
+ ['اضبط جهد المولد بـ \\(R_{fg}\\) حتى يساوي الجهد المقنن (بلا حمل)','ضبط الجهد بلا حمل يأتي قبل التحميل، حتى تكون أول قراءة هي جهد اللاحمل.'],
+ ['أغلق S وأدخل المصابيح واحدة تلو الأخرى مع إبقاء السرعة ثابتة','التحميل بعد ضبط السرعة والجهد.'],
+ ['سجّل \\(I_L\\) و\\(V_L\\) عند كل تغيير حتى نحو <span class="ltr">125%</span> من التيار المقنن','التسجيل مع كل مصباح.'],
+ ['ارسم منحنى الخواص الخارجي واحسب معامل تنظيم الجهد','الرسم والحساب بعد اكتمال الجدول.']],done:'هذا ترتيب الكتاب في ص 20–21.'})}
    ]},
 
   {st:4,short:'عكس ملف التوالي',title:'عكس أطراف ملف التوالي وجدول <span class="ltr">(4-2)</span>',ref:'ص 21',
@@ -1552,7 +1984,16 @@ B.lesson({
         el.querySelectorAll('.mseg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===(rev?1:0))))};
       el.querySelectorAll('.mseg button').forEach(b=>b.onclick=()=>{rev=b.dataset.v==='1';draw()});draw();
     }},
-    {watch:String.raw`<p>الكتاب لا يحدد أي التوصيلين هو «الأصلي»؛ لذلك احكم على النوع من شكل المنحنى نفسه (الخطوة 4): المنحنى شبه الأفقي للتراكمي، والهابط بسرعة للتفاضلي. والمنحنيان على الورقة نفسها (الخطوة 3).</p>`}
+    {watch:String.raw`<p>الكتاب لا يحدد أي التوصيلين هو «الأصلي»؛ لذلك احكم على النوع من شكل المنحنى نفسه (الخطوة 4): المنحنى شبه الأفقي للتراكمي، والهابط بسرعة للتفاضلي. والمنحنيان على الورقة نفسها (الخطوة 3).</p>`},
+    {title:'مختبر مصغّر: أدخل المصابيح وقارن النوعين',widget:(el,B)=>DCML.lab(el,B,{intro:'الجهد مضبوط على قيمته المقننة بلا حمل. أدخل المصابيح واقرأ النقطة على المنحنيين (المنحنيان على الورقة نفسها كما تطلب الخطوة 3).',
+ ins:[{k:'s',l:'توصيل ملف التوالي D1–D2',seg:[[1,'فيضه يساعد (تراكمي)'],[-1,'معكوس: فيضه يعاكس (تفاضلي)']],v:1},{k:'n',l:'عدد المصابيح',min:0,max:9,step:1,v:4,dp:0}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','Rse','kse','Rfgmax','Rlamp','Vrat','nrat'])},
+ calc:(s,v,B)=>{const cs=(Rfg,lamps,sg)=>{let Ish=0,G;const RL=lamps>0?v.Rlamp/lamps:Infinity;for(let k=0;k<300;k++){G=armSolve(v,{n:v.nrat,Ish,sig:1,RL,Rse:v.Rse,s:sg});Ish+=(G.Va/Math.max(v.Rsh+Rfg,1)-Ish)*0.5}return G};
+  const fit=sg=>{let lo=0,hi=v.Rfgmax;for(let k=0;k<30;k++){const m=(lo+hi)/2;if(cs(m,0,sg).VL>v.Vrat)lo=m;else hi=m}return (lo+hi)/2};
+  const cv=sg=>{const R=fit(sg);return [...Array(10).keys()].map(n=>{const g=cs(R,n,sg);return [g.IL,g.VL]})};
+  const a=cv(1),d=cv(-1),c=(s.s>0?a:d)[s.n],xm=Math.max(...a.map(x=>x[0]),...d.map(x=>x[0]))*1.1,ym=Math.max(...a.map(x=>x[1]),...d.map(x=>x[1]))*1.15;
+  return {facts:[['I<sub>L</sub>',DCML.fm(B,c[0],2)+' A'],['V<sub>L</sub>',DCML.fm(B,c[1],1)+' V','hi'],['الفرق عن جهد اللاحمل',DCML.fm(B,c[1]-(s.s>0?a:d)[0][1],1)+' V']],
+   plot:{xr:[0,xm],yr:[0,ym],xl:'I<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (A)</tspan>',yl:'V<tspan font-size="9" dy="3">L</tspan><tspan dy="-3"> (V)</tspan>',curves:[{pts:a,col:'--on',lab:'تراكمي'},{pts:d,col:'--stop',lab:'تفاضلي'}],dots:(s.s>0?a:d).map(x=>[x[0],x[1],'--muted']),cur:c}}}})}
    ]},
 
   {st:5,short:'الأسئلة',title:'الأسئلة',ref:'ص 21',
@@ -1575,7 +2016,19 @@ B.lesson({
      ['يهبط الجهد',false,'نقص المقاومة يزيد تيار ملف التوازي، لا ينقصه.'],
      ['يرتفع الجهد بلا حد',false,'الحديد يتشبع، فيقل أثر زيادة تيار المجال.'],
      ['يرتفع الجهد، لكن الزيادة تقل كلما اقترب الحديد من التشبع',true,'تيار ملف التوازي يزيد فيزيد الفيض فيرتفع الجهد — بحسب منحنى المغنطة الذي رسمته في التجربة الأولى.']]}},
-    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» تستطيع عكس <span class="ltr">D1–D2</span> وتحريك \(R_{fg}\) وإدخال المصابيح لترى النوعين بنفسك.</p>`}
+    {tip:String.raw`<p>لكل سؤال إجابة مقترحة (ليست من الكتاب) في الأسلوب الرسمي لهذا الدرس. وفي تبويب «المختبر» تستطيع عكس <span class="ltr">D1–D2</span> وتحريك \(R_{fg}\) وإدخال المصابيح لترى النوعين بنفسك.</p>`},
+    {title:'مختبر مصغّر: حرّك R<sub>fg</sub> (السؤالان أ و ب)',widget:(el,B)=>DCML.lab(el,B,{intro:'السرعة ثابتة والمولد بلا حمل. حرّك مقاومة مجال المولد \\(R_{fg}\\) وراقب الجهد وتيار ملف التوازي.',
+ predict:{q:'زدت \\(R_{fg}\\) والسرعة ثابتة. ماذا يحدث لجهد الأطراف؟ (السؤال أ)',opts:[
+  ['يرتفع',false,'المقاومة الأكبر تُنقص تيار ملف التوازي، فيضعف الفيض.'],
+  ['ينقص',true,'\\(R_{fg}\\) على التوالي مع ملف التوازي: زيادتها تُنقص تياره فيضعف الفيض فينقص الجهد.'],
+  ['لا يتغير، لأن السرعة ثابتة',false,'الجهد يعتمد على الفيض أيضاً، والفيض يتغير بتيار المجال.']]},
+ ins:[{k:'r',l:'R<sub>fg</sub> (من أكبر قيمة لها)',min:0,max:100,step:5,v:30,dp:0,u:'%'}],
+ tp:{id:TPID,defs:tpDefs(['nref','Er','E03','Fk','Ra','Vb','kar','Rsh','Rfgmax','nrat'])},
+ calc:(s,v,B)=>{const g=R=>{let Ish=0,G;for(let k=0;k<300;k++){G=armSolve(v,{n:v.nrat,Ish,sig:1,RL:Infinity});Ish+=(G.Va/Math.max(v.Rsh+R,1)-Ish)*0.5}return [G.Va,Ish]};
+  const R=s.r/100*v.Rfgmax,[V,I]=g(R),pts=[...Array(21).keys()].map(i=>{const q=g(i/20*v.Rfgmax);return [i*5,q[0]]}),ym=Math.max(...pts.map(x=>x[1]))*1.12;
+  return {facts:[['R<sub>fg</sub>',DCML.fm(B,R,0)+' Ω'],['تيار ملف التوازي',DCML.fm(B,I,3)+' A'],['جهد الأطراف',DCML.fm(B,V,1)+' V','hi']],
+   plot:{xr:[0,100],yr:[0,ym],xl:'R<tspan font-size="9" dy="3">fg</tspan><tspan dy="-3"> (%)</tspan>',yl:'V (V)',curves:[{pts}],cur:[s.r,V]},
+   msg:s.r<=10?'قرب أصغر \\(R_{fg}\\): الجهد يرتفع ببطء لأن الحديد اقترب من التشبع (السؤال ب).':''}}})}
    ]},
 
   {recap:[
