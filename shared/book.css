@@ -728,3 +728,15 @@ main#view{zoom:var(--fz,1)}
 .fzb:hover{background:rgba(255,255,255,.16)}
 .fzv{font-family:var(--mono);font-size:12px;color:#9be3c0;min-width:38px;text-align:center;direction:ltr}
 @media (max-width:600px){.fzv{display:none}.fzb{padding:0 8px}}
+
+/* إخفاء الفهرس الجانبي (عرض كامل للشرح) */
+.widebtn{font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;white-space:nowrap}
+.widebtn svg{width:18px;height:18px}
+.widebtn:hover{background:rgba(255,255,255,.16)}
+.widebtn[aria-pressed="true"]{background:rgba(155,227,192,.18);border-color:#9be3c0}
+html[data-wide] .lesson-layout{grid-template-columns:1fr}
+html[data-wide] .lside{display:none}
+html[data-wide] #view,html[data-wide] .topbar .in{max-width:1680px}
+html[data-wide] .theory.stations{max-width:none}
+@media (max-width:1000px){.widebtn{display:none}}
+@media (max-width:1300px){.widebtn .sl{display:none}}

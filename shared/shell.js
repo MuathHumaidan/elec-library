@@ -11,6 +11,13 @@
    try{localStorage.setItem('elib-style',st?'stations':'formal')}catch(e){}
    lab();window.dispatchEvent(new HashChangeEvent('hashchange'))});
   ta.insertBefore(sb,ta.firstChild)}
+ /* إخفاء فهرس الدروس الجانبي ليأخذ الشرح عرض الشاشة كله (للعرض على البروجكتر) — يُحفظ على هذا الجهاز */
+ let wide=false;try{wide=localStorage.getItem('elib-wide')==='1'}catch(e){}
+ root.toggleAttribute('data-wide',wide);
+ if(ta&&document.getElementById('courseTag')){const wb=document.createElement('button');wb.type='button';wb.className='widebtn';
+  const wl=()=>{wb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+(wide?'M3 5h18v14H3zM15 5v14':'M3 5h18v14H3zM15 5v14M8 9l-3 3 3 3')+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="sl">'+(wide?'إظهار الفهرس':'إخفاء الفهرس')+'</span>';wb.title=wide?'إظهار فهرس الدروس':'إخفاء فهرس الدروس وتوسيع الشرح';wb.setAttribute('aria-pressed',String(wide))};wl();
+  wb.addEventListener('click',()=>{wide=!wide;root.toggleAttribute('data-wide',wide);try{localStorage.setItem('elib-wide',wide?'1':'0')}catch(e){};wl()});
+  ta.insertBefore(wb,ta.firstChild)}
  /* حجم الخط (يُحفظ على هذا الجهاز): يكبّر محتوى الصفحة كله دون الشريط العلوي */
  const FZ=[0.9,1,1.1,1.25,1.4];let fz=1;try{const v=parseFloat(localStorage.getItem('elib-fz'));if(FZ.includes(v))fz=v}catch(e){}
  const setFz=v=>{fz=v;root.style.setProperty('--fz',v);root.toggleAttribute('data-fz',v!==1);try{localStorage.setItem('elib-fz',v)}catch(e){};const o=document.getElementById('fzVal');if(o)o.textContent=Math.round(v*100)+'%'};
