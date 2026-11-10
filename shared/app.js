@@ -248,10 +248,10 @@ function fixSvgBidi(root){const NS='http://www.w3.org/2000/svg',re=/(\(\d+-\d+\)
   const parts=txt.split(re);if(parts.length<2)return;t.textContent='';
   parts.forEach((p,i)=>{if(!p)return;if(i%2){const ts=document.createElementNS(NS,'tspan');ts.setAttribute('direction','ltr');ts.setAttribute('unicode-bidi','embed');ts.textContent=p;t.appendChild(ts)}else t.appendChild(document.createTextNode(p))})})}
 function renderTheory(L,body){
-  /* أسلوب الشرح يختاره المستخدم من الزر في الأعلى: «رسمي» أو «المحطات». L.stations = مصفوفة محتوى المحطات */
+  /* أسلوب الشرح يختاره المستخدم من الزر في الأعلى: «رسمي» أو «التفاعلي». L.stations = مصفوفة محتوى المحطات */
   if(B.styleMode()==='stations'){
     if(Array.isArray(L.stations)&&L.stations.length){const r=renderStations(Object.assign({},L,{theory:L.stations}),body);fixSvgBidi(body);return r}
-    body.innerHTML='<div class="st-missing">هذا الدرس لم يُجهَّز بأسلوب «المحطات» بعد، فيظهر بالأسلوب الرسمي.</div>';
+    body.innerHTML='<div class="st-missing">هذا الدرس لم يُجهَّز بالأسلوب «التفاعلي» بعد، فيظهر بالأسلوب الرسمي.</div>';
     const host=document.createElement('div');body.appendChild(host);body=host;
   }
   let h='<article class="theory">';

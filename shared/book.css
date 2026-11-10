@@ -720,3 +720,11 @@ body.ch-mode .panel:has(> ol.steps),body.ch-mode .panel:has(> .callout + ol.step
 /* وضع التحدي لمختبرات «منضدة البرنامج»: لوحة التشغيل في أعلى الشاشة (لا شريط علوي في هذا الوضع) */
 body.ch-mode .strip.console{top:env(safe-area-inset-top,0px);margin-top:4px}
 body.ch-mode #ch-strip+#custom-lab{margin-top:10px}
+
+/* حجم الخط */
+main#view{zoom:var(--fz,1)}
+.fzbox{display:inline-flex;align-items:center;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);overflow:hidden}
+.fzb{font:inherit;font-size:14px;font-weight:700;color:#fff;background:none;border:0;padding:0 10px;height:100%;cursor:pointer}
+.fzb:hover{background:rgba(255,255,255,.16)}
+.fzv{font-family:var(--mono);font-size:12px;color:#9be3c0;min-width:38px;text-align:center;direction:ltr}
+@media (max-width:600px){.fzv{display:none}.fzb{padding:0 8px}}
