@@ -91,7 +91,7 @@ PLCBOOK.chal({
   {k:'K1',label:'المتمم K1 (دلتا)',kind:'switch',sel:'#k1',ctl:'#k1,[data-pre]'},
   {k:'K2',label:'المتمم K2 (تغذية U2 V2 W2)',kind:'switch',sel:'#k2',ctl:'#k2,[data-pre]'},
   {k:'K3',label:'المتمم K3 (قصر U1 V1 W1)',kind:'switch',sel:'#k3',ctl:'#k3,[data-pre]'}],
- ref:[{id:'u3-l1',keys:['nd','ny']}],
+ ref:[{id:'u3-hz',keys:['f']},{id:'u3-l1',keys:['nd','ny']}],
  faults:[
   {id:'k3coil',x:'k3coil',t:'ملف المتمم K3 (متمم قصر الدبل نجمة) مقطوع',
    sym:'السرعة البطيئة (K1 وحده) تعمل طبيعياً حتى نحو 710 rpm. عند تشغيل K2 و K3 لا تتكون الدبل نجمة: تلامسات K3 في الدائرة الرئيسة تبقى مفتوحة مع أن مفتاحه مضغوط، والمحرك يتباطأ حتى يقف، وتظهر رسالة «K2 بدون K3».',
@@ -378,6 +378,10 @@ const DAHT=[
   how:'افصل F4 وراقب I1.0: يبقى 0 ⇐ إشارة الحمل الزائد لا تصل إلى الـ PLC (المحرك بلا حماية). قِس الجهد على المدخل I1.0 وتلامس F4 مفصول، ثم تتبّع السلك إلى تلامس F4 المساعد.'},
  {id:'s0Short',io:{'I0.0':1},t:'ضاغط الإيقاف S0 مقصور (المدخل I0.0 عالق على 1)',
   sym:'المحرك لا يبدأ أبداً بـ S1، والمزمن لا يعدّ. في الجدول I0.0 = 1 دون الضغط على S0.',how:H.in1('I0.0','الضاغط S0')}];
+/* تردد الشبكة لمختبرَي داهلندر (u3-l2 و u3-l6 — «منضدة البرنامج» بلا «قيم آلة» أخرى): يختاره المدرب عند إنشاء النشاط (50 أو 60 هرتز، الافتراضي 50).
+   params هنا تعلن «قيم الآلة» صراحة لأن tools/build-quiz-bank.js لا يشغّل مختبرات «منضدة البرنامج» ليلتقطها (في u3-l1 تُلتقط من المختبر نفسه).
+   أعراض DAH و DAHT بلا سرعات: أرقامها حالات المداخل والمخارج (0/1) و 24 V فقط، فهي صحيحة على التردّدين. */
+const HZP=()=>P.U3HZ?[{id:'u3-hz',defs:P.U3HZ.defs()}]:[];
 /* ---------- محرك العضو الدائر الملفوف بمقاومات البدء (4.2–4.4) ---------- */
 const RR=[
  {id:'s1Open',io:{'I1.1':0},t:'سلك ضاغط التشغيل S1 مقطوع',
@@ -473,8 +477,8 @@ P.chal({
 'u2-l1':{faults:SD},
 'u2-l3':{variant:'fixed',faults:SD},
 'u2-l4':{variant:'fixed',faults:SDR},
-'u3-l2':{variant:'book',faults:DAH},
-'u3-l6':{variant:'fixed',faults:DAHT},
+'u3-l2':{variant:'book',faults:DAH,params:HZP(),ref:[{id:'u3-hz',keys:['f']}]},
+'u3-l6':{variant:'fixed',faults:DAHT,params:HZP(),ref:[{id:'u3-hz',keys:['f']}]},
 'u4-l2':{variant:'fixed',faults:RR},
 'u4-l3':{variant:'fixed',faults:RR},
 'u4-l4':{variant:'fixed',faults:RR},

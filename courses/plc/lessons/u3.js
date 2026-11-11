@@ -84,19 +84,27 @@ function powerDahl(K1,K2,K3,o){o=o||{};const bl=!!o.blown;
 }
 
 /* ===== تردد الشبكة للسرعة التزامنية n = 120 × f ÷ p — قرار المدرب =====
-   يظهر الأمران: 50 Hz (كما في الكتاب، وهو الافتراضي) و 60 Hz (شبكة المملكة). الاختيار مفتاح واحد محفوظ على هذا الجهاز،
-   مشترك بين الشرح الرسمي والمحطات ومختبرات الوحدة الثالثة، ويتغير كل شيء معه مباشرة. في وضع التحدي (نشاط حي) دائماً 50 Hz
-   حتى تتطابق الجوالات. السرعات التوضيحية تتغير بالنسبة نفسها (الانزلاق نفسه): 710 ← 852 و 1440 ← 1728 rpm. */
+   يظهر الأمران: «50 هرتز» (الافتراضي) و «60 هرتز (شبكة السعودية)». الاختيار مفتاح واحد محفوظ على هذا الجهاز،
+   مشترك بين الشرح الرسمي والمحطات ومختبرات الوحدة الثالثة، ويتغير كل شيء معه مباشرة.
+   في وضع التحدي (نشاط حي): التردد يختاره المدرب عند إنشاء النشاط ضمن «قيم الآلة» (المجموعة u3-hz، المفتاح f، الافتراضي 50)
+   فتعمل كل الجوالات به؛ يُسجَّل بـ HZ.reg() في أول المختبر (فيلتقطه tools/build-quiz-bank.js لمختبر u3-l1، وتعلنه challenge.js
+   لمختبرَي u3-l2 و u3-l6)، ولا يظهر المفتاح على الجوال. السرعات التوضيحية تتغير بالنسبة نفسها (الانزلاق نفسه):
+   710 ← 852 و 1440 ← 1728 rpm (معتمدة من المدرب). */
 const HZ={
   key:()=>`${(B.COURSE&&B.COURSE.key)||'plc'}-hz`,
-  get(){if(B.chOn&&B.chOn())return 50;return B.store.get(HZ.key(),50)===60?60:50},
+  OPTS:[[50,'50 هرتز'],[60,'60 هرتز (شبكة السعودية)']],
+  defs:()=>[{k:'f',label:'تردد الشبكة',unit:'Hz',value:50,min:50,max:60,step:10,opts:HZ.OPTS.map(o=>o.slice()),hint:'يحدد سرعة المجال الدوار في المختبر. السرعات التي لا تغيّرها تعمل بقيمها التوضيحية على هذا التردد: 710 و 1440 rpm على 50 هرتز، و 852 و 1728 rpm على 60 هرتز'}],
+  cf:50,
+  /* «قيم الآلة» للتردد: في وضع التحدي يقرأ ما اختاره المدرب للنشاط؛ خارجه لا يغيّر شيئاً (الشريط في عنصر غير معروض) */
+  reg(){const P=B.params(document.createElement('div'),'u3-hz',HZ.defs());if(B.chOn&&B.chOn())HZ.cf=+P.v.f>=55?60:50;return HZ.get()},
+  get(){if(B.chOn&&B.chOn())return HZ.cf;return B.store.get(HZ.key(),50)===60?60:50},
   set(f){B.store.set(HZ.key(),f===60?60:50);document.dispatchEvent(new Event('plc-hz'))},
   ns:(p,f)=>120*(f||HZ.get())/p,
   /* يستدعي fn عند كل تغيير ما دام العنصر el في الصفحة */
   on(el,fn){const h=()=>{if(!el.isConnected){document.removeEventListener('plc-hz',h);return}try{fn(HZ.get())}catch(e){console.error(e)}};document.addEventListener('plc-hz',h)},
-  /* المفتاح الصغير: «تردد الشبكة: 50 Hz (كما في الكتاب) / 60 Hz (شبكة المملكة)» */
+  /* المفتاح الصغير: «تردد الشبكة: 50 هرتز / 60 هرتز (شبكة السعودية)» */
   seg(el,cls){if(B.chOn&&B.chOn()){el.hidden=true;return}
-    const draw=()=>{const f=HZ.get();el.innerHTML=`<div class="hzsw" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 10px"><span class="sub" style="margin:0">تردد الشبكة:</span><div class="${cls||'seg'}" role="group" aria-label="تردد الشبكة"><button type="button" data-hz="50" aria-pressed="${f===50}"><span class="ltr">50 Hz</span> (كما في الكتاب)</button><button type="button" data-hz="60" aria-pressed="${f===60}"><span class="ltr">60 Hz</span> (شبكة المملكة)</button></div></div>`;
+    const draw=()=>{const f=HZ.get();el.innerHTML=`<div class="hzsw" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 10px"><span class="sub" style="margin:0">تردد الشبكة:</span><div class="${cls||'seg'}" role="group" aria-label="تردد الشبكة">${HZ.OPTS.map(([v,t])=>`<button type="button" data-hz="${v}" aria-pressed="${f===v}">${t}</button>`).join('')}</div></div>`;
       el.querySelectorAll('[data-hz]').forEach(b=>b.onclick=()=>HZ.set(+b.dataset.hz))};
     draw();HZ.on(el,draw)},
   /* السرعات التوضيحية على التردد الحالي */
@@ -116,7 +124,7 @@ function engineTP(p,id,defs,opt){opt=opt||{};
   const pull=()=>{D.v=D.P.v;D.trainer=D.P.trainer;D.msg=[];opt.apply&&opt.apply(D);D.P.warn&&D.P.warn(D.trainer&&D.msg.length?D.msg.join('<br>'):'')};
   const dom=body=>{body.querySelectorAll('[data-tpv]').forEach(e=>{const f=D.txt[e.dataset.tpv];if(f)e.textContent=f()});opt.dom&&opt.dom(body,D)};
   opt.apply&&opt.apply(D);
-  const in0=p.init;p.init=()=>{if(!D.P){D.P=B.params(document.createElement('div'),id,defs);pull()}return in0()};
+  const in0=p.init;p.init=()=>{if(opt.hz)HZ.reg();if(!D.P){D.P=B.params(document.createElement('div'),id,defs);pull()}return in0()};
   const fr0=p.frame;p.frame=(el,s,pl,BB)=>{fr0&&fr0(el,s,pl,BB);const body=el&&el.closest('#tab-body');
     if(body&&!body.querySelector('[data-tphost]')){const g=body.querySelector('.grid');if(!g)return;const h=document.createElement('div');h.setAttribute('data-tphost',id);g.parentNode.insertBefore(h,g);
       if(opt.hz){const z=document.createElement('div');z.setAttribute('data-hzhost',id);g.parentNode.insertBefore(z,g);HZ.seg(z);HZ.on(z,()=>{pull();D.ver++;dom(body)})}
@@ -858,7 +866,7 @@ return {run,circ,lt};
         <div class="w-facts"><div><span>التغذية على</span><b class="ltr">${d?'U1 V1 W1':'U2 V2 W2'}</b></div><div><span>الأطراف المقصورة</span><b class="ltr">${d?'—':'U1 V1 W1'}</b></div><div><span>عدد الأقطاب</span><b>${d?8:4}</b></div><div><span>السرعة</span><b>${d?'بطيئة':'ضعف البطيئة'}</b></div></div>`;
        el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{m=b.dataset.m;draw()})};
       draw()}},
-    {add:String.raw`<p>السرعة التزامنية (سرعة المجال الدوار) تُحسب من العلاقة <span class="ltr">n = 120 × f ÷ p</span>، حيث <span class="ltr">f</span> تردد الشبكة و <span class="ltr">p</span> عدد الأقطاب. على <span class="ltr">50 Hz</span>: <span class="ltr">750 rpm</span> مع 8 أقطاب و <span class="ltr">1500 rpm</span> مع 4 أقطاب. وعلى شبكة المملكة <span class="ltr">60 Hz</span>: <span class="ltr">900 rpm</span> و <span class="ltr">1800 rpm</span>. في الحالتين السرعة العالية ضعف البطيئة، وسرعة المحرك الفعلية أقل قليلاً من سرعة المجال.</p>`,title:'كم السرعة بالأرقام؟'},
+    {add:String.raw`<p>السرعة التزامنية (سرعة المجال الدوار) تُحسب من العلاقة <span class="ltr">n = 120 × f ÷ p</span>، حيث <span class="ltr">f</span> تردد الشبكة و <span class="ltr">p</span> عدد الأقطاب. على 50 هرتز: <span class="ltr">750 rpm</span> مع 8 أقطاب و <span class="ltr">1500 rpm</span> مع 4 أقطاب. وعلى 60 هرتز (شبكة السعودية): <span class="ltr">900 rpm</span> و <span class="ltr">1800 rpm</span>. في الحالتين السرعة العالية ضعف البطيئة، وسرعة المحرك الفعلية أقل قليلاً من سرعة المجال.</p>`,title:'كم السرعة بالأرقام؟'},
     {title:'مختبر مصغّر: اختر تردد الشبكة',widget:(el,B)=>{
       const draw=()=>{const f=HZ.get(),s=HZ.ill(f);
        el.innerHTML=`<div data-hzsw></div><div class="w-facts"><div><span>التردد</span><b class="ltr">${f} Hz</b></div><div><span>سرعة المجال مع 8 أقطاب (دلتا)</span><b class="ltr">${HZ.ns(8,f)} rpm</b></div><div><span>سرعة المجال مع 4 أقطاب (دبل نجمة)</span><b class="ltr">${HZ.ns(4,f)} rpm</b></div><div><span>سرعة المحرك (توضيحية)</span><b class="ltr">≈ ${s.nd} / ${s.ny} rpm</b></div></div>
@@ -930,7 +938,7 @@ return {run,circ,lt};
   {fig:'(3-3)',ref:'ص 60',caption:'توصيلة الدبل النجمة: U1 و V1 و W1 مقصورة في المركز، والتغذية على U2 و V2 و W2، وكل ذراع ملفان على التوازي',draw:()=>box(windDahl('yy',0),300)},
   {h:'السرعة وعدد الأقطاب',ref:'ص 61',html:'<p>«ومن المعلوم أن السرعة تتناسب عكساً مع عدد الأقطاب. وعلى ذلك عند تحويل التوصيل من الدلتا إلى الدبل النجمة تتحول السرعة من بطيئة إلى سرعة عالية. وتكون ضعف السرعة البطيئة، لأن عدد الأقطاب قل إلى النصف.»</p>'},
   {widget:(el)=>{const draw=()=>{const f=HZ.get(),o=f===50?60:50,s=HZ.ill(f);
-     el.innerHTML=`<div class="callout"><b>توضيح للمتدرب (ليس من نص الكتاب):</b> السرعة التزامنية <span class="ltr">n = 120 × f ÷ p</span>. <div data-hzsw></div>على شبكة <span class="ltr">${f} Hz</span>: مع <b>8 أقطاب</b> <span class="ltr">n = ${HZ.ns(8,f)} rpm</span>، ومع <b>4 أقطاب</b> <span class="ltr">n = ${HZ.ns(4,f)} rpm</span>. أما على <span class="ltr">${o} Hz</span> ${o===60?'(شبكة المملكة)':'(كما في الكتاب)'} فالسرعتان <span class="ltr">${HZ.ns(8,o)} rpm</span> و <span class="ltr">${HZ.ns(4,o)} rpm</span>. سرعة المحرك الفعلية أقل قليلاً (مثلاً نحو <span class="ltr">${s.nd}</span> و <span class="ltr">${s.ny} rpm</span>)، وهي الأرقام التوضيحية المستعملة في المحاكاة. الكتابة «M 4/8» على المحرك تعني 4 أو 8 أقطاب.</div>`;
+     el.innerHTML=`<div class="callout"><b>توضيح للمتدرب (ليس من نص الكتاب):</b> السرعة التزامنية <span class="ltr">n = 120 × f ÷ p</span>. <div data-hzsw></div>على شبكة <span class="ltr">${f} Hz</span>: مع <b>8 أقطاب</b> <span class="ltr">n = ${HZ.ns(8,f)} rpm</span>، ومع <b>4 أقطاب</b> <span class="ltr">n = ${HZ.ns(4,f)} rpm</span>. أما على ${o===60?'60 هرتز (شبكة السعودية)':'50 هرتز'} فالسرعتان <span class="ltr">${HZ.ns(8,o)} rpm</span> و <span class="ltr">${HZ.ns(4,o)} rpm</span>. سرعة المحرك الفعلية أقل قليلاً (مثلاً نحو <span class="ltr">${s.nd}</span> و <span class="ltr">${s.ny} rpm</span>)، وهي الأرقام التوضيحية المستعملة في المحاكاة. الكتابة «M 4/8» على المحرك تعني 4 أو 8 أقطاب.</div>`;
      HZ.seg(el.querySelector('[data-hzsw]'))};draw();HZ.on(el,draw)}},
   {widget:(el)=>{let m='delta';const draw=()=>{const d=m==='delta',sv=HZ.ill(HZ.get());el.innerHTML=`<div class="fig"><div class="seg" role="group"><button data-m="delta" aria-pressed="${d}">دلتا Δ — بطيئة</button><button data-m="yy" aria-pressed="${!d}">دبل نجمة YY — عالية</button></div>
      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:center;margin-top:8px"><div class="svgbox" style="max-width:280px;margin-inline:auto">${windDahl(m,1)}</div><div>${polesSVG(d?8:4,1)}<p class="sub" style="text-align:center">المجال الدوار (توضيحي): ${d?'8 أقطاب يدور ببطء':'4 أقطاب يدور بضعف السرعة'}</p></div></div>
@@ -959,13 +967,16 @@ return {run,circ,lt};
    <div class="panel c5"><h2>المحرك <small id="u3l1src">السرعات توضيحية</small></h2><div class="motor-row"><div>${W.motor('u3l1rot',150)}<div class="nameplate" id="u3l1np"></div></div><div id="wd"></div></div><p class="sub">سرعة المحرك أقل قليلاً من سرعة المجال الدوار (<span class="ltr" data-u3ns="8">750 rpm</span> مع 8 أقطاب و <span class="ltr" data-u3ns="4">1500 rpm</span> مع 4 أقطاب على شبكة <span class="ltr" data-u3hz>50 Hz</span>)، وهذا طبيعي في المحرك الحثي.</p><h3 class="sm">المجال الدوار وعدد الأقطاب (توضيحي)</h3><div id="pl"></div></div>
    <div class="panel c12"><h2>التجربة خطوة بخطوة</h2><ol class="steps" id="st"></ol></div></div>`;
   const $=s=>el.querySelector(s);
+  /* وضع التحدي: التردد من «قيم الآلة» للنشاط (HZ.reg قبل مجموعة u3-l1)، والسرعتان الافتراضيتان هما التوضيحيتان على هذا التردد،
+     وحدّهما الأعلى أقل من سرعة المجال الدوار عليه — فتعمل كل الجوالات بقيم المدرب للنشاط وتطابقها «قراءات النظام السليم» */
+  const ch=!!(B.chOn&&B.chOn()),f0=HZ.reg(),il0=HZ.ill(f0);
   const TP=B.params($('#u3l1tp'),'u3-l1',[
-    {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:710,min:100,max:899,step:1,hint:'أقل من سرعة المجال الدوار: 750 rpm على 50 Hz، أو 900 rpm على 60 Hz'},
-    {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:1440,min:200,max:1799,step:1,hint:'أقل من سرعة المجال الدوار: 1500 rpm على 50 Hz، أو 1800 rpm على 60 Hz'},
+    {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:ch?il0.nd:710,min:100,max:ch?HZ.ns(8,f0)-1:899,step:1,hint:'أقل من سرعة المجال الدوار: 750 rpm على 50 Hz، أو 900 rpm على 60 Hz'},
+    {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:ch?il0.ny:1440,min:200,max:ch?HZ.ns(4,f0)-1:1799,step:1,hint:'أقل من سرعة المجال الدوار: 1500 rpm على 50 Hz، أو 1800 rpm على 60 Hz'},
     {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.2,min:0.1,max:20,step:0.1}],()=>tpDom());
   /* SP = السرعات التي يعمل بها المختبر الآن (التوضيحية على التردد المختار، أو قيم المدرب أقل من سرعة المجال الدوار) */
   let SP={nd:710,ny:1440};
-  const tpDom=()=>{const v=TP.v,f=HZ.get(),msg=[];SP=dahlSpeeds(v,TP.trainer,f,msg);TP.warn(TP.trainer&&msg.length?msg.join('<br>'):'');
+  const tpDom=()=>{const v=TP.v,f=HZ.get(),msg=[];SP=dahlSpeeds(v,TP.trainer||ch,f,msg);TP.warn(TP.trainer&&msg.length?msg.join('<br>'):'');
     $('#u3l1np').innerHTML=dahlPlate(SP,f);$('#u3l1src').textContent=TP.trainer?'السرعات من قيم المدرب':'السرعات توضيحية';
     el.querySelectorAll('[data-u3ns]').forEach(e=>e.textContent=HZ.ns(+e.dataset.u3ns,f)+' rpm');el.querySelectorAll('[data-u3hz]').forEach(e=>e.textContent=f+' Hz');
     el.querySelectorAll('[data-u3l1]').forEach(e=>e.textContent=String(Math.round(SP[e.dataset.u3l1])))};

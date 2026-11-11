@@ -35,10 +35,15 @@ global.window={};eval(fs.readFileSync(path.join(ROOT,'library.js'),'utf8'));cons
          (تُلتقط بتشغيل المختبر مرة في عنصر مخفي) */
       /* refTitle = عنوان لوحة المقارنة على جوال الطالب («بيانات الآلة السليمة» / «قراءات الدائرة السليمة» / «قراءات النظام السليم») */
       if((o.faults||o.sim)&&PLCBOOK.chRefTitle)o.refTitle=PLCBOOK.chRefTitle(l.id);
-      /* مختبرات «منضدة البرنامج» العامة (بلا L.lab): لا «قيم آلة» */
-      if(!l.lab||l.program||l.plant)return o;
-      const P=[];const orig=PLCBOOK.params;const host=document.createElement('div');host.style.cssText='position:absolute;left:-99999px;top:0;width:1200px';document.body.appendChild(host);
-      PLCBOOK.params=function(h,id,defs){if(!P.some(g=>g.id===id))P.push({id:String(id),defs:defs.map(d=>{const o={k:d.k,label:d.label,unit:d.unit||'',value:d.value};['min','max','step','dp'].forEach(q=>{if(d[q]!=null)o[q]=d[q]});if(d.hint)o.hint=d.hint;return o})});return orig.apply(this,arguments)};
+      /* opts = قيم مسموحة فقط [[قيمة, نص]] (مثل تردد الشبكة 50 / 60 هرتز): تظهر للمدرب اختياراً لا خانة رقم */
+      const cp=d=>{const o={k:d.k,label:d.label,unit:d.unit||'',value:d.value};['min','max','step','dp'].forEach(q=>{if(d[q]!=null)o[q]=d[q]});if(d.hint)o.hint=d.hint;
+        if(Array.isArray(d.opts)&&d.opts.length)o.opts=d.opts.map(x=>[+x[0],String(x[1])]);return o};
+      /* params في challenge.js = «قيم آلة» يعلنها الدرس صراحة (لمختبرات «منضدة البرنامج» التي لا تُشغَّل هنا) — تُضم قبل ما يُلتقط من المختبر */
+      const SP=(Array.isArray(c.params)?c.params:[]).filter(g=>g&&g.id&&Array.isArray(g.defs)&&g.defs.length).map(g=>({id:String(g.id),defs:g.defs.map(cp)}));
+      /* مختبرات «منضدة البرنامج» العامة (بلا L.lab): لا «قيم آلة» إلا ما أعلنته challenge.js */
+      if(!l.lab||l.program||l.plant){if(SP.length)o.params=SP;return o}
+      const P=SP.slice();const orig=PLCBOOK.params;const host=document.createElement('div');host.style.cssText='position:absolute;left:-99999px;top:0;width:1200px';document.body.appendChild(host);
+      PLCBOOK.params=function(h,id,defs){if(!P.some(g=>g.id===String(id)))P.push({id:String(id),defs:defs.map(cp)});return orig.apply(this,arguments)};
       try{l.lab(host,PLCBOOK)}catch(e){console.error('lab',l.id,e)}finally{PLCBOOK.params=orig;host.remove()}
       if(P.length)o.params=P;
       return o})()})));
@@ -56,7 +61,7 @@ global.window={};eval(fs.readFileSync(path.join(ROOT,'library.js'),'utf8'));cons
   if(chX.length)console.warn('  تنبيه: في challenge.js دروس غير موجودة أو بلا مختبر في',c.id+':',chX.join(', '));
   lessons.forEach(l=>(l.faults||[]).forEach((f,i,a)=>{if(a.findIndex(x=>x.id===f.id)!==i)throw new Error('duplicate fault id '+f.id+' in '+c.id+'/'+l.id)}));
   lessons.forEach(l=>{if((l.faults||l.sim)&&!l.params&&!l.std)console.warn('  تنبيه: لا «قيم آلة» (B.params) في مختبر',c.id+'/'+l.id);
-    const ids=new Set();(l.params||[]).forEach(g=>g.defs.forEach(d=>{if(ids.has(d.k))throw new Error('duplicate param key '+d.k+' in '+c.id+'/'+l.id);ids.add(d.k);if(!(typeof d.value==='number'&&isFinite(d.value)))throw new Error('bad param value '+d.k+' in '+c.id+'/'+l.id)}))});
+    const ids=new Set();(l.params||[]).forEach(g=>g.defs.forEach(d=>{if(ids.has(d.k))throw new Error('duplicate param key '+d.k+' in '+c.id+'/'+l.id);ids.add(d.k);if(!(typeof d.value==='number'&&isFinite(d.value)))throw new Error('bad param value '+d.k+' in '+c.id+'/'+l.id);if(d.opts&&!(d.opts.length>=2&&d.opts.every(x=>isFinite(x[0])&&x[1])&&d.opts.some(x=>x[0]===d.value)))throw new Error('bad param opts '+d.k+' in '+c.id+'/'+l.id)}))});
   out.courses.push({id:c.id,code:c.code,title:c.title,units,lessons});
   console.log(c.id,lessons.length,'lessons',lessons.reduce((a,l)=>a+l.questions.length,0),'questions',lessons.reduce((a,l)=>a+(l.open||[]).length,0),'open',lessons.reduce((a,l)=>a+(l.exit||[]).length,0),'exit',lessons.reduce((a,l)=>a+(l.errs||[]).length,0),'errs',lessons.reduce((a,l)=>a+(l.faults||[]).length,0),'faults',lessons.filter(l=>l.sim).length,'sim',lessons.filter(l=>l.params).length,'params');
  }
