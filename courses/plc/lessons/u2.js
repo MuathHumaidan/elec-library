@@ -49,16 +49,37 @@ B.U2.powerStarDelta=powerStarDelta;
 // motor model used by star/delta lessons
 const Istar=n=>6+14*Math.pow(clamp((1400-n)/1400,0,1),.6), Idelta=n=>10+50*Math.pow(clamp((1460-n)/1460,0,1),.6);
 B.U2.Istar=Istar;B.U2.Idelta=Idelta;
-function starDeltaPlant(get){ // get(st)->{K1,K2,K3,dir}
+/* ===== قيم المدرب للمختبرات التي يشغّلها المحرك المشترك (engine labs) — نفس المساعد في u3.js و u4.js =====
+   الشريط يُحقن أعلى المختبر (قبل .grid) عند أول إطار، والقيم تُقرأ من التخزين منذ init حتى يعمل تبويب البرنامج أيضاً.
+   في الوحدة الثانية: زمن التسارع فقط (قرار المدرب: زمن التسارع حقل يغيّره المدرب في كل مختبر يتسارع فيه محرك). */
+function engineTP(p,id,defs,opt){opt=opt||{};
+  const D={id,defs,v:Object.fromEntries(defs.map(d=>[d.k,d.value])),trainer:false,ver:0,P:null,msg:[],txt:opt.txt||{}};
+  const pull=()=>{D.v=D.P.v;D.trainer=D.P.trainer;D.msg=[];opt.apply&&opt.apply(D);D.P.warn&&D.P.warn(D.trainer&&D.msg.length?D.msg.join('<br>'):'')};
+  const dom=body=>{body.querySelectorAll('[data-tpv]').forEach(e=>{const f=D.txt[e.dataset.tpv];if(f)e.textContent=f()});opt.dom&&opt.dom(body,D)};
+  opt.apply&&opt.apply(D);
+  const in0=p.init;p.init=()=>{if(!D.P){D.P=B.params(document.createElement('div'),id,defs);pull()}return in0()};
+  const fr0=p.frame;p.frame=(el,s,pl,BB)=>{fr0&&fr0(el,s,pl,BB);const body=el&&el.closest('#tab-body');
+    if(body&&!body.querySelector('[data-tphost]')){const g=body.querySelector('.grid');if(!g)return;const h=document.createElement('div');h.setAttribute('data-tphost',id);g.parentNode.insertBefore(h,g);
+      D.P=B.params(h,id,defs,()=>{pull();D.ver++;dom(body)});pull();D.ver++;dom(body)}};
+  const sg0=p.sig;p.sig=pl=>(sg0?sg0(pl):'')+'|tp'+D.ver;
+  p.tp=D;return D;
+}
+/* زمن التسارع: حقل واحد هو زمن النجمة (1.6 s)، والدلتا (0.7 s) — وفي الدرس 2.4 حالة القصر في الملف W (2.2 s) — بالنسبة نفسها كما في القيم التوضيحية */
+const sdTau=(extra)=>[{k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.6,min:0.1,max:20,step:0.1,
+  hint:'هذا زمن النجمة؛ على الدلتا يُضرب في 0.7 ÷ 1.6 كما في القيم التوضيحية'+(extra||'')}];
+const sdTauApply=T=>D=>{const t=D.v.tau;Object.assign(T,D.trainer?{y:t,d:t*0.7/1.6,b:t*2.2/1.6}:{y:1.6,d:.7,b:2.2})};
+function starDeltaPlant(get,id){ // get(st)->{K1,K2,K3,dir}
+  const T={y:1.6,d:.7};
   const p=B.motorPlant(st=>{const k=get(st),dir=k.dir||1;const star=k.K1&&k.K3&&!k.K2,delta=k.K1&&k.K2&&!k.K3;
-    if(star)return {target:1400*dir,tau:1.6,I:n=>Istar(Math.abs(n)),label:'نجمة Y',mode:'star'};
-    if(delta)return {target:1460*dir,tau:.7,I:n=>Idelta(Math.abs(n)),label:'دلتا Δ',mode:'delta'};
+    if(star)return {target:1400*dir,tau:T.y,I:n=>Istar(Math.abs(n)),label:'نجمة Y',mode:'star'};
+    if(delta)return {target:1460*dir,tau:T.d,I:n=>Idelta(Math.abs(n)),label:'دلتا Δ',mode:'delta'};
     return null},{refs:[{v:60,color:'--stop'},{v:10,color:'--muted'}]});
   p.chart.legend='<span><i style="background:var(--blue)"></i>التيار الفعلي</span><span><i style="background:var(--stop)"></i>لو بدأ دلتا مباشرة (≈ 60 A)</span><span><i style="background:var(--muted)"></i>التيار المقنن 10 A</span>';
   p.render=(el,st,pl)=>{const k=get(st);const m=k.K1&&k.K3&&!k.K2?'star':k.K1&&k.K2&&!k.K3?'delta':'off';
     el.innerHTML=`<div class="svgbox" style="margin-top:0;max-width:240px">${windSVG(m)}</div><p class="sub">${m==='star'?'كل ملف عليه <b>220 v</b>: تيار وعزم منخفضان.':m==='delta'?'كل ملف عليه <b>380 v</b>: قدرة كاملة.':'الملفات غير متصلة بالشبكة.'}</p>`};
   p.sig=pl=>pl.mode;
   p.label=pl=>pl.label;
+  if(id)engineTP(p,id,sdTau(),{apply:sdTauApply(T)});
   return p;
 }
 B.U2.starDeltaPlant=starDeltaPlant;
@@ -617,7 +638,7 @@ return {run,circ,lt};
  ],
  power:(st)=>powerStarDelta(st.Q('Q4.1'),st.Q('Q4.2'),st.Q('Q4.3')),powerRef:'الشكل (4-2) ص 36',
  ctrl:CTRL_SD,ctrlMap:MAP_SD,ctrlRef:'الشكل (5-2) ص 37',
- plant:starDeltaPlant(st=>({K1:st.Q('Q4.1'),K2:st.Q('Q4.2'),K3:st.Q('Q4.3')})),
+ plant:starDeltaPlant(st=>({K1:st.Q('Q4.1'),K2:st.Q('Q4.2'),K3:st.Q('Q4.3')}),'u2-l1'),
  plcNote:'في الكتاب وُصّل S0 و F4 بحيث تصل إشارة 1 عند الضغط أو الفصل، لذلك برمجا كتلامس مغلق (AN).',
  steps:[
   {t:'الوضع الابتدائي',x:'المحرك متوقف وكل المتممات مفصولة. لاحظ في الدائرة الرئيسة أن الجهد واصل حتى مداخل K1 و K2 فقط.'},
@@ -1098,7 +1119,7 @@ const SR3_FIGS=[
 // run a button sequence through a program and report outputs (theory widget)
 function runSeq(prog,seq){const P=B.createPLC(prog);const out=[];seq.forEach(([lbl,ins])=>{['I0.0','I0.1','I1.1','I1.2','I1.3'].forEach(a=>P.set(a,0));(ins||[]).forEach(a=>P.set(a,1));for(let i=0;i<3;i++)P.scan(0.05);out.push([lbl,P.get('Q4.1'),P.get('Q4.2'),P.get('Q4.3')]);
   ['I0.0','I0.1','I1.1','I1.2'].forEach(a=>P.set(a,0));for(let i=0;i<3;i++)P.scan(0.05)});return out}
-const sdPlant3=(()=>{const p=starDeltaPlant(st=>({K1:st.Q('Q4.1'),K2:st.Q('Q4.2'),K3:st.Q('Q4.3')}));const r0=p.render;
+const sdPlant3=(()=>{const p=starDeltaPlant(st=>({K1:st.Q('Q4.1'),K2:st.Q('Q4.2'),K3:st.Q('Q4.3')}),'u2-l3');const r0=p.render;
   p.render=(el,st,pl)=>{r0(el,st,pl);const ss=srStatus(st.plc);
     el.insertAdjacentHTML('beforeend',`<table class="tt" style="font-size:13px"><thead><tr><th>صندوق SR</th><th>S</th><th>R</th><th>Q</th></tr></thead><tbody>${[['Q4.3','K3'],['Q4.2','K2'],['Q4.1','K1']].map(([a,n])=>{const o=ss[a]||{s:0,r:0};return `<tr><td class="mono">${n} ${a}</td><td>${bit(o.s)}</td><td>${bit(o.r)}</td><td>${bit(st.Q(a))}</td></tr>`}).join('')}</tbody></table>`)};
   p.chart.ymax=65;return p})();
@@ -1355,10 +1376,11 @@ function revState(st){const K1=st.Q('Q4.1'),K2=st.Q('Q4.2'),K3=st.Q('Q4.3'),K4=s
   return {K1,K2,K3,K4,dir,star:!!(dir&&K3&&!K4),delta:!!(dir&&K4&&!K3),bad:!!(dir&&K4&&!K3&&isBook(st)),open:!!(dir&&!K3&&!K4)}}
 const revPlant=(()=>{
   const arrow=d=>d>0?' ⟳':' ⟲';
+  const T={y:1.6,d:.7,b:2.2};
   const p=B.motorPlant(st=>{const k=revState(st);
-    if(k.bad)return {target:1150*k.dir,tau:2.2,I:n=>40+20*clamp(1-Math.abs(n)/1460,0,1),label:'قصر في ملف W'+arrow(k.dir),mode:'trip'};
-    if(k.star)return {target:1400*k.dir,tau:1.6,I:n=>Istar(Math.abs(n)),label:'نجمة Y'+arrow(k.dir),mode:'star'};
-    if(k.delta)return {target:1460*k.dir,tau:.7,I:n=>Idelta(Math.abs(n)),label:'دلتا Δ'+arrow(k.dir),mode:'delta'};
+    if(k.bad)return {target:1150*k.dir,tau:T.b,I:n=>40+20*clamp(1-Math.abs(n)/1460,0,1),label:'قصر في ملف W'+arrow(k.dir),mode:'trip'};
+    if(k.star)return {target:1400*k.dir,tau:T.y,I:n=>Istar(Math.abs(n)),label:'نجمة Y'+arrow(k.dir),mode:'star'};
+    if(k.delta)return {target:1460*k.dir,tau:T.d,I:n=>Idelta(Math.abs(n)),label:'دلتا Δ'+arrow(k.dir),mode:'delta'};
     if(k.open)return {target:0,tau:2.4,I:()=>0,label:'الملفات مفتوحة',mode:'warn'};
     return null},{refs:[{v:60,color:'--stop'},{v:10,color:'--muted'}]});
   const base=p.step,i0=p.init;
@@ -1378,6 +1400,7 @@ const revPlant=(()=>{
       pl.m==='open'?'K1 أو K2 يعمل، لكن لا نجمة ولا دلتا: أطراف النهاية مفتوحة فلا يمر تيار.':'الملفات غير متصلة بالشبكة.'}</p>`};
   p.sig=pl=>[pl.m,pl.trip,pl.dir].join();
   p.label=pl=>pl.label;
+  engineTP(p,'u2-l4',sdTau('، وفي حالة القصر في الملف W (برنامج الكتاب) يُضرب في 2.2 ÷ 1.6'),{apply:sdTauApply(T)});
   return p})();
 
 B.lesson({

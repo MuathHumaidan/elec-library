@@ -741,3 +741,12 @@ html[data-wide] .theory.stations{max-width:none}
 @media (max-width:1000px){.widebtn{display:none}}
 @media (max-width:1300px){.widebtn .sl{display:none}}
 .ml .ml-facts b[dir=rtl]{text-align:right;font-family:inherit}
+/* الحل خطوة خطوة + توقّع الناتج */
+.ex-steps li.ex-hid{display:none}
+.ex-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.ex-ctl .btn .sub{font-size:.85em;opacity:.85;color:inherit}
+.ex-pred .ex-f{overflow-x:auto;max-width:100%}
+.ex-pred{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--surface)}
+.ex-pin{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.ex-pin input{width:9em;max-width:100%;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:inherit;direction:ltr;text-align:left}
+.ex-pfb{margin-top:6px}.ex-pfb .ok{color:var(--on)}.ex-pfb .no{color:var(--stop)}

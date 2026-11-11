@@ -1175,10 +1175,10 @@ B.lesson({
   ['يتأخر عن الجهد أكثر',false,'المكثف يعاكس الممانعة الحثية، فيقل التأخر لا يزيد.'],
   ['يتغير مقداره فقط، وتبقى زاويته كما هي',false,String.raw`زاوية \(I_a\) تحددها نسبة \((3.3 - X_c)\) إلى \(8.8\)، فتتغير بتغير \(X_c\).`],
   ['يقترب من الجهد ثم يتقدم عليه، فتكبر الزاوية بينه وبين تيار الرئيسي',true,String.raw`عندما تصبح \(X_c\) أكبر من \(3.3\ \Omega\) تصير معاوقة المساعد سعوية، فيتقدم \(I_a\) على الجهد.`]]},
- ins:[{k:'X',l:'ممانعة المكثف <bdi class="ltr">X<sub>c</sub></bdi> (أرقام تختارها أنت)',min:0,max:20,step:0.02,v:4,u:'Ω',dp:2}],
+ ins:[{k:'X',l:'ممانعة المكثف <bdi class="ltr">X<sub>c</sub></bdi> (أرقام تختارها أنت)',min:0,max:20,step:0.01,v:4,u:'Ω',dp:2}],
  calc:(s,v,B)=>{const V=Cx(127,0),Im=cdiv(V,Cx(4.2,3.8)),Ia=cdiv(V,Cx(8.8,3.3-s.X)),al=cang(Ia)-cang(Im),ok=Math.abs(al-90)<0.25;
-  return {pic:phasorSVG(Im,Ia,{alpha:al,ok,h:330,dy:-20}),facts:[['زاوية <bdi class="ltr">I<sub>a</sub></bdi> عن الجهد',DCML.fm(B,cang(Ia),2)+'°'],['زاوية <bdi class="ltr">I<sub>m</sub></bdi> عن الجهد',DCML.fm(B,cang(Im),2)+'°'],['الزاوية بين التيارين',DCML.fm(B,al,2)+'°',ok?'hi':''],['السعة <bdi class="ltr">c = 1 / (377·X<sub>c</sub>)</bdi>',s.X>0?DCML.fm(B,1e6/(377*s.X),0)+' µF':'—']],
-   msg:ok?String.raw`وصلت إلى <bdi class="ltr">90°</bdi> تقريباً: \(X_c \approx 12.98\ \Omega\) و\(c \approx 204\ \mu F\)، وهو حل مثال (2-3). عندها يكافئ المحرك عند البدء «محركاً متزناً ذا وجهين».`:al<90?'الزاوية أقل من <bdi class="ltr">90°</bdi>: زد <bdi class="ltr">X<sub>c</sub></bdi>.':'الزاوية تجاوزت <bdi class="ltr">90°</bdi>: أنقص <bdi class="ltr">X<sub>c</sub></bdi>.',cls:ok?'':'warn'}}})}
+  return {pic:phasorSVG(Im,Ia,{alpha:al,ok,h:330,dy:-20}),facts:[['زاوية <bdi class="ltr">I<sub>a</sub></bdi> عن الجهد',DCML.fm(B,cang(Ia),2)+'°'],['زاوية <bdi class="ltr">I<sub>m</sub></bdi> عن الجهد',DCML.fm(B,cang(Im),2)+'°'],['الزاوية بين التيارين',DCML.fm(B,al,2)+'°',ok?'hi':''],['السعة <bdi class="ltr">c = 1 / (377·X<sub>c</sub>)</bdi>',s.X>0?DCML.fm(B,1e6/(377*s.X),1)+' µF':'—']],
+   msg:ok?String.raw`وصلت إلى <bdi class="ltr">90°</bdi> تقريباً: \(X_c \approx 13.03\ \Omega\) و\(c \approx 203.6\ \mu F\)، وهو حل مثال (2-3) بلا تقريب (في الكتاب \(12.98\ \Omega\) و\(204\ \mu F\) بعد تقريب الظل إلى 1.1). عندها يكافئ المحرك عند البدء «محركاً متزناً ذا وجهين».`:al<90?'الزاوية أقل من <bdi class="ltr">90°</bdi>: زد <bdi class="ltr">X<sub>c</sub></bdi>.':'الزاوية تجاوزت <bdi class="ltr">90°</bdi>: أنقص <bdi class="ltr">X<sub>c</sub></bdi>.',cls:ok?'':'warn'}}})}
    ]},
 
   {st:3,short:'العزم والتطبيقات',title:'العزم الكبير عند البدء والتطبيقات: الشكل <span class="ltr">(2-6)</span>',ref:'ص 83',

@@ -83,8 +83,29 @@ function powerDahl(K1,K2,K3,o){o=o||{};const bl=!!o.blown;
   return s+'</svg>';
 }
 
+/* ===== تردد الشبكة للسرعة التزامنية n = 120 × f ÷ p — قرار المدرب =====
+   يظهر الأمران: 50 Hz (كما في الكتاب، وهو الافتراضي) و 60 Hz (شبكة المملكة). الاختيار مفتاح واحد محفوظ على هذا الجهاز،
+   مشترك بين الشرح الرسمي والمحطات ومختبرات الوحدة الثالثة، ويتغير كل شيء معه مباشرة. في وضع التحدي (نشاط حي) دائماً 50 Hz
+   حتى تتطابق الجوالات. السرعات التوضيحية تتغير بالنسبة نفسها (الانزلاق نفسه): 710 ← 852 و 1440 ← 1728 rpm. */
+const HZ={
+  key:()=>`${(B.COURSE&&B.COURSE.key)||'plc'}-hz`,
+  get(){if(B.chOn&&B.chOn())return 50;return B.store.get(HZ.key(),50)===60?60:50},
+  set(f){B.store.set(HZ.key(),f===60?60:50);document.dispatchEvent(new Event('plc-hz'))},
+  ns:(p,f)=>120*(f||HZ.get())/p,
+  /* يستدعي fn عند كل تغيير ما دام العنصر el في الصفحة */
+  on(el,fn){const h=()=>{if(!el.isConnected){document.removeEventListener('plc-hz',h);return}try{fn(HZ.get())}catch(e){console.error(e)}};document.addEventListener('plc-hz',h)},
+  /* المفتاح الصغير: «تردد الشبكة: 50 Hz (كما في الكتاب) / 60 Hz (شبكة المملكة)» */
+  seg(el,cls){if(B.chOn&&B.chOn()){el.hidden=true;return}
+    const draw=()=>{const f=HZ.get();el.innerHTML=`<div class="hzsw" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 10px"><span class="sub" style="margin:0">تردد الشبكة:</span><div class="${cls||'seg'}" role="group" aria-label="تردد الشبكة"><button type="button" data-hz="50" aria-pressed="${f===50}"><span class="ltr">50 Hz</span> (كما في الكتاب)</button><button type="button" data-hz="60" aria-pressed="${f===60}"><span class="ltr">60 Hz</span> (شبكة المملكة)</button></div></div>`;
+      el.querySelectorAll('[data-hz]').forEach(b=>b.onclick=()=>HZ.set(+b.dataset.hz))};
+    draw();HZ.on(el,draw)},
+  /* السرعات التوضيحية على التردد الحالي */
+  ill:f=>({nd:710*f/50,ny:1440*f/50})
+};
+B.U3HZ=HZ;
 /* motor model (illustrative numbers) */
-const Ilow=n=>3.5+24*Math.pow(clamp((750-Math.abs(n))/750,0,1),.6), Ihigh=n=>6+42*Math.pow(clamp((1500-Math.abs(n))/1500,0,1),.6);
+const IlowF=ns=>n=>3.5+24*Math.pow(clamp((ns-Math.abs(n))/ns,0,1),.6), IhighF=ns=>n=>6+42*Math.pow(clamp((ns-Math.abs(n))/ns,0,1),.6);
+const Ilow=IlowF(750), Ihigh=IhighF(1500);
 function dahlMode(k){return k.K1&&!k.K2&&!k.K3?'delta':k.K2&&k.K3&&!k.K1?'yy':'off'}
 
 /* ===== قيم المدرب للمختبرات التي يشغّلها المحرك المشترك (engine labs) =====
@@ -98,6 +119,7 @@ function engineTP(p,id,defs,opt){opt=opt||{};
   const in0=p.init;p.init=()=>{if(!D.P){D.P=B.params(document.createElement('div'),id,defs);pull()}return in0()};
   const fr0=p.frame;p.frame=(el,s,pl,BB)=>{fr0&&fr0(el,s,pl,BB);const body=el&&el.closest('#tab-body');
     if(body&&!body.querySelector('[data-tphost]')){const g=body.querySelector('.grid');if(!g)return;const h=document.createElement('div');h.setAttribute('data-tphost',id);g.parentNode.insertBefore(h,g);
+      if(opt.hz){const z=document.createElement('div');z.setAttribute('data-hzhost',id);g.parentNode.insertBefore(z,g);HZ.seg(z);HZ.on(z,()=>{pull();D.ver++;dom(body)})}
       D.P=B.params(h,id,defs,()=>{pull();D.ver++;dom(body)});pull();D.ver++;dom(body)}};
   const sg0=p.sig;p.sig=pl=>(sg0?sg0(pl):'')+'|tp'+D.ver;
   D.span=k=>`<span data-tpv="${k}">${D.txt[k]()}</span>`;
@@ -107,16 +129,19 @@ const niceAxis=(top,base,st0)=>{const steps=[st0,20,50,100,200,500,1000,2000];le
 /* current curve I(n)=I0+(Is−I0)·f^0.6 with f=(ns−n)/ns; trainer gives Is (start) and Ir (at the steady speed nr) → I0 */
 const curveI=(ns,Is,Ir,nr)=>{const fr=Math.pow(clamp((ns-nr)/ns,0,1),.6),I0=fr<0.999?(Ir-Is*fr)/(1-fr):Ir;return n=>Math.max(0,I0+(Is-I0)*Math.pow(clamp((ns-Math.abs(n))/ns,0,1),.6))};
 const dahlDefs=()=>[
-  {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:710,min:100,max:749,step:1,hint:'أقل من سرعة المجال الدوار 750 rpm'},
-  {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:1440,min:200,max:1499,step:1,hint:'أقل من سرعة المجال الدوار 1500 rpm'},
+  {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:710,min:100,max:899,step:1,hint:'أقل من سرعة المجال الدوار: 750 rpm على 50 Hz، أو 900 rpm على 60 Hz'},
+  {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:1440,min:200,max:1799,step:1,hint:'أقل من سرعة المجال الدوار: 1500 rpm على 50 Hz، أو 1800 rpm على 60 Hz'},
   {k:'Isd',label:'تيار البدء على الدلتا',unit:'A',value:27.5,min:1,max:1000,step:0.1},
   {k:'Ird',label:'تيار الخط وهو يدور على الدلتا',unit:'A',value:7.6,min:0.1,max:500,step:0.1,hint:'أقل من تيار البدء على الدلتا'},
   {k:'Isy',label:'تيار البدء على الدبل نجمة',unit:'A',value:48,min:1,max:1000,step:0.1},
   {k:'Iry',label:'تيار الخط وهو يدور على الدبل نجمة',unit:'A',value:12.1,min:0.1,max:500,step:0.1,hint:'أقل من تيار البدء على الدبل نجمة'},
   {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.1,min:0.1,max:20,step:0.1,hint:'على الدبل نجمة يُضرب في 1.3 ÷ 1.1 كما في القيم التوضيحية'}];
-const dahlPlate=v=>`M 4/8 · 3~ · 380 v · 50 Hz<br>Δ  8 poles ≈ ${Math.round(v.nd)} rpm<br>YY 4 poles ≈ ${Math.round(v.ny)} rpm`;
+const dahlPlate=(v,f)=>`M 4/8 · 3~ · 380 v · ${f||50} Hz<br>Δ  8 poles ≈ ${Math.round(v.nd)} rpm<br>YY 4 poles ≈ ${Math.round(v.ny)} rpm`;
+/* السرعة التي يعمل بها المختبر: التوضيحية على التردد الحالي، أو قيمة المدرب بشرط أن تكون أقل من سرعة المجال الدوار */
+const dahlSpeeds=(v,trainer,f,msg)=>{if(!trainer)return HZ.ill(f);const r={},lim={nd:HZ.ns(8,f),ny:HZ.ns(4,f)},nm={nd:'الدلتا',ny:'الدبل نجمة'};
+  ['nd','ny'].forEach(k=>{let n=v[k];if(n>lim[k]-1){n=lim[k]-1;msg&&msg.push(`السرعة على ${nm[k]} يجب أن تكون أقل من سرعة المجال الدوار (<span class="ltr">${lim[k]} rpm</span> على <span class="ltr">${f} Hz</span>)، فاستعملنا <span class="ltr">${n} rpm</span>.`)}r[k]=n});return r};
 function dahlPlant(get,id){
-  let M={nd:710,ny:1440,td:1.1,ty:1.3,Il:Ilow,Ih:Ihigh};
+  let M={nd:710,ny:1440,td:1.1,ty:1.3,Il:Ilow,Ih:Ihigh,f:50};
   const p=B.motorPlant(st=>{const m=dahlMode(get(st));
     if(m==='delta')return {target:M.nd,tau:M.td,I:M.Il,label:'دلتا Δ — بطيئة',mode:'slow'};
     if(m==='yy')return {target:M.ny,tau:M.ty,I:M.Ih,label:'دبل نجمة YY — عالية',mode:'fast'};
@@ -124,19 +149,21 @@ function dahlPlant(get,id){
   p.title='محرك داهلندر';
   const legend=()=>`<span><i style="background:var(--blue)"></i>تيار الخط (${D.trainer?'من قيم المدرب':'أرقام توضيحية'})</span><span><i style="background:var(--muted)"></i>${D.trainer?`تيار الخط وهو يدور على الدبل نجمة ≈ ${B.round(D.Iry,1)} A`:'تيار السرعة العالية المقنن ≈ 9 A'}</span>`;
   p.render=(el,st)=>{const m=dahlMode(get(st));
-    el.innerHTML=`<div class="svgbox" style="margin-top:0;max-width:220px">${windDahl(m==='yy'?'yy':'delta',m!=='off')}</div><p class="sub">${m==='delta'?'التغذية على <b>U1 V1 W1</b>: دلتا، <b>8 أقطاب</b>، سرعة بطيئة.':m==='yy'?'التغذية على <b>U2 V2 W2</b> و U1 V1 W1 مقصورة: دبل نجمة، <b>4 أقطاب</b>، سرعة عالية.':'الملفات غير متصلة بالشبكة.'}</p><p class="sub">${D.trainer?'السرعات والتيارات من قيم المدرب.':'السرعات أرقام توضيحية (ليست من الكتاب).'} سرعة المحرك أقل قليلاً من سرعة المجال الدوار (750 rpm مع 8 أقطاب و 1500 rpm مع 4 أقطاب)، وهذا طبيعي في المحرك الحثي.</p>`};
+    el.innerHTML=`<div class="svgbox" style="margin-top:0;max-width:220px">${windDahl(m==='yy'?'yy':'delta',m!=='off')}</div><p class="sub">${m==='delta'?'التغذية على <b>U1 V1 W1</b>: دلتا، <b>8 أقطاب</b>، سرعة بطيئة.':m==='yy'?'التغذية على <b>U2 V2 W2</b> و U1 V1 W1 مقصورة: دبل نجمة، <b>4 أقطاب</b>، سرعة عالية.':'الملفات غير متصلة بالشبكة.'}</p><p class="sub">${D.trainer?'السرعات والتيارات من قيم المدرب.':'السرعات أرقام توضيحية (ليست من الكتاب).'} سرعة المحرك أقل قليلاً من سرعة المجال الدوار (<span class="ltr">${HZ.ns(8,M.f)} rpm</span> مع 8 أقطاب و <span class="ltr">${HZ.ns(4,M.f)} rpm</span> مع 4 أقطاب على شبكة <span class="ltr">${M.f} Hz</span>)، وهذا طبيعي في المحرك الحثي.</p>`};
   p.sig=pl=>pl.mode;p.label=pl=>pl.label;
   const D=engineTP(p,id,dahlDefs(),{
-    txt:{nd:()=>String(Math.round(D.v.nd)),ny:()=>String(Math.round(D.v.ny))},
-    apply:D=>{const v=D.v;
+    hz:1,
+    txt:{nd:()=>String(Math.round(M.nd)),ny:()=>String(Math.round(M.ny))},
+    apply:D=>{const v=D.v,f=HZ.get(),ns8=HZ.ns(8,f),ns4=HZ.ns(4,f);
       const f1=x=>String(B.round(x,1));
       const run=(Ir,Is,nm)=>{if(Ir<Is)return Ir;const e=B.round(Is-0.1,1);D.msg.push(`تيار الخط وهو يدور على ${nm} يجب أن يكون أقل من تيار البدء على ${nm} (<span class="ltr">${f1(Is)} A</span>)، فاستعملنا <span class="ltr">${f1(e)} A</span>.`);return e};
       const Ird=D.trainer?run(v.Ird,v.Isd,'الدلتا'):7.6,Iry=D.trainer?run(v.Iry,v.Isy,'الدبل نجمة'):12.1;D.Iry=Iry;
-      M=D.trainer?{nd:v.nd,ny:v.ny,td:v.tau,ty:v.tau/1.1*1.3,Il:curveI(750,v.Isd,Ird,v.nd),Ih:curveI(1500,v.Isy,Iry,v.ny)}:{nd:710,ny:1440,td:1.1,ty:1.3,Il:Ilow,Ih:Ihigh};
+      const sp=dahlSpeeds(v,D.trainer,f,D.msg);D.nd=sp.nd;D.ny=sp.ny;
+      M=D.trainer?{nd:sp.nd,ny:sp.ny,td:v.tau,ty:v.tau/1.1*1.3,Il:curveI(ns8,v.Isd,Ird,sp.nd),Ih:curveI(ns4,v.Isy,Iry,sp.ny),f}:f===50?{nd:710,ny:1440,td:1.1,ty:1.3,Il:Ilow,Ih:Ihigh,f}:{nd:sp.nd,ny:sp.ny,td:1.1,ty:1.3,Il:IlowF(ns8),Ih:IhighF(ns4),f};
       p.chart.refs[0].v=D.trainer?Iry:9;
       const ax=D.trainer?niceAxis(Math.max(v.Isd,v.Isy,9)*1.08,60,20):{ymax:60,ticks:[0,20,40,60]};p.chart.ymax=ax.ymax;p.chart.ticks=ax.ticks},
-    dom:(body,D)=>{const np=body.querySelector('.nameplate');if(np)np.innerHTML=dahlPlate(D.v);const lg=body.querySelector('.legend');if(lg)lg.innerHTML=legend()}});
-  Object.defineProperty(p,'nameplate',{get:()=>dahlPlate(D.v),enumerable:true,configurable:true});
+    dom:(body,D)=>{const np=body.querySelector('.nameplate');if(np)np.innerHTML=dahlPlate(M,M.f);const lg=body.querySelector('.legend');if(lg)lg.innerHTML=legend()}});
+  Object.defineProperty(p,'nameplate',{get:()=>dahlPlate(M,M.f),enumerable:true,configurable:true});
   Object.defineProperty(p.chart,'legend',{get:legend,enumerable:true,configurable:true});
   return p;
 }
@@ -831,6 +858,13 @@ return {run,circ,lt};
         <div class="w-facts"><div><span>التغذية على</span><b class="ltr">${d?'U1 V1 W1':'U2 V2 W2'}</b></div><div><span>الأطراف المقصورة</span><b class="ltr">${d?'—':'U1 V1 W1'}</b></div><div><span>عدد الأقطاب</span><b>${d?8:4}</b></div><div><span>السرعة</span><b>${d?'بطيئة':'ضعف البطيئة'}</b></div></div>`;
        el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{m=b.dataset.m;draw()})};
       draw()}},
+    {add:String.raw`<p>السرعة التزامنية (سرعة المجال الدوار) تُحسب من العلاقة <span class="ltr">n = 120 × f ÷ p</span>، حيث <span class="ltr">f</span> تردد الشبكة و <span class="ltr">p</span> عدد الأقطاب. على <span class="ltr">50 Hz</span>: <span class="ltr">750 rpm</span> مع 8 أقطاب و <span class="ltr">1500 rpm</span> مع 4 أقطاب. وعلى شبكة المملكة <span class="ltr">60 Hz</span>: <span class="ltr">900 rpm</span> و <span class="ltr">1800 rpm</span>. في الحالتين السرعة العالية ضعف البطيئة، وسرعة المحرك الفعلية أقل قليلاً من سرعة المجال.</p>`,title:'كم السرعة بالأرقام؟'},
+    {title:'مختبر مصغّر: اختر تردد الشبكة',widget:(el,B)=>{
+      const draw=()=>{const f=HZ.get(),s=HZ.ill(f);
+       el.innerHTML=`<div data-hzsw></div><div class="w-facts"><div><span>التردد</span><b class="ltr">${f} Hz</b></div><div><span>سرعة المجال مع 8 أقطاب (دلتا)</span><b class="ltr">${HZ.ns(8,f)} rpm</b></div><div><span>سرعة المجال مع 4 أقطاب (دبل نجمة)</span><b class="ltr">${HZ.ns(4,f)} rpm</b></div><div><span>سرعة المحرك (توضيحية)</span><b class="ltr">≈ ${s.nd} / ${s.ny} rpm</b></div></div>
+        <p class="sub" style="margin-top:8px"><span class="ltr">n = 120 × ${f} ÷ 8 = ${HZ.ns(8,f)} rpm</span> و <span class="ltr">n = 120 × ${f} ÷ 4 = ${HZ.ns(4,f)} rpm</span>. الاختيار نفسه يطبَّق في الشرح الرسمي وفي المختبر.</p>`;
+       HZ.seg(el.querySelector('[data-hzsw]'))};
+      draw();HZ.on(el,draw)}},
     {add:String.raw`<p>محركات السرعتين من هذا النوع تجدها في <b>مراوح التهوية والشفط</b> التي لها سرعة هادئة وسرعة قوية، وفي بعض <b>المثاقب والمخارط</b> التي تحتاج سرعتين للعمل.</p>`,title:'أين تجده؟'},
     {predict:{q:'المحرك على الدلتا وعدد أقطابه 8. ماذا يحدث عند تحويله إلى الدبل النجمة؟',opts:[
      ['تصبح الأقطاب 16 والسرعة النصف',false,'العكس: الكتاب يقول إن الأقطاب تقل إلى النصف.'],
@@ -895,11 +929,13 @@ return {run,circ,lt};
   {h:'توصيلة الدبل النجمة (السرعة العالية)',ref:'ص 60',html:'<p>«وعند قصر أطراف التوصيل (U1 – V1 – W1) وتتم التغذية من نقاط الوسط للملفات أي من النقاط (U2 – V2 – W2) فإن المحرك يتحول توصيله من الدلتا إلى الدبل النجمة كما في الشكل (3-3)، ويتحول عدد أقطاب المحرك في هذه الحالة إلى نصف عدد أقطاب توصيلة الدلتا.»</p>'},
   {fig:'(3-3)',ref:'ص 60',caption:'توصيلة الدبل النجمة: U1 و V1 و W1 مقصورة في المركز، والتغذية على U2 و V2 و W2، وكل ذراع ملفان على التوازي',draw:()=>box(windDahl('yy',0),300)},
   {h:'السرعة وعدد الأقطاب',ref:'ص 61',html:'<p>«ومن المعلوم أن السرعة تتناسب عكساً مع عدد الأقطاب. وعلى ذلك عند تحويل التوصيل من الدلتا إلى الدبل النجمة تتحول السرعة من بطيئة إلى سرعة عالية. وتكون ضعف السرعة البطيئة، لأن عدد الأقطاب قل إلى النصف.»</p>'},
-  {note:'<b>توضيح للمتدرب (ليس من نص الكتاب):</b> السرعة التزامنية <span class="ltr">n = 120 × f ÷ p</span>. على شبكة <span class="ltr">50 Hz</span>: مع <b>8 أقطاب</b> <span class="ltr">n = 750 rpm</span>، ومع <b>4 أقطاب</b> <span class="ltr">n = 1500 rpm</span>. سرعة المحرك الفعلية أقل قليلاً (مثلاً نحو <span class="ltr">710</span> و <span class="ltr">1440 rpm</span>)، وهي الأرقام التوضيحية المستعملة في المحاكاة. الكتابة «M 4/8» على المحرك تعني 4 أو 8 أقطاب.'},
-  {widget:(el)=>{let m='delta';const draw=()=>{const d=m==='delta';el.innerHTML=`<div class="fig"><div class="seg" role="group"><button data-m="delta" aria-pressed="${d}">دلتا Δ — بطيئة</button><button data-m="yy" aria-pressed="${!d}">دبل نجمة YY — عالية</button></div>
+  {widget:(el)=>{const draw=()=>{const f=HZ.get(),o=f===50?60:50,s=HZ.ill(f);
+     el.innerHTML=`<div class="callout"><b>توضيح للمتدرب (ليس من نص الكتاب):</b> السرعة التزامنية <span class="ltr">n = 120 × f ÷ p</span>. <div data-hzsw></div>على شبكة <span class="ltr">${f} Hz</span>: مع <b>8 أقطاب</b> <span class="ltr">n = ${HZ.ns(8,f)} rpm</span>، ومع <b>4 أقطاب</b> <span class="ltr">n = ${HZ.ns(4,f)} rpm</span>. أما على <span class="ltr">${o} Hz</span> ${o===60?'(شبكة المملكة)':'(كما في الكتاب)'} فالسرعتان <span class="ltr">${HZ.ns(8,o)} rpm</span> و <span class="ltr">${HZ.ns(4,o)} rpm</span>. سرعة المحرك الفعلية أقل قليلاً (مثلاً نحو <span class="ltr">${s.nd}</span> و <span class="ltr">${s.ny} rpm</span>)، وهي الأرقام التوضيحية المستعملة في المحاكاة. الكتابة «M 4/8» على المحرك تعني 4 أو 8 أقطاب.</div>`;
+     HZ.seg(el.querySelector('[data-hzsw]'))};draw();HZ.on(el,draw)}},
+  {widget:(el)=>{let m='delta';const draw=()=>{const d=m==='delta',sv=HZ.ill(HZ.get());el.innerHTML=`<div class="fig"><div class="seg" role="group"><button data-m="delta" aria-pressed="${d}">دلتا Δ — بطيئة</button><button data-m="yy" aria-pressed="${!d}">دبل نجمة YY — عالية</button></div>
      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:center;margin-top:8px"><div class="svgbox" style="max-width:280px;margin-inline:auto">${windDahl(m,1)}</div><div>${polesSVG(d?8:4,1)}<p class="sub" style="text-align:center">المجال الدوار (توضيحي): ${d?'8 أقطاب يدور ببطء':'4 أقطاب يدور بضعف السرعة'}</p></div></div>
-     <div class="facts"><div class="fact"><span>التغذية على</span><b>${d?'U1 V1 W1':'U2 V2 W2'}</b></div><div class="fact"><span>الأطراف المقصورة</span><b>${d?'—':'U1 V1 W1'}</b></div><div class="fact"><span>عدد الأقطاب</span><b>${d?'8':'4'}</b></div><div class="fact"><span>السرعة (توضيحية)</span><b>${d?'≈ 710 rpm':'≈ 1440 rpm'}</b></div><div class="fact"><span>المتممات</span><b>${d?'K1':'K2 + K3'}</b></div></div></div>`;
-     el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{m=b.dataset.m;draw()})};draw()}},
+     <div class="facts"><div class="fact"><span>التغذية على</span><b>${d?'U1 V1 W1':'U2 V2 W2'}</b></div><div class="fact"><span>الأطراف المقصورة</span><b>${d?'—':'U1 V1 W1'}</b></div><div class="fact"><span>عدد الأقطاب</span><b>${d?'8':'4'}</b></div><div class="fact"><span>السرعة (توضيحية)</span><b>≈ ${d?sv.nd:sv.ny} rpm</b></div><div class="fact"><span>المتممات</span><b>${d?'K1':'K2 + K3'}</b></div></div></div>`;
+     el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{m=b.dataset.m;draw()})};draw();HZ.on(el,draw)}},
   {h:'ثانياً: الدائرة الرئيسة',ref:'ص 61',html:`<p>«الشكل (4-3) يوضح الدائرة الرئيسة.» الخطوط L1 و L2 و L3 تمر بالمصاهر F1…3، ثم يتفرع كل خط إلى فرعين:</p>
     <ul><li><b>K1</b>: يوصل L1 و L2 و L3 عبر المرحل الحراري <b>F4</b> إلى <b>U1 و V1 و W1</b>. K1 وحده = <b>دلتا</b> (8 أقطاب، سرعة بطيئة).</li>
     <li><b>K3</b> (متمم القصر): أطرافه العلوية موصولة معاً، والسفلية على مخارج K1؛ فإذا أغلق <b>قصر U1 و V1 و W1</b> معاً.</li>
@@ -912,7 +948,7 @@ return {run,circ,lt};
  ],
  lab:(el)=>{
   let K={K1:0,K2:0,K3:0},blown=0,trip=0,n=0,ang=0,lastSig='',errSeen=0;
-  el.innerHTML=`<div id="u3l1tp"></div><div class="grid">
+  el.innerHTML=`<div id="u3l1tp"></div><div id="u3l1hz"></div><div class="grid">
    <div class="panel c12"><h2>لوحة المتممات <small>شغّل المتممات يدوياً (بدون دائرة تحكم) وراقب المحرك</small></h2>
     <div class="wrap-in" style="padding:6px 0 0">
      <div class="pbs">${swHTML('k1','K1','دلتا',0)}${swHTML('k2','K2','تغذية U2 V2 W2',0)}${swHTML('k3','K3','قصر U1 V1 W1',0)}</div>
@@ -920,16 +956,21 @@ return {run,circ,lt};
      <div class="reads"><div class="read"><span>الحالة</span><em class="mode-chip" id="chip">متوقف</em></div><div class="read"><span>الأقطاب</span><b id="pol">—</b></div><div class="read"><span>السرعة</span><b id="spd">0 rpm</b></div></div>
     </div><div id="msg"></div></div>
    <div class="panel c7"><h2>الدائرة الرئيسة <small>الشكل (4-3) ص 61</small></h2><p class="sub">الخط البرتقالي = عليه جهد. المتقطع المتحرك = يمر فيه تيار.</p><div class="svgbox" id="pw"></div></div>
-   <div class="panel c5"><h2>المحرك <small id="u3l1src">السرعات توضيحية</small></h2><div class="motor-row"><div>${W.motor('u3l1rot',150)}<div class="nameplate" id="u3l1np"></div></div><div id="wd"></div></div><p class="sub">سرعة المحرك أقل قليلاً من سرعة المجال الدوار (750 rpm مع 8 أقطاب و 1500 rpm مع 4 أقطاب)، وهذا طبيعي في المحرك الحثي.</p><h3 class="sm">المجال الدوار وعدد الأقطاب (توضيحي)</h3><div id="pl"></div></div>
+   <div class="panel c5"><h2>المحرك <small id="u3l1src">السرعات توضيحية</small></h2><div class="motor-row"><div>${W.motor('u3l1rot',150)}<div class="nameplate" id="u3l1np"></div></div><div id="wd"></div></div><p class="sub">سرعة المحرك أقل قليلاً من سرعة المجال الدوار (<span class="ltr" data-u3ns="8">750 rpm</span> مع 8 أقطاب و <span class="ltr" data-u3ns="4">1500 rpm</span> مع 4 أقطاب على شبكة <span class="ltr" data-u3hz>50 Hz</span>)، وهذا طبيعي في المحرك الحثي.</p><h3 class="sm">المجال الدوار وعدد الأقطاب (توضيحي)</h3><div id="pl"></div></div>
    <div class="panel c12"><h2>التجربة خطوة بخطوة</h2><ol class="steps" id="st"></ol></div></div>`;
   const $=s=>el.querySelector(s);
   const TP=B.params($('#u3l1tp'),'u3-l1',[
-    {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:710,min:100,max:749,step:1,hint:'أقل من سرعة المجال الدوار 750 rpm'},
-    {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:1440,min:200,max:1499,step:1,hint:'أقل من سرعة المجال الدوار 1500 rpm'},
+    {k:'nd',label:'السرعة على الدلتا (8 أقطاب، بطيئة)',unit:'rpm',value:710,min:100,max:899,step:1,hint:'أقل من سرعة المجال الدوار: 750 rpm على 50 Hz، أو 900 rpm على 60 Hz'},
+    {k:'ny',label:'السرعة على الدبل نجمة (4 أقطاب، عالية)',unit:'rpm',value:1440,min:200,max:1799,step:1,hint:'أقل من سرعة المجال الدوار: 1500 rpm على 50 Hz، أو 1800 rpm على 60 Hz'},
     {k:'tau',label:'ثابت زمن التسارع (يكبر مع ثقل العضو الدوار)',unit:'s',value:1.2,min:0.1,max:20,step:0.1}],()=>tpDom());
-  const tpDom=()=>{const v=TP.v;$('#u3l1np').innerHTML=dahlPlate(v);$('#u3l1src').textContent=TP.trainer?'السرعات من قيم المدرب':'السرعات توضيحية';
-    el.querySelectorAll('[data-u3l1]').forEach(e=>e.textContent=String(Math.round(v[e.dataset.u3l1])))};
-  const sp=k=>`<span data-u3l1="${k}">${Math.round(TP.v[k])}</span>`;
+  /* SP = السرعات التي يعمل بها المختبر الآن (التوضيحية على التردد المختار، أو قيم المدرب أقل من سرعة المجال الدوار) */
+  let SP={nd:710,ny:1440};
+  const tpDom=()=>{const v=TP.v,f=HZ.get(),msg=[];SP=dahlSpeeds(v,TP.trainer,f,msg);TP.warn(TP.trainer&&msg.length?msg.join('<br>'):'');
+    $('#u3l1np').innerHTML=dahlPlate(SP,f);$('#u3l1src').textContent=TP.trainer?'السرعات من قيم المدرب':'السرعات توضيحية';
+    el.querySelectorAll('[data-u3ns]').forEach(e=>e.textContent=HZ.ns(+e.dataset.u3ns,f)+' rpm');el.querySelectorAll('[data-u3hz]').forEach(e=>e.textContent=f+' Hz');
+    el.querySelectorAll('[data-u3l1]').forEach(e=>e.textContent=String(Math.round(SP[e.dataset.u3l1])))};
+  const sp=k=>`<span data-u3l1="${k}">${Math.round(SP[k])}</span>`;
+  HZ.seg($('#u3l1hz'));HZ.on(el,()=>tpDom());
   tpDom();
   const sync=()=>['K1','K2','K3'].forEach(k=>$('#'+k.toLowerCase()).setAttribute('aria-pressed',K[k]?'true':'false'));
   /* أعطال مخفية: ملف K2 أو K3 مقطوع (لا يجذب)، أو تلامسات K1 ملتحمة (مغلقة دائماً) — KE = حالة التلامسات الفعلية */
@@ -942,14 +983,14 @@ return {run,circ,lt};
   const steps=stepsUI($('#st'),[
    {t:'الوضع الابتدائي',x:'كل المتممات مفصولة. لاحظ أن الجهد واصل حتى مداخل K1 و K2 فقط، والمحرك متوقف.'},
    {t:'السرعة البطيئة',x:'شغّل K1 وحده (أو زر «دلتا»). التغذية تصل إلى U1 و V1 و W1: توصيلة الدلتا.',done:()=>mode()==='delta'},
-   {t:'راقب السرعة والأقطاب',get x(){return `انتظر حتى تستقر السرعة عند نحو ${sp('nd')} rpm. المجال فيه 8 أقطاب.`},done:()=>mode()==='delta'&&n>TP.v.nd*650/710},
+   {t:'راقب السرعة والأقطاب',get x(){return `انتظر حتى تستقر السرعة عند نحو ${sp('nd')} rpm. المجال فيه 8 أقطاب.`},done:()=>mode()==='delta'&&n>SP.nd*650/710},
    {t:'السرعة العالية',x:'افصل K1، ثم شغّل K2 و K3 (أو زر «دبل نجمة»). K3 يقصر U1 V1 W1، و K2 يغذي U2 V2 W2.',done:()=>mode()==='yy'},
-   {t:'قارن السرعتين',get x(){return `انتظر حتى تقترب السرعة من ${sp('ny')} rpm: الضعف تقريباً، لأن عدد الأقطاب صار 4.`},done:()=>mode()==='yy'&&n>TP.v.ny*1350/1440},
+   {t:'قارن السرعتين',get x(){return `انتظر حتى تقترب السرعة من ${sp('ny')} rpm: الضعف تقريباً، لأن عدد الأقطاب صار 4.`},done:()=>mode()==='yy'&&n>SP.ny*1350/1440},
    {t:'جرّب الخطأ (بأمان)',x:'أوقف المحرك ثم شغّل K1 مع K3 معاً (قصر عبر K3)، أو K1 مع K2 معاً.',done:()=>errSeen},
    {t:'أعد الوضع',x:'إذا انصهرت المصاهر اضغط «استبدال المصاهر». تذكّر: في الدرس التالي يمنع التعشيق في دائرة التحكم هذا الخطأ.',done:()=>errSeen&&!blown}
   ],()=>({}));
   sync();
-  loopOn(el,dt=>{const m=mode(),tg=chF('phase')?0:m==='delta'?TP.v.nd:m==='yy'?TP.v.ny:0;/* عطل مخفي phase: مصهر وجه منصهر — المحرك لا يبدأ */n+=(tg-n)*(1-Math.exp(-dt/(tg?TP.v.tau:2.2)));if(n<0.5&&!tg)n=0;ang=(ang+n/60*360*dt*0.12)%360;
+  loopOn(el,dt=>{const m=mode(),tg=chF('phase')?0:m==='delta'?SP.nd:m==='yy'?SP.ny:0;/* عطل مخفي phase: مصهر وجه منصهر — المحرك لا يبدأ */n+=(tg-n)*(1-Math.exp(-dt/(tg?TP.v.tau:2.2)));if(n<0.5&&!tg)n=0;ang=(ang+n/60*360*dt*0.12)%360;
     const r=$('#u3l1rot');if(r)r.setAttribute('transform',`rotate(${ang.toFixed(1)} 75 75)`);$('#spd').textContent=Math.round(n)+' rpm';
     const sg=JSON.stringify([K,blown,trip]);if(sg!==lastSig){lastSig=sg;
       const k=KE();$('#pw').innerHTML=powerDahl(k.K1,k.K2,k.K3,{blown});$('#wd').innerHTML=`<div class="svgbox" style="margin-top:0;max-width:220px">${windDahl(m==='yy'?'yy':'delta',m!=='off')}</div>`;
@@ -1156,7 +1197,7 @@ B.lesson({
  steps:[
   {t:'الوضع الابتدائي',x:'المحرك متوقف. M0.0 = 1 لأن F4 و F5 سليمان و S0 غير مضغوط (راجع تبويب البرنامج).'},
   {t:'السرعة البطيئة',x:'اضغط S1. يعمل K1 ويتماسك ذاتياً: دلتا، 8 أقطاب.',done:s=>s.Q('Q4.1')&&!s.btn('S1')},
-  {t:'راقب السرعة',get x(){return `انتظر حتى تقترب السرعة من ${P32.tp.span('nd')} rpm.`},done:s=>s.Q('Q4.1')&&s.plant.n>P32.tp.v.nd*650/710},
+  {t:'راقب السرعة',get x(){return `انتظر حتى تقترب السرعة من ${P32.tp.span('nd')} rpm.`},done:s=>s.Q('Q4.1')&&s.plant.n>P32.tp.nd*650/710},
   {t:'انتقل إلى السرعة العالية',x:'اضغط S2. تلامسه المغلق يفصل K1، ثم يعمل K2 و K3 معاً (التعشيق AN Q 4.1 يتحقق بعد سقوط K1).',done:s=>s.Q('Q4.2')&&s.Q('Q4.3')&&!s.Q('Q4.1')},
   {t:'جرّب الرجوع بـ S1',x:'اضغط S1 والمحرك على العالية: لن يحدث شيء، لأن فرع K1 فيه تلامس K2 المغلق (AN Q 4.2).'},
   {t:'أوقف المحرك',x:'اضغط S0: يصبح M0.0 = 0 فتسقط كل المتممات.',done:s=>!s.Q('Q4.1')&&!s.Q('Q4.2')&&!s.Q('Q4.3')&&!s.btn('S0')},
@@ -1956,7 +1997,7 @@ B.lesson({
  steps:[
   {t:'الوضع الابتدائي',x:'المحرك متوقف والمزمن T1 لا يعد.'},
   {t:'التشغيل على الدلتا',x:'اضغط S1. يعمل K1 (دلتا، بطيئة) ويبدأ المزمن T1 العد من 10 s.',done:s=>s.Q('Q4.1')&&s.T('T1').run},
-  {t:'راقب العد',get x(){return `راقب العد التنازلي للمزمن في الشريط العلوي، والسرعة تقترب من ${P36.tp.span('nd')} rpm.`},done:s=>s.plant.n>P36.tp.v.nd*650/710&&s.Q('Q4.1')},
+  {t:'راقب العد',get x(){return `راقب العد التنازلي للمزمن في الشريط العلوي، والسرعة تقترب من ${P36.tp.span('nd')} rpm.`},done:s=>s.plant.n>P36.tp.nd*650/710&&s.Q('Q4.1')},
   {t:'التحويل الآلي',x:'بعد 10 s: يسقط K1 (AN T 1)، ثم يعمل K3 فيعمل K2: دبل نجمة، سرعة عالية.',done:s=>s.Q('Q4.2')&&s.Q('Q4.3')},
   {t:'تصفير المزمن',x:'لاحظ أن T1 صار 0 لأن Q4.2 على مدخل R (في «المصحح»: لأن K2 المغلق يفصل مدخل S، ثم يصفّره S0 أو F4).',done:s=>s.Q('Q4.2')&&(!s.T('T1').q||s.variant==='fixed')},
   {t:'الإيقاف',x:'اضغط S0: تسقط كل المتممات.',done:s=>!s.Q('Q4.1')&&!s.Q('Q4.2')&&!s.Q('Q4.3')&&!s.btn('S0')},

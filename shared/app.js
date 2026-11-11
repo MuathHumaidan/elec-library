@@ -481,12 +481,39 @@ function renderExamples(L,body){
   body.innerHTML='<div class="exs">'+L.examples.map((x,i)=>`<section class="ex" data-i="${i}"><header><h2>${x.title}</h2>${x.ref?`<span class="ref">${x.ref}</span>`:''}</header>
    <div class="ex-q">${x.q||''}</div>
    ${x.given&&x.given.length?`<div class="ex-given"><div class="ex-gh"><b>المعطيات</b><span class="sub">غيّر الأرقام وشاهد الحل يتغير</span><button class="btn" data-reset>قيم الكتاب</button></div><div class="ex-grid">${x.given.map(g=>`<label class="ex-in"><span>${g.label}${g.sym?` <span class="ltr">${B.tex(g.sym)}</span>`:''}</span><span class="ex-inbox"><input type="number" inputmode="decimal" step="${g.step||'any'}" ${g.min!=null?`min="${g.min}"`:''} ${g.max!=null?`max="${g.max}"`:''} data-g="${g.id}" value="${g.value}" id="ex${i}-${g.id}"><em>${g.unit||''}</em></span></label>`).join('')}</div></div>`:''}
-   <ol class="ex-steps"></ol>${x.note?`<div class="callout">${x.note}</div>`:''}</section>`).join('')+'</div>';
+   <ol class="ex-steps"></ol><div class="ex-ctl"></div><div class="ex-pred" hidden></div>${x.note?`<div class="callout">${x.note}</div>`:''}</section>`).join('')+'</div>';
   $$('.ex',body).forEach(sec=>{const x=L.examples[+sec.dataset.i];
+    /* الحل مخفي ويُكشف خطوة خطوة؛ «اعرض الحل كاملاً» يكشفه مرة واحدة؛ «توقّع» يقارن توقع المتدرب بناتج الخطوة التالية بعد التقريب */
+    let shown=0,steps=[],book=true;
+    const ctl=$('.ex-ctl',sec),pred=$('.ex-pred',sec);
+    const decs=s=>{const m=String(s).trim().match(/\.(\d+)$/);return m?m[1].length:0};
+    const draw=()=>{const N=steps.length;if(shown>N)shown=N;
+      $('.ex-steps',sec).innerHTML=steps.map((st,k)=>`<li class="${st.final?'final':''}${k>=shown?' ex-hid':''}">${st.t?`<div class="ex-t">${st.t}</div>`:''}${st.f?`<div class="ex-f">${B.tex(st.f,true)}</div>`:''}${st.v!=null?`<div class="ex-v"><span class="ltr">${fmtN(st.v,st.dp)} ${st.unit||''}</span></div>`:''}</li>`).join('')+(book||!shown?'':'<li class="ex-mine"><div class="ex-t">الأرقام الآن من عندك وليست من الكتاب.</div></li>');
+      const nx=steps[shown],canP=nx&&typeof nx.v==='number'&&isFinite(nx.v);
+      ctl.innerHTML=shown<N?`<button class="btn pri" data-next>الخطوة التالية <span class="sub">(${shown+1} من ${N})</span></button>${canP?'<button class="btn" data-pred>توقّع الناتج</button>':''}<button class="btn" data-all>اعرض الحل كاملاً</button>${shown?'<button class="btn" data-hide>إخفاء الحل</button>':''}`:(N?'<button class="btn" data-hide>إخفاء الحل</button>':'');
+      if(!canP||shown>=N)pred.hidden=true;
+      const q=s=>$(s,ctl);
+      q('[data-next]')&&q('[data-next]').addEventListener('click',()=>{shown++;pred.hidden=true;draw()});
+      q('[data-all]')&&q('[data-all]').addEventListener('click',()=>{shown=N;pred.hidden=true;draw()});
+      q('[data-hide]')&&q('[data-hide]').addEventListener('click',()=>{shown=0;pred.hidden=true;draw()});
+      q('[data-pred]')&&q('[data-pred]').addEventListener('click',()=>{
+        pred.hidden=false;
+        pred.innerHTML=`<div class="ex-pq"><b>توقّع ناتج الخطوة التالية:</b> ${nx.t||''}${nx.f?`<div class="ex-f">${B.tex(nx.f,true)}</div>`:''}</div><div class="ex-pin"><input type="number" inputmode="decimal" step="any" aria-label="توقعك"><em>${nx.unit||''}</em><button class="btn pri" data-chk>تحقّق</button></div><div class="ex-pfb"></div>`;
+        B.math&&B.math(pred);const inp=$('input',pred);inp.focus();
+        const chk=()=>{const raw=inp.value;if(raw.trim()==='')return;const p=parseFloat(raw);if(!isFinite(p))return;
+          const shownTxt=fmtN(nx.v,nx.dp),d=Math.min(decs(raw),decs(shownTxt));
+          const ok=B.round(p,d)===B.round(parseFloat(shownTxt),d);
+          $('.ex-pfb',pred).innerHTML=ok?`<b class="ok">توقعك صحيح.</b> الناتج <span class="ltr">${shownTxt} ${nx.unit||''}</span>`:`<b class="no">ليس هذا.</b> توقعك <span class="ltr">${raw} ${nx.unit||''}</span> والناتج الصحيح <span class="ltr">${shownTxt} ${nx.unit||''}</span>`;
+          const fb=$('.ex-pfb',pred).innerHTML;shown++;draw();pred.hidden=false;pred.innerHTML=`<div class="ex-pfb">${fb}</div>`;};
+        $('[data-chk]',pred).addEventListener('click',chk);
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk()});
+      });
+      B.math&&B.math($('.ex-steps',sec));
+    };
     const run=()=>{const g={};$$('[data-g]',sec).forEach(inp=>{g[inp.dataset.g]=parseFloat(inp.value)});
-      const book=x.given?x.given.every(q=>g[q.id]===q.value):true;let steps=[];
+      book=x.given?x.given.every(q=>g[q.id]===q.value):true;steps=[];
       try{steps=x.solve(g,B,book)||[]}catch(e){steps=[{t:'تعذّر الحساب بهذه القيم.'}]}
-      $('.ex-steps',sec).innerHTML=steps.map(st=>`<li class="${st.final?'final':''}">${st.t?`<div class="ex-t">${st.t}</div>`:''}${st.f?`<div class="ex-f">${B.tex(st.f,true)}</div>`:''}${st.v!=null?`<div class="ex-v"><span class="ltr">${fmtN(st.v,st.dp)} ${st.unit||''}</span></div>`:''}</li>`).join('')+(book?'':'<li class="ex-mine"><div class="ex-t">الأرقام الآن من عندك وليست من الكتاب.</div></li>');
+      draw();
     };
     $$('[data-g]',sec).forEach(inp=>inp.addEventListener('input',run));
     const rb=$('[data-reset]',sec);if(rb)rb.addEventListener('click',()=>{x.given.forEach(q=>{$(`[data-g="${q.id}"]`,sec).value=q.value});run()});
