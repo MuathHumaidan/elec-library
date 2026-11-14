@@ -144,22 +144,27 @@ function renderLesson(L,tab){
   // runtime is shared by lab & plc tabs
   stopRun();
   if(hasLab&&!L.lab||L.program) RUN=createRuntime(L);
-  const show=t=>{tab=t;$$('.ltabs button,.bnav button',root).forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.body.dataset.tab=t;
-    try{sessionStorage.setItem('tab-'+L.id,t)}catch(e){}
-    const body=$('#tab-body');const strip=$('#strip-host');
+  /* يرسم محتوى تبويب في حاوية (يستعمله التبديل العادي، و«طرق التدريب» في shared/methods.js) */
+  const renderTab=(t,body,strip)=>{
     if(RUN){RUN.detach()}
     strip.innerHTML='';
     if(t==='theory')renderTheory(L,body);
-    else if(t==='lab'){if(L.lab&&!L.program&&!L.plant){body.innerHTML='<div id="custom-lab"></div>';L.lab($('#custom-lab'),B)}else{RUN.attach('lab',body,strip)}}
+    else if(t==='lab'){if(L.lab&&!L.program&&!L.plant){body.innerHTML='<div id="custom-lab"></div>';L.lab($('#custom-lab',body),B)}else{RUN.attach('lab',body,strip)}}
     else if(t==='plc'){RUN.attach('plc',body,strip)}
     else if(t==='quiz')renderQuiz(L,body);
     else if(t==='acts')renderActs(L,body);
     else if(t==='examples')renderExamples(L,body);
     B.math(body);
   };
+  const show=t=>{tab=t;$$('.ltabs button,.bnav button',root).forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.body.dataset.tab=t;
+    try{sessionStorage.setItem('tab-'+L.id,t)}catch(e){}
+    renderTab(t,$('#tab-body'),$('#strip-host'));
+  };
   $$('.ltabs button,.bnav button',root).forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab);const tb=$('.ltabs',root);if(tb&&tb.getBoundingClientRect().top<0)window.scrollTo(0,root.querySelector('.lesson-head').offsetTop+root.querySelector('.lesson-head').offsetHeight-10)}));
   let t0=tab;try{t0=sessionStorage.getItem('tab-'+L.id)||tab}catch(e){}
-  show(tabs.find(t=>t[0]===t0)?t0:'theory');
+  /* «طرق التدريب» (shared/methods.js، للمدرب الداخل بحسابه فقط): يضيف شريطه، ويعيد true إذا عرض الدرس بمراحل طريقة */
+  let took=false;if(B.lessonHook){try{took=!!B.lessonHook({L,root,tabs,renderTab})}catch(e){console.error(e)}}
+  if(!took)show(tabs.find(t=>t[0]===t0)?t0:'theory');
   window.scrollTo(0,0);
 }
 
@@ -544,6 +549,8 @@ const LIVE_ACTS=[
   {k:'cloud',t:'سؤال مفتوح وسحابة كلمات',d:'اطرح سؤالاً قصيراً، ويكتب كل طالب إجابته، فتظهر الإجابات على الشاشة سحابة كلمات بلا أسماء.',b:'ابدأ السؤال المفتوح',type:'cloud',n:L=>((B.ACTS[L.id]||{}).open||[]).length,none:'اكتب سؤالك عند البدء'},
   {k:'exit',t:'تذكرة خروج',d:'في آخر المحاضرة: سؤال اختيار واحد، وأكثر نقطة لم تتضح، وتقييم الطالب لفهمه من 1 إلى 5. الملخص يظهر للمدرب فقط.',b:'ابدأ تذكرة الخروج',type:'exit',n:L=>((B.ACTS[L.id]||{}).exit||[]).length,none:'اكتب سؤالك عند البدء'},
   {k:'errs',t:'اكتشف الخطأ',d:'حل مكتوب لمثال من الدرس بأرقام جديدة، وفيه خطوة واحدة خاطئة. يختار الطلاب من جوالاتهم الخطوة الخاطئة، ثم يظهر سبب الخطأ وتصحيحه.',b:'ابدأ اكتشف الخطأ',type:'errs',only:true,n:L=>(B.ERRS[L.id]||[]).length,unit:n=>AR_N(n,'مثال','مثالان','أمثلة','مثالاً')},
+  /* K.W.L (طريقة K.W.L في «طرق التدريب»): يظهر في المقررات التي لها ملف methods-data.js فقط */
+  {k:'kwl',t:'جدول K.W.L',d:'لوحة بثلاثة أعمدة: ماذا أعرف؟ ماذا أريد أن أتعلم؟ ماذا تعلمت؟ يكتب الطلاب من جوالاتهم، وينقل المدرب النشاط نفسه من عمود إلى عمود.',b:'افتح جدول K.W.L',type:'kwl',only:true,n:L=>G.METHODS_DATA&&G.METHODS_DATA[L.id]?3:0,unit:()=>'أعمدة (أسئلتها مكتوبة باسم الدرس، وتعدّلها عند البدء)'},
   /* المختبرات فقط (courses/<id>/challenge.js): يفتح كل طالب مختبر الدرس على جواله */
   {k:'fault',t:'اكتشف العطل',d:'يعمل مختبر الدرس على جوال كل طالب وفيه العطل المخفي نفسه. يفحص الطالب القراءات ويغيّر المدخلات، ثم يختار العطل من قائمة، ثم يظهر العطل وأعراضه وكيف يُكتشف.',b:'ابدأ اكتشف العطل',type:'fault',only:true,n:L=>B.chLab(L)&&B.CHAL[L.id]?(B.CHAL[L.id].faults||[]).length:0,unit:n=>AR_N(n,'عطل','عطلان','أعطال','عطلاً')},
   {k:'sim',t:'تحدي المحاكاة',d:'يحدد المدرب قراءة مستهدفة (مثل سرعة أو جهد) ونسبة سماح، ويضبط كل طالب المختبر على جواله حتى يصل إليها ثم يرسل. تظهر على الشاشة أسماء من وصل وتوزيع القيم.',b:'ابدأ تحدي المحاكاة',type:'sim',only:true,n:L=>B.chLab(L)&&B.CHAL[L.id]?(B.CHAL[L.id].outputs||[]).length:0,unit:n=>AR_N(n,'قراءة يمكن استهدافها','قراءتان يمكن استهدافهما','قراءات يمكن استهدافها','قراءة يمكن استهدافها')}];
@@ -551,6 +558,7 @@ const ACT_ICON={quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.0
   errs:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8.3 8.3l4.4 4.4M12.7 8.3l-4.4 4.4"/>',
   fault:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
   sim:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  kwl:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14M15 5v14"/>',
   cards:'<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
   order:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5v3M3.2 18h1.8l-1.8 2.2h1.8M3.5 11.2a.9.9 0 1 1 1.3 1.1L3.2 14h1.8"/>',
   match:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6.5l10 11M7 17.5l10-11"/>',
@@ -839,7 +847,7 @@ function route(){
   const h=(location.hash||'').replace('#','');
   const L=B.LESSONS.find(l=>l.id===h);
   if(CHQ)return renderChallenge(L);
-  if(L){renderLesson(L)}else{stopRun();document.body.classList.remove('in-lesson');delete document.body.dataset.tab;renderHome()}
+  if(L){renderLesson(L)}else{stopRun();document.body.classList.remove('in-lesson');delete document.body.dataset.tab;renderHome();if(B.homeHook){try{B.homeHook()}catch(e){console.error(e)}}}
 }
 /* book-vs-corrected inline switch: <div class="seg"><button data-bkfix="k" data-bkv="book">…<button data-bkfix="k" data-bkv="fixed">…</div>; content: class bkb / bkf with data-bk="k" */
 B.bkOn=k=>document.documentElement.getAttribute('data-bk-'+k)==='fixed';
@@ -871,5 +879,20 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   function fix(root){(root.querySelectorAll?root:document).querySelectorAll('.ml-facts b').forEach(b=>{const t=b.textContent;const r=AR.test(t)&&!DG.test(t);if(r&&b.dir!=='rtl')b.dir='rtl';else if(!r&&b.dir==='rtl')b.removeAttribute('dir')})}
   let q=0;new MutationObserver(()=>{if(q)return;q=1;requestAnimationFrame(()=>{q=0;fix(document)})}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 })();
+/* عارضات الدرس لطبقة «طرق التدريب» (shared/methods.js): المحتوى نفسه وبالعارضات نفسها */
+B.R={
+  quiz:renderQuiz,examples:renderExamples,theory:renderTheory,unitOf:id=>studyUnit(id),
+  /* أسلوب «التفاعلي» مهما كان اختيار الزر؛ pick(محطة) لعرض بعض المحطات فقط */
+  stations:(L,body,pick)=>{if(!(Array.isArray(L.stations)&&L.stations.length)){renderTheory(L,body);B.math(body);return}
+    renderStations(Object.assign({},L,{theory:pick?L.stations.filter(s=>s.st&&pick(s)):L.stations}),body);fixSvgBidi(body);B.math(body)},
+  /* أنشطة المذاكرة الذاتية: cards | order | match | prepost */
+  study:(k,el,L)=>{const SD=B.STUDY||{units:{},lessons:{}},uid=studyUnit(L.id),U=(SD.units||{})[uid],SL=(SD.lessons||{})[L.id]||{};
+    el.innerHTML=`<div class="acts"><section class="acts-sec study"><div class="stb" data-sb="${k}"><div class="stb-body"></div></div></section></div>`;const h=$('.stb-body',el);
+    const each=(arr,f)=>arr.forEach(it=>{const d=document.createElement('div');d.className='stb-item';h.appendChild(d);f(d,it,arr.length>1)});
+    if(k==='cards'&&U&&Array.isArray(U.cards)&&U.cards.length)studyCards(h,uid,U);
+    else if(k==='order'&&Array.isArray(SL.order))each(SL.order,studyOrder);
+    else if(k==='match'&&Array.isArray(SL.match))each(SL.match,studyMatch);
+    else if(k==='prepost'&&Array.isArray(L.quiz)&&L.quiz.length)studyPrePost(h,L)}
+};
 B.start=function(){window.addEventListener('hashchange',route);route()};
 })(window);

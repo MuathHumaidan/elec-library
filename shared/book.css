@@ -750,3 +750,152 @@ html[data-wide] .theory.stations{max-width:none}
 .ex-pin{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
 .ex-pin input{width:9em;max-width:100%;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:inherit;direction:ltr;text-align:left}
 .ex-pfb{margin-top:6px}.ex-pfb .ok{color:var(--on)}.ex-pfb .no{color:var(--stop)}
+
+/* ===== «طرق التدريب» (shared/methods.js): للمدرب الداخل بحسابه فقط؛ لا شيء منها يظهر لغيره ===== */
+.trbtn{font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;white-space:nowrap;max-width:240px}
+.trbtn svg{width:18px;height:18px;flex:none}
+.trbtn .sl{overflow:hidden;text-overflow:ellipsis}
+.trbtn b{font-weight:700;color:#9be3c0}
+.trbtn:hover{background:rgba(255,255,255,.16)}
+.trbtn.on{border-color:#9be3c0;background:rgba(155,227,192,.14)}
+.trbtn:focus-visible{outline:2px solid #9be3c0;outline-offset:2px}
+@media (max-width:1100px){.trbtn .sl{display:none}.trbtn{padding:0 9px}}
+@media (max-width:600px){.trbtn{display:none}}
+.tr-home{display:none;text-align:center;margin:8px 0 24px}
+@media (max-width:600px){.tr-home{display:block}}
+.linkbtn{font:inherit;font-size:inherit;font-weight:600;color:var(--blue-ink);background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.trdlg{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--fg);padding:20px;width:min(420px,calc(100vw - 32px));font-family:var(--font);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.trdlg::backdrop{background:rgba(5,20,14,.55)}
+.trdlg h2{font-size:19px;margin-bottom:6px}
+.trdlg p{font-size:14.5px;line-height:1.7}
+.trdlg label{display:block;font-size:14px;font-weight:600;margin-top:12px}
+.trdlg input{display:block;width:100%;margin-top:4px;font:inherit;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.trdlg input:focus{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+.trerr{margin-top:10px;color:var(--stop);font-weight:600}
+.trdlg-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.trdlg-acts .btn{font-size:14px;padding:8px 16px}
+/* «مسار الطريقة»: شريط رفيع لاصق أعلى الدرس (الدرس نفسه لا يتغير) */
+.mpath{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--mpath-top,52px));z-index:22;margin-top:12px;background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--live);border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.mpath[hidden]{display:none}
+.mpath-in{display:flex;align-items:center;gap:6px 8px;padding:6px 8px;min-height:44px}
+.mpath-k{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--live);font-size:13.5px;white-space:nowrap}
+.mpath svg{width:19px;height:19px;flex:none}
+.mpath-pick,.mpath-step{font:inherit;display:inline-flex;align-items:center;gap:5px;min-width:0;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--fg);padding:5px 10px;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.mpath-pick b,.mpath-step b{overflow:hidden;text-overflow:ellipsis}
+.mpath-pick{color:var(--live)}
+.mpath-pick b{color:var(--fg)}
+.mpath-step{flex:1 1 auto;max-width:520px}
+.mpath-n{color:var(--muted);font-size:12.5px;flex:none}
+.mpath-nav{display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0}
+.mpath-ic{font:inherit;font-size:15px;font-weight:700;display:inline-grid;place-items:center;grid-auto-flow:column;gap:2px;min-width:36px;height:34px;padding:0 9px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap}
+.mpath-ic.primary{background:var(--live);border-color:var(--live);color:#fff}
+.mpath-ic:disabled{opacity:.4;cursor:default}
+.mpath-ic .sl3{font-size:13px;font-weight:600}
+.mpath-pick:focus-visible,.mpath-step:focus-visible,.mpath-ic:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.mpath-sp{flex:1 1 0}
+.mpath-rec{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mpath-plan{font-size:13px;padding:6px 12px;white-space:nowrap}
+.mrec-b{font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--live-soft);color:var(--live)}
+.ltabs{top:calc(env(safe-area-inset-top,0px) + var(--mpath-top,52px) + var(--mpath-h,0px))}
+@media (max-width:760px){.mpath{border-radius:0;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));border-inline-width:0 0;border-top-width:0}
+  .mpath-in{padding:5px 8px;gap:5px}.mpath-k .sl,.mpath-pick .sl2,.mpath-ic .sl3,.mpath-plan,.mpath-rec{display:none}
+  .mpath-n{font-size:12px}.mpath-step{padding:5px 8px;font-size:13px}.mpath-pick{max-width:34vw}}
+.mgo-hl{outline:3px solid var(--live)!important;outline-offset:4px;border-radius:10px;animation:mgo 2.6s ease-out}
+@keyframes mgo{0%,30%{box-shadow:0 0 0 8px var(--live-soft)}100%{box-shadow:0 0 0 0 transparent}}
+.mtoast{position:fixed;z-index:120;inset-inline:16px;bottom:calc(80px + env(safe-area-inset-bottom,0px));margin:auto;max-width:420px;padding:10px 14px;border-radius:12px;background:var(--fg);color:var(--bg);font-size:14px;text-align:center;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+.mtoast.on{opacity:1;transform:none}
+.mshow{position:fixed;z-index:34;inset-inline-end:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--live);opacity:.55;cursor:pointer}
+.mshow:hover,.mshow:focus-visible{opacity:1}
+.mshow svg{width:16px;height:16px}
+@media (max-width:760px){.mshow{bottom:calc(70px + env(safe-area-inset-bottom,0px))}}
+/* اللوحات: من الجانب على الكمبيوتر، ومن الأسفل على الجوال */
+.msheet{position:fixed;inset:0;z-index:90}
+.msheet-bg{position:absolute;inset:0;background:rgba(5,20,14,.45)}
+.msheet-p{position:absolute;top:0;bottom:0;inset-inline-end:0;width:min(460px,92vw);background:var(--surface);color:var(--fg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.25);animation:msi .18s ease-out}
+@keyframes msi{from{transform:translateX(-30px);opacity:.4}}
+.msheet-h{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line)}
+.msheet-h b{font-size:15.5px}
+.msheet-b{flex:1;overflow:auto;padding:12px 14px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+@media (max-width:760px){.msheet-p{top:auto;inset-inline:0;width:auto;max-height:82vh;border-radius:16px 16px 0 0;animation:msu .18s ease-out}
+  .msheet-h{padding-top:12px}}
+@keyframes msu{from{transform:translateY(30px);opacity:.4}}
+.msheet-f{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.msheet-f .btn{font-size:13.5px;padding:7px 12px}
+.mg{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}
+.mg-rec{color:var(--live)}
+.mopt{border:1px solid var(--line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:4px}
+.mopt.off{opacity:.55}
+.mopt-top{display:flex;align-items:center;gap:8px}
+.mopt-top b{flex:1;font-size:14.5px}
+.mopt-top .btn,.mopt-lv .btn{font-size:13px;padding:5px 12px}
+.mopt-n{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font:600 12.5px var(--mono);background:var(--surface-2);color:var(--blue-ink)}
+.mopt-why{font-size:13.5px;line-height:1.7;color:var(--muted)}
+.mopt-lv{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.mopt-lv .sub{margin:0;font-size:12.5px}
+.mopt-warn{font-size:12.5px;color:var(--stop);line-height:1.6}
+.mopt-later{font-size:13px;color:var(--muted)}
+.mdef{font-size:13.5px;line-height:1.75;color:var(--muted)}
+.mrule{display:block;margin-top:4px}
+.mlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.mlist>li{display:flex;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px}
+.mlist>li.on{border-color:var(--live);background:var(--live-soft)}
+.mlist-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--mono);background:var(--surface-2)}
+.mlist>li.on .mlist-n{background:var(--live);color:#fff}
+.mlist b{font-size:14.5px}
+.mlist p{font-size:13.5px;line-height:1.7;color:var(--muted);margin-top:2px}
+.mlist-go{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.mlist-go .btn{font-size:12.5px;padding:5px 10px;text-align:start}
+.mnote{font-size:11px;font-weight:700;padding:0 7px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+/* خطة الدرس المقترحة */
+.mplan-ov{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column}
+.mplan-bar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-left,0px));padding-top:calc(10px + env(safe-area-inset-top,0px));background:var(--hero1);color:#fff}
+.mplan-bar b{font-size:15px}
+.mplan-bar .sub{color:#b9dccb;margin:0;font-size:13px}
+.mplan-bar .btn{font-size:14px;padding:7px 14px}
+.mplan-bar [data-print]{margin-inline-start:auto}
+.mplan-scroll{flex:1;overflow:auto;padding:20px 12px 40px}
+.mplan{max-width:940px;margin:0 auto;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:28px 32px;font-size:14.5px;line-height:1.8;zoom:var(--fz,1)}
+.mp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:3px double var(--line);padding-bottom:12px;margin-bottom:14px}
+.mp-org{display:flex;flex-direction:column;font-size:13.5px;line-height:1.6}
+.mp-org span{color:var(--muted)}
+.mp-title{text-align:left}
+.mp-title small{display:block;font-size:13px;color:var(--muted);font-weight:600}
+.mp-title h1{font-size:22px}
+.mplan h2{font-size:16.5px;margin:18px 0 6px;color:var(--blue-ink)}
+.mplan h3{font-size:14.5px;margin:12px 0 4px}
+.mplan table{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.7}
+.mplan th,.mplan td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:start}
+.mplan thead th{background:var(--hero1);color:#fff;font-weight:600}
+.mplan tbody th{background:var(--surface-2);font-weight:600;width:28%}
+.mp-info th{width:12%!important}
+.mp-steps tbody td:first-child{width:28px;text-align:center;font-family:var(--mono)}
+.mp-steps .mp-g{font-size:12.5px;color:var(--muted);margin-top:2px}
+.mp-role{font-size:12.5px;color:var(--muted);margin-top:2px}
+.mp-time{width:64px}
+.mp-notes{width:18%}
+.mp-box{display:inline-block;width:12px;height:12px;border:1.5px solid currentColor;border-radius:2px;margin-inline-end:6px;vertical-align:-1px}
+.mp-src{font-size:12px;color:var(--muted);margin-top:2px}
+.mplan td ol,.mplan td ul{margin:0;padding-inline-start:20px}
+.mplan td.blank{min-height:44px;height:44px}
+.mp-qa tbody th{width:38%}
+.mp-obj{margin:0;padding-inline-start:22px}
+.mp-def{color:var(--muted)}
+.mp-foot{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+@media (max-width:600px){.mplan{padding:16px 14px;font-size:14px}.mp-head{flex-direction:column}.mp-title{text-align:start}.mplan-bar .sub{display:none}.mplan-scroll{padding:10px 6px 30px}.mp-steps{display:block;overflow-x:auto}}
+@media print{
+  html[data-mplan] body>*:not(.mplan-ov){display:none!important}
+  html[data-mplan] body{background:#fff;padding:0}
+  html[data-mplan] body::before{display:none}
+  .mplan-ov{position:static;display:block;background:#fff}
+  .mplan-bar{display:none!important}
+  .mplan-scroll{overflow:visible;padding:0}
+  .mplan{border:0;border-radius:0;padding:0;max-width:none;zoom:1;background:#fff;color:#000;font-size:11.5pt;
+    --fg:#000;--muted:#333;--line:#888;--surface:#fff;--surface-2:#eef3f0;--blue-ink:#0d5c3d;--hero1:#123A2B}
+  .mplan thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mplan tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mplan tr,.mplan li{break-inside:avoid}
+  .mplan h2,.mplan h3{break-after:avoid}
+  @page{size:A4;margin:12mm}
+}
+.mdef summary{cursor:pointer;font-weight:600;color:var(--fg);font-size:13.5px}
+.mdef p{margin-top:4px}
