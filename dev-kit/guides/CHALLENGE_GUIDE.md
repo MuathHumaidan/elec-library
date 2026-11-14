@@ -1,0 +1,23 @@
+# «اكتشف العطل» + «تحدي المحاكاة» for a course — guide
+
+Read /home/claude/st/ACTIVITIES_PLAN.md (items 2 and 3) first. The pilot course `dc-machines` is DONE and is the model. Study how it works before writing anything:
+- /home/claude/lib/courses/dc-machines/challenge.js — per lesson: faults (id, title, symptom/how texts WITH numbers + numberless variants symG/howG), sim outputs, ref rows for «بيانات الآلة السليمة», etc. Read its header comment for the exact schema.
+- shared/app.js — the generic «challenge mode» (`?ch=1`): search for `ch=1`, `challenge`, `ch-ref`, `applyFault`, `getOutputs`, `lockInputs` (names may differ — read). It hides lab panels that reveal faults, applies trainer machine values (params) per activity, computes the healthy reference live.
+- How the dc-machines lab code exposes hooks: diff /tmp/lib.orig/courses/dc-machines/lessons/*.js against /home/claude/lib/courses/dc-machines/lessons/*.js (small hooks that do nothing outside challenge mode).
+- Quiz server side (/home/claude/quiz, src/lab.js, public/host.js, play.js, test/e2e5.js, e2e6.js) — generic; it reads faults/sim/params per lesson from quiz-bank.json. You should NOT need to change the server. If you think you must, stop and report instead.
+
+## Your task for the given course
+1. Go through every lesson lab of the course. Decide which labs suit «اكتشف العطل» (a realistic hidden fault visibly detectable through the simulator's readings/behaviour) and «تحدي المحاكاة» (an output the student can steer to a target by changing inputs). Skip labs that don't fit and say why (e.g. pure drawing/quiz-like labs).
+2. For each suitable lab: define 3–5 realistic faults that are physically correct for that circuit/machine/program and that the simulation can actually show (examples: open circuit / broken wire, short circuit, wrong polarity/reversed connection, wrong component value (e.g. capacitor dried out, resistor drifted), worn brushes/high resistance, lost phase / single-phasing, wrong winding connection star↔delta, stuck sensor/input, wrong PLC address/contact type, timer preset wrong, blown fuse…). Write symptom + how-to-detect texts carefully and correctly in plain Arabic (trainer is not a specialist; specialists review later), each with a numberless general variant. Measure the numbers by actually running the simulator with and without the fault (script it).
+3. Add the minimal hooks to the lab code so the generic challenge mode can read outputs, apply faults, lock inputs and take params — following exactly the dc-machines pattern. Hooks must do nothing outside challenge mode: the normal lab must behave identically (prove it by running the same actions on old vs new code and comparing readings, like the dc-machines work did).
+4. SOURCE RULE: lesson files /home/claude/lib/courses/<course>/lessons/<f>.js are BUILT from /home/claude/st/<course>/<f>/orig.js (+ stations fragments) by `python3 /home/claude/st/gmerge.py <course> <f>` (plc unit 1: /home/claude/st/plc_u1/merge.py with /home/claude/st/plc_u1/u1.orig.js). Make your lab edits in orig.js, rebuild, and confirm the rebuilt file contains them. Never edit only the lib lesson file. Back up first.
+5. Write /home/claude/lib/courses/<course>/challenge.js (same schema as dc-machines) and add its script tag to the course index.html right after errors.js (before shell.js).
+6. Do NOT edit shared/, sw.js, quiz-bank.json, tools/, or the quiz server. (Other agents work on other courses in parallel; shared files are off-limits. If the generic challenge mode in app.js lacks something your labs need, report it precisely instead of changing it.)
+
+## Test
+- `cd /home/claude/book && COURSE=<course> node test2.js` → all ok.
+- Playwright: for each suitable lab open `/home/claude/lib/courses/<course>/index.html?ch=1#<lesson>` and drive the challenge API the way the quiz server's play page does (read /home/claude/quiz/public/play.js and test/e2e5.js to see the postMessage protocol); for every fault confirm the symptom really shows (readings differ as described); confirm outputs for sim; confirm the normal lab (no ?ch=1) is unchanged. You may also run the quiz server locally with a quiz-bank built locally to a TEMP path (do not overwrite /home/claude/lib/quiz-bank.json): `node /home/claude/lib/tools/build-quiz-bank.js` writes lib/quiz-bank.json — so instead copy the tool to /tmp and change its output path, or set BANK_FILE for the server.
+- Screenshot a couple of challenge-mode labs at 390 px and look at them.
+
+## Report (short)
+Per lesson: fault list (id + one-line symptom) and sim outputs; skipped labs + reason; normal-lab equivalence check result; anything specialists should double-check; anything the shared challenge mode was missing.
