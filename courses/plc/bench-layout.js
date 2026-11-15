@@ -42,13 +42,36 @@ L.plc=function(spec){const mods=[];let x=20,y=20,rowH=0;
  if(spec.extras.length){const m={id:'ext',w:Math.max(150,spec.extras.length*110+20),h:178,title:'محاكاة أحداث',sub:'ليست أطرافاً للتوصيل',switches:spec.extras.map((e,i)=>({id:'X'+i,lbl:cut(e.lbl,14),x:65+i*110,y:92,push:e.push,color:e.color,init:!!e.init}))};place(m)}
  nl();
  /* الأحمال */
+ const PW=spec.power;
  spec.outputs.forEach((d,i)=>{const lamp=d.kind==='lamp',ab=lamp?['X1','X2']:['A1','A2'];
+  if(PW&&PW.cont.includes(i)){/* متمم بتلامسات رئيسة: 1-3-5 أعلى و 2-4-6 أسفل، وملفه A1/A2 */
+   place({id:'ld'+i,w:170,h:250,title:cut(d.sym,14),sub:cut(d.desc,24),labels:[{t:d.addr+' — الملف A1/A2',x:85,y:52,s:10,c:'#5a6660'}],
+    art:`<rect x="20" y="138" width="130" height="70" rx="6" fill="#d7dad3" stroke="#555"/><path d="M45 160V186M85 160V186M125 160V186" stroke="#777" stroke-width="2" stroke-dasharray="3 3"/>`,
+    leds:[{id:'ld'+i,x:85,y:92,r:7,color:LAMPC.amber}],
+    terms:[{id:'L'+i+'.1',lbl:'A1',x:40,y:92},{id:'L'+i+'.2',lbl:'A2',x:130,y:92},
+     {id:'C'+i+'.1',lbl:'1',x:45,y:150,col:'#8a8f93'},{id:'C'+i+'.3',lbl:'3',x:85,y:150,col:'#8a8f93'},{id:'C'+i+'.5',lbl:'5',x:125,y:150,col:'#8a8f93'},
+     {id:'C'+i+'.2',lbl:'2',x:45,y:225,col:'#8a8f93',ly:-14},{id:'C'+i+'.4',lbl:'4',x:85,y:225,col:'#8a8f93',ly:-14},{id:'C'+i+'.6',lbl:'6',x:125,y:225,col:'#8a8f93',ly:-14}]});return}
   const art=lamp?`<circle cx="64" cy="92" r="24" fill="#d7dad3" stroke="#555"/><path d="M50 78L78 106M78 78L50 106" stroke="#666" stroke-width="2"/>`
-   :`<rect x="34" y="66" width="60" height="52" rx="5" fill="#d7dad3" stroke="#555"/><text x="64" y="${d.kind==='valve'?84:84}" font-size="11" text-anchor="middle" fill="#333" font-weight="700">${d.kind==='valve'?'صمام':'متمم'}</text>`;
+   :`<rect x="34" y="66" width="60" height="52" rx="5" fill="#d7dad3" stroke="#555"/><text x="64" y="${d.kind==='valve'?84:84}" font-size="11" text-anchor="middle" fill="#333" font-weight="700">${d.kind==='valve'?'صمام':d.kind==='timer'?'مزمن':'متمم'}</text>`;
   place({id:'ld'+i,w:128,h:178,title:cut(d.sym,14),sub:cut(d.desc,22),art,labels:[{t:d.addr,x:64,y:52,s:10,c:'#5a6660'}],
    leds:[lamp?{id:'ld'+i,x:64,y:92,r:20,color:LAMPC[d.color]||LAMPC.amber}:{id:'ld'+i,x:64,y:104,r:7,color:LAMPC.amber}],
    terms:[{id:'L'+i+'.1',lbl:ab[0],x:34,y:150},{id:'L'+i+'.2',lbl:ab[1],x:94,y:150}]})});
  nl();
+ if(PW){/* دائرة القدرة */
+  const G='#8a8f93';
+  place({id:'qs',w:190,h:190,title:'مصدر ثلاثي الأوجه',sub:'380 V',fill:'#efe8e0',switches:[{id:'QS',lbl:'القاطع Q0',x:140,y:92}],leds:[{id:'qs',x:50,y:92,r:8,color:LAMPC.red,lbl:'جهد'}],
+   terms:[{id:'L1',lbl:'L1',x:40,y:158,col:'#7a5230'},{id:'L2',lbl:'L2',x:95,y:158,col:'#222'},{id:'L3',lbl:'L3',x:150,y:158,col:'#888'}]});
+  PW.ol.forEach(o=>place({id:'ol'+o,w:170,h:190,title:'الحماية الحرارية '+o,sub:'أطراف القدرة',fill:'#efe8e0',
+   art:`<rect x="20" y="70" width="130" height="80" rx="6" fill="#d7dad3" stroke="#555"/>`,
+   terms:[1,3,5].map((n,k)=>({id:o+'.'+n,lbl:String(n),x:45+k*40,y:80,col:G,ly:-14})).concat([2,4,6].map((n,k)=>({id:o+'.'+n,lbl:String(n),x:45+k*40,y:160,col:G,ly:-14})))}));
+  (PW.res||[]).forEach(r=>place({id:'rs'+r,w:150,h:190,title:'مقاومات '+r,sub:'ثلاث مقاومات متساوية',fill:'#efe8e0',
+   art:[0,1,2].map(k=>`<rect x="${35+k*40}" y="92" width="0" height="0"/><rect x="${27+k*40}" y="92" width="16" height="44" rx="2" fill="#d9b26f" stroke="#7a5a1f"/>`).join(''),
+   terms:[0,1,2].map(k=>({id:r+'.'+'abc'[k]+'1',lbl:'abc'[k]+'1',x:35+k*40,y:72,col:G,ly:-14})).concat([0,1,2].map(k=>({id:r+'.'+'abc'[k]+'2',lbl:'abc'[k]+'2',x:35+k*40,y:160,col:G,ly:-14})))}));
+  const mt=PW.motor,cols=Math.max(...mt.rows.map(r=>r.length));
+  place({id:'mot',w:Math.max(220,cols*52+60),h:190+(mt.rows.length>2?70:0),title:mt.title,sub:'',labels:[{t:mt.sub,x:Math.max(220,cols*52+60)/2,y:178,s:9.5,c:'#4b5a52'}],fill:'#e6ece8',
+   art:`<circle cx="30" cy="40" r="16" fill="#5c6b73" stroke="#333"/><text x="30" y="44" font-size="11" text-anchor="middle" fill="#fff" font-weight="700">M</text>`,
+   terms:mt.rows.flatMap((row,ri)=>row.map((t,k)=>({id:'M.'+t,lbl:t,x:40+k*52,y:84+ri*62,col:G,ly:-14})))});
+  nl()}
  return {w:W,h:y,generic:true,modules:mods,bridges}};
 L.LAMPC=LAMPC;
 })();

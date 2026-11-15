@@ -17,6 +17,21 @@ function curProgram(L){if(L.variants){const k=L.variants.default||Object.keys(L.
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const strip=s=>String(s||'').replace(/<[^>]+>/g,'');
 
+/* ---- دائرة القدرة: عائلات المحركات في الكتاب ----
+   sd: نجمة/دلتا (K1 رئيسي، K2 دلتا، K3 نجمة) — sdrev: مع عكس الحركة (K1 أمام، K2 خلف، K3 نجمة، K4 دلتا)
+   dahl: داهلندر (K1 بطيء، K2 سريع، K3 نجمة مزدوجة) — wr: عضو دائر ملفوف (K1 رئيسي، K2..K4 تقصير المقاومات) */
+const FAM={'u2-l1':'sd','u2-l3':'sd','u2-l4':'sdrev','u3-l2':'dahl','u3-l6':'dahl','u4-l2':'wr','u4-l3':'wr','u4-l4':'wr'};
+const MOTOR={
+ sd:{title:'المحرك — لوحة الأطراف',sub:'البداية U1 V1 W1 — النهاية U2 V2 W2',rows:[['U1','V1','W1'],['U2','V2','W2']]},
+ dahl:{title:'محرك داهلندر — لوحة الأطراف',sub:'U1 V1 W1 (بطيء) — U2 V2 W2 (سريع)',rows:[['U1','V1','W1'],['U2','V2','W2']]},
+ wr:{title:'محرك بعضو دائر ملفوف',sub:'U V W العضو الثابت — K L M حلقات الانزلاق',rows:[['U','V','W'],['K','L','M']]}};
+MOTOR.sdrev=MOTOR.sd;
+/* حالات الجهاز في كل عائلة ← حالة المتممات المكافئة في دائرة الكتاب (يقرؤها جهاز «المختبر») */
+const MODES={sd:{star:['K1','K3'],delta:['K1','K2']},
+ sdrev:{'star+':['K1','K3'],'delta+':['K1','K4'],'star-':['K2','K3'],'delta-':['K2','K4']},
+ dahl:{low:['K1'],high:['K2','K3']},
+ wr:{s3:['K1'],s2:['K1','K4'],s1:['K1','K3'],s0:['K1','K2']}};
+const MODE_AR={star:'نجمة',delta:'دلتا','star+':'نجمة (الاتجاه الأول)','delta+':'دلتا (الاتجاه الأول)','star-':'نجمة (الاتجاه المعاكس)','delta-':'دلتا (الاتجاه المعاكس)',low:'السرعة البطيئة',high:'السرعة العالية',s3:'بالمقاومات الثلاث',s2:'بمقاومتين',s1:'بمقاومة واحدة',s0:'بلا مقاومات (تشغيل كامل)'};
 /* ---- مواصفات اللوحة من الدرس ---- */
 function specOf(L){
  const desc={};(L.io||[]).forEach(r=>{const a=N(r.addr);if(a&&!desc[a])desc[a]={sym:N(r.sym)||a,desc:r.desc||''}});
@@ -29,12 +44,17 @@ function specOf(L){
   else if(i.type!=='sensor')extras.push({key:i.id,lbl:strip(i.label)||i.id,push:i.type==='push',color:i.color,init:!!i.initial,src:i})});
  const outAddrs=[],outputs=[];(L.io||[]).forEach(r=>{const a=N(r.addr);if(!isQ(a))return;const sym=N(r.sym)||a;
   const ex=outputs.find(o=>o.addr===a);if(ex){if(!ex.sym.split(' / ').includes(sym))ex.sym+=' / '+sym;return}
-  const kind=/^K/i.test(sym)?'coil':/^Y\d/i.test(sym)?'valve':'lamp';
+  const kind=/^K/i.test(sym)?'coil':/^T\d/i.test(sym)?'timer':/^Y\d/i.test(sym)?'valve':'lamp';
   const color=/^G/i.test(sym)?'green':/^R/i.test(sym)?'red':/^Y/i.test(sym)?'yellow':'amber';
   outAddrs.push(a);outputs.push({sym,desc:r.desc||'',addr:a,kind,color})});
+ let power=null;const fam=FAM[L.id];
+ if(fam){const cont=[];outputs.forEach((o,i)=>{if(o.kind==='coil'&&/^K\d$/.test(o.sym))cont.push(i)});
+  power={fam,cont,ol:fam==='dahl'?['F4','F5']:['F4'],res:fam==='wr'?['R1','R2','R3']:[],motor:MOTOR[fam]}}
  const inAddrs=[...inSet].sort((x,y)=>parseFloat(x.slice(1))-parseFloat(y.slice(1)));
  outAddrs.sort((x,y)=>parseFloat(x.slice(1))-parseFloat(y.slice(1)));outputs.sort((x,y)=>parseFloat(x.addr.slice(1))-parseFloat(y.addr.slice(1)));
- return {inputs,outputs,extras,inAddrs,outAddrs}}
+ /* الترتيب أعلاه يغيّر الفهارس: نعيد حساب المتممات بعد الترتيب */
+ if(power){power.cont=[];outputs.forEach((o,i)=>{if(o.kind==='coil'&&/^K\d$/.test(o.sym))power.cont.push(i)})}
+ return {inputs,outputs,extras,inAddrs,outAddrs,power}}
 
 /* ---- مخطط التوصيل المولَّد من جدول المداخل والمخارج ---- */
 function figSVG(sp){const n=Math.max(sp.inputs.length,1),m=Math.max(sp.outputs.length,1),cw=86,w=Math.max(n,m)*cw+180,h=430;
@@ -58,14 +78,20 @@ const MZ={
  'input-bypass':{t:'مدخل موصّل بـ +24 V بدون تلامس',why:'طرف المدخل متصل بـ +24 V مباشرة، فيقرأه الـ PLC «1» دائماً كأن الضاغط مضغوط باستمرار. الـ 24 V يصل المدخل عبر تلامس جهازه فقط.'},
  'wrong-io':{t:'توصيل لا يطابق جدول المداخل والمخارج',why:'البرنامج مكتوب على العناوين في الجدول. إذا وصلت جهازاً على عنوان آخر يعمل البرنامج بشكل غير متوقع. راجع الجدول ووصّل كل جهاز على عنوانه.'},
  'run-early':{t:'حوّلت الـ PLC إلى RUN والتوصيل ناقص',why:'قبل RUN يُراجَع التوصيل كاملاً: المصدر والمشتركات وكل المداخل والمخارج. التشغيل بتوصيل ناقص قد يحرّك جزءاً من الآلة دون الآخر.'},
+ 'power-short':{t:'قصر بين الأوجه في الدائرة الرئيسة',why:'وجهان من المصدر التقيا في نقطة واحدة (عبر سلك أو تلامس مغلق)، فاحترقت المصاهر F1..3 وفصل القاطع. راجع توصيل المتممات: مثلاً متمم النجمة يقصر نهايات الملفات U2 V2 W2 فقط، ولا يجتمع مع متمم الدلتا.',fatal:true,off:['QS']},
+ 'motor-bad':{t:'المحرك موصّل بشكل غير صحيح',why:'المحرك أخذ الجهد بتوصيل غير متزن: وجه ناقص، أو ملف معكوس في الدلتا، أو نجمة غير مكتملة، أو مقاومات العضو الدائر غير متساوية. المحرك يطنّ ولا يدور كما يجب ويسخن، وفصلت الحماية القاطع. قارن توصيلك بشكل الدائرة الرئيسة.',fatal:true,off:['QS']},
+ 'wrong-rotation':{t:'اتجاه دوران المحرك معكوس',why:'ترتيب الأوجه على بداية الملفات غير ترتيب الكتاب (L1 على U، L2 على V، L3 على W)، فدار المحرك عكس المطلوب. في الآلة قد يتلف هذا المضخة أو الحمل.'},
+ 'no-overload':{t:'المحرك يعمل بدون الحماية الحرارية',why:'أطراف القدرة للحماية الحرارية F4 (أو F5) يجب أن تكون بين المتمم والمحرك، حتى يفصل تلامسها المساعد دائرة التحكم إذا زاد التيار.'},
+ 'rotor-open':{t:'دائرة العضو الدائر مفتوحة',why:'المحرك ذو العضو الدائر الملفوف لا يبدأ إذا كانت حلقات K L M غير موصولة بالمقاومات ونقطة النجمة. العضو الثابت يسحب تيار اللاحمل فقط والمحرك لا يدور.'},
  'pwr-off-run':{t:'فصلت المصدر والـ PLC في RUN',why:'حوّل الـ PLC إلى STOP أولاً (تتوقف المخارج بأمان)، ثم افصل المصدر.'}
 };
 
 /* ---- التجربة ---- */
 function exp(L,sp){
  const IN=sp.inputs,OUT=sp.outputs,EX=sp.extras,steps0=(L.steps||[]);
- const X={powerSw:['PWR'],mistakes:MZ,
-  figure:()=>figSVG(sp),figureTitle:'مخطط توصيل الـ PLC — من جدول المداخل والمخارج',
+ const PWR=sp.power,KA={};if(PWR)PWR.cont.forEach(i=>KA[OUT[i].sym]=OUT[i].addr);
+ const X={powerSw:PWR?['PWR','QS']:['PWR'],mistakes:MZ,
+  figure:()=>figSVG(sp)+(L.power?`<h4>الدائرة الرئيسة في الكتاب${L.powerRef?' — '+L.powerRef:''}</h4><div class="svgbox">${(()=>{try{return L.power({Q:()=>0,I:()=>0,M:()=>0,get:()=>0,btn:()=>0,T:()=>({q:0}),C:()=>({v:0}),plant:{},variant:benchVar(L)},B)}catch(e){return ''}})()}</div>`:''),figureTitle:'مخطط توصيل الـ PLC — من جدول المداخل والمخارج',
   init:()=>{const vk=benchVar(L);return {vk,P:B.createPLC(progOf(L,vk)),seen:{},used:{},plant:L.plant&&L.plant.init?L.plant.init():{},stepI:0,t:0,everOn:false,everRun:false,phys:{},inV:{},lastSig:'',ok:{}}},
   note:'وصّل وأنت المصدر مفصول. ثم شغّل المصدر، وحوّل الـ PLC إلى RUN، ونفّذ خطوات الكتاب بضواغط اللوحة. البرنامج محمّل مسبقاً كما في الكتاب.'};
  /* اتحاد العقد: الأسلاك + التلامسات المغلقة */
@@ -74,9 +100,9 @@ function exp(L,sp){
   if(closed)IN.forEach((d,i)=>{if(closed[i])u('D'+i+'.a','D'+i+'.b')});
   return t=>f(id(t))}
  const swOf=(a,i)=>!!a.S.sw['SW'+i];
- function st(a,ph,Qphys){const P=ph.P,g=x=>P.get(N(x));
+ function st(a,ph,Qphys){const P=ph.P,g=x=>P.get(N(x));const Qp=ph.Qplant||Qphys;
   const btn=k=>{const i=IN.findIndex(d=>d.key===k);if(i>=0&&IN[i].kind!=='sensor')return a.S.sw['SW'+i]?1:0;const j=EX.findIndex(e=>e.key===k);return j>=0&&a.S.sw['X'+j]?1:0};
-  return {plc:P,plant:ph.plant,t:ph.t,btn,I:g,M:g,get:g,Q:x=>{x=N(x);return isQ(x)?(Qphys[x]?1:0):g(x)},T:x=>P.tim[x]||{q:0,el:0,tv:0,run:0},C:x=>P.cnt[x]||{v:0},name:()=>0,variant:L._variant}}
+  return {plc:P,plant:ph.plant,t:ph.t,btn,I:g,M:g,get:g,Q:x=>{x=N(x);return isQ(x)?(Qp[x]?1:0):g(x)},T:x=>P.tim[x]||{q:0,el:0,tv:0,run:0},C:x=>P.cnt[x]||{v:0},name:()=>0,variant:ph.vk}}
  X.tick=a=>{const ph=a.S.phys,P=ph.P,on=a.sw('PWR'),run=on&&a.sw('RUN');ph.t+=a.dt;
   /* قيم الأجهزة المنطقية (نفس قواعد لوحة «المختبر») */
   const Qprev=ph.Qphys||{};const s0=st(a,ph,Qprev);
@@ -103,14 +129,56 @@ function exp(L,sp){
   OUT.forEach((d,i)=>{const p1=pot(gC('L'+i+'.1')),p2=pot(gC('L'+i+'.2'));const e=on&&((p1==='q'||p1==='+')&&p2==='0'||(p2==='q'||p2==='+')&&p1==='0');ldOn[i]=e;
    if(e&&(p1==='+'||p2==='+'))a.once('load-direct');if(e)Qphys[d.addr]=1});
   ph.Qphys=Qphys;
+  if(PWR)powerTick(a,ph,ldOn,Qphys);
   /* الجهاز */
   const s=st(a,ph,Qphys);ph.s=s;
   if(L.plant&&L.plant.step)try{L.plant.step(a.dt,s,ph.plant)}catch(err){}
   if(run){sp.inAddrs.forEach(ad=>{(ph.seen[ad]=ph.seen[ad]||{})[inV[ad]]=1});OUT.forEach((d,i)=>{if(ldOn[i])ph.used[d.addr]=1})}
   /* القراءات: لمبات الحالة */
-  const r={pwr:on,run};sp.inAddrs.forEach(ad=>r['li:'+ad]=inV[ad]);sp.outAddrs.forEach(ad=>r['lq:'+ad]=qBit[ad]&&outPow);
+  const r={pwr:on,run,qs:PWR&&a.sw('QS')};sp.inAddrs.forEach(ad=>r['li:'+ad]=inV[ad]);sp.outAddrs.forEach(ad=>r['lq:'+ad]=qBit[ad]&&outPow);
   IN.forEach((d,i)=>{if(d.kind==='sensor')r['dv'+i]=val[i]});OUT.forEach((d,i)=>r['ld'+i]=ldOn[i]);
   ph.r=r;return r};
+ /* ---- دائرة القدرة ---- */
+
+ function powerTick(a,ph,ldOn,Qphys){const fam=PWR.fam,qs=a.sw('QS');
+  /* العقد مع التلامسات الرئيسة المغلقة وأقطاب الحماية الحرارية (مغلقة دائماً) */
+  const nt=a.nets(),of=nt.of,par={};const f=x=>{while(par[x]!=null&&par[x]!==x)x=par[x];return x};const id=t=>'n'+of[t];const u=(x,y)=>{const p1=f(id(x)),p2=f(id(y));if(p1!==p2)par[p1]=p2};
+  PWR.cont.forEach(i=>{if(ldOn[i])[[1,2],[3,4],[5,6]].forEach(([x,y])=>u('C'+i+'.'+x,'C'+i+'.'+y))});
+  PWR.ol.forEach(o=>[[1,2],[3,4],[5,6]].forEach(([x,y])=>u(o+'.'+x,o+'.'+y)));
+  const g=t=>f(id(t));const ph3={};if(qs)['L1','L2','L3'].forEach((l,k)=>{const n=g(l);ph3[n]=(ph3[n]||0)|(1<<k)});
+  const P3=t=>{const m=ph3[g(t)]||0;return m===1?1:m===2?2:m===4?3:m?-1:0};
+  /* مهلة 0.06 ث: زمن جذب المتمم وفصله (عشرات الملّي ثانية)، فتداخل دورة مسح واحدة لا يُعد قصراً */
+  if(a.hold('psc',qs&&Object.values(ph3).some(m=>m&&(m&(m-1))),0.06))a.mistake('power-short');
+  const T=x=>'M.'+x,pp=xs=>xs.map(x=>P3(T(x))),dist=v=>v.every(z=>z>0)&&new Set(v).size===3,dirOf=v=>[[1,2,3],[2,3,1],[3,1,2]].some(c=>c.join()===v.join())?1:-1;
+  const same=xs=>xs.every(x=>g(T(x))===g(T(xs[0])));const anyP=xs=>pp(xs).some(z=>z!==0);
+  let mode=null,bad=false,dir=0;
+  if(fam==='sd'||fam==='sdrev'){const A=pp(['U1','V1','W1']),Bv=pp(['U2','V2','W2']);
+   if(dist(A)&&Bv.every(z=>z===0)&&same(['U2','V2','W2'])){mode='star';dir=dirOf(A)}
+   else if(dist(A)&&Bv[2]===A[0]&&Bv[0]===A[1]&&Bv[1]===A[2]){mode='delta';dir=dirOf(A)}
+   else if(anyP(['U1','V1','W1','U2','V2','W2']))bad=true;
+   if(mode&&fam==='sdrev')mode+=dir>0?'+':'-'}
+  else if(fam==='dahl'){const A=pp(['U1','V1','W1']),Bv=pp(['U2','V2','W2']);
+   if(dist(A)&&Bv.every(z=>z===0)&&!same(['U2','V2','W2'])){mode='low';dir=dirOf(A)}
+   else if(dist(Bv)&&A.every(z=>z===0)&&same(['U1','V1','W1'])){mode='high';dir=dirOf(Bv)}
+   else if(anyP(['U1','V1','W1','U2','V2','W2']))bad=true}
+  else if(fam==='wr'){const A=pp(['U','V','W']);
+   if(dist(A)){dir=dirOf(A);const R=rotorR(a,ldOn);if(R===null){a.once('rotor-open')}else if(R<0)bad=true;else mode='s'+R}
+   else if(anyP(['U','V','W']))bad=true}
+  if(a.hold('mbad',qs&&bad,0.3))a.mistake('motor-bad');
+  if(mode&&fam!=='sdrev'&&dir<0)a.once('wrong-rotation');
+  if(mode){const gw=a.nets().of,starts=fam==='wr'?['U','V','W']:fam==='dahl'?(mode==='low'?['U1','V1','W1']:['U2','V2','W2']):['U1','V1','W1'];
+   /* الحماية الحرارية: كل بداية ملف موصولة (بالأسلاك) بطرف خرج من أقطاب F4/F5 */
+   const outs=PWR.ol.flatMap(o=>[2,4,6].map(n=>o+'.'+n));if(!starts.every(t=>outs.some(o=>gw[o]===gw[T(t)])))a.once('no-overload')}
+  ph.mode=mode;if(mode&&a.sw('RUN'))(ph.modes=ph.modes||{})[mode]=1;
+  /* ما يراه الجهاز: المتممات المكافئة لحالة المحرك الفعلية (والمتممات الأخرى كما هي) */
+  const Qpl=Object.assign({},Qphys);Object.values(KA).forEach(ad=>delete Qpl[ad]);
+  if(mode)MODES[fam][mode].forEach(k=>{if(KA[k])Qpl[KA[k]]=1});ph.Qplant=Qpl}
+ /* مقاومة العضو الدائر بين حلقتين (بوحدات «قسم مقاومة») — null مفتوحة، −1 غير متزنة */
+ function rotorR(a,ldOn){const els=[];PWR.res.forEach(r=>'abc'.split('').forEach(c=>els.push({p:r+'.'+c+'1',n:r+'.'+c+'2',g:1})));
+  PWR.cont.forEach(i=>{if(ldOn[i])[[1,2],[3,4],[5,6]].forEach(([x,y])=>els.push({p:'C'+i+'.'+x,n:'C'+i+'.'+y,g:1e6}))});
+  const pairR=(x,y)=>{const r=a.solve(els.concat([{p:'M.'+x,n:'M.'+y,g:1e-9,i:1}]));return Math.abs(r.vt('M.'+x)-r.vt('M.'+y))};
+  const R=[pairR('K','L'),pairR('L','M'),pairR('K','M')];
+  if(R.some(v=>v>1e4))return null;const s=R.map(v=>v/2);if(Math.max(...s)-Math.min(...s)>0.2)return -1;const k=Math.round(s[0]);return Math.abs(s[0]-k)<0.2&&k>=0&&k<=3?k:-1}
  /* فحص مطابقة التوصيل للجدول (يُستدعى عند تشغيل المصدر أو RUN) */
  function audit(a){const g=graph(a,null);const bad=[],rail=n=>n===g('P+')||n===g('P-');
   IN.forEach((d,i)=>{[g('D'+i+'.a'),g('D'+i+'.b')].forEach(n=>{if(rail(n))return;sp.inAddrs.forEach(ad=>{if(ad!==d.addr&&g(ad)===n)bad.push(d.sym+' على '+ad+' (الجدول: '+d.addr+')')})})});
@@ -119,7 +187,7 @@ function exp(L,sp){
  const wiredIn=a=>{const g=graph(a,null);return IN.every((d,i)=>{const na=g('D'+i+'.a'),nb=g('D'+i+'.b'),p=g('P+'),q=g(d.addr);return (na===p&&nb===q)||(nb===p&&na===q)})};
  const wiredOut=a=>{const g=graph(a,null);return OUT.every((d,i)=>{const n1=g('L'+i+'.1'),n2=g('L'+i+'.2'),m=g('P-'),q=g(d.addr);return (n1===q&&n2===m)||(n2===q&&n1===m)})};
  const wiredPsu=a=>{const g=graph(a,null);return g('IM')===g('P-')&&g('QM')===g('P-')&&g('QL')===g('P+')};
- X.onSwitchOn=(id,a)=>{if(id==='PWR')audit(a);if(id==='RUN'){audit(a);if(a.sw('PWR')&&!(wiredPsu(a)&&wiredIn(a)&&wiredOut(a)))a.once('run-early')}};
+ X.onSwitchOn=(id,a)=>{if(id==='QS')a.S.phys.everQS=true;if(id==='PWR')audit(a);if(id==='RUN'){audit(a);if(a.sw('PWR')&&!(wiredPsu(a)&&wiredIn(a)&&wiredOut(a)))a.once('run-early')}};
  X.onSwitchOff=(id,a)=>{if(id==='PWR'&&a.sw('RUN'))a.mistake('pwr-off-run')};
  const need=a=>{const U=usedAddrs(a.S.phys.P);return {ins:sp.inAddrs.filter(ad=>U.has(ad)),outs:sp.outAddrs.filter(ad=>U.has(ad))}};
  const insDone=a=>need(a).ins.every(ad=>{const z=a.S.phys.seen[ad];return z&&z[0]&&z[1]});
@@ -131,17 +199,20 @@ function exp(L,sp){
   {t:'وصّل المداخل حسب جدول المداخل والمخارج: من القضيب <b>+</b> إلى طرف تلامس كل جهاز، ومن طرفه الآخر إلى عنوانه ('+IN.map(d=>esc(d.sym)+' ← '+d.addr).join('، ')+').',done:wiredIn},
   {t:'وصّل المخارج: كل مخرج إلى الطرف الأول لحمله، والطرف الثاني إلى القضيب <b>−</b> ('+OUT.map(d=>d.addr+' ← '+esc(d.sym)).join('، ')+').',done:wiredOut},
   {t:'شغّل المصدر، ثم حوّل الـ PLC من STOP إلى <b>RUN</b>.',done:a=>a.S.phys.everRun}]
+  .concat(PWR?[{t:'وصّل الدائرة الرئيسة كما في شكل الكتاب (زر «مخطط التوصيل»): L1 L2 L3 إلى التلامسات الرئيسة للمتممات، ثم الحماية الحرارية، ثم أطراف المحرك'+(PWR.res.length?'، وحلقات العضو الدائر إلى المقاومات ونقطة النجمة':'')+'. ثم أغلق القاطع Q0.',done:a=>!!a.S.phys.everQS&&Object.keys(MODES[PWR.fam]).some(m=>(a.S.phys.modes||{})[m])},
+   {t:'شغّل المحرك بكل أوضاعه: '+Object.keys(MODES[PWR.fam]).map(m=>MODE_AR[m]).join('، ')+'.',done:a=>Object.keys(MODES[PWR.fam]).every(m=>(a.S.phys.modes||{})[m]),live:a=>{const z=Object.keys(MODES[PWR.fam]).filter(m=>!(a.S.phys.modes||{})[m]);return z.length?'باقي: '+z.map(m=>MODE_AR[m]).join('، '):''}}]:[])
   .concat([{t:'جرّب كل جهاز دخل يستعمله البرنامج (اضغط، حرّك، أو انتظر الحسّاس)، وتأكد أن لمبة مدخله على الـ PLC تضيء وتنطفئ.',done:insDone,live:a=>{const z=need(a).ins.filter(ad=>{const q=a.S.phys.seen[ad];return !(q&&q[0]&&q[1])});return z.length?'باقي: '+z.map(nm).join('، '):''}},
    {t:'شغّل الجهاز بترتيب خطوات الكتاب (القائمة تحت «الجهاز») حتى يعمل كل حمل مرة على الأقل.',done:outsDone,live:a=>{const z=need(a).outs.filter(ad=>!a.S.phys.used[ad]);return z.length?'باقي: '+z.map(nm).join('، '):''}}])
-  .concat([{t:'أعد الـ PLC إلى <b>STOP</b>، ثم افصل المصدر.',done:a=>bookDone(a)&&!a.sw('RUN')&&!a.sw('PWR')}]);
- X.complete=a=>wiredPsu(a)&&wiredIn(a)&&wiredOut(a)&&bookDone(a)&&!a.sw('RUN')&&!a.sw('PWR');
+  .concat([{t:'أعد الـ PLC إلى <b>STOP</b>، ثم افصل المصدر'+(PWR?' والقاطع Q0':'')+'.',done:a=>bookDone(a)&&!a.sw('RUN')&&!a.sw('PWR')&&!(PWR&&a.sw('QS'))}]);
+ const modesDone=a=>!PWR||Object.keys(MODES[PWR.fam]).every(m=>(a.S.phys.modes||{})[m]);
+ X.complete=a=>wiredPsu(a)&&wiredIn(a)&&wiredOut(a)&&bookDone(a)&&modesDone(a)&&!a.sw('RUN')&&!a.sw('PWR')&&!(PWR&&a.sw('QS'));
  /* لوحة الجهاز */
  const p=L.plant;
  X.view={title:(p&&p.title)||'الجهاز والدائرة الرئيسة',
   mount(el,a){let h='';
    if(L.variants){const ks=varKeys(L);h+=`<label class="sub">البرنامج المحمّل في الـ PLC: <select data-var>${ks.map(k=>`<option value="${k}"${k===a.S.phys.vk?' selected':''}>${esc(strip(L.variants[k].label||k))}</option>`).join('')}</select></label><p class="sub" data-varmsg></p>`}
    if(p){h+=`<p class="sub" data-pl></p>`;if(p.view==='motor')h+=`<div class="motor-row"><div>${B.W.motor('bnRotor',130)}${p.nameplate?`<div class="nameplate">${p.nameplate}</div>`:''}</div><div data-pv></div></div>`;else h+=`<div class="plant-view" data-pv></div>`}
-   if(L.power)h+=`<h4 class="sm">الدائرة الرئيسة (تتبع حالة المتممات الموصّلة)</h4><div class="svgbox" data-pw></div>`;
+   if(L.power)h+=`<h4 class="sm">${PWR?'الدائرة الرئيسة في الكتاب — تعرض الوضع الذي وصل إليه محركك فعلاً':'الدائرة الرئيسة (تتبع حالة المتممات الموصّلة)'}</h4><div class="svgbox" data-pw></div>`;
    if(p&&p.readouts)h+=`<div class="reads" data-rd></div>`;
    if(!p&&!L.power)h+='<p class="sub">راقب لمبات المخارج على اللوحة.</p>';
    if(steps0.length)h+=`<details class="bn-book"><summary>خطوات التشغيل في الكتاب</summary><ol>${steps0.map(c=>`<li><b>${c.t}</b>${c.x?`<br><span class="sub">${c.x}</span>`:''}</li>`).join('')}</ol></details>`;
@@ -154,7 +225,7 @@ function exp(L,sp){
    const pv=el.querySelector('[data-pv]');
    if(p&&p.frame)try{p.frame(pv,s,ph.plant,B)}catch(e){}
    const rd=el.querySelector('[data-rd]');if(rd&&p.readouts&&(ph.rdT=(ph.rdT||0)+a.dt)>0.2){ph.rdT=0;rd.innerHTML=p.readouts.map(r=>{try{if(r.chip){const [t,c]=r.chip(ph.plant,s);return `<div class="read"><span>${r.l}</span><em class="mode-chip ${c||''}">${t}</em></div>`}return `<div class="read"><span>${r.l}</span><b>${r.v(ph.plant,s)}</b></div>`}catch(e){return ''}}).join('')}
-   const sig=JSON.stringify([ph.Qphys,p&&p.sig?p.sig(ph.plant):0,Object.entries(ph.P.tim).map(([k,v])=>[k,v.q,v.run]),Object.entries(ph.P.cnt).map(([k,v])=>[k,v.v]),a.S.sw]);
+   const sig=JSON.stringify([ph.Qphys,ph.Qplant,p&&p.sig?p.sig(ph.plant):0,Object.entries(ph.P.tim).map(([k,v])=>[k,v.q,v.run]),Object.entries(ph.P.cnt).map(([k,v])=>[k,v.v]),a.S.sw]);
    if(sig===ph.lastSig)return;ph.lastSig=sig;
    if(p&&p.render&&pv)try{p.render(pv,s,ph.plant,B)}catch(e){}
    const lb=el.querySelector('[data-pl]');if(lb&&p&&p.label)try{lb.textContent=p.label(ph.plant,s)||''}catch(e){}
