@@ -36,6 +36,18 @@ function solveDC(nNodes,els){/* els: {a,b,g,i} — توصيلية g بين a و 
   return M.map((row,k)=>row[N]/(row[k]||1e-18));
 }
 
+/* ---------- حل دوائر التيار المتردد بالمطاورات: عناصر بسيطة ومنافذ ثنائية (للمحولات) ---------- */
+const C={add:(a,b)=>[a[0]+b[0],a[1]+b[1]],sub:(a,b)=>[a[0]-b[0],a[1]-b[1]],mul:(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]],
+  div:(a,b)=>{const d=b[0]*b[0]+b[1]*b[1]||1e-30;return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d]},abs:a=>Math.hypot(a[0],a[1]),pol:(m,deg)=>[m*Math.cos(deg*Math.PI/180),m*Math.sin(deg*Math.PI/180)],conj:a=>[a[0],-a[1]],neg:a=>[-a[0],-a[1]]};
+function solveAC(N,st){if(!N)return [];const M=Array.from({length:N},()=>Array.from({length:N+1},()=>[0,0]));
+  const ad=(r,c,v)=>{if(r<0||c<0)return;M[r][c]=C.add(M[r][c],v)};
+  for(let k=0;k<N;k++)ad(k,k,[1e-9,0]);
+  for(const e of st){if(e.Y){const [a,b]=e.p,[c,d]=e.q,P=[[a,b,e.Y[0][0],a,b],[a,b,e.Y[0][1],c,d],[c,d,e.Y[1][0],a,b],[c,d,e.Y[1][1],c,d]];
+      for(const [r1,r2,y,c1,c2] of P){ad(r1,c1,y);ad(r1,c2,C.neg(y));ad(r2,c1,C.neg(y));ad(r2,c2,y)}continue}
+    const {a,b,y}=e,i=e.i||[0,0];if(a===b)continue;ad(a,a,y);ad(b,b,y);ad(a,b,C.neg(y));ad(b,a,C.neg(y));if(a>=0)M[a][N]=C.add(M[a][N],i);if(b>=0)M[b][N]=C.sub(M[b][N],i)}
+  for(let c=0;c<N;c++){let p=c;for(let r=c+1;r<N;r++)if(C.abs(M[r][c])>C.abs(M[p][c]))p=r;if(p!==c){const t=M[c];M[c]=M[p];M[p]=t}
+    const d=C.abs(M[c][c])?M[c][c]:[1e-18,0];for(let r=0;r<N;r++){if(r===c)continue;const f=C.div(M[r][c],d);if(!f[0]&&!f[1])continue;for(let k=c;k<=N;k++)M[r][k]=C.sub(M[r][k],C.mul(f,M[c][k]))}}
+  return M.map((row,k)=>C.div(row[N],C.abs(row[k])?row[k]:[1e-18,0]))}
 /* ---------- رسم ---------- */
 const svgNS='http://www.w3.org/2000/svg';
 const AR=t=>/[\u0600-\u06FF]/.test(String(t))?' direction="rtl"':'';
@@ -56,14 +68,14 @@ function knobSVG(k,val){const r=k.r||26,fr=clamp(val/k.max,0,1),a=(-135+270*fr)*
 function switchSVG(on){return `<rect x="-20" y="-14" width="40" height="28" rx="5" fill="${on?'#1f7a4d':'#5b5f63'}" stroke="#222"/><rect x="${on?2:-18}" y="-11" width="16" height="22" rx="3" fill="#f2f2ee"/><text x="${on?-10:10}" y="5" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">${on?'I':'O'}</text>`}
 
 /* ---------- المنضدة ---------- */
-B.BENCH={readyCode,today,solveDC,mount};
+B.BENCH={readyCode,today,solveDC,solveAC,C,mount};
 function mount(el,cfg){
   const {layout:LY,exp:X}=cfg;const course=cfg.course||(B.COURSE&&B.COURSE.key)||'lib',KEY=course+'-bench-'+cfg.key;
   const P=cfg.params||{v:{}};
   /* الحالة */
   const S={wires:[],knob:{},sw:{},range:{},sel:null,tapFrom:null,mode:LS.get('bench-mode',null)||(matchMedia('(pointer:coarse)').matches?'tap':'drag'),color:'red',zoom:null,t:0,
     mistakes:[],once:{},timers:{},trip:null,rec:{},done:false,finished:false,phys:X.init?X.init(P.v):{}};
-  (LY.modules||[]).forEach(m=>{(m.knobs||[]).forEach(k=>S.knob[k.id]=0);(m.switches||[]).forEach(s=>S.sw[s.id]=false);(m.meters||[]).forEach(d=>{if(d.ranges)S.range[d.id]=d.ranges.length-1})});
+  (LY.modules||[]).forEach(m=>{(m.knobs||[]).forEach(k=>S.knob[k.id]=k.init||0);(m.switches||[]).forEach(s=>S.sw[s.id]=false);(m.meters||[]).forEach(d=>{if(d.ranges)S.range[d.id]=d.ranges.length-1})});
   const hist=LS.get(KEY,{attempts:[],name:''});
   /* أطراف */
   const TERM={};(LY.modules||[]).forEach(m=>(m.terms||[]).forEach(t=>{TERM[t.id]=Object.assign({mod:m},t,{X:m.x+t.x,Y:m.y+t.y})}));
@@ -71,7 +83,7 @@ function mount(el,cfg){
   el.innerHTML=`<section class="bench" dir="rtl">
    <div class="bn-intro panel"><h2>${esc(cfg.title||'المنضدة الافتراضية')}</h2>
     <p>${cfg.intro||'وصّل التجربة بنفسك، ثم شغّلها بنفس ترتيب المعمل. أي خطأ يكشفه المحاكي ويشرح ما كان سيحدث في المعمل.'}</p>
-    ${LY.generic?'<p class="sub">شكل المنضدة عام ويتبع أسماء الأطراف في الكتاب، وقد يختلف ترتيبها عن منضدة كليتك.</p>':''}
+    ${X.note?`<div class="bn-note">${X.note}</div>`:''}${LY.generic?'<p class="sub">شكل المنضدة عام ويتبع أسماء الأطراف في الكتاب، وقد يختلف ترتيبها عن منضدة كليتك.</p>':''}
     <label class="bn-name">اسمك (يظهر في «جاهز للمعمل»): <input type="text" maxlength="60" value="${esc(hist.name||'')}" data-name></label></div>
    <div class="bn-tools" role="toolbar" aria-label="أدوات التوصيل">
     <div class="seg" role="group" aria-label="طريقة التوصيل"><button type="button" data-mode="drag">السحب</button><button type="button" data-mode="tap">اللمس</button></div>
@@ -86,7 +98,7 @@ function mount(el,cfg){
    <div class="bn-alert" role="alert" hidden></div>
    <div class="bn-grid">
     <div class="panel bn-steps"><h3>خطوات التجربة</h3><ol></ol></div>
-    <div class="panel bn-tables"><h3>القراءات</h3><div data-tables></div><button type="button" class="btn primary" data-rec>سجّل القراءة</button><p class="sub" data-recmsg aria-live="polite"></p><div data-plot></div></div>
+    <div class="panel bn-tables"><h3>القراءات</h3><div data-tables></div>${(X.actions||[]).map((a,i)=>`<button type="button" class="btn" data-act="${i}">${a.label}</button>`).join('')}<button type="button" class="btn primary" data-rec>سجّل القراءة</button><p class="sub" data-recmsg aria-live="polite"></p><div data-plot></div></div>
    </div>
    <div class="panel bn-log"><h3>أخطاء هذه المحاولة <span data-mcount>0</span></h3><ol data-mlist></ol><p class="sub" data-mnone>لا أخطاء حتى الآن.</p></div>
    <div class="bn-result" hidden></div>
@@ -175,12 +187,12 @@ function mount(el,cfg){
     if(d.from){const p=pt(e);let best=null,bd=26;Object.values(TERM).forEach(t=>{const dd=Math.hypot(t.X-p.X,t.Y-p.Y);if(dd<bd){bd=dd;best=t}});if(best&&best.id!==d.from)addWire(d.from,best.id)}};
   svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',()=>{drag=null;temp.setAttribute('d','')});
   svg.addEventListener('keydown',e=>{const k=e.target.closest('.bn-knob'),sw=e.target.closest('.bn-sw'),t=e.target.closest('.bn-term'),w=e.target.closest('.bn-wire'),rg=e.target.closest('.bn-rng');
-    if(k){const d=findKnob(k.dataset.knob),st=d.step||d.max/100;if(e.key==='ArrowUp'||e.key==='ArrowRight'){setKnob(d.id,S.knob[d.id]+st);e.preventDefault()}if(e.key==='ArrowDown'||e.key==='ArrowLeft'){setKnob(d.id,S.knob[d.id]-st);e.preventDefault()}if(e.key==='Home'){setKnob(d.id,0);e.preventDefault()}return}
+    if(k){const d=findKnob(k.dataset.knob),st=d.step||d.max/100;if(e.key==='ArrowUp'||e.key==='ArrowRight'){setKnob(d.id,S.knob[d.id]+st);e.preventDefault()}if(e.key==='ArrowDown'||e.key==='ArrowLeft'){setKnob(d.id,S.knob[d.id]-st);e.preventDefault()}if(e.key==='Home'){setKnob(d.id,d.min||0);e.preventDefault()}if(e.key==='End'){setKnob(d.id,d.max);e.preventDefault()}return}
     if((e.key==='Enter'||e.key===' ')&&(sw||t||rg)){e.preventDefault();if(sw)toggleSw(sw.dataset.sw);else if(rg){S.range[rg.dataset.rng]=+rg.dataset.i;drawCtl()}else{const id=t.dataset.t;if(!S.tapFrom){S.tapFrom=id;drawWires();H('اختر الطرف الثاني ثم اضغط Enter.')}else{const a=S.tapFrom;S.tapFrom=null;a===id?drawWires():addWire(a,id)}}}
     if(w&&(e.key==='Delete'||e.key==='Backspace')){delWire(+w.dataset.w);e.preventDefault()}});
-  function setKnob(id,v){const d=findKnob(id);S.knob[id]=clamp(Math.round(v/(d.step||d.max/500))*(d.step||d.max/500),0,d.max);drawCtl()}
+  function setKnob(id,v){const d=findKnob(id),st=d.step||d.max/500;S.knob[id]=clamp(+(Math.round(v/st)*st).toFixed(6),d.min||0,d.max);drawCtl()}
   function toggleSw(id){const on=!S.sw[id];
-    if(on){const ks=(X.swKnob||{})[id];if(ks&&S.knob[ks]>findKnob(ks).max*0.02)mistake('start-not-zero');S.trip=null}
+    if(on){const ks=(X.swKnob||{})[id];if(ks&&S.knob[ks]>(findKnob(ks).min||0)+findKnob(ks).max*0.02)mistake('start-not-zero');S.trip=null;if(X.onSwitchOn)X.onSwitchOn(id,api)}
     else if(X.onSwitchOff)X.onSwitchOff(id,api);
     S.sw[id]=on;drawCtl();paintSteps()}
   /* الأدوات */
@@ -199,17 +211,20 @@ function mount(el,cfg){
   $('.bn-vf',el).addEventListener('submit',e=>{e.preventDefault();const f=e.target,ok=readyCode(f.n.value,course,cfg.key,f.d.value)===f.c.value.trim().toUpperCase();
     $('.bn-vr',el).innerHTML=ok?'<b class="ok">✓ الرمز صحيح: المتدرب أكمل التجربة على المنضدة الافتراضية بلا أخطاء في هذا التاريخ.</b>':'<b class="bad">✗ الرمز لا يطابق هذا الاسم وهذا التاريخ.</b>'});
   /* ---- الجداول ---- */
-  function paintTables(){$('[data-tables]',el).innerHTML=(X.tables||[]).map(T=>`<div class="bn-tbl"><p><b>${T.title}</b></p><div class="tblwrap"><table class="data"><tr><th>${T.xh}</th>${T.cols.map(c=>`<td>${T.fx?T.fx(c):c}</td>`).join('')}</tr><tr><th>${T.yh}</th>${T.cols.map((c,i)=>{const v=(S.rec[T.id]||{})[i];return `<td class="${v!=null?'rec':''}">${v!=null?fmt(v,T.dp||1):''}</td>`}).join('')}</tr></table></div></div>`).join('');
-    const pl=$('[data-plot]',el);pl.innerHTML=(X.tables||[]).map(T=>{const pts=T.cols.map((c,i)=>[c,(S.rec[T.id]||{})[i]]).filter(p=>p[1]!=null);return pts.length>=2?plot(T,pts):''}).join('')}
-  function plot(T,pts){const W=360,Hh=210,L=44,Rm=10,Tp=24,Bm=32,x1=Math.max(...T.cols)*1.05,y1=Math.max(...pts.map(p=>p[1]))*1.15||1;
+  const rowsOf=T=>T.rows||[{k:'v',h:T.yh,dp:T.dp||1}];
+  const cellV=(T,i,k)=>{const v=(S.rec[T.id]||{})[i];return v==null?null:(typeof v==='object'?v[k]:v)};
+  function paintTables(){$('[data-tables]',el).innerHTML=(X.tables||[]).map(T=>`<div class="bn-tbl"><p><b>${T.title}</b></p><div class="tblwrap"><table class="data"><tr><th>${T.xh}</th>${T.cols.map(c=>`<td>${T.fx?T.fx(c):c}</td>`).join('')}</tr>${rowsOf(T).map(R=>`<tr><th>${R.h}</th>${T.cols.map((c,i)=>{const v=cellV(T,i,R.k);return `<td class="${v!=null?'rec':''}">${v!=null?fmt(v,R.dp!=null?R.dp:1):''}</td>`}).join('')}</tr>`).join('')}</table></div></div>`).join('');
+    const pl=$('[data-plot]',el);pl.innerHTML=(X.tables||[]).filter(T=>T.plot!==false).map(T=>{const yk=T.py||rowsOf(T)[0].k;const pts=T.cols.map((c,i)=>[T.px?cellV(T,i,T.px):(typeof c==='number'?c:null),cellV(T,i,yk)]).filter(p=>p[0]!=null&&p[1]!=null&&isFinite(p[0])).sort((a,b)=>a[0]-b[0]);return pts.length>=2?plot(T,pts):''}).join('')}
+  function plot(T,pts){const W=360,Hh=210,L=44,Rm=10,Tp=24,Bm=32,xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x1=Math.max(...xs)*1.05||1,y1=Math.max(...ys)*1.15||1;
     const Xf=x=>L+x/x1*(W-L-Rm),Yf=y=>Hh-Bm-y/y1*(Hh-Tp-Bm);
     return `<figure class="bn-plot"><svg viewBox="0 0 ${W} ${Hh}" dir="ltr" role="img" aria-label="منحنى ${esc(T.title)}"><rect x="${L}" y="${Tp}" width="${W-L-Rm}" height="${Hh-Tp-Bm}" fill="none" stroke="#bbb"/>
      <path d="${pts.map((p,i)=>(i?'L':'M')+Xf(p[0]).toFixed(1)+' '+Yf(p[1]).toFixed(1)).join('')}" fill="none" stroke="#2563B8" stroke-width="2"/>${pts.map(p=>`<circle cx="${Xf(p[0]).toFixed(1)}" cy="${Yf(p[1]).toFixed(1)}" r="3.5" fill="#2563B8"/>`).join('')}
-     <text x="${(L+W)/2}" y="${Hh-6}" font-size="11" text-anchor="middle">${T.xu}</text><text x="${L}" y="14" font-size="11">${T.yu}</text>
-     <text x="${L}" y="${Hh-Bm+13}" font-size="10" text-anchor="middle">0</text><text x="${W-Rm}" y="${Hh-Bm+13}" font-size="10" text-anchor="end">${fmt(x1/1.05,T.xdp||0)}</text><text x="${L-4}" y="${Tp+10}" font-size="10" text-anchor="end">${fmt(y1/1.15,0)}</text></svg></figure>`}
+     <text x="${(L+W)/2}" y="${Hh-6}" font-size="11" text-anchor="middle">${T.xu||''}</text><text x="${L}" y="14" font-size="11">${T.yu||''}</text>
+     <text x="${L}" y="${Hh-Bm+13}" font-size="10" text-anchor="middle">0</text><text x="${W-Rm}" y="${Hh-Bm+13}" font-size="10" text-anchor="end">${fmt(x1/1.05,T.xdp||0)}</text><text x="${L-4}" y="${Tp+10}" font-size="10" text-anchor="end">${fmt(y1/1.15,T.ydp||0)}</text></svg></figure>`}
+  $$('[data-act]',el).forEach(b=>b.addEventListener('click',()=>{const a=X.actions[+b.dataset.act];const r=a.run(api);if(r&&r.msg){const m=$('[data-recmsg]',el);m.textContent=r.msg;m.className='sub'}paintTables();paintSteps()}));
   $('[data-rec]',el).addEventListener('click',()=>{const m=$('[data-recmsg]',el);const r=X.record?X.record(api):null;
     if(!r){return}if(r.msg){m.textContent=r.msg;m.className='sub'+(r.ok?' ok':' warn')}
-    if(r.ok){(S.rec[r.table]=S.rec[r.table]||{})[r.col]=r.val;persist();paintTables();paintSteps()}});
+    if(r.ok&&r.multi)r.multi.forEach(x=>{(S.rec[x.table]=S.rec[x.table]||{})[x.col]=x.val});if(r.ok&&!r.multi){(S.rec[r.table]=S.rec[r.table]||{})[r.col]=r.val}if(r.ok){persist();paintTables();paintSteps()}if(r.clear){delete S.rec[r.clear];persist();paintTables();paintSteps()}});
   /* ---- الخطوات ---- */
   let stepSig='';
   function paintSteps(){const ds=(X.steps||[]).map(s=>!!(s.done&&s.done(api))),sig=ds.join();if(sig!==stepSig){stepSig=sig;$('.bn-steps ol',el).innerHTML=(X.steps||[]).map((s,i)=>`<li class="${ds[i]?'ok':''}">${ds[i]?'<span class="bn-ck" aria-label="تم">✓</span>':''}${s.t}</li>`).join('')}
@@ -230,16 +245,19 @@ function mount(el,cfg){
     else{R.innerHTML=`<div class="bn-notready"><p class="bn-big">أكملت التجربة، مع ${S.mistakes.length} ${S.mistakes.length===1?'خطأ':'أخطاء'}</p><p>لتحصل على «جاهز للمعمل» أعد التجربة من البداية وأكملها بلا أي خطأ. راجع قائمة الأخطاء أعلاه.</p><button type="button" class="btn primary" data-again>أعد المحاولة</button></div>`;
       $('[data-again]',R).addEventListener('click',resetAll)}
     R.scrollIntoView({block:'nearest',behavior:'smooth'})}
-  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=0);Object.keys(S.sw).forEach(k=>S.sw[k]=false);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};
+  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=findKnob(k).init||0);Object.keys(S.sw).forEach(k=>S.sw[k]=false);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};
     persist();$('.bn-result',el).hidden=true;alertEl.hidden=true;$('[data-recmsg]',el).textContent='';drawWires();drawCtl();paintLog();paintTables();stepSig='';paintSteps();H('بدأت محاولة جديدة.')}
   /* ---- واجهة للتجربة ---- */
   const api={S,P:()=>P.v,conn,nets:()=>NET,TERM,mistake,once:(id,info)=>{if(S.once[id])return;S.once[id]=1;mistake(id,info)},rearm:id=>{delete S.once[id]},
     hold:(id,cond,sec)=>{if(cond){S.timers[id]=(S.timers[id]||0)+api.dt;return S.timers[id]>=sec}S.timers[id]=0;return false},dt:0,
-    range:id=>meters[id].ranges[S.range[id]],knob:id=>S.knob[id],sw:id=>S.sw[id],rec:S.rec,setSw:(id,v)=>{S.sw[id]=v;drawCtl()},solveDC,fmt,
+    range:id=>meters[id].ranges[S.range[id]],ranges:id=>meters[id].ranges.slice(),maxRange:id=>Math.max(...meters[id].ranges),maxIdx:id=>meters[id].ranges.indexOf(Math.max(...meters[id].ranges)),
+    has:id=>!!(TERM[id]||knobs[id]||(id in S.sw)),P2:cfg.params2?()=>cfg.params2.v:null,knob:id=>S.knob[id],sw:id=>S.sw[id],rec:S.rec,setSw:(id,v)=>{S.sw[id]=v;drawCtl()},solveDC,fmt,
     /* يحوّل عناصر بأسماء أطراف إلى عقد */
     solve(els){const N=NET.n;const E=els.map(e=>({a:NET.of[e.p],b:NET.of[e.n],g:e.g,i:e.i||0,src:e}));const V=solveDC(N,E);
       const vt=t=>V[NET.of[t]]||0;const cur=e=>(vt(e.p)-vt(e.n))*e.g-(e.i||0);/* التيار من p إلى n خلال العنصر */
-      return {vt,cur,V}}};
+      return {vt,cur,V}},
+    solveAC(els){const N=NET.n,o=t=>NET.of[t];const st=els.map(e=>e.Y?{p:[o(e.p[0]),o(e.p[1])],q:[o(e.q[0]),o(e.q[1])],Y:e.Y}:{a:o(e.p),b:o(e.n),y:e.y,i:e.i});const V=solveAC(N,st);
+      const vt=t=>V[o(t)]||[0,0],vd=(a,b)=>C.sub(vt(a),vt(b));const cur=e=>C.sub(C.mul(vd(e.p,e.n),e.y),e.i||[0,0]);return {vt,vd,cur,V}},C};
   /* ---- الحلقة ---- */
   let last=performance.now(),readings={};
   function loop(now){if(!document.body.contains(el))return;api.dt=Math.min(0.05,(now-last)/1000);last=now;S.t+=api.dt;
@@ -248,10 +266,13 @@ function mount(el,cfg){
       if(d.kind==='digital')gm.innerHTML=digitalSVG(d,r==null?'---':fmt(r,d.dp||0)+(d.unit?' '+d.unit:''));
       else{const rg=d.ranges?d.ranges[S.range[d.id]]:d.max;gm.innerHTML=gaugeSVG(d,r==null?0:r,rg,d.unit);
         if(r!=null){const fr=r/rg;if(api.hold('or-'+d.id,fr>1.03,0.25))api.once('over-range-'+d.id,{t:'القراءة تجاوزت مدى '+(d.name||d.unit),why:GENERIC['over-range'].why});else if(fr<0.9)api.rearm('over-range-'+d.id);
-          if(api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
+          if(!d.ac&&api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
     stepT+=api.dt;if(stepT>0.4){stepT=0;paintSteps()}
     requestAnimationFrame(loop)}
   let stepT=0;
+  /* للاختبار الآلي فقط */
+  el.__bench={api,wire:addWire,unwire:(a,b)=>{const i=S.wires.findIndex(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a));if(i>=0)delWire(i)},knob:setKnob,sw:id=>toggleSw(id),range:(id,i)=>{S.range[id]=i;drawCtl()},rec:()=>{$('[data-rec]',el).click();return $('[data-recmsg]',el).textContent},act:i=>$$('[data-act]',el)[i].click(),read:()=>readings,reset:resetAll,
+    tickN(n,dt){dt=dt||0.05;for(let i=0;i<n;i++){api.dt=dt;S.t+=dt;try{readings=X.tick?X.tick(api)||{}:{}}catch(err){console.error(err);throw err}}paintSteps();return readings},S};
   /* ---- البداية ---- */
   {const sv=LS.get(KEY+'-w',null);if(sv&&!Array.isArray(sv)){S.wires=(sv.wires||[]).filter(w=>TERM[w.a]&&TERM[w.b]);S.mistakes=sv.mistakes||[];S.rec=sv.rec||{};S.once=sv.once||{}}}NET=nets();
   drawWires();drawCtl();paintTools();paintLog();paintTables();paintSteps();paintHist();

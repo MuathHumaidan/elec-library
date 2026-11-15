@@ -2122,4 +2122,6 @@ B.lesson({
  ]
 });
 
+/* للمنضدة الافتراضية (courses/dc-machines/bench.js) */
+B.DCM3={TRDEF,PARDEF,satF};
 })(PLCBOOK);

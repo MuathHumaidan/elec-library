@@ -1496,4 +1496,6 @@ B.lesson({
  ]
 });
 
+/* للمنضدة الافتراضية (courses/dc-machines/bench.js) */
+B.DCM2={Mod,motorDefs,TB,EXP7_TMIN,TOL};
 })(PLCBOOK);
