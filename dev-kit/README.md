@@ -37,6 +37,8 @@ STATIONS_GUIDE.md and create fragments from scratch.
 - guides/API_METHODS.md, METHODS_PLAN.md — «طرق التدريب» (trainer-only «مسار الطريقة»): shared/methods.js +
   courses/<id>/methods-data.js; scripts/book/methods-draft.js + methods-emit.py draft a data file, tools/methods-check.js
   (in the repo) checks every target, scripts/book/mpathui.js tests the UI with a mocked server.
+- guides/API_BENCH.md — «المنضدة الافتراضية»: a wiring simulator that matches the lab bench (shared/bench.js engine,
+  courses/<id>/bench-layout.js = look only, courses/<id>/bench.js = experiment); scripts/book/benchtest.js tests it.
 - NEW_COURSE_PROJECT.md — instructions to paste at the start of a new conversation that builds one new course here.
 - NEW_LIBRARY_PROJECT.md — instructions for starting a library for another department.
 - scripts/make_course.py — scaffold a course; scripts/book/test2.js, svgbidi.js … — tests (`COURSE=<id> node test2.js`);

@@ -2163,4 +2163,7 @@ B.lesson({
  ]
 });
 
+/* للمنضدة الافتراضية (courses/dc-machines/bench.js): نموذج الآلة نفسه وقيم المدرب نفسها */
+B.DCM={MD,tpDefs,TPID,mach,motorStep,kEof,T11COLS,T12COLS,benchSVG,box};
+
 })(PLCBOOK);

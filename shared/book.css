@@ -899,3 +899,58 @@ html[data-wide] .theory.stations{max-width:none}
 }
 .mdef summary{cursor:pointer;font-weight:600;color:var(--fg);font-size:13.5px}
 .mdef p{margin-top:4px}
+
+/* ===== «المنضدة الافتراضية» (shared/bench.js) ===== */
+.bench{display:flex;flex-direction:column;gap:12px}
+.bn-intro h2{font-size:18px}
+.bn-intro p{line-height:1.8}
+.bn-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;font-size:14px}
+.bn-name input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);min-width:200px}
+.bn-tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px + 50px);z-index:15;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.bn-tools .btn{font-size:13px;padding:6px 11px}
+.bn-tools .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.bn-tools .seg button{font:inherit;font-size:13px;padding:6px 12px;border:0;background:var(--bg);color:var(--fg);cursor:pointer}
+.bn-tools .seg button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.bn-colors{display:inline-flex;gap:4px}
+.bn-c{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);background:var(--c);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.bn-c[aria-pressed="true"]{box-shadow:0 0 0 3px var(--blue)}
+.bn-sp{flex:1}
+@media (max-width:760px){.bn-tools{position:static;gap:5px;padding:6px}.bn-tools .btn{padding:5px 9px}.bn-c{width:24px;height:24px}}
+.bn-hint{min-height:1.4em;margin:0}
+.bn-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#D7DBD2;max-height:78vh;-webkit-overflow-scrolling:touch}
+.bn-svg{display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.bn-svg text{font-family:var(--font)}
+.bn-term{cursor:pointer}
+.bn-term:focus-visible circle:nth-child(2),.bn-knob:focus-visible circle:first-child,.bn-sw:focus-visible rect:first-child{stroke:var(--blue);stroke-width:4}
+.bn-term.from circle:nth-child(2){stroke:#2563B8;stroke-width:5}
+.bn-term:hover circle:nth-child(2){stroke:#2563B8;stroke-width:3}
+.bn-knob{cursor:grab}.bn-sw{cursor:pointer}
+.bn-rng{cursor:pointer}.bn-rng rect{fill:#e9ebe4;stroke:#8a8f86}.bn-rng.on rect{fill:#2563B8;stroke:#1b4a8a}.bn-rng.on text{fill:#fff}.bn-rng text{fill:#2a332e}
+.bn-wire{cursor:pointer}.bn-wire.sel path:last-child{stroke-dasharray:8 5;stroke-width:6}
+.bn-alert{border-radius:12px;padding:12px 14px;background:var(--warn-soft,#FFF3D6);border:1px solid #E2B44A;color:var(--fg)}
+.bn-alert.fatal{background:#FDE4E1;border-color:#C8382E}
+.bn-alert p{margin-top:4px;line-height:1.7;font-size:14px}
+.bn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:900px){.bn-grid{grid-template-columns:1fr}}
+.bn-steps ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px;line-height:1.7}
+.bn-steps li.ok{color:var(--muted)}
+.bn-ck{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--on,#1f7a4d);color:#fff;font-size:12px;margin-inline-end:6px}
+.bn-tables .tblwrap{overflow-x:auto}
+.bn-tables td.rec{background:var(--live-soft,#E3F3EA);font-weight:700}
+.bn-tables [data-rec]{margin-top:6px}
+.bn-tables .sub.ok{color:var(--on,#1f7a4d)}.bn-tables .sub.warn{color:#9a5b00}
+.bn-plot{margin:8px 0 0;max-width:420px}
+.bn-log ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px}
+.bn-log li span{display:block;font-size:13.5px;color:var(--muted);line-height:1.7}
+.bn-log h3 span{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:12px;background:var(--surface-2);font-size:13px;margin-inline-start:6px}
+.bn-ready,.bn-notready{border-radius:14px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.bn-ready{background:#E3F3EA;border:2px solid #1f7a4d}
+.bn-notready{background:var(--surface);border:2px solid #E2B44A}
+.bn-big{font-size:22px;font-weight:800}
+.bn-code{font:700 30px var(--mono);letter-spacing:.2em}
+.bn-att{font-size:13.5px;line-height:1.8;padding-inline-start:20px}
+.bn-vf{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.bn-vf label{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.bn-vf input{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.bn-vr{flex-basis:100%;margin:0}.bn-vr .ok{color:#1f7a4d}.bn-vr .bad{color:#C8382E}
+@media print{.bench{display:none}}

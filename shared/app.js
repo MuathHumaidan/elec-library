@@ -114,11 +114,11 @@ function renderLesson(L,tab){
   const all=B.LESSONS.slice().sort((a,b)=>a.unit-b.unit||a.order-b.order);const i=all.indexOf(L);
   const prev=all[i-1],next=all[i+1];
   const hasLab=!!(L.program||L.lab||L.plant);const hasProg=!!(L.program||L.variants);
-  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],hasProg&&['plc','برنامج الـ PLC'],L.examples&&L.examples.length&&['examples','الأمثلة المحلولة'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك'],['acts','الأنشطة التفاعلية']].filter(Boolean);
+  const tabs=[['theory','الشرح'],hasLab&&['lab','المختبر'],L.bench&&['bench','المنضدة الافتراضية'],hasProg&&['plc','برنامج الـ PLC'],L.examples&&L.examples.length&&['examples','الأمثلة المحلولة'],L.quiz&&L.quiz.length&&['quiz','اختبر نفسك'],['acts','الأنشطة التفاعلية']].filter(Boolean);
   tab=tabs.find(t=>t[0]===tab)?tab:'theory';
   const seen=store.get(KK('seen'),{});const done=store.get(KK('done'),{});
   const ul=all.filter(x=>x.unit===L.unit);
-  const ICON={theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',examples:'<path d="M5 3h14v18H5zM8 7h8M8 11h3M13 11h3M8 15h3M13 15h3"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',acts:'<path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/>'};
+  const ICON={bench:'<path d="M3 7h18v10H3zM7 7v10M17 7v10"/><circle cx="12" cy="12" r="2"/>',theory:'<path d="M4 5h7a3 3 0 0 1 3 3v11a2 2 0 0 0-2-2H4zM20 5h-4" />',lab:'<path d="M9 3v6l-5 9a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-9V3M8 3h8"/>',plc:'<path d="M4 4v16M20 4v16M4 12h4M16 12h4M9 8v8M12 8v8"/>',examples:'<path d="M5 3h14v18H5zM8 7h8M8 11h3M13 11h3M8 15h3M13 15h3"/>',quiz:'<path d="M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>',acts:'<path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/>'};
   root.innerHTML=`<div class="lesson-layout">
    <aside class="lside" aria-label="دروس الوحدة"><a class="lside-back" href="#home">‹ فهرس المقرر</a>
     <div class="lside-unit"><span class="unum sm">${L.unit}</span><div><small>الوحدة ${AR[L.unit]}</small><b>${u.title}</b></div></div>
@@ -134,7 +134,7 @@ function renderLesson(L,tab){
    <div class="finish"><button class="fin-btn" id="finBtn" aria-pressed="${done[L.id]?'true':'false'}"></button><p class="sub" id="finNote"></p></div>
    <nav class="pager">${prev?`<a href="#${prev.id}" class="pg prev"><small>السابق</small>${prev.title}</a>`:'<span></span>'}${next?`<a href="#${next.id}" class="pg next"><small>التالي</small>${next.title}</a>`:'<span></span>'}</nav>
    </div></div>
-   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[0]==='acts'?'الأنشطة':t[0]==='examples'?'الأمثلة':t[1]}</button>`).join('')}</nav>`;
+   <nav class="bnav" role="tablist">${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[t[0]]}</svg>${t[0]==='bench'?'المنضدة':t[0]==='plc'?'البرنامج':t[0]==='quiz'?'اختبر':t[0]==='acts'?'الأنشطة':t[0]==='examples'?'الأمثلة':t[1]}</button>`).join('')}</nav>`;
   document.body.classList.add('in-lesson');
   const fb=$('#finBtn',root),fn=$('#finNote',root);
   const paint=()=>{const d=!!store.get(KK('done'),{})[L.id];fb.setAttribute('aria-pressed',d);fb.innerHTML=d?'✓ أنجزت هذا الدرس':'أنهيت الدرس';fn.textContent=d?'يُحسب في نسبة إنجازك. اضغط مرة أخرى للتراجع.':'اضغطه بعد ما تقرأ الشرح وتجرّب المختبر وتحل الأسئلة.';
@@ -150,6 +150,7 @@ function renderLesson(L,tab){
     strip.innerHTML='';
     if(t==='theory')renderTheory(L,body);
     else if(t==='lab'){if(L.lab&&!L.program&&!L.plant){body.innerHTML='<div id="custom-lab"></div>';L.lab($('#custom-lab',body),B)}else{RUN.attach('lab',body,strip)}}
+    else if(t==='bench'){L.bench(body,B)}
     else if(t==='plc'){RUN.attach('plc',body,strip)}
     else if(t==='quiz')renderQuiz(L,body);
     else if(t==='acts')renderActs(L,body);

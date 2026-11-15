@@ -2,11 +2,11 @@ import sys,os
 # ملفات «الأنشطة التفاعلية» الاختيارية: تُضاف تلقائياً إذا وُجدت في مجلد المقرر
 # activities.js = محتوى أنشطة المدرب الجاهز · study.js = بطاقات المراجعة/رتّب/وصّل · errors.js = «اكتشف الخطأ»
 # challenge.js = «اكتشف العطل» و«تحدي المحاكاة» (أعطال المختبر وقراءاته ومدخلاته)
-ACT_FILES=['activities.js','study.js','errors.js','challenge.js','methods-data.js']
+ACT_FILES=['activities.js','study.js','errors.js','challenge.js','methods-data.js','bench-layout.js','bench.js']
 def course(slug,title,lessons,extra_head='',acts=False):
     # acts: لم يعد لازماً (يبقى للتوافق)؛ كل ملف من ACT_FILES يُضاف إذا كان موجوداً في courses/<slug>/
     extra=[f for f in ACT_FILES if os.path.exists(os.path.join('courses',slug,f)) or (acts and f=='activities.js')]
-    scripts=''.join(f'<script src="lessons/{l}.js"></script>\n' for l in lessons)+''.join(f'<script src="{f}"></script>\n' for f in extra)
+    scripts=''.join(f'<script src="lessons/{l}.js"></script>\n' for l in lessons)+''.join(('<script src="../../shared/bench.js"></script>\n' if f=='bench-layout.js' else '')+f'<script src="{f}"></script>\n' for f in extra)
     return f'''<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
