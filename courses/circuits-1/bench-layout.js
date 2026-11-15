@@ -10,8 +10,8 @@ const fmtV=(v,u)=>{const a=Math.abs(v);if(u==='Ω'){if(a>=1e6)return +(v/1e6).to
  if(u==='F'){if(a>=1e-3)return +(v*1e3).toPrecision(3)+' mF';if(a>=1e-6)return +(v*1e6).toPrecision(3)+' µF';return +(v*1e9).toPrecision(3)+' nF'}
  if(u==='H'){if(a>=1)return +v.toPrecision(3)+' H';return +(v*1e3).toPrecision(3)+' mH'}return v+' '+u};
 function meterMod(p,kind){const ac=!!p.ac,u=kind==='V'?'V':kind==='A'?'A':'W';
- if(kind==='W')return {w:210,h:240,sub:'واتميتر'+(ac?' AC':''),meters:[{id:p.id,name:'الواتميتر',x:30,y:40,w:150,h:96,unit:'W',ranges:p.ranges||[10,50,200],ac:true}],
-  labels:[{t:'ملف التيار',x:60,y:205,s:10},{t:'ملف الجهد',x:150,y:205,s:10}],terms:[T(p.id+'.I+','*',35,175),T(p.id+'.I-','I',85,175),T(p.id+'.V+','*',125,175),T(p.id+'.V-','V',175,175)]};
+ if(kind==='W')return {w:210,h:255,sub:'واتميتر'+(ac?' AC':''),meters:[{id:p.id,name:'الواتميتر',x:30,y:40,w:150,h:96,unit:'W',ranges:p.ranges||[10,50,200],ac:true}],
+  labels:[{t:'ملف التيار',x:60,y:240,s:10},{t:'ملف الجهد',x:150,y:240,s:10}],terms:[T(p.id+'.I+','*',35,205),T(p.id+'.I-','I',85,205),T(p.id+'.V+','*',125,205),T(p.id+'.V-','V',175,205)]};
  return {w:180,h:230,sub:(kind==='V'?'فولتميتر':kind==='G'?'جلفانومتر (الصفر في الوسط)':'أميتر')+(ac?' AC':''),meters:[{id:p.id,name:(kind==='V'?'فولتميتر':kind==='G'?'جلفانومتر':'أميتر')+' '+p.id,x:15,y:40,w:150,h:96,unit:kind==='G'?'mA':u,ranges:p.ranges||(kind==='V'?[1,3,10,30]:kind==='G'?[1,10]:[0.01,0.1,0.3,1,3]),ac:ac||kind==='G'}],
   terms:[T(p.id+'+',ac?'*':'+',55,205,{pol:ac?'':'+',ly:-16}),T(p.id+'-',ac?'~':'−',125,205,{pol:ac?'':'-',ly:-16})]}}
 const PART={
