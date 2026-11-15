@@ -89,7 +89,7 @@ function mount(el,cfg){
     ${X.note?`<div class="bn-note">${X.note}</div>`:''}${LY.generic?'<p class="sub">شكل المنضدة عام ويتبع أسماء الأطراف في الكتاب، وقد يختلف ترتيبها عن منضدة كليتك.</p>':''}
     <label class="bn-name">اسمك (يظهر في «جاهز للمعمل»): <input type="text" maxlength="60" value="${esc(hist.name||'')}" data-name></label></div>
    <div class="bn-tools" role="toolbar" aria-label="أدوات التوصيل">
-    <div class="seg" role="group" aria-label="طريقة التوصيل"><button type="button" data-mode="drag">السحب</button><button type="button" data-mode="tap">اللمس</button></div>
+    <div class="seg" role="group" aria-label="طريقة التوصيل"><button type="button" data-mode="drag">السحب</button><button type="button" data-mode="tap">اللمس</button>${X.probe?'<button type="button" data-mode="probe">جهاز القياس</button>':''}</div>
     <span class="bn-colors" role="group" aria-label="لون السلك">${Object.keys(WCOL).map(c=>`<button type="button" class="bn-c" data-color="${c}" style="--c:${WCOL[c]}" aria-label="سلك ${WNAME[c]}" title="سلك ${WNAME[c]}"></button>`).join('')}</span>
     <button type="button" class="btn" data-del disabled>احذف السلك المحدد</button>
     <button type="button" class="btn" data-fig>مخطط التوصيل</button>
@@ -146,7 +146,7 @@ function mount(el,cfg){
   /* ---- الشبكات من الأسلاك ---- */
   function nets(){const par={};const f=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x]}return x};Object.keys(TERM).forEach(t=>par[t]=t);
     (LY.bridges||[]).forEach(([a,b])=>{if(par[a]!=null&&par[b]!=null)par[f(a)]=f(b)});/* وصلات داخلية ثابتة (قضبان توزيع) */
-    S.wires.forEach(w=>{par[f(w.a)]=f(w.b)});const id={};let n=0;Object.keys(TERM).forEach(t=>{const r=f(t);if(!(r in id))id[r]=n++;});
+    S.wires.forEach(w=>{if(!w.open)par[f(w.a)]=f(w.b)});/* open: سلك مقطوع من الداخل (عطل مخفي) */const id={};let n=0;Object.keys(TERM).forEach(t=>{const r=f(t);if(!(r in id))id[r]=n++;});
     const of={};Object.keys(TERM).forEach(t=>of[t]=id[f(t)]);return {of,n}}
   let NET=nets();
   const conn=(a,b)=>NET.of[a]===NET.of[b];
@@ -183,6 +183,7 @@ function mount(el,cfg){
     if(sw){const d=SWD[sw.dataset.sw]||{};if(d.push){e.preventDefault();pressSw(sw.dataset.sw,true);pushHeld=sw.dataset.sw;return}toggleSw(sw.dataset.sw);return}
     if(rg){S.range[rg.dataset.rng]=+rg.dataset.i;drawCtl();return}
     if(t){const id=t.dataset.t;
+      if(S.mode==='probe'){if(!S.tapFrom){S.tapFrom=id;drawWires();H('جهاز القياس: المس الطرف الثاني.')}else{const a=S.tapFrom;S.tapFrom=null;drawWires();if(a!==id){S.probe=[a,id];H(X.probe(a,id,api))}}return}
       if(S.mode==='tap'){if(!S.tapFrom){S.tapFrom=id;drawWires();H('اختر الطرف الثاني للسلك (أو المس الطرف نفسه للإلغاء).')}else{const a=S.tapFrom;S.tapFrom=null;if(a===id){drawWires();H('')}else addWire(a,id)}return}
       e.preventDefault();svg.setPointerCapture(e.pointerId);drag={from:id};temp.setAttribute('stroke',WCOL[S.color]);return}
     if(w){S.sel=+w.dataset.w;drawWires();H('حدّدت سلكاً: اضغط «احذف السلك المحدد» لفكه.');return}
@@ -209,7 +210,7 @@ function mount(el,cfg){
     else if(X.onSwitchOff)X.onSwitchOff(id,api);
     S.sw[id]=on;drawCtl();paintSteps()}
   /* الأدوات */
-  $$('[data-mode]',el).forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;LS.set('bench-mode',S.mode);S.tapFrom=null;paintTools();H(S.mode==='tap'?'اللمس: المس طرفاً ثم الطرف الآخر.':'السحب: اسحب من طرف وأفلت على الطرف الآخر.')}));
+  $$('[data-mode]',el).forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;if(S.mode!=='probe')LS.set('bench-mode',S.mode);S.tapFrom=null;paintTools();H(S.mode==='probe'?'جهاز القياس: المس طرفين لقراءة الجهد بينهما.':S.mode==='tap'?'اللمس: المس طرفاً ثم الطرف الآخر.':'السحب: اسحب من طرف وأفلت على الطرف الآخر.')}));
   $$('[data-color]',el).forEach(b=>b.addEventListener('click',()=>{S.color=b.dataset.color;paintTools()}));
   $('[data-del]',el).addEventListener('click',()=>delWire(S.sel));
   $$('[data-zoom]',el).forEach(b=>b.addEventListener('click',()=>{setZoom((S.zoom||fitZ())*(b.dataset.zoom>0?1.25:0.8))}));
@@ -258,7 +259,7 @@ function mount(el,cfg){
     else{R.innerHTML=`<div class="bn-notready"><p class="bn-big">أكملت التجربة، مع ${S.mistakes.length} ${S.mistakes.length===1?'خطأ':'أخطاء'}</p><p>لتحصل على «جاهز للمعمل» أعد التجربة من البداية وأكملها بلا أي خطأ. راجع قائمة الأخطاء أعلاه.</p><button type="button" class="btn primary" data-again>أعد المحاولة</button></div>`;
       $('[data-again]',R).addEventListener('click',resetAll)}
     R.scrollIntoView({block:'nearest',behavior:'smooth'})}
-  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=findKnob(k).init||0);Object.keys(S.sw).forEach(k=>S.sw[k]=!!(SWD[k]||{}).init);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};
+  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=findKnob(k).init||0);Object.keys(S.sw).forEach(k=>S.sw[k]=!!(SWD[k]||{}).init);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};if(X.prewire){S.wires=X.prewire(api);NET=nets()}
     persist();$('.bn-result',el).hidden=true;alertEl.hidden=true;$('[data-recmsg]',el).textContent='';drawWires();drawCtl();paintLog();paintTables();stepSig='';paintSteps();H('بدأت محاولة جديدة.')}
   /* ---- واجهة للتجربة ---- */
   const api={S,P:()=>P.v,conn,nets:()=>NET,TERM,mistake,once:(id,info)=>{if(S.once[id])return;S.once[id]=1;mistake(id,info)},rearm:id=>{delete S.once[id]},
@@ -282,14 +283,14 @@ function mount(el,cfg){
           if(!d.ac&&api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
     $$('.bn-led',svg).forEach(c=>{const on=!!readings[c.dataset.led];if(c.__on!==on){c.__on=on;c.setAttribute('fill',on?c.dataset.col:'#4a4f4c');c.setAttribute('filter',on?'url(#bnglow)':'')}});
     if(X.view&&X.view.frame)try{X.view.frame($('[data-view]',el),api)}catch(err){console.error(err)}
-    stepT+=api.dt;if(stepT>0.4){stepT=0;paintSteps()}
+    stepT+=api.dt;if(stepT>0.4){stepT=0;paintSteps();if(S.mode==='probe'&&S.probe&&X.probe)H(X.probe(S.probe[0],S.probe[1],api))}
     requestAnimationFrame(loop)}
   let stepT=0;
   /* للاختبار الآلي فقط */
   el.__bench={api,wire:addWire,unwire:(a,b)=>{const i=S.wires.findIndex(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a));if(i>=0)delWire(i)},knob:setKnob,sw:id=>toggleSw(id),press:(id,on)=>{S.sw[id]=!!on;drawCtl();if(on&&X.onSwitchOn)X.onSwitchOn(id,api);if(!on&&X.onSwitchOff)X.onSwitchOff(id,api)},range:(id,i)=>{S.range[id]=i;drawCtl()},rec:()=>{$('[data-rec]',el).click();return $('[data-recmsg]',el).textContent},act:i=>$$('[data-act]',el)[i].click(),read:()=>readings,reset:resetAll,
     tickN(n,dt){dt=dt||0.05;for(let i=0;i<n;i++){api.dt=dt;S.t+=dt;try{readings=X.tick?X.tick(api)||{}:{}}catch(err){console.error(err);throw err}}paintSteps();return readings},S};
   /* ---- البداية ---- */
-  {const sv=LS.get(KEY+'-w',null);if(sv&&!Array.isArray(sv)){S.wires=(sv.wires||[]).filter(w=>TERM[w.a]&&TERM[w.b]);S.mistakes=sv.mistakes||[];S.rec=sv.rec||{};S.once=sv.once||{}}}NET=nets();
+  {const sv=LS.get(KEY+'-w',null);if(sv&&!Array.isArray(sv)){S.wires=(sv.wires||[]).filter(w=>TERM[w.a]&&TERM[w.b]);S.mistakes=sv.mistakes||[];S.rec=sv.rec||{};S.once=sv.once||{}}if(X.prewire&&!S.wires.length)S.wires=X.prewire(api);}NET=nets();
   drawWires();drawCtl();paintTools();paintLog();paintTables();paintSteps();paintHist();
   if(X.view&&X.view.mount)try{X.view.mount($('[data-view]',el),api)}catch(err){console.error(err)}
   requestAnimationFrame(loop);
