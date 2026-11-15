@@ -67,6 +67,8 @@ function knobSVG(k,val){const r=k.r||26,fr=clamp(val/k.max,0,1),a=(-135+270*fr)*
    <path d="M${(-0.7071*(r+5)).toFixed(1)} ${(0.7071*(r+5)).toFixed(1)}A${r+5} ${r+5} 0 ${fr>2/3?1:0} 1 ${(Math.sin(a)*(r+5)).toFixed(1)} ${(-Math.cos(a)*(r+5)).toFixed(1)}" fill="none" stroke="#2563B8" stroke-width="3" ${fr<0.004?'opacity="0"':''}/>`}
 function switchSVG(on){return `<rect x="-20" y="-14" width="40" height="28" rx="5" fill="${on?'#1f7a4d':'#5b5f63'}" stroke="#222"/><rect x="${on?2:-18}" y="-11" width="16" height="22" rx="3" fill="#f2f2ee"/><text x="${on?-10:10}" y="5" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">${on?'I':'O'}</text>`}
 
+const PBC={red:'#c8382e',green:'#1f9a55',black:'#2b2b2b',blue:'#2457b5',yellow:'#e0b21c',white:'#eee'};
+function pushSVG(on,col){const c=PBC[col]||PBC.black;return `<circle r="19" fill="#c9ccc4" stroke="#555"/><circle r="${on?13:15}" fill="${c}" stroke="#111" stroke-width="1.5"/>${on?'':'<circle r="15" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2" cy="-1.5"/>'}`}
 /* ---------- المنضدة ---------- */
 B.BENCH={readyCode,today,solveDC,solveAC,C,mount};
 function mount(el,cfg){
@@ -75,7 +77,8 @@ function mount(el,cfg){
   /* الحالة */
   const S={wires:[],knob:{},sw:{},range:{},sel:null,tapFrom:null,mode:LS.get('bench-mode',null)||(matchMedia('(pointer:coarse)').matches?'tap':'drag'),color:'red',zoom:null,t:0,
     mistakes:[],once:{},timers:{},trip:null,rec:{},done:false,finished:false,phys:X.init?X.init(P.v):{}};
-  (LY.modules||[]).forEach(m=>{(m.knobs||[]).forEach(k=>S.knob[k.id]=k.init||0);(m.switches||[]).forEach(s=>S.sw[s.id]=false);(m.meters||[]).forEach(d=>{if(d.ranges)S.range[d.id]=d.ranges.length-1})});
+  (LY.modules||[]).forEach(m=>{(m.knobs||[]).forEach(k=>S.knob[k.id]=k.init||0);(m.switches||[]).forEach(s=>S.sw[s.id]=!!s.init);(m.meters||[]).forEach(d=>{if(d.ranges)S.range[d.id]=d.ranges.length-1})});
+  const SWD={};(LY.modules||[]).forEach(m=>(m.switches||[]).forEach(s=>SWD[s.id]=s));
   const hist=LS.get(KEY,{attempts:[],name:''});
   /* أطراف */
   const TERM={};(LY.modules||[]).forEach(m=>(m.terms||[]).forEach(t=>{TERM[t.id]=Object.assign({mod:m},t,{X:m.x+t.x,Y:m.y+t.y})}));
@@ -98,7 +101,8 @@ function mount(el,cfg){
    <div class="bn-alert" role="alert" hidden></div>
    <div class="bn-grid">
     <div class="panel bn-steps"><h3>خطوات التجربة</h3><ol></ol></div>
-    <div class="panel bn-tables"><h3>القراءات</h3><div data-tables></div>${(X.actions||[]).map((a,i)=>`<button type="button" class="btn" data-act="${i}">${a.label}</button>`).join('')}<button type="button" class="btn primary" data-rec>سجّل القراءة</button><p class="sub" data-recmsg aria-live="polite"></p><div data-plot></div></div>
+    ${X.view?`<div class="panel bn-view"><h3>${X.view.title||'الجهاز'}</h3><div data-view></div></div>`:''}
+    <div class="panel bn-tables"${X.tables?'':' hidden'}><h3>القراءات</h3><div data-tables></div>${(X.actions||[]).map((a,i)=>`<button type="button" class="btn" data-act="${i}">${a.label}</button>`).join('')}<button type="button" class="btn primary" data-rec>سجّل القراءة</button><p class="sub" data-recmsg aria-live="polite"></p><div data-plot></div></div>
    </div>
    <div class="panel bn-log"><h3>أخطاء هذه المحاولة <span data-mcount>0</span></h3><ol data-mlist></ol><p class="sub" data-mnone>لا أخطاء حتى الآن.</p></div>
    <div class="bn-result" hidden></div>
@@ -109,7 +113,7 @@ function mount(el,cfg){
   </section>`;
   const svg=$('.bn-svg',el),hint=$('.bn-hint',el),alertEl=$('.bn-alert',el),wrap=$('.bn-wrap',el);
   /* ---- رسم الوحدات الثابتة ---- */
-  let g='<defs><filter id="bnsh" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".18"/></filter></defs>';
+  let g='<defs><filter id="bnglow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="bnsh" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".18"/></filter></defs>';
   g+=`<rect width="${LY.w}" height="${LY.h}" fill="${LY.bg||'#D9DCD4'}"/>`;
   if(LY.draw)g+=LY.draw();
   (LY.modules||[]).forEach(m=>{
@@ -121,7 +125,8 @@ function mount(el,cfg){
     (m.meters||[]).forEach(d=>{g+=`<g class="bn-meter" data-meter="${d.id}" transform="translate(${d.x} ${d.y})"></g>`;
       if(d.ranges)g+=`<g transform="translate(${d.x} ${d.y+(d.h||96)+8})">${d.ranges.map((r,i)=>`<g class="bn-rng" data-rng="${d.id}" data-i="${i}" role="button" tabindex="0" aria-label="مدى ${r} ${d.unit}" transform="translate(${i*((d.w||150)/d.ranges.length)} 0)"><rect width="${(d.w||150)/d.ranges.length-4}" height="22" rx="4"/><text x="${((d.w||150)/d.ranges.length-4)/2}" y="15" font-size="11" text-anchor="middle">${r} ${d.unit}</text></g>`).join('')}</g>`});
     (m.knobs||[]).forEach(k=>{g+=`<g class="bn-knob" data-knob="${k.id}" transform="translate(${k.x} ${k.y})" role="slider" tabindex="0" aria-label="${esc(k.lbl)}" aria-valuemin="0" aria-valuemax="${k.max}"></g><text x="${k.x}" y="${k.y+(k.r||26)+22}" font-size="11" text-anchor="middle" fill="#33403a"${AR(k.lbl)}>${esc(k.lbl)}</text>`});
-    (m.switches||[]).forEach(s=>{g+=`<g class="bn-sw" data-sw="${s.id}" transform="translate(${s.x} ${s.y})" role="switch" tabindex="0" aria-label="${esc(s.lbl)}"></g><text x="${s.x}" y="${s.y+30}" font-size="11" text-anchor="middle" fill="#33403a"${AR(s.lbl)}>${esc(s.lbl)}</text>`});
+    (m.switches||[]).forEach(s=>{g+=`<g class="bn-sw" data-sw="${s.id}" transform="translate(${s.x} ${s.y})" role="${s.push?'button':'switch'}" tabindex="0" aria-label="${esc(s.lbl)}"></g><text x="${s.x}" y="${s.y+(s.push?34:30)}" font-size="11" text-anchor="middle" fill="#33403a"${AR(s.lbl)}>${esc(s.lbl)}</text>`});
+    (m.leds||[]).forEach(d=>{g+=`<circle class="bn-led" data-led="${d.id}" data-col="${d.color||'#ffb000'}" cx="${d.x}" cy="${d.y}" r="${d.r||6}" fill="#4a4f4c" stroke="#222"/>`;if(d.lbl)g+=`<text x="${d.x}" y="${d.y-(d.r||6)-4}" font-size="${d.s||9}" text-anchor="middle" fill="#33403a">${esc(d.lbl)}</text>`});
     g+='</g>'});
   g+='<g class="bn-wires"></g><g class="bn-terms"></g><path class="bn-temp" d="" fill="none" stroke-width="5" stroke-linecap="round" opacity=".7"/>';
   svg.innerHTML=g;
@@ -134,12 +139,13 @@ function mount(el,cfg){
   function drawWires(){gW.innerHTML=S.wires.map((w,i)=>{const a=TERM[w.a],b=TERM[w.b];return `<g class="bn-wire${S.sel===i?' sel':''}" data-w="${i}" role="button" tabindex="0" aria-label="سلك ${WNAME[w.c]} من ${esc(a.lbl)} إلى ${esc(b.lbl)}"><path d="${curve(a,b)}" stroke="transparent" stroke-width="16" fill="none"/><path d="${curve(a,b)}" stroke="${WCOL[w.c]}" stroke-width="4.5" fill="none" stroke-linecap="round"/></g>`}).join('');
     $('[data-del]',el).disabled=S.sel==null;$$('.bn-term',gT).forEach(t=>t.classList.toggle('from',S.tapFrom===t.dataset.t))}
   function drawCtl(){$$('.bn-knob',svg).forEach(k=>{const d=findKnob(k.dataset.knob);k.innerHTML=knobSVG(d,S.knob[d.id]);k.setAttribute('aria-valuenow',fmt(S.knob[d.id],d.dp||0));k.setAttribute('aria-valuetext',fmt(S.knob[d.id],d.dp||0)+' '+(d.unit||''))});
-    $$('.bn-sw',svg).forEach(s=>{s.innerHTML=switchSVG(S.sw[s.dataset.sw]);s.setAttribute('aria-checked',S.sw[s.dataset.sw])});
+    $$('.bn-sw',svg).forEach(s=>{const d=SWD[s.dataset.sw]||{};s.innerHTML=d.push?pushSVG(S.sw[s.dataset.sw],d.color):switchSVG(S.sw[s.dataset.sw]);s.setAttribute('aria-checked',S.sw[s.dataset.sw])});
     $$('.bn-rng',svg).forEach(r=>r.classList.toggle('on',S.range[r.dataset.rng]===+r.dataset.i))}
   const knobs={},meters={};(LY.modules||[]).forEach(m=>{(m.knobs||[]).forEach(k=>knobs[k.id]=k);(m.meters||[]).forEach(d=>meters[d.id]=d)});
   const findKnob=id=>knobs[id];
   /* ---- الشبكات من الأسلاك ---- */
   function nets(){const par={};const f=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x]}return x};Object.keys(TERM).forEach(t=>par[t]=t);
+    (LY.bridges||[]).forEach(([a,b])=>{if(par[a]!=null&&par[b]!=null)par[f(a)]=f(b)});/* وصلات داخلية ثابتة (قضبان توزيع) */
     S.wires.forEach(w=>{par[f(w.a)]=f(w.b)});const id={};let n=0;Object.keys(TERM).forEach(t=>{const r=f(t);if(!(r in id))id[r]=n++;});
     const of={};Object.keys(TERM).forEach(t=>of[t]=id[f(t)]);return {of,n}}
   let NET=nets();
@@ -162,8 +168,8 @@ function mount(el,cfg){
   /* ---- التفاعل ---- */
   const H=msg=>{hint.textContent=msg||''};
   const pt=e=>{const r=svg.getBoundingClientRect();return {X:(e.clientX-r.left)/r.width*LY.w,Y:(e.clientY-r.top)/r.height*LY.h}};
-  const anyOn=()=>Object.values(S.sw).some(Boolean);
-  function addWire(a,b){if(a===b)return;if(S.wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){H('بين هذين الطرفين سلك من قبل.');return}
+  const anyOn=()=>X.powerSw?X.powerSw.some(id=>S.sw[id]):Object.values(S.sw).some(Boolean);
+  function addWire(a,b){if(a===b||!TERM[a]||!TERM[b])return;if(S.wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){H('بين هذين الطرفين سلك من قبل.');return}
     const cnt=t=>S.wires.filter(w=>w.a===t||w.b===t).length;if(cnt(a)>=3||cnt(b)>=3){H('الطرف لا يتسع لأكثر من ثلاثة أسلاك.');return}
     if(anyOn())mistake('live-wiring');
     S.wires.push({a,b,c:S.color});NET=nets();S.sel=null;drawWires();H('وصّلت '+TERM[a].lbl+' ← '+TERM[b].lbl+'.');onWiring()}
@@ -171,9 +177,10 @@ function mount(el,cfg){
   function persist(){LS.set(KEY+'-w',{wires:S.wires,mistakes:S.mistakes,rec:S.rec,once:S.once})}
   function onWiring(){persist();paintSteps()}
   let drag=null;
-  svg.addEventListener('pointerdown',e=>{const t=e.target.closest('.bn-term'),k=e.target.closest('.bn-knob'),sw=e.target.closest('.bn-sw'),rg=e.target.closest('.bn-rng'),w=e.target.closest('.bn-wire');
+  svg.addEventListener('pointerdown',e=>{let t=e.target.closest('.bn-term'),k=e.target.closest('.bn-knob'),sw=e.target.closest('.bn-sw'),rg=e.target.closest('.bn-rng'),w=e.target.closest('.bn-wire');
+    if(w&&!t){/* سلك فوق مقبض أو ضاغط: الأولوية للعنصر الذي تحته */const under=document.elementsFromPoint(e.clientX,e.clientY);const f=c=>under.map(x=>x.closest&&x.closest(c)).find(Boolean);const s2=f('.bn-sw'),k2=f('.bn-knob'),r2=f('.bn-rng');if(s2||k2||r2){sw=s2;k=k2;rg=r2;w=null}}
     if(k){e.preventDefault();k.setPointerCapture(e.pointerId);drag={knob:k.dataset.knob,x:e.clientX,y:e.clientY,v0:S.knob[k.dataset.knob]};return}
-    if(sw){toggleSw(sw.dataset.sw);return}
+    if(sw){const d=SWD[sw.dataset.sw]||{};if(d.push){e.preventDefault();pressSw(sw.dataset.sw,true);pushHeld=sw.dataset.sw;return}toggleSw(sw.dataset.sw);return}
     if(rg){S.range[rg.dataset.rng]=+rg.dataset.i;drawCtl();return}
     if(t){const id=t.dataset.t;
       if(S.mode==='tap'){if(!S.tapFrom){S.tapFrom=id;drawWires();H('اختر الطرف الثاني للسلك (أو المس الطرف نفسه للإلغاء).')}else{const a=S.tapFrom;S.tapFrom=null;if(a===id){drawWires();H('')}else addWire(a,id)}return}
@@ -183,14 +190,20 @@ function mount(el,cfg){
   svg.addEventListener('pointermove',e=>{if(!drag)return;
     if(drag.knob){const d=findKnob(drag.knob),dv=((e.clientX-drag.x)-(e.clientY-drag.y))*(d.max/260);setKnob(drag.knob,drag.v0+dv);return}
     if(drag.from){const a=TERM[drag.from],p=pt(e);temp.setAttribute('d',curve(a,p))}});
-  const endDrag=e=>{if(!drag)return;const d=drag;drag=null;temp.setAttribute('d','');
+  const endDrag=e=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}if(!drag)return;const d=drag;drag=null;temp.setAttribute('d','');
     if(d.from){const p=pt(e);let best=null,bd=26;Object.values(TERM).forEach(t=>{const dd=Math.hypot(t.X-p.X,t.Y-p.Y);if(dd<bd){bd=dd;best=t}});if(best&&best.id!==d.from)addWire(d.from,best.id)}};
-  svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',()=>{drag=null;temp.setAttribute('d','')});
+  svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',()=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}drag=null;temp.setAttribute('d','')});
+  svg.addEventListener('pointerleave',()=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}});
+  svg.addEventListener('keyup',e=>{const sw=e.target.closest('.bn-sw');if(sw&&(SWD[sw.dataset.sw]||{}).push&&(e.key===' '||e.key==='Enter'))pressSw(sw.dataset.sw,false)});
   svg.addEventListener('keydown',e=>{const k=e.target.closest('.bn-knob'),sw=e.target.closest('.bn-sw'),t=e.target.closest('.bn-term'),w=e.target.closest('.bn-wire'),rg=e.target.closest('.bn-rng');
     if(k){const d=findKnob(k.dataset.knob),st=d.step||d.max/100;if(e.key==='ArrowUp'||e.key==='ArrowRight'){setKnob(d.id,S.knob[d.id]+st);e.preventDefault()}if(e.key==='ArrowDown'||e.key==='ArrowLeft'){setKnob(d.id,S.knob[d.id]-st);e.preventDefault()}if(e.key==='Home'){setKnob(d.id,d.min||0);e.preventDefault()}if(e.key==='End'){setKnob(d.id,d.max);e.preventDefault()}return}
-    if((e.key==='Enter'||e.key===' ')&&(sw||t||rg)){e.preventDefault();if(sw)toggleSw(sw.dataset.sw);else if(rg){S.range[rg.dataset.rng]=+rg.dataset.i;drawCtl()}else{const id=t.dataset.t;if(!S.tapFrom){S.tapFrom=id;drawWires();H('اختر الطرف الثاني ثم اضغط Enter.')}else{const a=S.tapFrom;S.tapFrom=null;a===id?drawWires():addWire(a,id)}}}
+    if((e.key==='Enter'||e.key===' ')&&(sw||t||rg)){e.preventDefault();if(sw){if((SWD[sw.dataset.sw]||{}).push){if(!e.repeat)pressSw(sw.dataset.sw,true)}else toggleSw(sw.dataset.sw)}else if(rg){S.range[rg.dataset.rng]=+rg.dataset.i;drawCtl()}else{const id=t.dataset.t;if(!S.tapFrom){S.tapFrom=id;drawWires();H('اختر الطرف الثاني ثم اضغط Enter.')}else{const a=S.tapFrom;S.tapFrom=null;a===id?drawWires():addWire(a,id)}}}
     if(w&&(e.key==='Delete'||e.key==='Backspace')){delWire(+w.dataset.w);e.preventDefault()}});
   function setKnob(id,v){const d=findKnob(id),st=d.step||d.max/500;S.knob[id]=clamp(+(Math.round(v/st)*st).toFixed(6),d.min||0,d.max);drawCtl()}
+  let pushHeld=null;const pushT={};
+  /* ضاغط لحظي: يبقى مضغوطاً ما دام الإصبع عليه، وأقل مدة 0.26 ث حتى تلتقطها دورة المسح */
+  function pressSw(id,on){if(on){pushT[id]=performance.now();S.sw[id]=true;drawCtl();if(X.onSwitchOn)X.onSwitchOn(id,api);return}
+    const w=Math.max(0,260-(performance.now()-(pushT[id]||0)));setTimeout(()=>{S.sw[id]=false;drawCtl();if(X.onSwitchOff)X.onSwitchOff(id,api)},w)}
   function toggleSw(id){const on=!S.sw[id];
     if(on){const ks=(X.swKnob||{})[id];if(ks&&S.knob[ks]>(findKnob(ks).min||0)+findKnob(ks).max*0.02)mistake('start-not-zero');S.trip=null;if(X.onSwitchOn)X.onSwitchOn(id,api)}
     else if(X.onSwitchOff)X.onSwitchOff(id,api);
@@ -227,7 +240,7 @@ function mount(el,cfg){
     if(r.ok&&r.multi)r.multi.forEach(x=>{(S.rec[x.table]=S.rec[x.table]||{})[x.col]=x.val});if(r.ok&&!r.multi){(S.rec[r.table]=S.rec[r.table]||{})[r.col]=r.val}if(r.ok){persist();paintTables();paintSteps()}if(r.clear){delete S.rec[r.clear];persist();paintTables();paintSteps()}});
   /* ---- الخطوات ---- */
   let stepSig='';
-  function paintSteps(){const ds=(X.steps||[]).map(s=>!!(s.done&&s.done(api))),sig=ds.join();if(sig!==stepSig){stepSig=sig;$('.bn-steps ol',el).innerHTML=(X.steps||[]).map((s,i)=>`<li class="${ds[i]?'ok':''}">${ds[i]?'<span class="bn-ck" aria-label="تم">✓</span>':''}${s.t}</li>`).join('')}
+  function paintSteps(){const ds=(X.steps||[]).map(s=>!!(s.done&&s.done(api))),lv=(X.steps||[]).map((s,i)=>!ds[i]&&s.live?s.live(api):''),sig=ds.join()+lv.join('|');if(sig!==stepSig){stepSig=sig;$('.bn-steps ol',el).innerHTML=(X.steps||[]).map((s,i)=>`<li class="${ds[i]?'ok':''}">${ds[i]?'<span class="bn-ck" aria-label="تم">✓</span>':''}${s.t}${lv[i]?`<br><small class="sub">${lv[i]}</small>`:''}</li>`).join('')}
     if(!S.finished&&X.complete&&X.complete(api))finish()}
   /* ---- النهاية ---- */
   function saveAttempt(completed){hist.attempts.push({date:new Date().toISOString(),completed,mistakes:S.mistakes.map(m=>({id:m.id,t:m.t}))});if(hist.attempts.length>40)hist.attempts=hist.attempts.slice(-40);LS.set(KEY,hist);paintHist()}
@@ -245,7 +258,7 @@ function mount(el,cfg){
     else{R.innerHTML=`<div class="bn-notready"><p class="bn-big">أكملت التجربة، مع ${S.mistakes.length} ${S.mistakes.length===1?'خطأ':'أخطاء'}</p><p>لتحصل على «جاهز للمعمل» أعد التجربة من البداية وأكملها بلا أي خطأ. راجع قائمة الأخطاء أعلاه.</p><button type="button" class="btn primary" data-again>أعد المحاولة</button></div>`;
       $('[data-again]',R).addEventListener('click',resetAll)}
     R.scrollIntoView({block:'nearest',behavior:'smooth'})}
-  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=findKnob(k).init||0);Object.keys(S.sw).forEach(k=>S.sw[k]=false);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};
+  function resetAll(){S.wires=[];NET=nets();Object.keys(S.knob).forEach(k=>S.knob[k]=findKnob(k).init||0);Object.keys(S.sw).forEach(k=>S.sw[k]=!!(SWD[k]||{}).init);S.mistakes=[];S.once={};S.timers={};S.rec={};S.trip=null;S.finished=false;S.sel=null;S.tapFrom=null;S.phys=X.init?X.init(P.v):{};
     persist();$('.bn-result',el).hidden=true;alertEl.hidden=true;$('[data-recmsg]',el).textContent='';drawWires();drawCtl();paintLog();paintTables();stepSig='';paintSteps();H('بدأت محاولة جديدة.')}
   /* ---- واجهة للتجربة ---- */
   const api={S,P:()=>P.v,conn,nets:()=>NET,TERM,mistake,once:(id,info)=>{if(S.once[id])return;S.once[id]=1;mistake(id,info)},rearm:id=>{delete S.once[id]},
@@ -267,15 +280,18 @@ function mount(el,cfg){
       else{const rg=d.ranges?d.ranges[S.range[d.id]]:d.max;gm.innerHTML=gaugeSVG(d,r==null?0:r,rg,d.unit);
         if(r!=null){const fr=r/rg;if(api.hold('or-'+d.id,fr>1.03,0.25))api.once('over-range-'+d.id,{t:'القراءة تجاوزت مدى '+(d.name||d.unit),why:GENERIC['over-range'].why});else if(fr<0.9)api.rearm('over-range-'+d.id);
           if(!d.ac&&api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
+    $$('.bn-led',svg).forEach(c=>{const on=!!readings[c.dataset.led];if(c.__on!==on){c.__on=on;c.setAttribute('fill',on?c.dataset.col:'#4a4f4c');c.setAttribute('filter',on?'url(#bnglow)':'')}});
+    if(X.view&&X.view.frame)try{X.view.frame($('[data-view]',el),api)}catch(err){console.error(err)}
     stepT+=api.dt;if(stepT>0.4){stepT=0;paintSteps()}
     requestAnimationFrame(loop)}
   let stepT=0;
   /* للاختبار الآلي فقط */
-  el.__bench={api,wire:addWire,unwire:(a,b)=>{const i=S.wires.findIndex(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a));if(i>=0)delWire(i)},knob:setKnob,sw:id=>toggleSw(id),range:(id,i)=>{S.range[id]=i;drawCtl()},rec:()=>{$('[data-rec]',el).click();return $('[data-recmsg]',el).textContent},act:i=>$$('[data-act]',el)[i].click(),read:()=>readings,reset:resetAll,
+  el.__bench={api,wire:addWire,unwire:(a,b)=>{const i=S.wires.findIndex(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a));if(i>=0)delWire(i)},knob:setKnob,sw:id=>toggleSw(id),press:(id,on)=>{S.sw[id]=!!on;drawCtl();if(on&&X.onSwitchOn)X.onSwitchOn(id,api);if(!on&&X.onSwitchOff)X.onSwitchOff(id,api)},range:(id,i)=>{S.range[id]=i;drawCtl()},rec:()=>{$('[data-rec]',el).click();return $('[data-recmsg]',el).textContent},act:i=>$$('[data-act]',el)[i].click(),read:()=>readings,reset:resetAll,
     tickN(n,dt){dt=dt||0.05;for(let i=0;i<n;i++){api.dt=dt;S.t+=dt;try{readings=X.tick?X.tick(api)||{}:{}}catch(err){console.error(err);throw err}}paintSteps();return readings},S};
   /* ---- البداية ---- */
   {const sv=LS.get(KEY+'-w',null);if(sv&&!Array.isArray(sv)){S.wires=(sv.wires||[]).filter(w=>TERM[w.a]&&TERM[w.b]);S.mistakes=sv.mistakes||[];S.rec=sv.rec||{};S.once=sv.once||{}}}NET=nets();
   drawWires();drawCtl();paintTools();paintLog();paintTables();paintSteps();paintHist();
+  if(X.view&&X.view.mount)try{X.view.mount($('[data-view]',el),api)}catch(err){console.error(err)}
   requestAnimationFrame(loop);
   return api;
 }
