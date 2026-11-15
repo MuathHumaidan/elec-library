@@ -47,6 +47,7 @@ function specOf(L){
   const kind=/^K/i.test(sym)?'coil':/^T\d/i.test(sym)?'timer':/^Y\d/i.test(sym)?'valve':'lamp';
   const color=/^G/i.test(sym)?'green':/^R/i.test(sym)?'red':/^Y/i.test(sym)?'yellow':'amber';
   outAddrs.push(a);outputs.push({sym,desc:r.desc||'',addr:a,kind,color})});
+ const analog=(L.io||[]).filter(r=>/^PIW\d+$/i.test(N(r.addr))).map(r=>({sym:N(r.sym),desc:r.desc||'',addr:N(r.addr),kind:/^TC|ثرموكبل/i.test(N(r.sym)+r.desc)?'tc':'pot'}));
  let power=null;const fam=FAM[L.id];
  if(fam){const cont=[];outputs.forEach((o,i)=>{if(o.kind==='coil'&&/^K\d$/.test(o.sym))cont.push(i)});
   power={fam,cont,ol:fam==='dahl'?['F4','F5']:['F4'],res:fam==='wr'?['R1','R2','R3']:[],motor:MOTOR[fam]}}
@@ -54,7 +55,7 @@ function specOf(L){
  outAddrs.sort((x,y)=>parseFloat(x.slice(1))-parseFloat(y.slice(1)));outputs.sort((x,y)=>parseFloat(x.addr.slice(1))-parseFloat(y.addr.slice(1)));
  /* الترتيب أعلاه يغيّر الفهارس: نعيد حساب المتممات بعد الترتيب */
  if(power){power.cont=[];outputs.forEach((o,i)=>{if(o.kind==='coil'&&/^K\d$/.test(o.sym))power.cont.push(i)})}
- return {inputs,outputs,extras,inAddrs,outAddrs,power}}
+ return {inputs,outputs,extras,inAddrs,outAddrs,power,analog}}
 
 /* ---- مخطط التوصيل المولَّد من جدول المداخل والمخارج ---- */
 function figSVG(sp){const n=Math.max(sp.inputs.length,1),m=Math.max(sp.outputs.length,1),cw=86,w=Math.max(n,m)*cw+180,h=430;
@@ -83,6 +84,8 @@ const MZ={
  'wrong-rotation':{t:'اتجاه دوران المحرك معكوس',why:'ترتيب الأوجه على بداية الملفات غير ترتيب الكتاب (L1 على U، L2 على V، L3 على W)، فدار المحرك عكس المطلوب. في الآلة قد يتلف هذا المضخة أو الحمل.'},
  'no-overload':{t:'المحرك يعمل بدون الحماية الحرارية',why:'أطراف القدرة للحماية الحرارية F4 (أو F5) يجب أن تكون بين المتمم والمحرك، حتى يفصل تلامسها المساعد دائرة التحكم إذا زاد التيار.'},
  'rotor-open':{t:'دائرة العضو الدائر مفتوحة',why:'المحرك ذو العضو الدائر الملفوف لا يبدأ إذا كانت حلقات K L M غير موصولة بالمقاومات ونقطة النجمة. العضو الثابت يسحب تيار اللاحمل فقط والمحرك لا يدور.'},
+ 'tc-reversed':{t:'الثرموكبل موصّل بقطبية معكوسة',why:'الثرموكبل يعطي جهداً صغيراً له قطبية. إذا عُكس قرأ الـ PLC حرارة أقل من الحقيقية (سالبة)، فيبقى السخان يعمل والغرفة تسخن بلا حد. الطرف + إلى + القناة.'},
+ 'overheat':{t:'الغرفة تجاوزت الحد الأعلى بكثير',why:'الحرارة الفعلية تجاوزت حد الفصل (120% من المطلوبة) بأكثر من 15 °C والسخان ما زال يعمل. السبب في توصيل الحساس أو قناته. افصل وافحص.',fatal:true,off:['RUN']},
  'pwr-off-run':{t:'فصلت المصدر والـ PLC في RUN',why:'حوّل الـ PLC إلى STOP أولاً (تتوقف المخارج بأمان)، ثم افصل المصدر.'}
 };
 
@@ -132,7 +135,22 @@ function exp(L,sp){
   if(PWR)powerTick(a,ph,ldOn,Qphys);
   /* الجهاز */
   const s=st(a,ph,Qphys);ph.s=s;
+  const AN=sp.analog||[];let anV=null;
+  if(AN.length){anV=AN.map((c,k)=>{const pp=gC('A'+k+'.+'),mm=gC('A'+k+'.-'),cp=gC('AI'+k+'+'),cm=gC('AI'+k+'-');
+    if(!on)return {st:'off'};if(pp===cp&&mm===cm)return {st:'ok'};if(pp===cm&&mm===cp)return {st:'rev'};
+    const other=AN.findIndex((_,j)=>j!==k&&(gC('AI'+j+'+')===pp||gC('AI'+j+'-')===pp));return {st:other>=0?'swap':'open'}});
+   const pot=AN.findIndex(c=>c.kind==='pot');if(pot>=0)ph.plant.V=a.knob('AV'+pot)}
   if(L.plant&&L.plant.step)try{L.plant.step(a.dt,s,ph.plant)}catch(err){}
+  if(AN.length){const pl=ph.plant,P=ph.P;/* ما يقرؤه الـ PLC فعلاً من القناتين حسب التوصيل */
+   const val=(c,k)=>{const w=anV[k].st,phys=c.kind==='pot'?a.knob('AV'+k):pl.T;
+    if(w==='ok')return phys;if(w==='rev')return c.kind==='pot'?0:-phys;return c.kind==='pot'?0:3276.7};/* سلك مفتوح في قناة الحرارة: قيمة الفيض 32767 */
+   const pi=AN.findIndex(c=>c.kind==='pot'),ti=AN.findIndex(c=>c.kind==='tc');
+   if(pi>=0&&ti>=0&&on){const V=val(AN[pi],pi),T=val(AN[ti],ti);const piw288=Math.round(Math.max(0,Math.min(10,V))/10*27648),md100=piw288/27648*100,piw290=Math.round(T*10),md200=piw290/10;
+    Object.assign(P.words,{PIW288:piw288,LD0:piw288,MD0:piw288,MD100:md100,PIW290:piw290,LD10:piw290,MD10:piw290,MD200:md200,MD80:md100*0.8,MD120:md100*1.2});
+    /* ما يظهر في لوحة الجهاز = ما يقرؤه الـ PLC */pl.v=Object.assign({},pl.v,{piw288,md100,piw290,md200,md80:md100*0.8,md120:md100*1.2});pl.SV=md100;pl.L80=md100*0.8;pl.L120=md100*1.2}
+   if(ti>=0&&run&&anV[ti].st==='rev')a.once('tc-reversed');
+   if(ti>=0&&a.hold('ovh',run&&ph.Qphys[OUT.find(o=>o.sym==='K1')?OUT.find(o=>o.sym==='K1').addr:'']&&pl.T>pl.L120+15,3))a.mistake('overheat');
+   if(run&&pl.prevH2&&!pl.H)ph.cyc=(ph.cyc||0)+1;if(run&&!pl.prevH2&&pl.H&&ph.cyc)ph.cyc2=1;pl.prevH2=pl.H}
   if(run){sp.inAddrs.forEach(ad=>{(ph.seen[ad]=ph.seen[ad]||{})[inV[ad]]=1});OUT.forEach((d,i)=>{if(ldOn[i])ph.used[d.addr]=1})}
   /* القراءات: لمبات الحالة */
   const r={pwr:on,run,qs:PWR&&a.sw('QS')};sp.inAddrs.forEach(ad=>r['li:'+ad]=inV[ad]);sp.outAddrs.forEach(ad=>r['lq:'+ad]=qBit[ad]&&outPow);
@@ -183,6 +201,7 @@ function exp(L,sp){
  function audit(a){const g=graph(a,null);const bad=[],rail=n=>n===g('P+')||n===g('P-');
   IN.forEach((d,i)=>{[g('D'+i+'.a'),g('D'+i+'.b')].forEach(n=>{if(rail(n))return;sp.inAddrs.forEach(ad=>{if(ad!==d.addr&&g(ad)===n)bad.push(d.sym+' على '+ad+' (الجدول: '+d.addr+')')})})});
   OUT.forEach((d,i)=>{[g('L'+i+'.1'),g('L'+i+'.2')].forEach(n=>{if(rail(n))return;sp.outAddrs.forEach(ad=>{if(ad!==d.addr&&g(ad)===n)bad.push(d.sym+' على '+ad+' (الجدول: '+d.addr+')')})})});
+  (sp.analog||[]).forEach((c,k)=>{const n=g('A'+k+'.+');(sp.analog||[]).forEach((_,j)=>{if(j!==k&&(g('AI'+j+'+')===n||g('AI'+j+'-')===n))bad.push(c.sym+' على القناة CH'+j+' (الجدول: '+c.addr+')')})});
   if(bad.length)a.once('wrong-io',{why:MZ['wrong-io'].why+' الملاحظ: '+bad.slice(0,3).join('، ')+'.'})}
  const wiredIn=a=>{const g=graph(a,null);return IN.every((d,i)=>{const na=g('D'+i+'.a'),nb=g('D'+i+'.b'),p=g('P+'),q=g(d.addr);return (na===p&&nb===q)||(nb===p&&na===q)})};
  const wiredOut=a=>{const g=graph(a,null);return OUT.every((d,i)=>{const n1=g('L'+i+'.1'),n2=g('L'+i+'.2'),m=g('P-'),q=g(d.addr);return (n1===q&&n2===m)||(n2===q&&n1===m)})};
@@ -199,12 +218,14 @@ function exp(L,sp){
   {t:'وصّل المداخل حسب جدول المداخل والمخارج: من القضيب <b>+</b> إلى طرف تلامس كل جهاز، ومن طرفه الآخر إلى عنوانه ('+IN.map(d=>esc(d.sym)+' ← '+d.addr).join('، ')+').',done:wiredIn},
   {t:'وصّل المخارج: كل مخرج إلى الطرف الأول لحمله، والطرف الثاني إلى القضيب <b>−</b> ('+OUT.map(d=>d.addr+' ← '+esc(d.sym)).join('، ')+').',done:wiredOut},
   {t:'شغّل المصدر، ثم حوّل الـ PLC من STOP إلى <b>RUN</b>.',done:a=>a.S.phys.everRun}]
+  .concat((sp.analog||[]).length?[{t:'وصّل الأجهزة التناظرية: '+sp.analog.map((c,k)=>esc(c.sym)+' على القناة CH'+k+' ('+c.addr+')').join('، ')+' — الطرف + إلى + القناة، و − إلى −.',done:a=>{const g=graph(a,null);return sp.analog.every((c,k)=>g('A'+k+'.+')===g('AI'+k+'+')&&g('A'+k+'.-')===g('AI'+k+'-'))}},
+   {t:'اضبط الحرارة المطلوبة بالمقاومة R، وشغّل التسخين، واتركه حتى يفصل السخان عند 120% ثم يعود يعمل عند 80% (دورة كاملة).',done:a=>!!a.S.phys.cyc2}]:[])
   .concat(PWR?[{t:'وصّل الدائرة الرئيسة كما في شكل الكتاب (زر «مخطط التوصيل»): L1 L2 L3 إلى التلامسات الرئيسة للمتممات، ثم الحماية الحرارية، ثم أطراف المحرك'+(PWR.res.length?'، وحلقات العضو الدائر إلى المقاومات ونقطة النجمة':'')+'. ثم أغلق القاطع Q0.',done:a=>!!a.S.phys.everQS&&Object.keys(MODES[PWR.fam]).some(m=>(a.S.phys.modes||{})[m])},
    {t:'شغّل المحرك بكل أوضاعه: '+Object.keys(MODES[PWR.fam]).map(m=>MODE_AR[m]).join('، ')+'.',done:a=>Object.keys(MODES[PWR.fam]).every(m=>(a.S.phys.modes||{})[m]),live:a=>{const z=Object.keys(MODES[PWR.fam]).filter(m=>!(a.S.phys.modes||{})[m]);return z.length?'باقي: '+z.map(m=>MODE_AR[m]).join('، '):''}}]:[])
   .concat([{t:'جرّب كل جهاز دخل يستعمله البرنامج (اضغط، حرّك، أو انتظر الحسّاس)، وتأكد أن لمبة مدخله على الـ PLC تضيء وتنطفئ.',done:insDone,live:a=>{const z=need(a).ins.filter(ad=>{const q=a.S.phys.seen[ad];return !(q&&q[0]&&q[1])});return z.length?'باقي: '+z.map(nm).join('، '):''}},
    {t:'شغّل الجهاز بترتيب خطوات الكتاب (القائمة تحت «الجهاز») حتى يعمل كل حمل مرة على الأقل.',done:outsDone,live:a=>{const z=need(a).outs.filter(ad=>!a.S.phys.used[ad]);return z.length?'باقي: '+z.map(nm).join('، '):''}}])
   .concat([{t:'أعد الـ PLC إلى <b>STOP</b>، ثم افصل المصدر'+(PWR?' والقاطع Q0':'')+'.',done:a=>bookDone(a)&&!a.sw('RUN')&&!a.sw('PWR')&&!(PWR&&a.sw('QS'))}]);
- const modesDone=a=>!PWR||Object.keys(MODES[PWR.fam]).every(m=>(a.S.phys.modes||{})[m]);
+ const modesDone=a=>(!(sp.analog||[]).length||!!a.S.phys.cyc2)&&(!PWR||Object.keys(MODES[PWR.fam]).every(m=>(a.S.phys.modes||{})[m]));
  X.complete=a=>wiredPsu(a)&&wiredIn(a)&&wiredOut(a)&&bookDone(a)&&modesDone(a)&&!a.sw('RUN')&&!a.sw('PWR')&&!(PWR&&a.sw('QS'));
  /* لوحة الجهاز */
  const p=L.plant;
@@ -227,7 +248,7 @@ function exp(L,sp){
    const rd=el.querySelector('[data-rd]');if(rd&&p.readouts&&(ph.rdT=(ph.rdT||0)+a.dt)>0.2){ph.rdT=0;rd.innerHTML=p.readouts.map(r=>{try{if(r.chip){const [t,c]=r.chip(ph.plant,s);return `<div class="read"><span>${r.l}</span><em class="mode-chip ${c||''}">${t}</em></div>`}return `<div class="read"><span>${r.l}</span><b>${r.v(ph.plant,s)}</b></div>`}catch(e){return ''}}).join('')}
    const sig=JSON.stringify([ph.Qphys,ph.Qplant,p&&p.sig?p.sig(ph.plant):0,Object.entries(ph.P.tim).map(([k,v])=>[k,v.q,v.run]),Object.entries(ph.P.cnt).map(([k,v])=>[k,v.v]),a.S.sw]);
    if(sig===ph.lastSig)return;ph.lastSig=sig;
-   if(p&&p.render&&pv)try{p.render(pv,s,ph.plant,B)}catch(e){}
+   if(p&&p.render&&pv)try{p.render(pv,s,ph.plant,B);const vk=pv.querySelector('[data-k="V"]');if(vk&&(sp.analog||[]).length)vk.closest('label').style.display='none'}catch(e){}
    const lb=el.querySelector('[data-pl]');if(lb&&p&&p.label)try{lb.textContent=p.label(ph.plant,s)||''}catch(e){}
    const pw=el.querySelector('[data-pw]');if(pw&&L.power)try{pw.innerHTML=L.power(s,B)}catch(e){}}};
  return X}
@@ -236,7 +257,6 @@ function exp(L,sp){
 B.LESSONS.forEach(L=>{if(L.bench||!L.inputs||!L.plant&&!L.program&&!L.variants)return;
  const prog=curProgram(L);if(!prog||!prog.length)return;
  const sp=specOf(L);if(!sp.inputs.length||!sp.outputs.length)return;
- if((L.io||[]).some(r=>/^P?IW/i.test(N(r.addr))))return;/* مداخل تناظرية: خارج هذه المرحلة */
  L.bench=el=>{const ly=BENCH_LAYOUTS.plc(sp);
   B.BENCH.mount(el,{key:L.id,title:'المنضدة الافتراضية: '+strip(L.title),layout:ly,exp:exp(L,sp),
    intro:'وصّل لوحة الـ PLC بنفسك حسب جدول المداخل والمخارج، ثم شغّلها ونفّذ خطوات الكتاب. البرنامج محمّل مسبقاً كما في الكتاب، فإذا لم يعمل الجهاز كما يجب فالسبب في توصيلك. تحصل على «جاهز للمعمل» عندما تكمل التجربة كاملة بلا أي خطأ.'})}});

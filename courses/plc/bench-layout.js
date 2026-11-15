@@ -30,6 +30,15 @@ L.plc=function(spec){const mods=[];let x=20,y=20,rowH=0;
   switches:[{id:'RUN',lbl:'STOP / RUN',x:pw-50,y:24}],
   leds:[{id:'run',x:pw-100,y:24,r:6,color:LAMPC.green,lbl:'RUN'}].concat(spec.inAddrs.map((a,i)=>({id:'li:'+a,x:50+i*58,y:86,r:6,color:LAMPC.green}))).concat(spec.outAddrs.map((a,i)=>({id:'lq:'+a,x:166+i*58,y:216,r:6,color:LAMPC.amber}))),
   terms:tIn.map(t=>Object.assign(t,{ly:-16,col:t.col})).concat(tOut)});
+ /* وحدة المداخل التناظرية والأجهزة التناظرية */
+ if(spec.analog&&spec.analog.length){const A=spec.analog;
+  place({id:'ai',w:Math.max(200,A.length*110+40),h:190,title:'وحدة مداخل تناظرية AI',sub:'0–10 V',fill:'#e4e8e2',
+   labels:A.map((c,k)=>({t:'CH'+k+' — '+c.addr,x:70+k*110,y:62,s:10.5,b:1})),
+   terms:A.flatMap((c,k)=>[{id:'AI'+k+'+',lbl:'+',x:45+k*110,y:120,pol:'+'},{id:'AI'+k+'-',lbl:'−',x:95+k*110,y:120,pol:'-'}])});
+  A.forEach((c,k)=>{if(c.kind==='pot')place({id:'an'+k,w:170,h:190,title:cut(c.sym+' — مقاومة متغيرة',22),sub:'تعطي 0–10 V',knobs:[{id:'AV'+k,lbl:'الجهد V',x:85,y:92,max:10,step:0.1,unit:'V',dp:1}],
+     terms:[{id:'A'+k+'.+',lbl:'+',x:45,y:160,pol:'+'},{id:'A'+k+'.-',lbl:'−',x:125,y:160,pol:'-'}]});
+   else place({id:'an'+k,w:150,h:190,title:cut(c.sym+' — ثرموكبل',20),sub:'نوع K داخل الغرفة',art:`<path d="M60 70V130M90 70V130" stroke="#7a5a1f" stroke-width="3"/><circle cx="75" cy="135" r="6" fill="#7a5a1f"/>`,
+     terms:[{id:'A'+k+'.+',lbl:'+',x:45,y:160,pol:'+'},{id:'A'+k+'.-',lbl:'−',x:105,y:160,pol:'-'}]})})}
  nl();
  /* أجهزة الدخل */
  spec.inputs.forEach((d,i)=>{const m={id:'dev'+i,w:128,h:178,title:cut(d.sym,14),sub:cut(d.desc,22),labels:[],leds:[],switches:[]};
