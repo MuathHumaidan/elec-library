@@ -171,9 +171,9 @@ function mount(el,cfg){
   const anyOn=()=>X.powerSw?X.powerSw.some(id=>S.sw[id]):Object.values(S.sw).some(Boolean);
   function addWire(a,b){if(a===b||!TERM[a]||!TERM[b])return;if(S.wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){H('بين هذين الطرفين سلك من قبل.');return}
     const cnt=t=>S.wires.filter(w=>w.a===t||w.b===t).length;if(cnt(a)>=3||cnt(b)>=3){H('الطرف لا يتسع لأكثر من ثلاثة أسلاك.');return}
-    if(anyOn())mistake('live-wiring');
-    S.wires.push({a,b,c:S.color});NET=nets();S.sel=null;drawWires();H('وصّلت '+TERM[a].lbl+' ← '+TERM[b].lbl+'.');onWiring()}
-  function delWire(i){if(i==null)return;if(anyOn())mistake('live-wiring');const w=S.wires.splice(i,1)[0];NET=nets();S.sel=null;drawWires();H('فككت السلك '+TERM[w.a].lbl+' – '+TERM[w.b].lbl+'.');onWiring()}
+    if(anyOn()&&!(X.liveOk&&X.liveOk(a,b)))mistake('live-wiring');
+    S.wires.push({a,b,c:S.color});NET=nets();S.sel=null;drawWires();H('وصّلت '+(TERM[a].nm||TERM[a].lbl)+' ← '+(TERM[b].nm||TERM[b].lbl)+'.');onWiring()}
+  function delWire(i){if(i==null)return;const w0=S.wires[i];if(anyOn()&&!(X.liveOk&&w0&&X.liveOk(w0.a,w0.b)))mistake('live-wiring');const w=S.wires.splice(i,1)[0];NET=nets();S.sel=null;drawWires();H('فككت السلك '+(TERM[w.a].nm||TERM[w.a].lbl)+' – '+(TERM[w.b].nm||TERM[w.b].lbl)+'.');onWiring()}
   function persist(){LS.set(KEY+'-w',{wires:S.wires,mistakes:S.mistakes,rec:S.rec,once:S.once})}
   function onWiring(){persist();paintSteps()}
   let drag=null;
