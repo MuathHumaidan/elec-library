@@ -29,7 +29,7 @@ const PART={
    labels:[{t:'المجال',x:280,y:150,s:10}],switches:mo?[{id:'SW:FS',lbl:'تقصير المجال عبر مقاومة',x:330,y:70}]:[],
    meters:mo?[{id:p.id+':d',kind:'digital',x:120,y:50,w:120,h:40,unit:'°',dp:1}]:[],
    terms:[T(p.id+'.W2','W2',30,150),T(p.id+'.U2','U2',80,150),T(p.id+'.V2','V2',130,150),T(p.id+'.U1','U1',30,205),T(p.id+'.V1','V1',80,205),T(p.id+'.W1','W1',130,205),T(p.id+'.F1','F1',250,205,{pol:'+'}),T(p.id+'.F2','F2',305,205,{pol:'-'})]}},
- pm:p=>({w:230,h:220,sub:'محرك ابتدائي (يدير المولد)',knobs:[{id:'N:'+p.id,lbl:'السرعة المضبوطة',x:65,y:150,max:p.nmax,step:1,unit:'rpm',dp:0}],switches:[{id:'SW:'+p.id,lbl:'تشغيل',x:180,y:146}],
+ pm:p=>({w:230,h:220,sub:'محرك ابتدائي (يدير المولد)',knobs:[{id:'N:'+p.id,lbl:'السرعة المضبوطة',x:65,y:150,min:p.nmin||0,max:p.nmax,step:1,unit:'rpm',dp:0}],switches:[{id:'SW:'+p.id,lbl:'تشغيل',x:180,y:146}],
   meters:[{id:p.id+':n',kind:'digital',x:15,y:40,w:200,h:46,unit:'rpm',dp:0}],terms:[]}),
  grid:p=>({w:300,h:200,sub:'الشبكة (قضيب لانهائي) '+p.V+' V — '+p.f+' Hz',switches:[{id:'SW:'+p.id,lbl:'توصيل الشبكة',x:245,y:92}],terms:['L1','L2','L3','N'].map((c,k)=>T(p.id+'.'+c,c,45+k*60,170))}),
  sw3:p=>({w:220,h:200,sub:'قاطع ثلاثي الأقطاب',switches:[{id:'SW:'+p.id,lbl:'إغلاق',x:170,y:60}],terms:[1,3,5].map((c,k)=>T(p.id+'.'+c,String(c),35+k*50,110)).concat([2,4,6].map((c,k)=>T(p.id+'.'+c,String(c),35+k*50,175)))}),
@@ -58,6 +58,7 @@ const PART={
   terms:['a','b','c'].flatMap((k,j)=>[0,1,2].map(n=>T(p.id+'.'+k+n,n?'':k,36+j*50,78+n*28,{ly:-14,col:'#8a8f93'}))),bridges:['a','b','c'].flatMap(k=>[[p.id+'.'+k+'0',p.id+'.'+k+'1'],[p.id+'.'+k+'0',p.id+'.'+k+'2']])}),
  vm:p=>meterMod(p,'V'),am:p=>meterMod(p,'A'),wm:p=>meterMod(p,'W')
 };
+const EXT={},MQ={};
 function layout(ex){const mods=[],bridges=[];let x=20,y=20,rowH=0;
  const place=m=>{if(x+m.w>W-20){x=20;y+=rowH+GAP;rowH=0}m.x=x;m.y=y;x+=m.w+GAP;rowH=Math.max(rowH,m.h);mods.push(m);(m.bridges||[]).forEach(b=>bridges.push(b))};
  ex.parts.forEach(p=>{const m=PART[p.kind](p);m.id='p_'+p.id;m.title=cut(p.lbl||p.id,22);place(m)});if(x>20)y+=rowH+GAP;
@@ -104,10 +105,10 @@ function SMmodel(M){const pts=M.occ;const E0=Array.isArray(pts)?lin(pts):(If=>M.
 /* ---------------- الكهرباء والحركة ---------------- */
 const RVM=1e6,RAM=0.002,RSRC=0.02,RDC=0.05;
 function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[r*Math.cos(d*Math.PI/180),r*Math.sin(d*Math.PI/180)];
- const srcs=P.filter(p=>['dcs','ac3v','ac1','grid'].includes(p.kind)),sm=P.find(p=>p.kind==='sm3'),pmv=P.find(p=>p.kind==='pm'),mot=P.find(p=>p.kind==='im3'),mot1=P.find(p=>p.kind==='im1'),brk=P.find(p=>p.kind==='brake');
+ const srcs=P.filter(p=>['dcs','ac3v','ac1','grid'].includes(p.kind)||(EXT[p.kind]&&EXT[p.kind].src)),sm=P.find(p=>p.kind==='sm3'),pmv=P.find(p=>p.kind==='pm'),mot=P.find(p=>p.kind==='im3'),mot1=P.find(p=>p.kind==='im1'),brk=P.find(p=>p.kind==='brake');
  const IM=mot?IMmodel(C,mot.M):null;ex._IM=IM;const IM1=mot1?IM1model(C,mot1.M):null;ex._IM1=IM1;const SMM=sm?SMmodel(sm.M):null;ex._SM=SMM;
  const off=srcs.map(p=>'SW:'+p.id);
- const X={powerSw:off,mistakes:{
+ const X={powerSw:off,mistakes:{...(ex.mistakes||{}),
   'short':{t:'قصر على المصدر',why:'طرفا المصدر (أو خطان من خطوطه) اتصلا بلا حمل. في المعمل يفصل قاطع الحماية أو يحترق المصهر. راجع التوصيل قبل التشغيل.',fatal:true,off},
   'amm-parallel':{t:'الأميتر موصّل على التوازي',why:'الأميتر مقاومته صغيرة جداً، فإذا وُصّل بين خطين صار قصراً. الأميتر يُدخل في الخط نفسه (على التوالي).',fatal:true,off},
   'winding-overvolt':{t:'جهد الملف أكبر من المقنن',why:'توصيلة الملفات لا تناسب جهد المصدر: المحرك المقنن نجمة إذا وُصّل دلتا على الجهد نفسه يأخذ كل ملف جهد الخط كاملاً (√3 مرة أكبر)، فيسخن ويحترق. اقرأ لوحة البيانات: Δ تعني جهد الخط على الملف، و Y تعني جهد الخط على ملفين.',fatal:true,off},
@@ -125,6 +126,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
   'rotor-open':{t:'دائرة العضو الدوار مفتوحة',why:'في محرك الحلقات يجب توصيل أطراف العضو الدوار (K L M) بالبادئ أو قصرها؛ إذا بقيت مفتوحة فلا يمر تيار في الدوار ولا يتولد عزم.',fatal:false}},
   note:ex.note||'',figure:()=>ex.fig?ex.fig():'',figureTitle:'مخطط التوصيل',
   init:()=>({w:0,t:0,pk:{},tOn:0,rext:0})};
+ Object.values(X.mistakes).forEach(m=>{if(m.fatal&&!m.off)m.off=off});
  const VMS=P.filter(p=>p.kind==='vm').map(p=>p.id);X.liveOk=(a,b)=>[a,b].some(t=>VMS.some(v=>t===v+'+'||t===v+'-'));
  const on=(a,id)=>a.sw('SW:'+id);
  X.tick=a=>{const ph=a.S.phys;ph.t+=a.dt;const of=a.nets().of;
@@ -172,6 +174,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
    if(['split','cstart','two'].includes(M.type)){/* المفتاح الطارد: يفتح عند 75% من السرعة التزامنية ويغلق تحت 60% */
     if(Math.abs(npu)>0.75)ph.cso=1;else if(Math.abs(npu)<0.6)ph.cso=0;const g=ph.cso?1e-9:1e4;const e3={p:id+'.S1',n:id+'.S2',y:[g,0]};elsAC.push(e3);E[id+':s']=e3}
    M1={id,M,ws}}
+  const ctx={C,E,Ed,elsAC,elsDC,ph,f,on:id=>on(a,id),cpol,P,ex,brk};P.forEach(p=>{if(EXT[p.kind]&&EXT[p.kind].els)EXT[p.kind].els(a,p,ctx)});
   const r=a.solveAC(elsAC),rd=a.solve(elsDC);
   const V=(x,y2)=>mag(r.vd(x,y2)),I=e=>mag(r.cur(e)),Vd=(x,y2)=>rd.vt(x)-rd.vt(y2),Id=e=>rd.cur(e);
   ph.V=V;ph.I=I;ph.Vd=Vd;ph.Id=Id;ph.E=E;ph.Ed=Ed;ph.r=r;ph.rd=rd;
@@ -199,6 +202,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
    if(a.hold('lfv',lock&&Math.max(Vp,Vn)>(ex.lockV||0.5)*IM.Vw,1.5))a.mistake('locked-fullv');
    const IdS=Math.max(0,...P.filter(p=>p.kind==='dcs').map(p=>Math.abs(Id(Ed[p.id]))));if(a.hold('dco',IdS>(IM.M.Idc||IM.IN*(M.conn==='D'?SQ3:1))*1.4,0.5))a.mistake('dc-over');
    if(MS.ropen&&a.hold('rop',en,1.5))a.once('rotor-open',X.mistakes['rotor-open']);}
+  if(pmv&&!G&&!ex.pmFree){const wset=a.knob('N:'+pmv.id)*2*Math.PI/60;const w0=ph.w||0;const w=w0+((on(a,pmv.id)?wset:0)-w0)*Math.min(1,a.dt/0.3);ph.acc=a.dt>0?(w-w0)/a.dt:0;ph.w=w;ph.n=w*60/(2*Math.PI)}
   if(G){const id=G.id,M=G.M,ws=SMM.ws,we0=2*Math.PI*M.f;
    /* تيار المجال من حل التيار المستمر (يُستعمل في الخطوة التالية) */ph.If=Id(Ed[id+':f']);
    const Iw=[0,1,2].map(j=>C.neg(r.cur(E[id+':'+j])));const Ew=[0,1,2].map(j=>cpol(ph.Ew||0,(ph.phi||0)*180/Math.PI-120*j));
@@ -246,7 +250,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
   srcs.forEach(p=>{if(p.kind==='ac1'){const e=E[p.id];const Is=I(e),Vs=V(e.p,e.n),Vset=a.knob('K:'+p.id);if(a.hold('sc'+p.id,on(a,p.id)&&Vset>5&&Vs<0.4*Vset&&Is>1,0.2)){const am=P.some(q=>q.kind==='am'&&!q.dc&&I(E[q.id])>0.8*Is);a.mistake(am?'amm-parallel':'short')}}
    else if(p.kind==='ac3v'||p.kind==='grid'){const es=E[p.id];const Is=Math.max(...es.map(e=>I(e))),Vs=Math.min(...es.map(e=>V(e.p,e.n))),Vset=(p.kind==='grid'?p.V:(ph.VLset||0))/SQ3;
     if(a.hold('sc'+p.id,on(a,p.id)&&Vset>5&&Is>0.3*Vset/RSRC,0.2)){const am=P.some(q=>q.kind==='am'&&!q.dc&&I(E[q.id])>0.8*Is);a.mistake(am?'amm-parallel':'short')}}
-   else{const e=Ed[p.id];const Is=Math.abs(Id(e)),Vs=Math.abs(Vd(e.p,e.n)),Vset=a.knob('K:'+p.id);if(a.hold('sc'+p.id,on(a,p.id)&&Vset>1&&Vs<0.2*Vset&&Is>5,0.3))a.mistake('short')}});
+   else if(p.kind==='dcs'){const e=Ed[p.id];const Is=Math.abs(Id(e)),Vs=Math.abs(Vd(e.p,e.n)),Vset=a.knob('K:'+p.id);if(a.hold('sc'+p.id,on(a,p.id)&&Vset>1&&Vs<0.2*Vset&&Is>5,0.3))a.mistake('short')}});
   /* القراءات */
   const out={};P.forEach(p=>{const id=p.id;
    if(p.kind==='vm')out[id]=p.dc?Vd(id+'+',id+'-'):V(id+'+',id+'-');
@@ -257,6 +261,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
    else if(p.kind==='sm3'&&p.motor){out[id+':d']=ph.bus&&Math.abs(ph.s)<0.01?ph.delta:null}
    else if(p.kind==='lmp3'){[0,1,2].forEach(k=>{out[id+':'+k]=I(E[id+':'+k])*p.R>0.15*p.Vr})}});
   /* قمة التيار تُصفّر عند فصل المصدر */
+  Object.assign(ctx,{r,rd,V,I,Vd,Id,out});P.forEach(p=>{if(EXT[p.kind]&&EXT[p.kind].post)EXT[p.kind].post(a,p,ctx)});
   if(!srcs.some(p=>on(a,p.id))){ph.pk={};ph.tOn=0}else ph.tOn=(ph.tOn||0)+a.dt;
   ph.read=out;if(ex.tick)ex.tick(a,ph);return out};
  /* --------- التسجيل --------- */
@@ -279,11 +284,12 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
   if(q.t==='W'){const el=lineEl(ph,q.src,q.idx);for(const m of P.filter(p=>p.kind==='wm')){const okI=same(ph.r.cur(ph.E[m.id+':I']),ph.r.cur(el))&&ph.I(el)>1e-4;
     const okV=(ol[m.id+'.V+']===ol[q.a]&&ol[m.id+'.V-']===ol[q.b])||(ol[m.id+'.V+']===ol[q.b]&&ol[m.id+'.V-']===ol[q.a]);
     if(okI&&okV){/* القدرة الحقيقية بإشارتها مهما كان اتجاه الملفين */const Vab=ph.r.vd(q.a,q.b),Ie=C.neg(ph.r.cur(el));return {v:C.mul(Vab,C.conj(Ie))[0],m:m.id}}}return null}
+  if(MQ[q.t])return MQ[q.t](a,q,ph,of,ol,P);
   if(q.t==='Am'){for(const m of P.filter(p=>p.kind==='am'&&!p.dc)){const x=of[m.id+'+'],y=of[m.id+'-'];if(x==null||y==null||x===y)continue;if(ol[m.id+'+']===ol[q.a])return {v:Math.abs(ph.read[m.id]),m:m.id}}return null}
   if(q.t==='Wr'){const m=P.find(p=>p.kind==='wm'&&p.id===q.m);if(!m)return null;const okV=(ol[m.id+'.V+']===ol[q.a]&&ol[m.id+'.V-']===ol[q.b])||(ol[m.id+'.V+']===ol[q.b]&&ol[m.id+'.V-']===ol[q.a]);const okI=ol[m.id+'.I+']!=null&&ol[m.id+'.I+']===ol[q.a]&&of[m.id+'.I+']!==of[m.id+'.I-'];
    if(!okV||!okI)return null;const sg=ol[m.id+'.V+']===ol[q.a]?1:-1;return {v:sg*ph.read[m.id],m:m.id}}
   if(q.t==='D'){if(!sm||!a.S.phys.synced)return null;return {v:a.S.phys.delta,m:'strobe'}}
-  if(q.t==='N'){if(!brk&&!pmv)return null;return {v:ph.n||0,m:'tach'}}
+  if(q.t==='N'){if(!brk&&!pmv&&ph.n==null)return null;return {v:ph.n||0,m:'tach'}}
   if(q.t==='Tq'){if(!brk)return null;return {v:ph.Tload||0,m:'torque'}}
   if(q.t==='K')return {v:a.knob(q.knob),m:'knob'};
   return null}
@@ -320,5 +326,5 @@ function bind(B,LES,EX,MACH){Object.keys(LES).forEach(id=>{const L=B.LESSONS.fin
    B.BENCH.mount(host,{key:id+'-'+cur+'-'+mk,title:'المنضدة: '+D.name,layout:layout(ex),exp:make(B,L,ex),
     intro:'تجربة معمل (إضافة من خارج الكتاب): وصّل الدائرة، وشغّل، وقِس بالأجهزة، وسجّل القراءات، ثم قارنها بالقانون في لوحة «المقارنة بالقانون». تحصل على «جاهز للمعمل» عندما تكمل الجداول بلا أي خطأ.'})};
   el.querySelectorAll('[data-ex]').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.ex;go()}));el.querySelectorAll('[data-mk]').forEach(b=>b.addEventListener('click',()=>{mk=b.dataset.mk;go()}));go()}})}
-window.ACM={layout,make,bind,IMmodel,SMmodel};
+window.ACM={layout,make,bind,IMmodel,SMmodel,PART,EXT,MQ,T,meterMod,lin};
 })();

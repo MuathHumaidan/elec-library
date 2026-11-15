@@ -82,6 +82,7 @@ function mount(el,cfg){
   const hist=LS.get(KEY,{attempts:[],name:''});
   /* أطراف */
   const TERM={};(LY.modules||[]).forEach(m=>(m.terms||[]).forEach(t=>{TERM[t.id]=Object.assign({mod:m},t,{X:m.x+t.x,Y:m.y+t.y})}));
+  /* عقد داخلية غير مرسومة (نقطة نجمة داخل جهاز مثلاً) */(LY.modules||[]).forEach(m=>(m.nodes||[]).forEach(id=>{if(!TERM[id])TERM[id]={id,lbl:'',mod:m,X:m.x,Y:m.y,hidden:1}}));
   /* DOM */
   el.innerHTML=`<section class="bench" dir="rtl">
    <div class="bn-intro panel"><h2>${esc(cfg.title||'المنضدة الافتراضية')}</h2>
@@ -131,7 +132,7 @@ function mount(el,cfg){
   g+='<g class="bn-wires"></g><g class="bn-terms"></g><path class="bn-temp" d="" fill="none" stroke-width="5" stroke-linecap="round" opacity=".7"/>';
   svg.innerHTML=g;
   const gW=$('.bn-wires',svg),gT=$('.bn-terms',svg),temp=$('.bn-temp',svg);
-  gT.innerHTML=Object.values(TERM).map(t=>`<g class="bn-term" data-t="${t.id}" transform="translate(${t.X} ${t.Y})" role="button" tabindex="0" aria-label="الطرف ${esc(t.lbl)}${t.mod.title?' — '+esc(t.mod.title):''}">
+  gT.innerHTML=Object.values(TERM).filter(t=>!t.hidden).map(t=>`<g class="bn-term" data-t="${t.id}" transform="translate(${t.X} ${t.Y})" role="button" tabindex="0" aria-label="الطرف ${esc(t.lbl)}${t.mod.title?' — '+esc(t.mod.title):''}">
      <circle class="bn-hit" r="18" fill="transparent"/><circle r="9.5" fill="${t.pol==='+'?'#C8382E':t.pol==='-'?'#2B2B2B':t.col||'#C9A227'}" stroke="#1d1d1d" stroke-width="1.5"/><circle r="4" fill="#111"/>
      <text y="${t.ly||-15}" font-size="11.5" font-weight="700" text-anchor="middle" fill="#1f2a24">${esc(t.lbl)}</text></g>`).join('');
   /* ---- المكونات المتغيرة ---- */
@@ -169,7 +170,7 @@ function mount(el,cfg){
   const H=msg=>{hint.textContent=msg||''};
   const pt=e=>{const r=svg.getBoundingClientRect();return {X:(e.clientX-r.left)/r.width*LY.w,Y:(e.clientY-r.top)/r.height*LY.h}};
   const anyOn=()=>X.powerSw?X.powerSw.some(id=>S.sw[id]):Object.values(S.sw).some(Boolean);
-  function addWire(a,b){if(a===b||!TERM[a]||!TERM[b])return;if(S.wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){H('بين هذين الطرفين سلك من قبل.');return}
+  function addWire(a,b){if(a===b||!TERM[a]||!TERM[b]||TERM[a].hidden||TERM[b].hidden)return;if(S.wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){H('بين هذين الطرفين سلك من قبل.');return}
     const cnt=t=>S.wires.filter(w=>w.a===t||w.b===t).length;if(cnt(a)>=3||cnt(b)>=3){H('الطرف لا يتسع لأكثر من ثلاثة أسلاك.');return}
     if(anyOn()&&!(X.liveOk&&X.liveOk(a,b)))mistake('live-wiring');
     S.wires.push({a,b,c:S.color});NET=nets();S.sel=null;drawWires();H('وصّلت '+(TERM[a].nm||TERM[a].lbl)+' ← '+(TERM[b].nm||TERM[b].lbl)+'.');onWiring()}
@@ -192,7 +193,7 @@ function mount(el,cfg){
     if(drag.knob){const d=findKnob(drag.knob),dv=((e.clientX-drag.x)-(e.clientY-drag.y))*(d.max/260);setKnob(drag.knob,drag.v0+dv);return}
     if(drag.from){const a=TERM[drag.from],p=pt(e);temp.setAttribute('d',curve(a,p))}});
   const endDrag=e=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}if(!drag)return;const d=drag;drag=null;temp.setAttribute('d','');
-    if(d.from){const p=pt(e);let best=null,bd=26;Object.values(TERM).forEach(t=>{const dd=Math.hypot(t.X-p.X,t.Y-p.Y);if(dd<bd){bd=dd;best=t}});if(best&&best.id!==d.from)addWire(d.from,best.id)}};
+    if(d.from){const p=pt(e);let best=null,bd=26;Object.values(TERM).forEach(t=>{if(t.hidden)return;const dd=Math.hypot(t.X-p.X,t.Y-p.Y);if(dd<bd){bd=dd;best=t}});if(best&&best.id!==d.from)addWire(d.from,best.id)}};
   svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',()=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}drag=null;temp.setAttribute('d','')});
   svg.addEventListener('pointerleave',()=>{if(pushHeld){pressSw(pushHeld,false);pushHeld=null}});
   svg.addEventListener('keyup',e=>{const sw=e.target.closest('.bn-sw');if(sw&&(SWD[sw.dataset.sw]||{}).push&&(e.key===' '||e.key==='Enter'))pressSw(sw.dataset.sw,false)});
