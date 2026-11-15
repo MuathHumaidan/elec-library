@@ -10,7 +10,7 @@ const fx=(v,d)=>+(+v).toFixed(d==null?2:d);
 function meterMod(p,kind){const dc=!!p.dc,u=kind==='V'?'V':kind==='A'?'A':'W';
  if(kind==='W')return {w:210,h:255,sub:'واتميتر',meters:[{id:p.id,name:'الواتميتر '+p.id,x:30,y:40,w:150,h:96,unit:'W',ranges:p.ranges||[100,300,1000,3000],ac:true}],
   labels:[{t:'ملف التيار',x:60,y:240,s:10},{t:'ملف الجهد',x:150,y:240,s:10}],terms:[T(p.id+'.I+','*',35,205),T(p.id+'.I-','I',85,205),T(p.id+'.V+','*',125,205),T(p.id+'.V-','V',175,205)]};
- return {w:180,h:230,sub:(kind==='V'?'فولتميتر':'أميتر')+(dc?' DC':' AC'),meters:[{id:p.id,name:(kind==='V'?'فولتميتر':'أميتر')+' '+p.id,x:15,y:40,w:150,h:96,unit:u,ranges:p.ranges||(kind==='V'?[30,100,300,600]:[1,3,10,30,100]),ac:!dc}],
+ return {w:180,h:230,sub:(kind==='V'?'فولتميتر':'أميتر')+(dc?' DC':' AC')+(p.cz?' (صفر في المنتصف)':''),meters:[{id:p.id,name:(kind==='V'?'فولتميتر':'أميتر')+' '+p.id,x:15,y:40,w:150,h:96,unit:u,ranges:p.ranges||(kind==='V'?[30,100,300,600]:[1,3,10,30,100]),ac:!dc,cz:!!p.cz}],
   terms:[T(p.id+'+',dc?'+':'*',55,205,{pol:dc?'+':'',ly:-16}),T(p.id+'-',dc?'−':'~',125,205,{pol:dc?'-':'',ly:-16})]}}
 const PART={
  ac3v:p=>({w:330,h:200,sub:p.inv?'عاكس تردد (V/f ثابت)':'مصدر ثلاثي الأطوار متغير الجهد'+(p.f?' — '+p.f+' Hz':''),
@@ -140,7 +140,7 @@ function make(B,L,ex){const C=B.BENCH.C,P=ex.parts,mag=x=>C.abs(x),cpol=(r,d)=>[
    else if(p.kind==='lmp3'){[0,1,2].forEach(k=>{const c='abc'[k];const e={p:id+'.'+c+'1',n:id+'.'+c+'2',y:[1/p.R,0]};elsAC.push(e);E[id+':'+k]=e})}
    else if(p.kind==='ld3'){const t=Math.round(a.knob('LD:'+id));const Z=t===1?[p.R,0]:t===2?[p.R*0.8,p.R*0.6]:t===3?[p.R*0.8,-p.R*0.6]:null;['A','B','C'].forEach(c=>{elsAC.push({p:id+'.'+c,n:id+'.n',y:Z?C.div([1,0],Z):[1e-9,0]})});ph.ldt=t}
    else if(p.kind==='cap'){const Cu=p.adj?a.knob('C:'+id):p.C;E[id]={p:id+'.a',n:id+'.b',y:[0,2*Math.PI*f*Cu*1e-6]};elsAC.push(E[id])}
-   else if(p.kind==='dcs'){const V=a.knob('K:'+id);Ed[id]={p:id+'.+',n:id+'.-',g:on(a,id)?1/RDC:1e-9,i:on(a,id)?V/RDC:0};elsDC.push(Ed[id])}
+   else if(p.kind==='dcs'){const V=a.knob('K:'+id),rr=p.r||RDC;Ed[id]={p:id+'.+',n:id+'.-',g:on(a,id)?1/rr:1e-9,i:on(a,id)?V/rr:0};elsDC.push(Ed[id])}
    else if(p.kind==='vm'){const e=p.dc?{p:id+'+',n:id+'-',g:1/RVM}:{p:id+'+',n:id+'-',y:[1/RVM,0]};(p.dc?elsDC:elsAC).push(e);(p.dc?Ed:E)[id]=e}
    else if(p.kind==='am'){const e=p.dc?{p:id+'+',n:id+'-',g:1/RAM}:{p:id+'+',n:id+'-',y:[1/RAM,0]};(p.dc?elsDC:elsAC).push(e);(p.dc?Ed:E)[id]=e;
      /* الأميتر موصل في الدائرتين كسلك (حتى لا تنقطع الدائرة الأخرى) */const e2=p.dc?{p:id+'+',n:id+'-',y:[1/RAM,0]}:{p:id+'+',n:id+'-',g:1/RAM};(p.dc?elsAC:elsDC).push(e2)}

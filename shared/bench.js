@@ -52,12 +52,12 @@ function solveAC(N,st){if(!N)return [];const M=Array.from({length:N},()=>Array.f
 const svgNS='http://www.w3.org/2000/svg';
 const AR=t=>/[\u0600-\u06FF]/.test(String(t))?' direction="rtl"':'';
 function gaugeSVG(d,val,range,unit){/* مقياس بمؤشر */
-  const w=d.w||150,h=d.h||96,cx=w/2,cy=h-14,r=h-30;const fr=isFinite(val)?val/range:0,ang=Math.PI*(1-clamp(fr,-0.04,1.04));
+  const w=d.w||150,h=d.h||96,cx=w/2,cy=h-14,r=h-30;const fr0=isFinite(val)?val/range:0,fr=d.cz?(fr0+1)/2:fr0,ang=Math.PI*(1-clamp(fr,-0.04,1.04));/* d.cz: صفر في المنتصف */
   const nx=cx+r*Math.cos(ang),ny=cy-r*Math.sin(ang);let tk='';
   for(let k=0;k<=10;k++){const a=Math.PI*(1-k/10),x1=cx+(r-2)*Math.cos(a),y1=cy-(r-2)*Math.sin(a),x2=cx+(r-(k%5?7:12))*Math.cos(a),y2=cy-(r-(k%5?7:12))*Math.sin(a);tk+=`<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="#333" stroke-width="${k%5?1:1.6}"/>`}
-  const bad=fr>1.02||fr<-0.02;
+  const bad=d.cz?Math.abs(fr0)>1.02:(fr>1.02||fr<-0.02);
   return `<rect x="0" y="0" width="${w}" height="${h}" rx="8" fill="#FBFAF5" stroke="#8a8a80"/>${tk}
-   <text x="10" y="${cy+2}" font-size="10" fill="#555">0</text><text x="${w-10}" y="${cy+2}" font-size="10" fill="#555" text-anchor="end">${range}</text>
+   <text x="10" y="${cy+2}" font-size="10" fill="#555">${d.cz?'−'+range:0}</text>${d.cz?`<text x="${cx}" y="${cy-r-4}" font-size="10" fill="#555" text-anchor="middle">0</text>`:''}<text x="${w-10}" y="${cy+2}" font-size="10" fill="#555" text-anchor="end">${range}</text>
    <text x="${cx}" y="${cy-r*0.45}" font-size="13" font-weight="700" fill="#333" text-anchor="middle">${unit}</text>
    <path d="M${cx} ${cy}L${nx.toFixed(1)} ${ny.toFixed(1)}" stroke="${bad?'#C8382E':'#1d1d1d'}" stroke-width="2.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4" fill="#1d1d1d"/>`}
 function digitalSVG(d,txt){const w=d.w||150,h=d.h||50;return `<rect x="0" y="0" width="${w}" height="${h}" rx="6" fill="#1E2A22"/><text x="${w/2}" y="${h/2+8}" font-size="22" font-family="monospace" fill="#8CF5B0" text-anchor="middle">${esc(txt)}</text>`}
@@ -280,8 +280,8 @@ function mount(el,cfg){
     $$('.bn-meter',svg).forEach(gm=>{const d=meters[gm.dataset.meter],r=readings[d.id];
       if(d.kind==='digital')gm.innerHTML=digitalSVG(d,r==null?'---':fmt(r,d.dp||0)+(d.unit?' '+d.unit:''));
       else{const rg=d.ranges?d.ranges[S.range[d.id]]:d.max;gm.innerHTML=gaugeSVG(d,r==null?0:r,rg,d.unit);
-        if(r!=null){const fr=r/rg;if(api.hold('or-'+d.id,fr>1.03,0.25))api.once('over-range-'+d.id,{t:'القراءة تجاوزت مدى '+(d.name||d.unit),why:GENERIC['over-range'].why});else if(fr<0.9)api.rearm('over-range-'+d.id);
-          if(!d.ac&&api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
+        if(r!=null){const fr=r/rg;if(api.hold('or-'+d.id,(d.cz?Math.abs(fr):fr)>1.03,0.25))api.once('over-range-'+d.id,{t:'القراءة تجاوزت مدى '+(d.name||d.unit),why:GENERIC['over-range'].why});else if(fr<0.9)api.rearm('over-range-'+d.id);
+          if(!d.ac&&!d.cz&&api.hold('rv-'+d.id,fr<-0.03,0.4))api.once('reverse-'+d.id,{t:(d.name||d.unit)+' موصّل بقطبية معكوسة',why:GENERIC.reverse.why});else if(fr>-0.01)api.rearm('reverse-'+d.id)}}});
     $$('.bn-led',svg).forEach(c=>{const on=!!readings[c.dataset.led];if(c.__on!==on){c.__on=on;c.setAttribute('fill',on?c.dataset.col:'#4a4f4c');c.setAttribute('filter',on?'url(#bnglow)':'')}});
     if(X.view&&X.view.frame)try{X.view.frame($('[data-view]',el),api)}catch(err){console.error(err)}
     stepT+=api.dt;if(stepT>0.4){stepT=0;paintSteps();if(S.mode==='probe'&&S.probe&&X.probe)H(X.probe(S.probe[0],S.probe[1],api))}
