@@ -564,6 +564,8 @@ BD.x2={name:'تمرين 2',fig:'(3-14)',ref:'ص 79',sp:F.x2,lin:on=>LIN.f314(on)
  steps:S=>[{t:'أشعل من المكان الأول',x:'غيّر وضع S1.',done:()=>cntOf(S,'A')>=1&&(S.pos.A?1:0)!==(S.pos.C?1:0)},{t:'أطفئ من المكان الثاني',x:'غيّر وضع S2.',done:()=>cntOf(S,'C')>=1&&(S.pos.A?1:0)===(S.pos.C?1:0)},{t:'عُدّ الأسلاك',x:'عُدّ الأسلاك بين علبتي التفريع: خمسة، كما في الرقم 5 على الخطية.'}]};
 BD.x3=Object.assign({},BD.f35,{name:'تمرين 3',fig:'(3-15)',ref:'ص 80'});
 BD.x4=Object.assign({},BD.f37,{name:'تمرين 4',fig:'(3-16)',ref:'ص 80',lin:on=>LIN.f37(on,'220v')});
+/* «المنضدة الافتراضية» تستعمل الأشكال التنفيذية نفسها كمخطط توصيل */
+B.U3BENCH={F,BD,exec,IDLE,solve,LIN};
 
 /* ================= drawn examples (step by step) ================= */
 function drawEx(o){return {title:o.title,ref:o.ref,q:o.q,note:o.note,solve:()=>{const out=(o.pre||[]).map(t=>({t}));
